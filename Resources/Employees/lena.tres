@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EmployeeData" load_steps=2 format=3 uid="uid://dus1xsbnbrrgc"]
+
+[ext_resource type="Script" uid="uid://ccsypgdq6xdni" path="res://Scripts/employee_data.gd" id="1_lnsl7"]
+
+[resource]
+script = ExtResource("1_lnsl7")
+employee_name = "Елена"
+job_title = "Backend Junior"
+monthly_salary = 2000
+skill_business_analysis = 5
+metadata/_custom_type_script = "uid://ccsypgdq6xdni"

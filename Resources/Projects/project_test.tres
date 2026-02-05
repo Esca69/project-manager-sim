@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ProjectData" load_steps=2 format=3 uid="uid://cgbsuej8tpuwp"]
+
+[ext_resource type="Script" uid="uid://5cj5ppyaaflg" path="res://Scripts/project_data.gd" id="1_ri6f4"]
+
+[resource]
+script = ExtResource("1_ri6f4")
+ba_needed = 50.0
+dev_needed = 100.0
+qa_needed = 50.0
+metadata/_custom_type_script = "uid://5cj5ppyaaflg"

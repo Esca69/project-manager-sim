@@ -1,0 +1,40 @@
+[gd_scene load_steps=5 format=3 uid="uid://800ken273kfj"]
+
+[ext_resource type="Script" uid="uid://buoyrfwm72weh" path="res://Scripts/employee_desk.gd" id="1_68q08"]
+[ext_resource type="Texture2D" uid="uid://bbgu87jfinvbd" path="res://Sprites/table_employee2.png" id="2_68q08"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_eoxvh"]
+font_size = 12
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_68q08"]
+radius = 38.96379
+height = 255.99988
+
+[node name="EmployeeDesk" type="StaticBody2D" groups=["desk"]]
+y_sort_enabled = true
+script = ExtResource("1_68q08")
+
+[node name="NameTag" type="Label" parent="."]
+offset_left = -36.0
+offset_top = -10.0
+offset_right = 44.0
+offset_bottom = 13.0
+text = "Свободно"
+label_settings = SubResource("LabelSettings_eoxvh")
+horizontal_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-3.8146973e-06, -45.000008)
+rotation = 1.5865043
+scale = Vector2(0.99999994, 0.99999994)
+shape = SubResource("CapsuleShape2D_68q08")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, 1)
+texture = ExtResource("2_68q08")
+offset = Vector2(0, -75)
+
+[node name="SeatPosition" type="Marker2D" parent="."]
+position = Vector2(-1, -49)

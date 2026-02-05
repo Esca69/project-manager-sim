@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3 uid="uid://dum7oe0xx61nt"]
+
+[ext_resource type="Script" uid="uid://dta5tmecdace5" path="res://Scripts/project_selection_ui.gd" id="1_3ww1b"]
+
+[node name="ProjectSelectionUi" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3ww1b")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -573.5
+offset_top = -322.5
+offset_right = 573.5
+offset_bottom = 322.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -434.0
+offset_top = -254.0
+offset_right = 453.0
+offset_bottom = 239.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="Card1" type="Button" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(200, 300)
+layout_mode = 2
+
+[node name="Card2" type="Button" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(200, 300)
+layout_mode = 2
+
+[node name="Card3" type="Button" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(200, 300)
+layout_mode = 2

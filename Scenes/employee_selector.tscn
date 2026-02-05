@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3 uid="uid://ydl7ldgl5qyc"]
+
+[ext_resource type="Script" uid="uid://7e66drn2ufyu" path="res://Scripts/employee_selector.gd" id="1_k6vgr"]
+
+[node name="EmployeeSelector" type="Panel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -200.0
+offset_right = 150.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_k6vgr")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Выбери сотрудника"
+horizontal_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="VBoxContainer"]
+layout_mode = 2
+auto_height = true
+
+[node name="Button" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Отмена"
+
+[connection signal="item_activated" from="VBoxContainer/ItemList" to="." method="_on_item_list_item_activated"]
+[connection signal="pressed" from="VBoxContainer/Button" to="." method="_on_button_pressed"]

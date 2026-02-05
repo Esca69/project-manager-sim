@@ -1,0 +1,140 @@
+[gd_scene load_steps=2 format=3 uid="uid://cm0p2pu0821ay"]
+
+[ext_resource type="Script" uid="uid://bm5h2j3shms13" path="res://Scripts/hiring_menu.gd" id="1_hi4j7"]
+
+[node name="HiringMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hi4j7")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -576.0
+offset_top = -326.0
+offset_right = 576.0
+offset_bottom = 325.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 8.0
+offset_right = 149.0
+offset_bottom = 31.0
+text = "Биржа труда"
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 1131.0
+offset_top = 4.0
+offset_right = 1149.0
+offset_bottom = 35.0
+text = "X"
+
+[node name="CandidatesContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -520.5
+offset_top = -257.5
+offset_right = 520.5
+offset_bottom = 257.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card1" type="PanelContainer" parent="Panel/CandidatesContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="VBox" type="VBoxContainer" parent="Panel/CandidatesContainer/Card1"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+layout_mode = 2
+text = "Имя"
+
+[node name="RoleLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+layout_mode = 2
+text = "Роль"
+
+[node name="SalaryLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+layout_mode = 2
+text = "Зарплата"
+
+[node name="SkillLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+layout_mode = 2
+text = "Навык"
+
+[node name="HireButton" type="Button" parent="Panel/CandidatesContainer/Card1/VBox"]
+layout_mode = 2
+size_flags_vertical = 10
+text = "Нанять"
+
+[node name="Card2" type="PanelContainer" parent="Panel/CandidatesContainer"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel/CandidatesContainer/Card2"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+layout_mode = 2
+text = "Имя"
+
+[node name="RoleLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+layout_mode = 2
+text = "Роль"
+
+[node name="SalaryLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+layout_mode = 2
+text = "Зарплата"
+
+[node name="SkillLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+layout_mode = 2
+text = "Навык"
+
+[node name="HireButton" type="Button" parent="Panel/CandidatesContainer/Card2/VBox"]
+layout_mode = 2
+size_flags_vertical = 10
+text = "Нанять"
+
+[node name="Card3" type="PanelContainer" parent="Panel/CandidatesContainer"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel/CandidatesContainer/Card3"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+layout_mode = 2
+text = "Имя"
+
+[node name="RoleLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+layout_mode = 2
+text = "Роль"
+
+[node name="SalaryLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+layout_mode = 2
+text = "Зарплата"
+
+[node name="SkillLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+layout_mode = 2
+text = "Навык"
+
+[node name="HireButton" type="Button" parent="Panel/CandidatesContainer/Card3/VBox"]
+layout_mode = 2
+size_flags_vertical = 10
+text = "Нанять"

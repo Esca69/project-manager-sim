@@ -1,0 +1,217 @@
+[gd_scene load_steps=7 format=3 uid="uid://ciautqikan3tu"]
+
+[ext_resource type="Script" uid="uid://b4yem1oeoncra" path="res://Scripts/project_window.gd" id="1_td4cr"]
+[ext_resource type="PackedScene" uid="uid://cxxfvbsbhm1oh" path="res://Scenes/ProjectTrack.tscn" id="2_ib778"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ib778"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l6uhk"]
+bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ywcph"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inxqo"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="ProjectWindow" type="Control"]
+process_mode = 3
+custom_minimum_size = Vector2(1300, 900)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("1_td4cr")
+track_scene = ExtResource("2_ib778")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ib778")
+
+[node name="PaddingWrapper" type="MarginContainer" parent="."]
+layout_mode = 0
+offset_top = 100.0
+offset_right = 1300.0
+offset_bottom = 140.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="MainLayout" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(-100, -100)
+theme_override_constants/separation = 0
+
+[node name="HeaderPanel" type="Panel" parent="MainLayout"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_l6uhk")
+
+[node name="TitleLabel" type="Label" parent="MainLayout/HeaderPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Название проекта"
+
+[node name="CloseButton" type="Button" parent="MainLayout/HeaderPanel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -36.0
+offset_top = 5.0
+offset_right = -9.0
+offset_bottom = 36.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_ywcph")
+text = " X "
+
+[node name="ContentWrapper" type="MarginContainer" parent="MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Body" type="VBoxContainer" parent="MainLayout/ContentWrapper"]
+layout_mode = 2
+
+[node name="InfoRow" type="HBoxContainer" parent="MainLayout/ContentWrapper/Body"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="DeadlineLabel" type="Label" parent="MainLayout/ContentWrapper/Body/InfoRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Дедлайн 34 день"
+
+[node name="VSeparator" type="VSeparator" parent="MainLayout/ContentWrapper/Body/InfoRow"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="MainLayout/ContentWrapper/Body/InfoRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+text = "Бюджет 15000"
+
+[node name="TableHeader" type="HBoxContainer" parent="MainLayout/ContentWrapper/Body"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Роль"
+horizontal_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Исполнитель"
+horizontal_alignment = 1
+
+[node name="VSeparator2" type="VSeparator" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Прогресс"
+horizontal_alignment = 1
+
+[node name="VSeparator3" type="VSeparator" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+layout_mode = 2
+
+[node name="TimelineHeader" type="Control" parent="MainLayout/ContentWrapper/Body/TableHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TracksContainer" type="VBoxContainer" parent="MainLayout/ContentWrapper/Body"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Footer" type="HBoxContainer" parent="MainLayout/ContentWrapper/Body"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="StartButton" type="Button" parent="MainLayout/ContentWrapper/Body/Footer"]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_inxqo")
+text = "Начать проект"
+
+[node name="CancelButton" type="Button" parent="MainLayout/ContentWrapper/Body/Footer"]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_inxqo")
+text = "Отклонить
+"

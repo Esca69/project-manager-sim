@@ -1,0 +1,325 @@
+[gd_scene load_steps=12 format=4 uid="uid://kr52uj1nuu18"]
+
+[ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
+[ext_resource type="Texture2D" uid="uid://0nlcxe4m5eup" path="res://Room_Builder_free_48x48.png" id="1_llmbb"]
+[ext_resource type="PackedScene" uid="uid://cebrvtrf38laf" path="res://Scenes/player.tscn" id="2_vggx3"]
+[ext_resource type="PackedScene" uid="uid://l6ojv8bflski" path="res://Scenes/hud.tscn" id="6_7xo7e"]
+[ext_resource type="PackedScene" uid="uid://cmjsjpufedl22" path="res://Scenes/ComputerDesk.tscn" id="7_eqlnk"]
+[ext_resource type="PackedScene" uid="uid://800ken273kfj" path="res://Scenes/EmployeeDesk.tscn" id="8_2vylc"]
+[ext_resource type="PackedScene" uid="uid://bwgwnl47ai4v6" path="res://Scenes/BossDesk.tscn" id="8_o84nh"]
+[ext_resource type="PackedScene" uid="uid://rn7ywspbl6ht" path="res://Scenes/hr_desk.tscn" id="10_4luf0"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_o84nh"]
+vertices = PackedVector2Array(1384.1172, 3.9921875, 1396.8594, 981.9922, 768, 373, 768, 297, 1072, 76, 9.171875, 981, 634, 373, 572, 373, 438, 373, 378, 371, 438, 297, 244, 371, 194, 370, 244, 295, 60, 370, 25.828125, 3, 60, 294, 239, 3.15625, 239, 77, 194, 294, 556, 78, 378, 295, 387, 77, 556, 3.390625, 387, 3.2578125, 572, 297, 703, 78, 1072, 3.7578125, 923, 76, 634, 297, 703, 3.4921875, 923, 3.6484375)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4), PackedInt32Array(2, 1, 5, 6), PackedInt32Array(7, 6, 5), PackedInt32Array(8, 7, 5), PackedInt32Array(8, 5, 9, 10), PackedInt32Array(11, 9, 5), PackedInt32Array(11, 5, 12, 13), PackedInt32Array(14, 12, 5), PackedInt32Array(14, 5, 15, 16), PackedInt32Array(16, 15, 17, 18, 19), PackedInt32Array(20, 10, 9, 21, 22, 23), PackedInt32Array(13, 12, 19, 18, 22), PackedInt32Array(21, 13, 22), PackedInt32Array(22, 24, 23), PackedInt32Array(25, 10, 20, 26), PackedInt32Array(4, 27, 0), PackedInt32Array(26, 28, 4, 3, 29), PackedInt32Array(26, 30, 31, 28), PackedInt32Array(25, 26, 29), PackedInt32Array(25, 29, 6, 7)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(16, -7, 1394, -6, 1407, 992, -1, 991)])
+source_geometry_mode = 1
+source_geometry_group_name = &"desk"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cumm5"]
+texture = ExtResource("1_llmbb")
+texture_region_size = Vector2i(48, 48)
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+8:0/0 = 0
+12:0/0 = 0
+14:0/0 = 0
+15:0/0 = 0
+16:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+8:1/0 = 0
+9:1/0 = 0
+10:1/0 = 0
+11:1/0 = 0
+11:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+13:1/0 = 0
+13:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+15:1/0 = 0
+16:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+8:2/0 = 0
+9:2/0 = 0
+11:2/0 = 0
+11:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+13:2/0 = 0
+13:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+14:2/0 = 0
+15:2/0 = 0
+16:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+7:3/0 = 0
+8:3/0 = 0
+9:3/0 = 0
+11:3/0 = 0
+11:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+12:3/0 = 0
+13:3/0 = 0
+13:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+14:3/0 = 0
+15:3/0 = 0
+16:3/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+4:5/0 = 0
+5:5/0 = 0
+6:5/0 = 0
+7:5/0 = 0
+8:5/0 = 0
+9:5/0 = 0
+11:5/0 = 0
+12:5/0 = 0
+13:5/0 = 0
+14:5/0 = 0
+15:5/0 = 0
+16:5/0 = 0
+0:6/0 = 0
+1:6/0 = 0
+2:6/0 = 0
+3:6/0 = 0
+7:6/0 = 0
+8:6/0 = 0
+9:6/0 = 0
+11:6/0 = 0
+12:6/0 = 0
+13:6/0 = 0
+14:6/0 = 0
+15:6/0 = 0
+16:6/0 = 0
+0:7/0 = 0
+1:7/0 = 0
+2:7/0 = 0
+3:7/0 = 0
+4:7/0 = 0
+5:7/0 = 0
+6:7/0 = 0
+7:7/0 = 0
+8:7/0 = 0
+9:7/0 = 0
+11:7/0 = 0
+12:7/0 = 0
+13:7/0 = 0
+14:7/0 = 0
+15:7/0 = 0
+16:7/0 = 0
+0:8/0 = 0
+1:8/0 = 0
+2:8/0 = 0
+3:8/0 = 0
+7:8/0 = 0
+8:8/0 = 0
+9:8/0 = 0
+11:8/0 = 0
+12:8/0 = 0
+13:8/0 = 0
+14:8/0 = 0
+15:8/0 = 0
+16:8/0 = 0
+0:9/0 = 0
+1:9/0 = 0
+2:9/0 = 0
+3:9/0 = 0
+4:9/0 = 0
+5:9/0 = 0
+6:9/0 = 0
+7:9/0 = 0
+8:9/0 = 0
+9:9/0 = 0
+11:9/0 = 0
+12:9/0 = 0
+13:9/0 = 0
+14:9/0 = 0
+15:9/0 = 0
+16:9/0 = 0
+0:10/0 = 0
+1:10/0 = 0
+2:10/0 = 0
+3:10/0 = 0
+7:10/0 = 0
+8:10/0 = 0
+9:10/0 = 0
+11:10/0 = 0
+12:10/0 = 0
+13:10/0 = 0
+14:10/0 = 0
+15:10/0 = 0
+16:10/0 = 0
+0:11/0 = 0
+1:11/0 = 0
+2:11/0 = 0
+3:11/0 = 0
+4:11/0 = 0
+5:11/0 = 0
+6:11/0 = 0
+7:11/0 = 0
+8:11/0 = 0
+9:11/0 = 0
+11:11/0 = 0
+12:11/0 = 0
+13:11/0 = 0
+14:11/0 = 0
+15:11/0 = 0
+16:11/0 = 0
+0:12/0 = 0
+1:12/0 = 0
+2:12/0 = 0
+3:12/0 = 0
+7:12/0 = 0
+8:12/0 = 0
+9:12/0 = 0
+11:12/0 = 0
+12:12/0 = 0
+13:12/0 = 0
+14:12/0 = 0
+15:12/0 = 0
+16:12/0 = 0
+0:13/0 = 0
+1:13/0 = 0
+2:13/0 = 0
+3:13/0 = 0
+4:13/0 = 0
+5:13/0 = 0
+6:13/0 = 0
+7:13/0 = 0
+8:13/0 = 0
+9:13/0 = 0
+11:13/0 = 0
+12:13/0 = 0
+13:13/0 = 0
+0:14/0 = 0
+1:14/0 = 0
+2:14/0 = 0
+3:14/0 = 0
+7:14/0 = 0
+8:14/0 = 0
+9:14/0 = 0
+11:14/0 = 0
+12:14/0 = 0
+13:14/0 = 0
+0:15/0 = 0
+1:15/0 = 0
+2:15/0 = 0
+3:15/0 = 0
+4:15/0 = 0
+5:15/0 = 0
+6:15/0 = 0
+7:15/0 = 0
+8:15/0 = 0
+9:15/0 = 0
+0:16/0 = 0
+1:16/0 = 0
+2:16/0 = 0
+3:16/0 = 0
+7:16/0 = 0
+8:16/0 = 0
+9:16/0 = 0
+0:17/0 = 0
+1:17/0 = 0
+2:17/0 = 0
+3:17/0 = 0
+4:17/0 = 0
+5:17/0 = 0
+6:17/0 = 0
+7:17/0 = 0
+8:17/0 = 0
+9:17/0 = 0
+0:18/0 = 0
+1:18/0 = 0
+2:18/0 = 0
+3:18/0 = 0
+7:18/0 = 0
+8:18/0 = 0
+9:18/0 = 0
+0:19/0 = 0
+0:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+1:19/0 = 0
+1:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+2:19/0 = 0
+2:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+3:19/0 = 0
+3:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+4:19/0 = 0
+5:19/0 = 0
+6:19/0 = 0
+7:19/0 = 0
+7:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+8:19/0 = 0
+8:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+9:19/0 = 0
+9:19/0/physics_layer_0/polygon_0/points = PackedVector2Array(-24, -24, 24, -24, 24, 24, -24, 24)
+0:20/0 = 0
+1:20/0 = 0
+2:20/0 = 0
+3:20/0 = 0
+7:20/0 = 0
+8:20/0 = 0
+9:20/0 = 0
+10:2/0 = 0
+12:2/0 = 0
+
+[sub_resource type="TileSet" id="TileSet_2jlrf"]
+tile_size = Vector2i(48, 48)
+physics_layer_0/collision_layer = 1
+sources/0 = SubResource("TileSetAtlasSource_cumm5")
+
+[node name="Office" type="Node2D"]
+z_as_relative = false
+script = ExtResource("1_2vylc")
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavigationPolygon_o84nh")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="NavigationRegion2D"]
+z_index = -10
+tile_map_data = PackedByteArray("AAAAAAAAAAAOAAUAAAABAAAAAAAPAAUAAAACAAAAAAAPAAUAAAADAAAAAAAPAAUAAAAEAAAAAAAPAAUAAAAFAAAAAAAPAAUAAAAGAAAAAAAPAAUAAAAHAAAAAAAPAAUAAAAIAAAAAAAPAAUAAAAJAAAAAAAPAAUAAAAKAAAAAAAPAAUAAAALAAAAAAAPAAUAAAAMAAAAAAAPAAUAAAANAAAAAAAPAAYAAAANAAEAAAAPAAYAAAANAAIAAAAPAAYAAAANAAMAAAAPAAYAAAANAAQAAAAPAAYAAAANAAUAAAAPAAYAAAANAAYAAAAPAAYAAAANAAcAAAAPAAYAAAAMAAcAAAAPAAYAAAALAAcAAAAPAAYAAAALAAYAAAAPAAYAAAAKAAYAAAAPAAYAAAAJAAYAAAAPAAYAAAAIAAYAAAAPAAYAAAAHAAYAAAAPAAYAAAAGAAYAAAAPAAYAAAAFAAYAAAAPAAYAAAAEAAYAAAAPAAYAAAADAAYAAAAPAAYAAAACAAcAAAAPAAYAAAABAAcAAAAPAAYAAAAAAAcAAAAOAAYAAAADAAcAAAAPAAYAAAAEAAcAAAAPAAYAAAAFAAcAAAAPAAYAAAAGAAcAAAAPAAYAAAAHAAcAAAAPAAYAAAAIAAcAAAAPAAYAAAAJAAcAAAAPAAYAAAAKAAcAAAAPAAYAAAAAAAYAAAAOAAYAAAAAAAUAAAAOAAYAAAAAAAQAAAAOAAYAAAAAAAMAAAAOAAYAAAAAAAIAAAAOAAYAAAAAAAEAAAAOAAYAAAABAAEAAAAPAAYAAAABAAIAAAAPAAYAAAABAAMAAAAPAAYAAAABAAQAAAAPAAYAAAABAAUAAAAPAAYAAAABAAYAAAAPAAYAAAACAAMAAAAPAAYAAAACAAIAAAAPAAYAAAACAAEAAAAPAAYAAAACAAQAAAAPAAYAAAACAAUAAAAPAAYAAAADAAEAAAAPAAYAAAADAAIAAAAPAAYAAAADAAMAAAAPAAYAAAADAAQAAAAPAAYAAAADAAUAAAAPAAYAAAACAAYAAAAPAAYAAAAEAAMAAAAPAAYAAAAEAAIAAAAPAAYAAAAEAAEAAAAPAAYAAAAEAAQAAAAPAAYAAAAEAAUAAAAPAAYAAAAFAAUAAAAPAAYAAAAFAAQAAAAPAAYAAAAFAAMAAAAPAAYAAAAFAAIAAAAPAAYAAAAFAAEAAAAPAAYAAAAGAAIAAAAPAAYAAAAGAAMAAAAPAAYAAAAGAAUAAAAPAAYAAAAGAAQAAAAPAAYAAAAHAAEAAAAPAAYAAAAHAAIAAAAPAAYAAAAHAAMAAAAPAAYAAAAGAAEAAAAPAAYAAAAIAAIAAAAPAAYAAAAIAAEAAAAPAAYAAAAIAAMAAAAPAAYAAAAHAAQAAAAPAAYAAAAHAAUAAAAPAAYAAAAIAAQAAAAPAAYAAAAJAAEAAAAPAAYAAAAJAAIAAAAPAAYAAAAJAAMAAAAPAAYAAAAIAAUAAAAPAAYAAAAKAAIAAAAPAAYAAAAKAAMAAAAPAAYAAAAKAAQAAAAPAAYAAAAKAAUAAAAPAAYAAAAJAAUAAAAPAAYAAAAJAAQAAAAPAAYAAAAKAAEAAAAPAAYAAAALAAIAAAAPAAYAAAALAAEAAAAPAAYAAAAMAAEAAAAPAAYAAAAMAAIAAAAPAAYAAAAMAAMAAAAPAAYAAAALAAQAAAAPAAYAAAALAAUAAAAPAAYAAAALAAMAAAAPAAYAAAAMAAUAAAAPAAYAAAAMAAQAAAAPAAYAAAAMAAYAAAAPAAYAAAABAP//AAAIABQAAAACAP//AAAIABQAAAADAP//AAAIABQAAAAEAP//AAAIABQAAAAFAP//AAAIABQAAAAGAP//AAAIABQAAAAHAP//AAAIABQAAAAIAP//AAAIABQAAAAJAP//AAAIABQAAAAKAP//AAAIABQAAAALAP//AAAIABQAAAAMAP//AAAIABQAAAANAP//AAAJABQAAAAAAP//AAAHABQAAAAAAP7/AAAHABMAAAABAP7/AAAIABMAAAACAP7/AAAIABMAAAADAP7/AAAIABMAAAAEAP7/AAAIABMAAAAFAP7/AAAIABMAAAAGAP7/AAAIABMAAAAHAP7/AAAIABMAAAAIAP7/AAAIABMAAAAJAP7/AAAIABMAAAAKAP7/AAAIABMAAAALAP7/AAAIABMAAAAMAP7/AAAIABMAAAANAP7/AAAJABMAAAD//wcAAAALAAIAAAD//wYAAAALAAIAAAD//wUAAAALAAIAAAD//wQAAAALAAIAAAD//wMAAAALAAIAAAD//wIAAAALAAIAAAD//wEAAAALAAIAAAD//wAAAAALAAIAAAD/////AAALAAIAAAD///7/AAALAAIAAAD//wgAAAALAAIAAAA=")
+tile_set = SubResource("TileSet_2jlrf")
+
+[node name="Player" parent="." groups=["NPC"] instance=ExtResource("2_vggx3")]
+position = Vector2(120, 98)
+
+[node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
+
+[node name="ComputerDesk" parent="." instance=ExtResource("7_eqlnk")]
+position = Vector2(313, 34)
+
+[node name="BossDesk" parent="." instance=ExtResource("8_o84nh")]
+position = Vector2(630, 35)
+
+[node name="SpawnPoint" type="Marker2D" parent="."]
+position = Vector2(1099, 818)
+
+[node name="HrDesk" parent="." instance=ExtResource("10_4luf0")]
+position = Vector2(933, 1)
+
+[node name="EmployeeDesk" parent="." instance=ExtResource("8_2vylc")]
+position = Vector2(128, 356)
+
+[node name="EmployeeDesk2" parent="." instance=ExtResource("8_2vylc")]
+position = Vector2(702, 359)
+
+[node name="EmployeeDesk4" parent="." instance=ExtResource("8_2vylc")]
+position = Vector2(506, 359)
+
+[node name="EmployeeDesk3" parent="." instance=ExtResource("8_2vylc")]
+position = Vector2(312, 357)

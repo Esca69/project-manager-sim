@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EmployeeData" load_steps=2 format=3 uid="uid://dup2eca1wy13t"]
+
+[ext_resource type="Script" uid="uid://ccsypgdq6xdni" path="res://Scripts/employee_data.gd" id="1_fepa4"]
+
+[resource]
+script = ExtResource("1_fepa4")
+employee_name = "Василий"
+job_title = "Backend Lead"
+skill_business_analysis = 5
+metadata/_custom_type_script = "uid://ccsypgdq6xdni"

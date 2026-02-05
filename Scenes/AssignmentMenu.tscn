@@ -1,0 +1,54 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7cwh26kidn2f"]
+
+[ext_resource type="Script" uid="uid://codpdncq5yhvn" path="res://Scripts/assignment_menu.gd" id="1_md03b"]
+
+[node name="AssignmentMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_md03b")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -200.0
+offset_right = 150.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 12.0
+offset_right = 229.0
+offset_bottom = 35.0
+text = "Выберите сотрудника"
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 0
+offset_left = 116.0
+offset_top = 349.0
+offset_right = 193.0
+offset_bottom = 380.0
+text = "Закрыть"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 47.0
+offset_right = 278.0
+offset_bottom = 340.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/ScrollContainer"]
+layout_mode = 2

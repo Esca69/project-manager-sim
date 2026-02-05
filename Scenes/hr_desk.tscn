@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://rn7ywspbl6ht"]
+
+[ext_resource type="Script" uid="uid://b7dlanyav1647" path="res://Scripts/hr_desk.gd" id="1_spxag"]
+[ext_resource type="Texture2D" uid="uid://d0cqhdps3jvrl" path="res://table.png" id="2_cevr1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o58de"]
+size = Vector2(129, 61)
+
+[node name="HrDesk" type="StaticBody2D" groups=["desk"]]
+script = ExtResource("1_spxag")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(66, 36)
+texture = ExtResource("2_cevr1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(64.5, 34.5)
+shape = SubResource("RectangleShape2D_o58de")

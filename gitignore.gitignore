@@ -1,0 +1,9 @@
+# Godot 4+ specific ignores
+.godot/
+*.translation
+exported/
+
+# Mono/C# ignores (если вдруг решишь перейти на C#)
+.mono/
+*.csproj
+*.sln
