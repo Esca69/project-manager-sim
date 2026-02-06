@@ -127,11 +127,14 @@ func _physics_process(delta):
 		
 		if is_working_hours and active_stage.worker:
 			var worker_node = get_employee_node(active_stage.worker)
-			var skill = get_skill_for_stage(active_stage.type, active_stage.worker)
-			var efficiency = active_stage.worker.get_efficiency_multiplier()
 			
-			var speed_per_second = (float(skill) * efficiency) / 60.0
-			active_stage.progress += speed_per_second * delta
+			# --- ИСПРАВЛЕНИЕ: ПРОГРЕСС ИДЕТ ТОЛЬКО ЕСЛИ СОТРУДНИК СИДИТ ЗА СТОЛОМ ---
+			if worker_node and worker_node.current_state == worker_node.State.WORKING:
+				var skill = get_skill_for_stage(active_stage.type, active_stage.worker)
+				var efficiency = active_stage.worker.get_efficiency_multiplier()
+				
+				var speed_per_second = (float(skill) * efficiency) / 60.0
+				active_stage.progress += speed_per_second * delta
 			
 		if active_stage.progress >= active_stage.amount:
 			active_stage.progress = active_stage.amount
@@ -167,6 +170,11 @@ func _process(delta):
 			var track_node = tracks_container.get_child(i)
 			var stage_color = get_color_for_stage(stage.type)
 			track_node.update_visuals_dynamic(pixels_per_day, project.elapsed_days, stage_color)
+			
+			var percent = 0.0
+			if stage.amount > 0:
+				percent = float(stage.progress) / float(stage.amount)
+			track_node.update_progress(percent)
 	
 	# [ИСПРАВЛЕНИЕ 1] Позиция красной линии
 	if current_time_line:

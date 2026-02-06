@@ -83,7 +83,15 @@ func _move_along_path():
 # --- ФУНКЦИИ УПРАВЛЕНИЯ ---
 
 func move_to_desk(target_point: Vector2):
-	my_desk_position = target_point 
+	my_desk_position = target_point
+	
+	# --- ВАЖНОЕ ИЗМЕНЕНИЕ ---
+	# Если сейчас НЕ рабочи�� часы, сотрудник НЕ появляется.
+	# Он будет ждать 09:00 и придет по сигналу work_started.
+	if GameTime.hour < GameTime.START_HOUR or GameTime.hour >= GameTime.END_HOUR:
+		_go_to_sleep_instant()
+		return
+	
 	current_state = State.MOVING
 	z_index = 0 
 	nav_agent.target_position = target_point
@@ -136,6 +144,7 @@ func _go_to_sleep_instant():
 	visible = false
 	$CollisionShape2D.disabled = true
 	current_state = State.HOME
+	velocity = Vector2.ZERO
 
 # --- ВИЗУАЛ ---
 

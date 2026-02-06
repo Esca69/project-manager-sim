@@ -105,4 +105,19 @@ visible = false
 [node name="AssignmentMenu" parent="." instance=ExtResource("6_36asn")]
 visible = false
 
+[node name="EndDayButton" type="Button" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -69.5
+offset_top = -31.0
+offset_right = 69.5
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 8
+text = "Закончить день"
+
 [connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]

@@ -2,10 +2,16 @@ extends CharacterBody2D
 
 const SPEED = 300.0
 
-# Ссылка на нашу зону взаимодействия (чтобы каждый раз не искать)
+# Ссылка на нашу зону взаимодействия (чтобы каждый раз не искат��)
 @onready var interaction_zone = $InteractionZone
 
 func _physics_process(delta):
+	# --- БЛОК БЛОКИРОВКИ УПРАВЛЕНИЯ ---
+	if GameTime.is_night_skip:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+	
 	# --- БЛОК ДВИЖЕНИЯ (старый) ---
 	var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if direction:
@@ -23,8 +29,6 @@ func interact():
 	var bodies = interaction_zone.get_overlapping_bodies()
 	for body in bodies:
 		if body.is_in_group("npc") and body.data:
-			# ВМЕСТО print() ПИШЕМ ЭТО:
-			
 			# "Эй, дерево игры! Найди всех, кто в группе 'ui', 
 			# и вызови у них функцию 'show_employee_card' с данными body.data"
 			get_tree().call_group("ui", "show_employee_card", body.data)

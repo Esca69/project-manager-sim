@@ -14,23 +14,36 @@ extends CanvasLayer
 @onready var employee_selector = $EmployeeSelector
 @onready var balance_label = $BalanceLabel
 
+# --- КНОПКА "ЗАКОНЧИТЬ ДЕНЬ" ---
+@onready var end_day_button = $EndDayButton
+
 # --- СОСТОЯНИЕ ---
 var active_project: ProjectData = null
 
 func _ready():
+	# HUD должен работать во время паузы (ночная промотка)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	# 1. САМОЕ ВАЖНОЕ: Скрываем вообще все окна при старте
 	info_panel.visible = false
 	selection_ui.visible = false
 	project_window.visible = false
 	employee_selector.visible = false
 	
+	# Кнопка "Закончить день"
+	end_day_button.visible = false
+	end_day_button.pressed.connect(_on_end_day_pressed)
+	
 	# 2. Подключаем сигналы
 	GameTime.time_tick.connect(update_time_label)
+	GameTime.work_ended.connect(_on_work_ended_show_end_day)
+	GameTime.work_started.connect(_on_work_started_hide_end_day)
+	GameTime.night_skip_started.connect(_on_night_skip_started)
+	GameTime.night_skip_finished.connect(_on_night_skip_finished)
 	
 	# Если мы что-то выбрали в меню босса -> запоминаем это
 	if not selection_ui.project_selected.is_connected(_on_project_taken):
 		selection_ui.project_selected.connect(_on_project_taken)
-	
 	
 	# Показываем баланс сразу при старте
 	update_balance_ui(GameState.company_balance)
@@ -84,3 +97,23 @@ func _on_project_taken(proj_data):
 # Функция отрисовки денег
 func update_balance_ui(amount):
 	balance_label.text = str(amount) + " $"
+
+# --- КНОПКА "ЗАКОНЧИТЬ ДЕНЬ" ---
+func _on_end_day_pressed():
+	if GameTime.is_night_skip:
+		return
+	
+	end_day_button.visible = false
+	GameTime.start_night_skip()
+
+func _on_work_ended_show_end_day():
+	end_day_button.visible = true
+
+func _on_work_started_hide_end_day():
+	end_day_button.visible = false
+
+func _on_night_skip_started():
+	end_day_button.visible = false
+
+func _on_night_skip_finished():
+	end_day_button.visible = false
