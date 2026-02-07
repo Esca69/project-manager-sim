@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://4pf53kcu8eo0"]
+
+[ext_resource type="Script" uid="uid://s0yfsyp80vcj" path="res://Scripts/coffee_machine.gd" id="1_3wabo"]
+[ext_resource type="Texture2D" uid="uid://buuxjobbadurf" path="res://Sprites/Office/coffemachine.png" id="2_qlbtx"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3wabo"]
+size = Vector2(123, 92)
+
+[node name="CoffeeMachine" type="StaticBody2D"]
+script = ExtResource("1_3wabo")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, -1)
+texture = ExtResource("2_qlbtx")
+offset = Vector2(0, -100)
+
+[node name="CoffeeSpot" type="Marker2D" parent="."]
+position = Vector2(115, 21)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0.5, -51)
+shape = SubResource("RectangleShape2D_3wabo")
