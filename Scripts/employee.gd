@@ -8,7 +8,9 @@ enum State {
 	GOING_HOME,
 	HOME,
 	GOING_COFFEE,
-	COFFEE_BREAK
+	COFFEE_BREAK,
+	GOING_TOILET,
+	TOILET_BREAK
 }
 
 var current_state = State.IDLE
@@ -24,9 +26,18 @@ const COFFEE_MAX_GAIN = 15.0
 const COFFEE_MIN_MINUTES = 10.0
 const COFFEE_MAX_MINUTES = 15.0
 
+# Туалет-настройки
+const TOILET_VISITS_PER_DAY = 2
+const TOILET_BREAK_MINUTES = 15.0
+
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
 var coffee_break_minutes_left := 0.0
+
+var toilet_ref = null
+var toilet_break_minutes_left := 0.0
+var toilet_visit_times: Array[int] = []
+var toilet_visits_done := 0
 
 @export var data: EmployeeData
 
@@ -42,8 +53,8 @@ func _ready():
 	add_to_group("npc")
 	start_breathing_animation()
 	
-	nav_agent.path_desired_distance = 20.0
-	nav_agent.target_desired_distance = 20.0
+	nav_agent.path_desired_distance = 40.0
+	nav_agent.target_desired_distance = 40.0
 	
 	if data:
 		update_visuals()
@@ -70,9 +81,10 @@ func _physics_process(delta):
 			if data.current_energy < 0:
 				data.current_energy = 0
 			
+			_try_start_toilet_break()
 			_try_start_coffee_break()
 			
-		State.MOVING, State.GOING_COFFEE:
+		State.MOVING, State.GOING_COFFEE, State.GOING_TOILET:
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_navigation_finished()
@@ -92,6 +104,11 @@ func _physics_process(delta):
 			coffee_break_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
 			if coffee_break_minutes_left <= 0.0:
 				_finish_coffee_break()
+
+		State.TOILET_BREAK:
+			toilet_break_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			if toilet_break_minutes_left <= 0.0:
+				_finish_toilet_break()
 
 func _move_along_path():
 	var next_path_position = nav_agent.get_next_path_position()
@@ -130,6 +147,55 @@ func _finish_coffee_break():
 	if my_desk_position != Vector2.ZERO:
 		move_to_desk(my_desk_position)
 
+# --- ТУАЛЕТ ---
+func _setup_toilet_schedule():
+	toilet_visit_times.clear()
+	toilet_visits_done = 0
+	
+	var work_minutes = (GameTime.END_HOUR - GameTime.START_HOUR) * 60
+	for i in range(TOILET_VISITS_PER_DAY):
+		var t = randi_range(30, work_minutes - int(TOILET_BREAK_MINUTES) - 30)
+		toilet_visit_times.append(t)
+	
+	toilet_visit_times.sort()
+
+func _try_start_toilet_break():
+	if toilet_visits_done >= TOILET_VISITS_PER_DAY:
+		return
+	
+	if GameTime.hour < GameTime.START_HOUR or GameTime.hour >= GameTime.END_HOUR:
+		return
+	
+	if toilet_visit_times.is_empty():
+		return
+	
+	var current_work_minutes = (GameTime.hour - GameTime.START_HOUR) * 60 + GameTime.minute
+	if current_work_minutes < toilet_visit_times[toilet_visits_done]:
+		return
+	
+	var toilet = get_tree().get_first_node_in_group("toilet")
+	if toilet and toilet.try_reserve(self):
+		toilet_ref = toilet
+		current_state = State.GOING_TOILET
+		nav_agent.target_position = toilet.get_spot_position()
+		z_index = 0
+
+func _start_toilet_break():
+	current_state = State.TOILET_BREAK
+	velocity = Vector2.ZERO
+	
+	toilet_break_minutes_left = TOILET_BREAK_MINUTES
+
+func _finish_toilet_break():
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
+	toilet_visits_done += 1
+	
+	if my_desk_position != Vector2.ZERO:
+		move_to_desk(my_desk_position)
+
 # --- ФУНКЦИИ УПРАВЛЕНИЯ ---
 func move_to_desk(target_point: Vector2):
 	my_desk_position = target_point
@@ -148,10 +214,13 @@ func _on_navigation_finished():
 	if current_state == State.GOING_COFFEE:
 		_start_coffee_break()
 		return
+	if current_state == State.GOING_TOILET:
+		_start_toilet_break()
+		return
 	
 	global_position = nav_agent.target_position
 	current_state = State.WORKING
-	z_index = -1 
+	z_index = 0
 	velocity = Vector2.ZERO
 
 # --- ЛОГИКА ДЕНЬ/НОЧЬ ---
@@ -159,6 +228,8 @@ func _on_work_started():
 	if data:
 		data.current_energy = 100.0
 		
+	_setup_toilet_schedule()
+	
 	if my_desk_position == Vector2.ZERO:
 		return 
 
@@ -180,6 +251,10 @@ func _on_work_ended():
 		coffee_machine_ref.release(self)
 		coffee_machine_ref = null
 	
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
 	z_index = 0 
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
@@ -196,6 +271,11 @@ func _on_arrived_home():
 
 func _go_to_sleep_instant():
 	coffee_cup_holder.visible = false
+	
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
 	visible = false
 	$CollisionShape2D.disabled = true
 	current_state = State.HOME
@@ -247,3 +327,5 @@ func update_debug_label():
 			State.HOME: debug_label.modulate = Color.GRAY
 			State.GOING_COFFEE: debug_label.modulate = Color.AQUA
 			State.COFFEE_BREAK: debug_label.modulate = Color.SKY_BLUE
+			State.GOING_TOILET: debug_label.modulate = Color.DEEP_PINK
+			State.TOILET_BREAK: debug_label.modulate = Color.MEDIUM_PURPLE

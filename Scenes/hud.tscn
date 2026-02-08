@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://l6ojv8bflski"]
+[gd_scene load_steps=9 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
 [ext_resource type="Script" uid="uid://dkjxe22ou16fk" path="res://Scripts/speed_controls.gd" id="2_8jye8"]
@@ -8,8 +8,70 @@
 [ext_resource type="PackedScene" uid="uid://dum7oe0xx61nt" path="res://Scenes/ProjectSelectionUI.tscn" id="4_6fbih"]
 [ext_resource type="PackedScene" uid="uid://c7cwh26kidn2f" path="res://Scenes/AssignmentMenu.tscn" id="6_36asn"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jye8"]
+bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+
 [node name="HUD" type="CanvasLayer" groups=["ui"]]
 script = ExtResource("1_e0onf")
+
+[node name="TopBar" type="PanelContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8jye8")
+
+[node name="MarginContainer" type="MarginContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopBar/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TimeLabel" type="Label" parent="TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "День 1, 08:00"
+
+[node name="BalanceLabel" type="Label" parent="TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "10000 $"
+
+[node name="Spacer" type="Control" parent="TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="SpeedControls" type="HBoxContainer" parent="TopBar/MarginContainer/HBoxContainer"]
+process_mode = 3
+layout_mode = 2
+script = ExtResource("2_8jye8")
+
+[node name="PauseBtn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "0х"
+
+[node name="Speed1Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "1х"
+
+[node name="Speed2Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "2х"
+
+[node name="Speed5Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "5х"
 
 [node name="Panel" type="Panel" parent="."]
 anchors_preset = 8
@@ -48,39 +110,6 @@ text = "Зарплата:"
 layout_mode = 2
 text = "Закрыть"
 
-[node name="TimeLabel" type="Label" parent="."]
-offset_right = 40.0
-offset_bottom = 23.0
-text = "День 1, 08:00"
-
-[node name="SpeedControls" type="HBoxContainer" parent="."]
-process_mode = 3
-offset_left = 1636.0
-offset_top = 9.0
-offset_right = 1752.0
-offset_bottom = 44.0
-script = ExtResource("2_8jye8")
-
-[node name="PauseBtn" type="Button" parent="SpeedControls"]
-layout_mode = 2
-focus_mode = 0
-text = "0х"
-
-[node name="Speed1Btn" type="Button" parent="SpeedControls"]
-layout_mode = 2
-focus_mode = 0
-text = "1х"
-
-[node name="Speed2Btn" type="Button" parent="SpeedControls"]
-layout_mode = 2
-focus_mode = 0
-text = "2х"
-
-[node name="Speed5Btn" type="Button" parent="SpeedControls"]
-layout_mode = 2
-focus_mode = 0
-text = "5х"
-
 [node name="ProjectWindow" parent="." instance=ExtResource("2_fccik")]
 visible = false
 
@@ -89,15 +118,6 @@ visible = false
 
 [node name="ProjectSelectionUI" parent="." instance=ExtResource("4_6fbih")]
 visible = false
-
-[node name="BalanceLabel" type="Label" parent="."]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -40.0
-offset_bottom = 23.0
-grow_horizontal = 0
-text = "10000 $"
 
 [node name="HiringMenu" parent="." instance=ExtResource("2_t1xeu")]
 visible = false

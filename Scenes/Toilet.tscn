@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://dat7m0ulfvmf1"]
+
+[ext_resource type="Script" uid="uid://dm6elhejwhp8j" path="res://Scripts/toilet.gd" id="1_l24qr"]
+[ext_resource type="Texture2D" uid="uid://x3lg4u4m2itp" path="res://Sprites/Office/toilet.png" id="2_eehe3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0lhx2"]
+size = Vector2(44, 119)
+
+[node name="Toilet" type="StaticBody2D"]
+script = ExtResource("1_l24qr")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_eehe3")
+offset = Vector2(0, -60)
+
+[node name="ToiletSpot" type="Marker2D" parent="."]
+position = Vector2(0, -2)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -61.5)
+shape = SubResource("RectangleShape2D_0lhx2")
