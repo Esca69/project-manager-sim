@@ -8,11 +8,14 @@ class_name EmployeeData
 # Текущая энергия (0.0 - 100.0)
 var current_energy: float = 100.0
 
+# [НОВОЕ] Особенность сотрудника (текст)
+@export var trait_text: String = ""
+
 var daily_salary: int:
 	get:
 		return monthly_salary / 30
 
-# [НОВОЕ] Ставка в час (для точного расчета стоимости проекта)
+# Ставка в час (для точного расчета стоимости проекта)
 # Считаем 160 рабочих часов в месяц (стандарт)
 var hourly_rate: int:
 	get:
@@ -26,7 +29,7 @@ var hourly_rate: int:
 
 @export var avatar: Texture2D
 
-# --- НОВАЯ МАТЕМАТИКА ЭФФЕКТИВНОСТИ ---
+# --- МАТЕМАТИКА ЭФФЕКТИВНОСТИ ---
 # Возвращает коэффициент от 0.2 до 1.0 в зависимости от энергии
 func get_efficiency_multiplier() -> float:
 	if current_energy >= 70.0:

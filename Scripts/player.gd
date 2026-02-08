@@ -7,9 +7,14 @@ const ZOOM_MIN = 0.6
 const ZOOM_MAX = 1.6
 const ZOOM_SMOOTH_SPEED = 8.0
 
+const LEAN_ANGLE = 0.12 # ~7 градусов
+const LEAN_SPEED = 10.0
+
 # Ссылка на нашу зону взаимодействия (чтобы каждый раз не искать)
 @onready var interaction_zone = $InteractionZone
 @onready var camera = $Camera2D
+@onready var body_sprite = $Sprite2D
+@onready var head_sprite = $Sprite2D/Head2
 
 var target_zoom: Vector2 = Vector2.ONE
 
@@ -30,6 +35,16 @@ func _physics_process(delta):
 	else:
 		velocity = Vector2.ZERO
 	move_and_slide()
+
+	# --- НАКЛОН ПРИ ДВИЖЕНИИ ---
+	var target_lean = 0.0
+	if direction.x > 0.1:
+		target_lean = LEAN_ANGLE
+	elif direction.x < -0.1:
+		target_lean = -LEAN_ANGLE
+
+	body_sprite.rotation = lerp(body_sprite.rotation, target_lean, LEAN_SPEED * delta)
+	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
 
 	# --- БЛОК ВЗАИМОДЕЙСТВИЯ (новый) ---
 	# Если нажали кнопку "interact" (наша E)

@@ -30,6 +30,10 @@ const COFFEE_MAX_MINUTES = 15.0
 const TOILET_VISITS_PER_DAY = 2
 const TOILET_BREAK_MINUTES = 15.0
 
+# Наклон при ходьбе
+const LEAN_ANGLE = 0.12
+const LEAN_SPEED = 10.0
+
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
 var coffee_break_minutes_left := 0.0
@@ -53,8 +57,8 @@ func _ready():
 	add_to_group("npc")
 	start_breathing_animation()
 	
-	nav_agent.path_desired_distance = 40.0
-	nav_agent.target_desired_distance = 40.0
+	nav_agent.path_desired_distance = 20.0
+	nav_agent.target_desired_distance = 20.0
 	
 	if data:
 		update_visuals()
@@ -73,7 +77,7 @@ func _physics_process(delta):
 	
 	match current_state:
 		State.IDLE, State.HOME:
-			pass
+			_apply_lean(Vector2.ZERO, delta)
 			
 		State.WORKING:
 			var loss_speed = (ENERGY_LOSS_PER_GAME_HOUR / 60.0) * GameTime.MINUTES_PER_REAL_SECOND
@@ -83,20 +87,21 @@ func _physics_process(delta):
 			
 			_try_start_toilet_break()
 			_try_start_coffee_break()
+			_apply_lean(Vector2.ZERO, delta)
 			
 		State.MOVING, State.GOING_COFFEE, State.GOING_TOILET:
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_navigation_finished()
 				return
-			_move_along_path()
+			_move_along_path(delta)
 
 		State.GOING_HOME:
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 50.0:
 				_on_arrived_home()
 				return
-			_move_along_path()
+			_move_along_path(delta)
 
 		State.COFFEE_BREAK:
 			coffee_cup_holder.visible = true
@@ -104,17 +109,31 @@ func _physics_process(delta):
 			coffee_break_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
 			if coffee_break_minutes_left <= 0.0:
 				_finish_coffee_break()
+			_apply_lean(Vector2.ZERO, delta)
 
 		State.TOILET_BREAK:
 			toilet_break_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
 			if toilet_break_minutes_left <= 0.0:
 				_finish_toilet_break()
+			_apply_lean(Vector2.ZERO, delta)
 
-func _move_along_path():
+func _move_along_path(delta):
 	var next_path_position = nav_agent.get_next_path_position()
-	var new_velocity = global_position.direction_to(next_path_position) * movement_speed
+	var direction = global_position.direction_to(next_path_position)
+	var new_velocity = direction * movement_speed
 	velocity = new_velocity
 	move_and_slide()
+	_apply_lean(direction, delta)
+
+func _apply_lean(direction: Vector2, delta: float) -> void:
+	var target_lean = 0.0
+	if direction.x > 0.1:
+		target_lean = LEAN_ANGLE
+	elif direction.x < -0.1:
+		target_lean = -LEAN_ANGLE
+	
+	body_sprite.rotation = lerp(body_sprite.rotation, target_lean, LEAN_SPEED * delta)
+	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
 
 # --- КОФЕ ---
 func _try_start_coffee_break():
@@ -220,7 +239,6 @@ func _on_navigation_finished():
 	
 	global_position = nav_agent.target_position
 	current_state = State.WORKING
-	z_index = 0
 	velocity = Vector2.ZERO
 
 # --- ЛОГИКА ДЕНЬ/НОЧЬ ---

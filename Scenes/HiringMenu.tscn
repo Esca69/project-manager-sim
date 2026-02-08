@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://cm0p2pu0821ay"]
+[gd_scene load_steps=3 format=3 uid="uid://cm0p2pu0821ay"]
 
 [ext_resource type="Script" uid="uid://bm5h2j3shms13" path="res://Scripts/hiring_menu.gd" id="1_hi4j7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hi4j7"]
+bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 [node name="HiringMenu" type="Control"]
 layout_mode = 3
@@ -13,128 +16,241 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_hi4j7")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Window" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -576.0
-offset_top = -326.0
-offset_right = 576.0
-offset_bottom = 325.0
+offset_left = -750.0
+offset_top = -450.0
+offset_right = 750.0
+offset_bottom = 450.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="Panel"]
-layout_mode = 0
-offset_left = 46.0
-offset_top = 8.0
-offset_right = 149.0
-offset_bottom = 31.0
-text = "Биржа труда"
+[node name="MainVBox" type="VBoxContainer" parent="Window"]
+layout_mode = 2
+theme_override_constants/separation = 0
 
-[node name="CloseButton" type="Button" parent="Panel"]
-layout_mode = 0
-offset_left = 1131.0
-offset_top = 4.0
-offset_right = 1149.0
-offset_bottom = 35.0
-text = "X"
+[node name="HeaderPanel" type="Panel" parent="Window/MainVBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hi4j7")
 
-[node name="CandidatesContainer" type="HBoxContainer" parent="Panel"]
+[node name="TitleLabel" type="Label" parent="Window/MainVBox/HeaderPanel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -520.5
-offset_top = -257.5
-offset_right = 520.5
-offset_bottom = 257.5
+offset_left = -88.0
+offset_top = -11.5
+offset_right = 88.0
+offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
+text = "НАЙМ СОТРУДНИКОВ"
 
-[node name="Card1" type="PanelContainer" parent="Panel/CandidatesContainer"]
+[node name="CloseButton" type="Button" parent="Window/MainVBox/HeaderPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -51.0
+offset_top = -15.0
+offset_right = -34.0
+offset_bottom = 16.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 10
+size_flags_vertical = 8
+text = "x"
+
+[node name="CardsMargin" type="MarginContainer" parent="Window/MainVBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="CardsContainer" type="VBoxContainer" parent="Window/MainVBox/CardsMargin"]
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_constants/separation = 20
 
-[node name="VBox" type="VBoxContainer" parent="Panel/CandidatesContainer/Card1"]
+[node name="Card1" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1400, 0)
 layout_mode = 2
 
-[node name="NameLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+[node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1"]
 layout_mode = 2
-text = "Имя"
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
 
-[node name="RoleLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+[node name="CardVBox" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin"]
 layout_mode = 2
-text = "Роль"
+theme_override_constants/separation = 10
 
-[node name="SalaryLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+[node name="TopInfoHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
 layout_mode = 2
-text = "Зарплата"
 
-[node name="SkillLabel" type="Label" parent="Panel/CandidatesContainer/Card1/VBox"]
+[node name="LeftInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
 layout_mode = 2
-text = "Навык"
 
-[node name="HireButton" type="Button" parent="Panel/CandidatesContainer/Card1/VBox"]
+[node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
-size_flags_vertical = 10
+text = "Иван Иванов"
+
+[node name="RoleLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+text = "Junior Dev\","
+
+[node name="SkillLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+text = "Backend: 10"
+
+[node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="SalaryLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "3500"
+
+[node name="HireButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+layout_mode = 2
 text = "Нанять"
 
-[node name="Card2" type="PanelContainer" parent="Panel/CandidatesContainer"]
+[node name="Separator" type="HSeparator" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Panel/CandidatesContainer/Card2"]
+[node name="TraitsLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
+layout_mode = 2
+text = "Особенность: Пьет 5 литров кофе"
+
+[node name="Card2" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1400, 0)
 layout_mode = 2
 
-[node name="NameLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+[node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2"]
 layout_mode = 2
-text = "Имя"
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
 
-[node name="RoleLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+[node name="CardVBox" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin"]
 layout_mode = 2
-text = "Роль"
+theme_override_constants/separation = 10
 
-[node name="SalaryLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+[node name="TopInfoHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
 layout_mode = 2
-text = "Зарплата"
 
-[node name="SkillLabel" type="Label" parent="Panel/CandidatesContainer/Card2/VBox"]
+[node name="LeftInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
 layout_mode = 2
-text = "Навык"
 
-[node name="HireButton" type="Button" parent="Panel/CandidatesContainer/Card2/VBox"]
+[node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
-size_flags_vertical = 10
+text = "Иван Иванов"
+
+[node name="RoleLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+text = "Junior Dev\","
+
+[node name="SkillLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+text = "Backend: 10"
+
+[node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="SalaryLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "3500"
+
+[node name="HireButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+layout_mode = 2
 text = "Нанять"
 
-[node name="Card3" type="PanelContainer" parent="Panel/CandidatesContainer"]
+[node name="Separator" type="HSeparator" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
 layout_mode = 2
 
-[node name="VBox" type="VBoxContainer" parent="Panel/CandidatesContainer/Card3"]
+[node name="TraitsLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
+layout_mode = 2
+text = "Особенность: Пьет 5 литров кофе"
+
+[node name="Card3" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1400, 0)
 layout_mode = 2
 
-[node name="NameLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+[node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3"]
 layout_mode = 2
-text = "Имя"
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
 
-[node name="RoleLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+[node name="CardVBox" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin"]
 layout_mode = 2
-text = "Роль"
+theme_override_constants/separation = 10
 
-[node name="SalaryLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+[node name="TopInfoHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
 layout_mode = 2
-text = "Зарплата"
 
-[node name="SkillLabel" type="Label" parent="Panel/CandidatesContainer/Card3/VBox"]
+[node name="LeftInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
 layout_mode = 2
-text = "Навык"
 
-[node name="HireButton" type="Button" parent="Panel/CandidatesContainer/Card3/VBox"]
+[node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
-size_flags_vertical = 10
+text = "Иван Иванов"
+
+[node name="RoleLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+text = "Junior Dev\","
+
+[node name="SkillLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+text = "Backend: 10"
+
+[node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="SalaryLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "3500"
+
+[node name="HireButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+layout_mode = 2
 text = "Нанять"
+
+[node name="Separator" type="HSeparator" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
+layout_mode = 2
+
+[node name="TraitsLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
+layout_mode = 2
+text = "Особенность: Пьет 5 литров кофе"
