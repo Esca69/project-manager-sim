@@ -36,6 +36,11 @@ func setup(data: ProjectData, selector_node):
 	
 	for i in range(project.stages.size()):
 		var stage = project.stages[i]
+		
+		# --- ОБРАТНАЯ СОВМЕСТИМОСТЬ ---
+		# Если в stage есть старый "worker" — конвертируем в "workers"
+		_migrate_stage(stage)
+		
 		if not stage.has("plan_start"):
 			stage["plan_start"] = 0.0
 			stage["plan_duration"] = 0.0
@@ -63,6 +68,20 @@ func _ready():
 	cancel_btn.pressed.connect(_on_cancel_pressed)
 	start_btn.pressed.connect(_on_start_pressed)
 	close_window_btn.pressed.connect(func(): visible = false)
+
+# --- ОБРАТНАЯ СОВМЕСТИМОСТЬ ---
+# Конвертирует старый формат "worker" в новый "workers"
+func _migrate_stage(stage: Dictionary):
+	if stage.has("worker"):
+		if not stage.has("workers"):
+			stage["workers"] = []
+		# Если был назначен работник — переносим его в массив
+		if stage["worker"] != null and stage["worker"] not in stage["workers"]:
+			stage["workers"].append(stage["worker"])
+		stage.erase("worker")
+	# Гарантируем наличие ключа
+	if not stage.has("workers"):
+		stage["workers"] = []
 
 func update_buttons_visibility():
 	if project.state == ProjectData.State.IN_PROGRESS:
@@ -125,16 +144,18 @@ func _physics_process(delta):
 		if active_stage["actual_start"] == -1.0:
 			active_stage["actual_start"] = project.elapsed_days
 		
-		if is_working_hours and active_stage.worker:
-			var worker_node = get_employee_node(active_stage.worker)
-			
-			# --- ИСПРАВЛЕНИЕ: ПРОГРЕСС ИДЕТ ТОЛЬКО ЕСЛИ СОТРУДНИК СИДИТ ЗА СТОЛОМ ---
-			if worker_node and worker_node.current_state == worker_node.State.WORKING:
-				var skill = get_skill_for_stage(active_stage.type, active_stage.worker)
-				var efficiency = active_stage.worker.get_efficiency_multiplier()
+		# --- ИЗМЕНЕНИЕ: Суммируем прогресс от ВСЕХ работников ---
+		if is_working_hours and active_stage.workers.size() > 0:
+			for worker_data in active_stage.workers:
+				var worker_node = get_employee_node(worker_data)
 				
-				var speed_per_second = (float(skill) * efficiency) / 60.0
-				active_stage.progress += speed_per_second * delta
+				# Прогресс идет только если сотрудник сидит за столом
+				if worker_node and worker_node.current_state == worker_node.State.WORKING:
+					var skill = get_skill_for_stage(active_stage.type, worker_data)
+					var efficiency = worker_data.get_efficiency_multiplier()
+					
+					var speed_per_second = (float(skill) * efficiency) / 60.0
+					active_stage.progress += speed_per_second * delta
 			
 		if active_stage.progress >= active_stage.amount:
 			active_stage.progress = active_stage.amount
@@ -176,13 +197,9 @@ func _process(delta):
 				percent = float(stage.progress) / float(stage.amount)
 			track_node.update_progress(percent)
 	
-	# [ИСПРАВЛЕНИЕ 1] Позиция красной линии
+	# Позиция красной линии
 	if current_time_line:
-		# Мы УБРАЛИ offset_x, потому что TimelineHeader уже выровнен с графиком (судя по цифрам)
-		# ЕслиElapsed = 0, то линия будет на 0 (начало графика).
 		current_time_line.position.x = (project.elapsed_days * pixels_per_day)
-		
-		# Растягиваем
 		current_time_line.size.y = max(tracks_container.size.y + 50, 500) 
 		current_time_line.visible = true
 		
@@ -206,11 +223,10 @@ func freeze_plan():
 		stage["plan_start"] = current_time_offset_days
 		
 		var duration_days = 1.0
-		if stage.worker:
-			var skill = get_skill_for_stage(stage.type, stage.worker)
-			if skill < 1: skill = 1
-			
-			var total_work_hours = float(stage.amount) / float(skill)
+		# --- ИЗМЕНЕНИЕ: Суммируем скилл всех работников ---
+		var total_skill = get_total_skill_for_stage(stage)
+		if total_skill > 0:
+			var total_work_hours = float(stage.amount) / float(total_skill)
 			duration_days = total_work_hours / 9.0 
 		
 		stage["plan_duration"] = duration_days
@@ -225,12 +241,7 @@ func draw_dynamic_header(px_per_day, horizon_days):
 	
 	for i in range(0, int(horizon_days) + 1, step):
 		var lbl = Label.new()
-		
-		# [ИСПРАВЛЕНИЕ 2] Визуально начинаем с 1-го дня (i + 1)
-		# [ИСПРАВЛЕНИЕ 2] Визуально начинаем с 1-го дня (i + 1)
-		# Компьютер считает от 0, но люди любят начинать с 1
 		lbl.text = str(i + 1)
-		
 		lbl.modulate = Color(0, 0, 0, 0.5)
 		lbl.position = Vector2(i * px_per_day + 2, 0)
 		timeline_header.add_child(lbl)
@@ -258,10 +269,11 @@ func recalculate_schedule_preview():
 		var stage = project.stages[i]
 		var track_node = tracks_container.get_child(i)
 		
-		if stage.worker:
-			var skill = get_skill_for_stage(stage.type, stage.worker)
-			if skill < 1: skill = 1
-			var duration_days = (float(stage.amount) / float(skill)) / 9.0
+		# --- ИЗМЕНЕНИЕ: Проверяем массив workers ---
+		if stage.workers.size() > 0:
+			var total_skill = get_total_skill_for_stage(stage)
+			if total_skill < 1: total_skill = 1
+			var duration_days = (float(stage.amount) / float(total_skill)) / 9.0
 			
 			var color = get_color_for_stage(stage.type)
 			track_node.update_bar_preview(current_offset * preview_px_per_day, duration_days * preview_px_per_day, color)
@@ -271,6 +283,13 @@ func recalculate_schedule_preview():
 			track_node.update_bar_preview(0, 0, Color.WHITE)
 			
 	start_btn.disabled = not all_assigned
+
+# --- НОВАЯ ФУНКЦИЯ: Суммарный скилл всех workers на этапе ---
+func get_total_skill_for_stage(stage: Dictionary) -> int:
+	var total = 0
+	for w in stage.workers:
+		total += get_skill_for_stage(stage.type, w)
+	return total
 
 func get_skill_for_stage(type, worker):
 	match type:
@@ -286,14 +305,26 @@ func get_color_for_stage(type):
 		"QA": return Color("98FB98") 
 	return Color.GRAY
 	
+# --- ИЗМЕНЕНИЕ: Разрешаем назначение и во время IN_PROGRESS ---
 func _on_track_assignment_requested(index):
-	if project.state == ProjectData.State.IN_PROGRESS: return
 	current_selecting_track_index = index
 	selector_ref.open_list()
 
+# --- ИЗМЕНЕНИЕ: Добавляем (append), а не заменяем ---
 func _on_employee_chosen(emp_data):
-	if current_selecting_track_index != -1:
-		project.stages[current_selecting_track_index].worker = emp_data
-		var track_node = tracks_container.get_child(current_selecting_track_index)
-		track_node.update_button_visuals()
-		recalculate_schedule_preview()
+	if current_selecting_track_index == -1: return
+	
+	var stage = project.stages[current_selecting_track_index]
+	
+	# Проверка дублей: не назначать одного и того же дважды
+	for existing_worker in stage.workers:
+		if existing_worker == emp_data:
+			print("⚠️ Этот сотрудник уже назначен на этот этап!")
+			return
+	
+	stage.workers.append(emp_data)
+	print("✅ Назначен: ", emp_data.employee_name, " на этап ", stage.type, " (всего: ", stage.workers.size(), ")")
+	
+	var track_node = tracks_container.get_child(current_selecting_track_index)
+	track_node.update_button_visuals()
+	recalculate_schedule_preview()

@@ -3,41 +3,120 @@ extends Control
 signal assignment_requested(track_index)
 
 @onready var role_label = $Layout/RoleLabel
-@onready var assign_btn = $Layout/AssignWrapper/AssignButton
+@onready var assign_wrapper = $Layout/AssignWrapper
+@onready var original_btn = $Layout/AssignWrapper/AssignButton
 @onready var progress_label = $Layout/ProgressLabel
 @onready var visual_bar = $Layout/GanttArea/VisualBar
 @onready var progress_bar = $Layout/GanttArea/ProgressBar
-# Ссылка на зону Ганта (нужна для красной линии)
 @onready var gantt_area = $Layout/GanttArea
 
-const BAR_HEIGHT = 24.0 
+const BAR_HEIGHT = 24.0
+const BUTTON_HEIGHT = 30.0
+const BASE_TRACK_HEIGHT = 60.0
 
 var stage_index: int = -1
 var stage_data: Dictionary = {}
+
+# Сохранённый стиль оригинальной кнопки
+var _btn_style: StyleBox = null
+var _btn_font_color: Color = Color.WHITE
+var _btn_min_size: Vector2 = Vector2(180, 40)
+
+# Контейнер для динамических кнопок
+var _buttons_container: VBoxContainer = null
 
 func setup(index: int, data: Dictionary):
 	stage_index = index
 	stage_data = data
 	role_label.text = data.type
 	progress_label.text = "%d / %d" % [int(data.progress), int(data.amount)]
-	update_button_visuals()
+	
+	_capture_original_style()
+	rebuild_worker_buttons()
 	
 	# Скрываем до отрисовки
 	visual_bar.visible = false
 	progress_bar.visible = false
 
+func _ready():
+	pass
+
+# --- Запоминаем стиль оригинальной кнопки ---
+func _capture_original_style():
+	if original_btn:
+		# Копируем стиль
+		var style = original_btn.get_theme_stylebox("normal")
+		if style:
+			_btn_style = style.duplicate()
+		
+		# Копируем цвет шрифта
+		_btn_font_color = original_btn.get_theme_color("font_color")
+		
+		# Копируем размер
+		_btn_min_size = original_btn.custom_minimum_size
+		
+		# Прячем оригинальную кнопку навсегда
+		original_btn.visible = false
+
+# --- Создаём стилизованную кнопку (копия стиля оригинала) ---
+func _create_styled_button(text: String) -> Button:
+	var btn = Button.new()
+	btn.text = text
+	btn.custom_minimum_size = _btn_min_size
+	
+	if _btn_style:
+		btn.add_theme_stylebox_override("normal", _btn_style.duplicate())
+	
+	btn.add_theme_color_override("font_color", _btn_font_color)
+	
+	return btn
+
+# --- ДИНАМИЧЕСКИЕ КНОПКИ ---
+func rebuild_worker_buttons():
+	# 1. Удаляем старый контейнер (если был)
+	if _buttons_container:
+		assign_wrapper.remove_child(_buttons_container)
+		_buttons_container.queue_free()
+		_buttons_container = null
+	
+	# 2. Создаём новый VBoxContainer внутри AssignWrapper
+	_buttons_container = VBoxContainer.new()
+	_buttons_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	_buttons_container.add_theme_constant_override("separation", 8)
+	assign_wrapper.add_child(_buttons_container)
+	
+	var workers = stage_data.get("workers", [])
+	
+	# 3. Для каждого назначенного работника — кнопка с именем
+	for i in range(workers.size()):
+		var worker = workers[i]
+		var btn = _create_styled_button("👤 " + worker.employee_name)
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.modulate = Color(0.85, 0.92, 1.0)
+		_buttons_container.add_child(btn)
+	
+	# 4. Кнопка "+ Назначить" (всегда внизу)
+	var add_btn = _create_styled_button("+ Назначить")
+	add_btn.modulate = Color.WHITE
+	add_btn.pressed.connect(func(): emit_signal("assignment_requested", stage_index))
+	_buttons_container.add_child(add_btn)
+	
+	# 5. Пересчитываем высоту трека
+	_update_track_height(workers.size())
+
+func _update_track_height(worker_count: int):
+	var total_buttons = worker_count + 1
+	var needed_height = max(BASE_TRACK_HEIGHT, total_buttons * (BUTTON_HEIGHT + 10) + 20)
+	custom_minimum_size.y = needed_height
+
+# Совместимость: вызывается из project_window после назначения
 func update_button_visuals():
-	if stage_data.worker:
-		assign_btn.text = stage_data.worker.employee_name
-		assign_btn.modulate = Color(0.8, 0.9, 1.0) 
-	else:
-		assign_btn.text = "+ Назначить"
-		assign_btn.modulate = Color.WHITE
+	rebuild_worker_buttons()
 
 # --- ГЛАВНАЯ ФУНКЦИЯ ОТРИСОВКИ (ДИНАМИКА) ---
-# Используется, когда проект ЗАПУЩЕН
 func update_visuals_dynamic(px_per_day: float, current_project_time: float, color: Color):
-	if not stage_data.worker:
+	var workers = stage_data.get("workers", [])
+	if workers.size() == 0:
 		visual_bar.visible = false
 		progress_bar.visible = false
 		return
@@ -52,14 +131,12 @@ func update_visuals_dynamic(px_per_day: float, current_project_time: float, colo
 	visual_bar.size.y = BAR_HEIGHT
 	visual_bar.position.y = (size.y - BAR_HEIGHT) / 2.0
 	
-	# --- ПРИМЕНЯЕМ ЦВЕТ ---
 	var style = visual_bar.get_theme_stylebox("panel")
 	if style:
 		style = style.duplicate()
-		style.bg_color = color # Красим в синий/оранжевый/зеленый
+		style.bg_color = color
 		visual_bar.add_theme_stylebox_override("panel", style)
 	
-	# Делаем полупрозрачным
 	visual_bar.modulate.a = 0.4
 	
 	# 2. РИСУЕМ ФАКТ (ЯРКИЙ)
@@ -69,7 +146,6 @@ func update_visuals_dynamic(px_per_day: float, current_project_time: float, colo
 	if act_start != -1.0:
 		progress_bar.visible = true
 		
-		# Факт рисуем чуть уже
 		var fact_height = BAR_HEIGHT * 0.6
 		progress_bar.size.y = fact_height
 		progress_bar.position.y = (size.y - fact_height) / 2.0
@@ -84,16 +160,10 @@ func update_visuals_dynamic(px_per_day: float, current_project_time: float, colo
 			
 		progress_bar.size.x = duration * px_per_day
 		
-		# Важно: Сбрасываем прозрачность для факта, чтобы он был ярким
-		# Но так как progress_bar не дочерний к visual_bar, он и так непрозрачный.
-		# Можно покрасить его в тот же цвет, но ярче, или оставить зеленым (progress style).
-		# Если хочешь, чтобы факт был того же цвета (например синий), добавь такой же код со стилем сюда.
-		# Пока оставим его зеленым (как настроено в редакторе).
-		
 	else:
 		progress_bar.visible = false
+
 # --- ФУНКЦИЯ ПРЕВЬЮ (ДРАФТ) ---
-# Используется, когда проект ЕЩЕ НЕ ЗАПУЩЕН (она у тебя потерялась)
 func update_bar_preview(start_px, width_px, color):
 	visual_bar.visible = true
 	progress_bar.visible = false
@@ -118,9 +188,5 @@ func update_progress(percent: float):
 	else:
 		progress_label.modulate = Color("d93636")
 
-# Хелпер для красной линии
 func get_gantt_offset() -> float:
 	return gantt_area.position.x
-
-func _ready():
-	assign_btn.pressed.connect(func(): emit_signal("assignment_requested", stage_index))

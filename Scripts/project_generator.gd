@@ -21,21 +21,21 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	var dev_points = randi_range(4000, 8000)  
 	var qa_points = randi_range(2000, 4000)   
 	
-	# 2. Заполняем массив этапов (СРАЗУ С ПОЛНОЙ СТРУКТУРОЙ)
-	# Это предотвратит ошибки "Invalid index" в будущем
+	# 2. Заполняем массив этапов
+	# ИЗМЕНЕНИЕ: "worker" заменён на "workers" (массив)
 	new_proj.stages = [
 		{ 
-			"type": "BA",  "amount": ba_points,  "progress": 0.0, "worker": null,
+			"type": "BA",  "amount": ba_points,  "progress": 0.0, "workers": [],
 			"plan_start": 0.0, "plan_duration": 0.0, 
 			"actual_start": -1.0, "actual_end": -1.0, "is_completed": false
 		},
 		{ 
-			"type": "DEV", "amount": dev_points, "progress": 0.0, "worker": null,
+			"type": "DEV", "amount": dev_points, "progress": 0.0, "workers": [],
 			"plan_start": 0.0, "plan_duration": 0.0, 
 			"actual_start": -1.0, "actual_end": -1.0, "is_completed": false
 		},
 		{ 
-			"type": "QA",  "amount": qa_points,  "progress": 0.0, "worker": null,
+			"type": "QA",  "amount": qa_points,  "progress": 0.0, "workers": [],
 			"plan_start": 0.0, "plan_duration": 0.0, 
 			"actual_start": -1.0, "actual_end": -1.0, "is_completed": false
 		}
