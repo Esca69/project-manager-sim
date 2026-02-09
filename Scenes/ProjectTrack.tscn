@@ -67,7 +67,7 @@ horizontal_alignment = 1
 layout_mode = 2
 
 [node name="AssignWrapper" type="CenterContainer" parent="Layout"]
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
 
 [node name="AssignButton" type="Button" parent="Layout/AssignWrapper"]

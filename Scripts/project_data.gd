@@ -6,11 +6,11 @@ class_name ProjectData
 # --- ВРЕМЯ ---
 @export var created_at_day: int = 1
 
-# Софт-дедлайн (желательный срок — ближе)
-@export var soft_deadline_day: int = 0
-
-# Хард-дедлайн (крайний срок — дальше)
+# Дедлайн (��омер дня, к которому надо успеть)
 @export var deadline_day: int = 0
+
+# Софт-дедлайн (номер дня, к которому желательно успеть)
+@export var soft_deadline_day: int = 0
 
 # [ВАЖНО] Точное время старта. Добавил @export, чтобы ты мог видеть его в редакторе (Remote)
 @export var start_global_time: float = 0.0

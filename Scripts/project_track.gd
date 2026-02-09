@@ -1,6 +1,7 @@
 extends Control
 
 signal assignment_requested(track_index)
+signal worker_removed(track_index, worker_index)
 
 @onready var role_label = $Layout/RoleLabel
 @onready var assign_wrapper = $Layout/AssignWrapper
@@ -44,15 +45,11 @@ func _ready():
 # --- Запоминаем стиль оригинальной кнопки ---
 func _capture_original_style():
 	if original_btn:
-		# Копируем стиль
 		var style = original_btn.get_theme_stylebox("normal")
 		if style:
 			_btn_style = style.duplicate()
 		
-		# Копируем цвет шрифта
 		_btn_font_color = original_btn.get_theme_color("font_color")
-		
-		# Копируем размер
 		_btn_min_size = original_btn.custom_minimum_size
 		
 		# Прячем оригинальную кнопку навсегда
@@ -68,6 +65,31 @@ func _create_styled_button(text: String) -> Button:
 		btn.add_theme_stylebox_override("normal", _btn_style.duplicate())
 	
 	btn.add_theme_color_override("font_color", _btn_font_color)
+	
+	return btn
+
+# --- Создаём кнопку удаления "−" ---
+func _create_remove_button() -> Button:
+	var btn = Button.new()
+	btn.text = "−"
+	btn.custom_minimum_size = Vector2(30, 30)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 1)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
+	
+	btn.add_theme_stylebox_override("normal", style)
+	btn.add_theme_stylebox_override("hover", style.duplicate())
+	btn.add_theme_stylebox_override("pressed", style.duplicate())
+	btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	
 	return btn
 
@@ -87,13 +109,30 @@ func rebuild_worker_buttons():
 	
 	var workers = stage_data.get("workers", [])
 	
-	# 3. Для каждого назначенного работника — кнопка с именем
+	# 3. Для каждого назначенного работника — строка: [кнопка "−"] + [Label с именем]
 	for i in range(workers.size()):
 		var worker = workers[i]
-		var btn = _create_styled_button("👤 " + worker.employee_name)
-		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.modulate = Color(0.85, 0.92, 1.0)
-		_buttons_container.add_child(btn)
+		
+		# Горизонтальный контейнер
+		var row = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		
+		# Кнопка удаления "−"
+		var remove_btn = _create_remove_button()
+		var worker_idx = i
+		remove_btn.pressed.connect(func(): emit_signal("worker_removed", stage_index, worker_idx))
+		row.add_child(remove_btn)
+		
+		# Label с именем (просто текст, не кнопка)
+		var name_label = Label.new()
+		name_label.text = "👤 " + worker.employee_name
+		name_label.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		name_label.custom_minimum_size = Vector2(140, 30)
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		row.add_child(name_label)
+		
+		_buttons_container.add_child(row)
 	
 	# 4. Кнопка "+ Назначить" (всегда внизу)
 	var add_btn = _create_styled_button("+ Назначить")

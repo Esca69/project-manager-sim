@@ -20,6 +20,8 @@ var current_selecting_track_index: int = -1
 # [НАСТРОЙКИ ВИЗУАЛА]
 const GANTT_VIEW_WIDTH = 900.0 
 var current_time_line: ColorRect
+var soft_deadline_line: ColorRect
+var hard_deadline_line: ColorRect
 
 func setup(data: ProjectData, selector_node):
 	project = data
@@ -38,7 +40,6 @@ func setup(data: ProjectData, selector_node):
 		var stage = project.stages[i]
 		
 		# --- ОБРАТНАЯ СОВМЕСТИМОСТЬ ---
-		# Если в stage есть старый "worker" — конвертируем в "workers"
 		_migrate_stage(stage)
 		
 		if not stage.has("plan_start"):
@@ -52,6 +53,7 @@ func setup(data: ProjectData, selector_node):
 		tracks_container.add_child(new_track)
 		new_track.setup(i, stage)
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
+		new_track.worker_removed.connect(_on_worker_removed)
 	
 	if not selector_ref.employee_selected.is_connected(_on_employee_chosen):
 		selector_ref.employee_selected.connect(_on_employee_chosen)
@@ -70,16 +72,13 @@ func _ready():
 	close_window_btn.pressed.connect(func(): visible = false)
 
 # --- ОБРАТНАЯ СОВМЕСТИМОСТЬ ---
-# Конвертирует старый формат "worker" в новый "workers"
 func _migrate_stage(stage: Dictionary):
 	if stage.has("worker"):
 		if not stage.has("workers"):
 			stage["workers"] = []
-		# Если был назначен работник — переносим его в массив
 		if stage["worker"] != null and stage["worker"] not in stage["workers"]:
 			stage["workers"].append(stage["worker"])
 		stage.erase("worker")
-	# Гарантируем наличие ключа
 	if not stage.has("workers"):
 		stage["workers"] = []
 
@@ -91,7 +90,7 @@ func update_buttons_visibility():
 		start_btn.visible = true
 		cancel_btn.visible = true
 
-# --- ХЕЛПЕР: Получаем точное время ---
+# --- ХЕЛ��ЕР: Получаем точное время ---
 func get_current_global_time() -> float:
 	var day_part = float(GameTime.hour) / 24.0
 	var min_part = float(GameTime.minute) / (24.0 * 60.0)
@@ -100,7 +99,6 @@ func get_current_global_time() -> float:
 func _on_start_pressed():
 	freeze_plan()
 	
-	# Записываем старт
 	var now = get_current_global_time()
 	project.start_global_time = now
 	
@@ -119,7 +117,6 @@ func _physics_process(delta):
 	
 	var now = get_current_global_time()
 	
-	# САМОКОРРЕКЦИЯ (на всякий случай)
 	if project.start_global_time < 0.01:
 		project.start_global_time = now
 		print("!!! САМОКОРРЕКЦИЯ ВРЕМЕНИ !!!")
@@ -144,12 +141,10 @@ func _physics_process(delta):
 		if active_stage["actual_start"] == -1.0:
 			active_stage["actual_start"] = project.elapsed_days
 		
-		# --- ИЗМЕНЕНИЕ: Суммируем прогресс от ВСЕХ работников ---
 		if is_working_hours and active_stage.workers.size() > 0:
 			for worker_data in active_stage.workers:
 				var worker_node = get_employee_node(worker_data)
 				
-				# Прогресс идет только если сотрудник сидит за столом
 				if worker_node and worker_node.current_state == worker_node.State.WORKING:
 					var skill = get_skill_for_stage(active_stage.type, worker_data)
 					var efficiency = worker_data.get_efficiency_multiplier()
@@ -197,11 +192,28 @@ func _process(delta):
 				percent = float(stage.progress) / float(stage.amount)
 			track_node.update_progress(percent)
 	
-	# Позиция красной линии
+	# --- Высота линий ---
+	var line_height = max(tracks_container.size.y + 50, 500)
+	
+	# --- Синяя линия: текущее время ---
 	if current_time_line:
-		current_time_line.position.x = (project.elapsed_days * pixels_per_day)
-		current_time_line.size.y = max(tracks_container.size.y + 50, 500) 
+		current_time_line.position.x = project.elapsed_days * pixels_per_day
+		current_time_line.size.y = line_height
 		current_time_line.visible = true
+	
+	# --- Оранжевая линия: софт-дедлайн ---
+	if soft_deadline_line and project.soft_deadline_day > 0:
+		var soft_offset = float(project.soft_deadline_day - project.created_at_day)
+		soft_deadline_line.position.x = soft_offset * pixels_per_day
+		soft_deadline_line.size.y = line_height
+		soft_deadline_line.visible = true
+	
+	# --- Красная линия: хард-дедлайн ---
+	if hard_deadline_line and project.deadline_day > 0:
+		var hard_offset = float(project.deadline_day - project.created_at_day)
+		hard_deadline_line.position.x = hard_offset * pixels_per_day
+		hard_deadline_line.size.y = line_height
+		hard_deadline_line.visible = true
 		
 	# Хедер
 	draw_dynamic_header(pixels_per_day, horizon_days)
@@ -211,11 +223,29 @@ func _process(delta):
 func create_time_line_if_needed():
 	if not current_time_line:
 		current_time_line = ColorRect.new()
-		current_time_line.color = Color(1, 0, 0, 0.8)
-		current_time_line.size = Vector2(2, 500) 
+		current_time_line.color = Color(0, 0.4, 1, 0.8)
+		current_time_line.size = Vector2(2, 500)
 		current_time_line.z_index = 100
 		current_time_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		timeline_header.add_child(current_time_line)
+	
+	if not soft_deadline_line:
+		soft_deadline_line = ColorRect.new()
+		soft_deadline_line.color = Color(1, 0.65, 0, 0.8)
+		soft_deadline_line.size = Vector2(2, 500)
+		soft_deadline_line.z_index = 99
+		soft_deadline_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		soft_deadline_line.visible = false
+		timeline_header.add_child(soft_deadline_line)
+	
+	if not hard_deadline_line:
+		hard_deadline_line = ColorRect.new()
+		hard_deadline_line.color = Color(1, 0, 0, 0.8)
+		hard_deadline_line.size = Vector2(2, 500)
+		hard_deadline_line.z_index = 99
+		hard_deadline_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hard_deadline_line.visible = false
+		timeline_header.add_child(hard_deadline_line)
 
 func freeze_plan():
 	var current_time_offset_days = 0.0
@@ -223,7 +253,6 @@ func freeze_plan():
 		stage["plan_start"] = current_time_offset_days
 		
 		var duration_days = 1.0
-		# --- ИЗМЕНЕНИЕ: Суммируем скилл всех работников ---
 		var total_skill = get_total_skill_for_stage(stage)
 		if total_skill > 0:
 			var total_work_hours = float(stage.amount) / float(total_skill)
@@ -235,6 +264,8 @@ func freeze_plan():
 func draw_dynamic_header(px_per_day, horizon_days):
 	for child in timeline_header.get_children():
 		if child == current_time_line: continue
+		if child == soft_deadline_line: continue
+		if child == hard_deadline_line: continue
 		child.queue_free()
 	
 	var step = 1
@@ -269,7 +300,6 @@ func recalculate_schedule_preview():
 		var stage = project.stages[i]
 		var track_node = tracks_container.get_child(i)
 		
-		# --- ИЗМЕНЕНИЕ: Проверяем массив workers ---
 		if stage.workers.size() > 0:
 			var total_skill = get_total_skill_for_stage(stage)
 			if total_skill < 1: total_skill = 1
@@ -284,7 +314,6 @@ func recalculate_schedule_preview():
 			
 	start_btn.disabled = not all_assigned
 
-# --- НОВАЯ ФУНКЦИЯ: Суммарный скилл всех workers на этапе ---
 func get_total_skill_for_stage(stage: Dictionary) -> int:
 	var total = 0
 	for w in stage.workers:
@@ -304,19 +333,19 @@ func get_color_for_stage(type):
 		"DEV": return Color("6495ED") 
 		"QA": return Color("98FB98") 
 	return Color.GRAY
-	
-# --- ИЗМЕНЕНИЕ: Разрешаем назначение и во время IN_PROGRESS ---
+
+# --- Передаём ��ип этапа в selector ---
 func _on_track_assignment_requested(index):
 	current_selecting_track_index = index
-	selector_ref.open_list()
+	var stage_type = project.stages[index].type
+	selector_ref.open_list(stage_type)
 
-# --- ИЗМЕНЕНИЕ: Добавляем (append), а не заменяем ---
+# --- Добавляем (append), а не заменяем ---
 func _on_employee_chosen(emp_data):
 	if current_selecting_track_index == -1: return
 	
 	var stage = project.stages[current_selecting_track_index]
 	
-	# Проверка дублей: не назначать одного и того же дважды
 	for existing_worker in stage.workers:
 		if existing_worker == emp_data:
 			print("⚠️ Этот сотрудник уже назначен на этот этап!")
@@ -326,5 +355,21 @@ func _on_employee_chosen(emp_data):
 	print("✅ Назначен: ", emp_data.employee_name, " на этап ", stage.type, " (всего: ", stage.workers.size(), ")")
 	
 	var track_node = tracks_container.get_child(current_selecting_track_index)
+	track_node.update_button_visuals()
+	recalculate_schedule_preview()
+
+# --- НОВОЕ: Удаление сотрудника с этапа ---
+func _on_worker_removed(stage_index: int, worker_index: int):
+	var stage = project.stages[stage_index]
+	
+	if worker_index < 0 or worker_index >= stage.workers.size():
+		return
+	
+	var removed = stage.workers[worker_index]
+	stage.workers.remove_at(worker_index)
+	print("❌ Снят: ", removed.employee_name, " с этапа ", stage.type, " (осталось: ", stage.workers.size(), ")")
+	
+	# Перестраиваем кнопки
+	var track_node = tracks_container.get_child(stage_index)
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()

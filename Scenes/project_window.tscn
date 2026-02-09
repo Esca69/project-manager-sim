@@ -166,7 +166,7 @@ horizontal_alignment = 1
 layout_mode = 2
 
 [node name="Label2" type="Label" parent="MainLayout/ContentWrapper/Body/TableHeader"]
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(260, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Исполнитель"
