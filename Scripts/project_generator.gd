@@ -11,7 +11,6 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	var new_proj = ProjectData.new()
 	new_proj.title = TITLES.pick_random()
 	
-	# Теперь это работает, так как мы вернули переменную в ProjectData
 	new_proj.created_at_day = current_game_day 
 	
 	new_proj.state = new_proj.State.DRAFTING
@@ -22,7 +21,6 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	var qa_points = randi_range(2000, 4000)   
 	
 	# 2. Заполняем массив этапов
-	# ИЗМЕНЕНИЕ: "worker" заменён на "workers" (массив)
 	new_proj.stages = [
 		{ 
 			"type": "BA",  "amount": ba_points,  "progress": 0.0, "workers": [],
@@ -45,7 +43,7 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	var total_points = ba_points + dev_points + qa_points
 	new_proj.budget = int(total_points * 1.5)
 	
-	# 4. Расчет Дедлайна
+	# 4. Расчет Хард-дедлайна
 	var hours_needed_ideal = total_points / MARKET_SPEED_PER_HOUR
 	var days_needed_ideal = hours_needed_ideal / WORK_HOURS_PER_DAY
 	
@@ -53,5 +51,10 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	var days_given = ceil(days_needed_ideal * buffer_coef) + 1
 	
 	new_proj.deadline_day = current_game_day + int(days_given)
+	
+	# 5. Расчет Софт-дедлайна (~65-75% от хард-дедлайна)
+	var soft_coef = randf_range(0.65, 0.75)
+	var soft_days = ceil(days_given * soft_coef)
+	new_proj.soft_deadline_day = current_game_day + int(soft_days)
 	
 	return new_proj

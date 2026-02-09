@@ -72,13 +72,13 @@ func _set_zoom(delta):
 func interact():
 	var bodies = interaction_zone.get_overlapping_bodies()
 	for body in bodies:
+		# NPC — показываем карточку сотрудника
 		if body.is_in_group("npc") and body.data:
-			# "Эй, дерево игры! Найди всех, кто в группе 'ui', 
-			# и вызови у них функцию 'show_employee_card' с данными body.data"
 			get_tree().call_group("ui", "show_employee_card", body.data)
-			
 			return
-	# Если это стол (НОВОЕ)
-		if body.is_in_group("desk"):
-			body.interact() # Вызываем функцию стола
+		
+		# Стол или другой интерактивный объект — вызываем interact()
+		# НО только если у объекта ЕСТЬ метод interact (защита от вылета)
+		if body.is_in_group("desk") and body.has_method("interact"):
+			body.interact()
 			return

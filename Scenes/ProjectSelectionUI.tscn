@@ -1,6 +1,55 @@
-[gd_scene load_steps=2 format=3 uid="uid://dum7oe0xx61nt"]
+[gd_scene load_steps=7 format=3 uid="uid://dum7oe0xx61nt"]
 
 [ext_resource type="Script" uid="uid://dta5tmecdace5" path="res://Scripts/project_selection_ui.gd" id="1_3ww1b"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ghi2m"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hi4j7"]
+bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_alc7t"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yqkdt"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jw1sn"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
 
 [node name="ProjectSelectionUi" type="Control"]
 layout_mode = 3
@@ -13,43 +62,278 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_3ww1b")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Window" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -573.5
-offset_top = -322.5
-offset_right = 573.5
-offset_bottom = 322.5
+offset_left = -750.0
+offset_top = -450.0
+offset_right = 750.0
+offset_bottom = 450.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ghi2m")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+[node name="MainVBox" type="VBoxContainer" parent="Window"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HeaderPanel" type="Panel" parent="Window/MainVBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hi4j7")
+
+[node name="TitleLabel" type="Label" parent="Window/MainVBox/HeaderPanel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -434.0
-offset_top = -254.0
-offset_right = 453.0
-offset_bottom = 239.0
+offset_left = -88.0
+offset_top = -11.5
+offset_right = 88.0
+offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
+text = "Выбор проекта"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Window/MainVBox/HeaderPanel"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -51.0
+offset_top = -15.0
+offset_right = -24.0
+offset_bottom = 16.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 10
+size_flags_vertical = 8
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_alc7t")
+text = "X"
+
+[node name="CardsMargin" type="MarginContainer" parent="Window/MainVBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="CardsContainer" type="VBoxContainer" parent="Window/MainVBox/CardsMargin"]
+layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/separation = 20
 
-[node name="Card1" type="Button" parent="Panel/HBoxContainer"]
-custom_minimum_size = Vector2(200, 300)
+[node name="Card1" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1400, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqkdt")
+
+[node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="CardVBox" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TopInfoHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
 layout_mode = 2
 
-[node name="Card2" type="Button" parent="Panel/HBoxContainer"]
-custom_minimum_size = Vector2(200, 300)
+[node name="LeftInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
 layout_mode = 2
 
-[node name="Card3" type="Button" parent="Panel/HBoxContainer"]
-custom_minimum_size = Vector2(200, 300)
+[node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Название проекта"
+
+[node name="WorkLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Необходимые работы:    BA 1797    DEV 3182    QA 1288"
+
+[node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/RightInfo"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+theme_override_font_sizes/font_size = 20
+text = "Бюджет $11860"
+
+[node name="SelectButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/RightInfo"]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_jw1sn")
+text = "Выбрать"
+
+[node name="DeadlinesHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="SoftDeadlineLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/DeadlinesHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Софт-дедлайн: 30 дней"
+
+[node name="HardDeadlineLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/DeadlinesHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Хард-дедлайн: 45 дней"
+
+[node name="Card2" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1400, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqkdt")
+
+[node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="CardVBox" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TopInfoHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
+layout_mode = 2
+
+[node name="LeftInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Название проекта"
+
+[node name="WorkLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Необходимые работы:    BA 1797    DEV 3182    QA 1288"
+
+[node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/RightInfo"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+theme_override_font_sizes/font_size = 20
+text = "Бюджет $11860"
+
+[node name="SelectButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/RightInfo"]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_jw1sn")
+text = "Выбрать"
+
+[node name="DeadlinesHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="SoftDeadlineLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/DeadlinesHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Софт-дедлайн: 30 дней"
+
+[node name="HardDeadlineLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/DeadlinesHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Хард-дедлайн: 45 дней"
+
+[node name="Card3" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1400, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqkdt")
+
+[node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="CardVBox" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TopInfoHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
+layout_mode = 2
+
+[node name="LeftInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Название проекта"
+
+[node name="WorkLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+text = "Необходимые работы:    BA 1797    DEV 3182    QA 1288"
+
+[node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightInfo" type="VBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
+layout_mode = 2
+
+[node name="BudgetLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/RightInfo"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+theme_override_font_sizes/font_size = 20
+text = "Бюджет $11860"
+
+[node name="SelectButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/RightInfo"]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_jw1sn")
+text = "Выбрать"
+
+[node name="DeadlinesHBox" type="HBoxContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="SoftDeadlineLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/DeadlinesHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Софт-дедлайн: 30 дней"
+
+[node name="HardDeadlineLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/DeadlinesHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+text = "Хард-дедлайн: 45 дней"
