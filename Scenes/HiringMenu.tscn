@@ -1,9 +1,55 @@
-[gd_scene load_steps=3 format=3 uid="uid://cm0p2pu0821ay"]
+[gd_scene load_steps=7 format=3 uid="uid://cm0p2pu0821ay"]
 
 [ext_resource type="Script" uid="uid://bm5h2j3shms13" path="res://Scripts/hiring_menu.gd" id="1_hi4j7"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ghi2m"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hi4j7"]
 bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_alc7t"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yqkdt"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jw1sn"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
 
 [node name="HiringMenu" type="Control"]
 layout_mode = 3
@@ -29,6 +75,7 @@ offset_right = 750.0
 offset_bottom = 450.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ghi2m")
 
 [node name="MainVBox" type="VBoxContainer" parent="Window"]
 layout_mode = 2
@@ -53,7 +100,8 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
-text = "НАЙМ СОТРУДНИКОВ"
+text = "Найм сотрудников"
+horizontal_alignment = 1
 
 [node name="CloseButton" type="Button" parent="Window/MainVBox/HeaderPanel"]
 layout_mode = 1
@@ -64,13 +112,15 @@ anchor_right = 1.0
 anchor_bottom = 0.5
 offset_left = -51.0
 offset_top = -15.0
-offset_right = -34.0
+offset_right = -24.0
 offset_bottom = 16.0
 grow_horizontal = 0
 grow_vertical = 2
 size_flags_horizontal = 10
 size_flags_vertical = 8
-text = "x"
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_alc7t")
+text = "X"
 
 [node name="CardsMargin" type="MarginContainer" parent="Window/MainVBox"]
 layout_mode = 2
@@ -88,6 +138,7 @@ theme_override_constants/separation = 20
 unique_name_in_owner = true
 custom_minimum_size = Vector2(1400, 0)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqkdt")
 
 [node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1"]
 layout_mode = 2
@@ -108,14 +159,17 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Иван Иванов"
 
 [node name="RoleLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Junior Dev\","
 
 [node name="SkillLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Backend: 10"
 
 [node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox"]
@@ -128,10 +182,15 @@ layout_mode = 2
 [node name="SalaryLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+theme_override_font_sizes/font_size = 25
 text = "3500"
 
 [node name="HireButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_jw1sn")
 text = "Нанять"
 
 [node name="Separator" type="HSeparator" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
@@ -139,12 +198,14 @@ layout_mode = 2
 
 [node name="TraitsLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card1/CardInnerMargin/CardVBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
 text = "Особенность: Пьет 5 литров кофе"
 
 [node name="Card2" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(1400, 0)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqkdt")
 
 [node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2"]
 layout_mode = 2
@@ -165,14 +226,17 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Иван Иванов"
 
 [node name="RoleLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Junior Dev\","
 
 [node name="SkillLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Backend: 10"
 
 [node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox"]
@@ -185,10 +249,15 @@ layout_mode = 2
 [node name="SalaryLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+theme_override_font_sizes/font_size = 25
 text = "3500"
 
 [node name="HireButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_jw1sn")
 text = "Нанять"
 
 [node name="Separator" type="HSeparator" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
@@ -196,12 +265,14 @@ layout_mode = 2
 
 [node name="TraitsLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card2/CardInnerMargin/CardVBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
 text = "Особенность: Пьет 5 литров кофе"
 
 [node name="Card3" type="PanelContainer" parent="Window/MainVBox/CardsMargin/CardsContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(1400, 0)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yqkdt")
 
 [node name="CardInnerMargin" type="MarginContainer" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3"]
 layout_mode = 2
@@ -222,14 +293,17 @@ layout_mode = 2
 
 [node name="NameLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Иван Иванов"
 
 [node name="RoleLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Junior Dev\","
 
 [node name="SkillLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/LeftInfo"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "Backend: 10"
 
 [node name="Spacer" type="Control" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox"]
@@ -242,10 +316,15 @@ layout_mode = 2
 [node name="SalaryLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+theme_override_font_sizes/font_size = 25
 text = "3500"
 
 [node name="HireButton" type="Button" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox/TopInfoHBox/VBoxContainer"]
+custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_jw1sn")
 text = "Нанять"
 
 [node name="Separator" type="HSeparator" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
@@ -253,4 +332,5 @@ layout_mode = 2
 
 [node name="TraitsLabel" type="Label" parent="Window/MainVBox/CardsMargin/CardsContainer/Card3/CardInnerMargin/CardVBox"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
 text = "Особенность: Пьет 5 литров кофе"
