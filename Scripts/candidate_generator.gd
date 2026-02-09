@@ -43,4 +43,14 @@ func generate_random_candidate() -> EmployeeData:
 	# При создании даем полную энергию
 	new_emp.current_energy = 100.0
 	
+	# --- 5. ГЕНЕРАЦИЯ ТРЕЙТОВ ---
+	new_emp.traits.clear()
+	
+	# Трейт "Обожает кофе" — 30% шанс
+	if randf() < 0.3:
+		new_emp.traits.append("coffee_lover")
+	
+	# Формируем читаемый текст для UI
+	new_emp.trait_text = new_emp.build_trait_text()
+	
 	return new_emp

@@ -1,7 +1,7 @@
 extends Control
 
 # --- ССЫЛКИ НА UI ---
-# Используем уникальные имена (%) для поиска главных карт
+# Используем уни��альные имена (%) для поиска главных карт
 @onready var card1 = %Card1
 @onready var card2 = %Card2
 @onready var card3 = %Card3
@@ -14,19 +14,6 @@ extends Control
 # --- ДАННЫЕ ---
 var generator_script = preload("res://Scripts/candidate_generator.gd").new()
 var candidates = []
-
-# Список забавных особенностей
-var funny_traits = [
-	"Пьет 5 литров кофе в день",
-	"Любит долгие совещания",
-	"Печатает одним пальцем",
-	"Боится красного цвета",
-	"Всегда опаздывает на 1 минуту",
-	"Спит с открытыми глазами",
-	"Не верит в баги",
-	"Кодит только под метал",
-	"Любит покакать на работе"
-]
 
 func _ready():
 	visible = false
@@ -60,12 +47,8 @@ func generate_new_candidates():
 	candidates.clear()
 	for i in range(3):
 		# Генерируем нового кандидата (EmployeeData)
+		# Трейты теперь назначаются ВНУТРИ генератора
 		var new_human = generator_script.generate_random_candidate()
-		
-		# [ИСПРАВЛЕНО] Записываем особенность в официальное поле
-		if new_human:
-			new_human.trait_text = funny_traits.pick_random()
-			
 		candidates.append(new_human)
 
 func update_ui():
@@ -98,9 +81,12 @@ func update_ui():
 			
 			if skill_lbl: skill_lbl.text = skill_text
 			
-			# [ИСПРАВЛЕНО] Читаем особенность из официального поля
+			# Трейты — читаем из данных (сформированы генератором)
 			if traits_lbl:
-				traits_lbl.text = "Особенность: " + data.trait_text
+				if data.trait_text != "":
+					traits_lbl.text = "Особенность: " + data.trait_text
+				else:
+					traits_lbl.text = ""
 				
 		else:
 			# --- КАНДИДАТА НЕТ (Уже нанят) ---
@@ -138,7 +124,7 @@ func _on_hire_pressed(index):
 	update_ui()
 
 # --- ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ---
-# Находит узел по имени внутри дерева (рекурсивно)
+# ��аходит узел по имени внутри дерева (рекурсивно)
 func find_node_by_name(root, target_name):
 	if root.name == target_name: return root
 	for child in root.get_children():

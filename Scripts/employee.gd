@@ -19,12 +19,15 @@ var movement_speed = 100.0
 # Настройка потери энергии (10 ед в игровой час)
 const ENERGY_LOSS_PER_GAME_HOUR = 10.0
 
-# Кофе-настройки
+# Кофе-настро��ки (БАЗОВЫЕ значения)
 const COFFEE_THRESHOLD = 70.0
 const COFFEE_MIN_GAIN = 10.0
 const COFFEE_MAX_GAIN = 15.0
 const COFFEE_MIN_MINUTES = 10.0
 const COFFEE_MAX_MINUTES = 15.0
+
+# Кофе-множитель для трейта "coffee_lover"
+const COFFEE_LOVER_DURATION_MULT = 2.0
 
 # Туалет-настройки
 const TOILET_VISITS_PER_DAY = 2
@@ -152,7 +155,18 @@ func _start_coffee_break():
 	velocity = Vector2.ZERO
 	
 	coffee_cup_holder.visible = true
-	coffee_break_minutes_left = randf_range(COFFEE_MIN_MINUTES, COFFEE_MAX_MINUTES)
+	
+	# --- ТРЕЙТ: ОБОЖАЕТ КОФЕ ---
+	# Если у сотрудника есть трейт "coffee_lover", он пьёт кофе в 2 раза дольше
+	var min_minutes = COFFEE_MIN_MINUTES
+	var max_minutes = COFFEE_MAX_MINUTES
+	
+	if data and data.has_trait("coffee_lover"):
+		min_minutes *= COFFEE_LOVER_DURATION_MULT
+		max_minutes *= COFFEE_LOVER_DURATION_MULT
+		print("☕ ", data.employee_name, " ОБОЖАЕТ КОФЕ! Перерыв удлинён: ", min_minutes, "-", max_minutes, " мин.")
+	
+	coffee_break_minutes_left = randf_range(min_minutes, max_minutes)
 
 func _finish_coffee_break():
 	coffee_cup_holder.visible = false

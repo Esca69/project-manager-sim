@@ -8,8 +8,36 @@ class_name EmployeeData
 # Текущая энергия (0.0 - 100.0)
 var current_energy: float = 100.0
 
-# [НОВОЕ] Особенность сотрудника (текст)
+# --- СИСТЕМА ТРЕЙТОВ ---
+# Массив строковых ID трейтов (например: ["coffee_lover"])
+@export var traits: Array[String] = []
+
+# Текст для отображения в UI (формируется автоматически)
 @export var trait_text: String = ""
+
+# Словарь: ID трейта -> читаемое название для UI
+const TRAIT_NAMES = {
+	"coffee_lover": "☕ Обожает кофе",
+	# Сюда потом добавим новые трейты:
+	# "lazy": "🦥 Лентяй",
+	# "genius": "🧠 Гений",
+}
+
+# Проверка: есть ли у сотрудника конкретный трейт
+func has_trait(trait_id: String) -> bool:
+	return traits.has(trait_id)
+
+# Собирает trait_text из массива traits для UI
+func build_trait_text() -> String:
+	if traits.is_empty():
+		return ""
+	var parts: Array[String] = []
+	for t in traits:
+		if TRAIT_NAMES.has(t):
+			parts.append(TRAIT_NAMES[t])
+		else:
+			parts.append(t)
+	return ", ".join(parts)
 
 var daily_salary: int:
 	get:
@@ -39,4 +67,4 @@ func get_efficiency_multiplier() -> float:
 	elif current_energy >= 30.0:
 		return 0.5 # 50% (Устал)
 	else:
-		return 0.2 # 20% (Зомби)
+		return 0.2 # 20% (��омби)
