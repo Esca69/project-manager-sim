@@ -10,7 +10,9 @@ enum State {
 	GOING_COFFEE,
 	COFFEE_BREAK,
 	GOING_TOILET,
-	TOILET_BREAK
+	TOILET_BREAK,
+	WANDERING,     # Слоняется по офису
+	WANDER_PAUSE   # Стоит на месте, "думает"
 }
 
 var current_state = State.IDLE
@@ -19,7 +21,7 @@ var movement_speed = 100.0
 # Настройка потери энергии (10 ед в игровой час)
 const ENERGY_LOSS_PER_GAME_HOUR = 10.0
 
-# Кофе-настро��ки (БАЗОВЫЕ значения)
+# Кофе-настройки (БАЗОВЫЕ значения)
 const COFFEE_THRESHOLD = 70.0
 const COFFEE_MIN_GAIN = 10.0
 const COFFEE_MAX_GAIN = 15.0
@@ -37,6 +39,12 @@ const TOILET_BREAK_MINUTES = 15.0
 const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
 
+# --- НАСТРОЙКИ СЛОНЯНИЯ ---
+const WANDER_RADIUS = 1000.0          # Максимальный радиус от текущей позиции
+const WANDER_PAUSE_MIN = 2.0         # Мин. время стоянки (реальные секунды)
+const WANDER_PAUSE_MAX = 5.0         # Макс. время стоянки (реальные секунды)
+const WANDER_SPEED_MULT = 0.5        # Скорость при слонянии (50% от нормальной)
+
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
 var coffee_break_minutes_left := 0.0
@@ -45,6 +53,10 @@ var toilet_ref = null
 var toilet_break_minutes_left := 0.0
 var toilet_visit_times: Array[int] = []
 var toilet_visits_done := 0
+
+# --- ПЕРЕМЕННЫЕ СЛОНЯНИЯ ---
+var _wander_pause_timer := 0.0       # Сколько ещё стоять на месте
+var _wander_origin: Vector2 = Vector2.ZERO  # Точка спавна (центр слоняния)
 
 @export var data: EmployeeData
 
@@ -79,7 +91,13 @@ func _physics_process(delta):
 	update_debug_label()
 	
 	match current_state:
-		State.IDLE, State.HOME:
+		State.IDLE:
+			_apply_lean(Vector2.ZERO, delta)
+			# Если рабочее время и нет стола — начинаем слоняться
+			if my_desk_position == Vector2.ZERO and _is_work_time():
+				_start_wandering()
+		
+		State.HOME:
 			_apply_lean(Vector2.ZERO, delta)
 			
 		State.WORKING:
@@ -120,10 +138,34 @@ func _physics_process(delta):
 				_finish_toilet_break()
 			_apply_lean(Vector2.ZERO, delta)
 
+		# --- СЛОНЯНИЕ: идёт к случайной точке ---
+		State.WANDERING:
+			var dist = global_position.distance_to(nav_agent.target_position)
+			if dist < 100.0:
+				_on_wander_arrived()
+				return
+			_move_along_path_slow(delta)
+
+		# --- СЛОНЯНИЕ: стоит на месте, "думает" ---
+		State.WANDER_PAUSE:
+			_wander_pause_timer -= delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _wander_pause_timer <= 0.0:
+				_pick_next_wander_target()
+
 func _move_along_path(delta):
 	var next_path_position = nav_agent.get_next_path_position()
 	var direction = global_position.direction_to(next_path_position)
 	var new_velocity = direction * movement_speed
+	velocity = new_velocity
+	move_and_slide()
+	_apply_lean(direction, delta)
+
+# Медленная ходьба для слоняния
+func _move_along_path_slow(delta):
+	var next_path_position = nav_agent.get_next_path_position()
+	var direction = global_position.direction_to(next_path_position)
+	var new_velocity = direction * movement_speed * WANDER_SPEED_MULT
 	velocity = new_velocity
 	move_and_slide()
 	_apply_lean(direction, delta)
@@ -137,6 +179,49 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 	
 	body_sprite.rotation = lerp(body_sprite.rotation, target_lean, LEAN_SPEED * delta)
 	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
+
+# --- СЛОНЯНИЕ ---
+func _is_work_time() -> bool:
+	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
+
+func _start_wandering():
+	# Запоминаем точку, вокруг которой будем слоняться
+	_wander_origin = global_position
+	_pick_next_wander_target()
+
+func _pick_next_wander_target():
+	if my_desk_position != Vector2.ZERO:
+		move_to_desk(my_desk_position)
+		return
+	
+	if not _is_work_time():
+		_on_work_ended()
+		return
+	
+	# Выбираем случайную точку в радиусе
+	var random_angle = randf() * TAU
+	var random_dist = randf_range(50.0, WANDER_RADIUS)
+	var raw_target = _wander_origin + Vector2(cos(random_angle), sin(random_angle)) * random_dist
+	
+	# Привязываем к ближайшей ВАЛИДНОЙ точке на навигационной карте
+	var nav_map = get_world_2d().navigation_map
+	var safe_target = NavigationServer2D.map_get_closest_point(nav_map, raw_target)
+	
+	# Защита: если точка слишком близко — выбираем заново
+	if global_position.distance_to(safe_target) < 30.0:
+		_wander_pause_timer = 0.5  # Подождём полсекунды и попробуем снова
+		current_state = State.WANDER_PAUSE
+		return
+	
+	nav_agent.target_position = safe_target
+	current_state = State.WANDERING
+	z_index = 0
+
+func _on_wander_arrived():
+	# Пришёл к точке — останавливаемся, стоим какое-то время
+	velocity = Vector2.ZERO
+	current_state = State.WANDER_PAUSE
+	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
 
 # --- КОФЕ ---
 func _try_start_coffee_break():
@@ -157,7 +242,6 @@ func _start_coffee_break():
 	coffee_cup_holder.visible = true
 	
 	# --- ТРЕЙТ: ОБОЖАЕТ КОФЕ ---
-	# Если у сотрудника есть трейт "coffee_lover", он пьёт кофе в 2 раза дольше
 	var min_minutes = COFFEE_MIN_MINUTES
 	var max_minutes = COFFEE_MAX_MINUTES
 	
@@ -243,6 +327,29 @@ func move_to_desk(target_point: Vector2):
 	visible = true
 	$CollisionShape2D.disabled = false
 
+# --- Сотрудник "встаёт" из-за стола ---
+func release_from_desk():
+	print("🚶 ", data.employee_name, " встаёт из-за стола")
+	
+	# Сбрасываем привязку к столу
+	my_desk_position = Vector2.ZERO
+	
+	# Останавливаем кофе/туалет если был в процессе
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
+	# Начинаем слоняться, если рабочее время
+	if _is_work_time():
+		_start_wandering()
+	else:
+		current_state = State.IDLE
+		velocity = Vector2.ZERO
+
 func _on_navigation_finished():
 	if current_state == State.GOING_COFFEE:
 		_start_coffee_break()
@@ -263,7 +370,17 @@ func _on_work_started():
 	_setup_toilet_schedule()
 	
 	if my_desk_position == Vector2.ZERO:
-		return 
+		# Нет стола — начинаем слоняться
+		visible = true
+		$CollisionShape2D.disabled = false
+		z_index = 0
+		
+		var entrance = get_tree().get_first_node_in_group("entrance")
+		if entrance:
+			global_position = entrance.global_position
+		
+		_start_wandering()
+		return
 
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
@@ -361,3 +478,5 @@ func update_debug_label():
 			State.COFFEE_BREAK: debug_label.modulate = Color.SKY_BLUE
 			State.GOING_TOILET: debug_label.modulate = Color.DEEP_PINK
 			State.TOILET_BREAK: debug_label.modulate = Color.MEDIUM_PURPLE
+			State.WANDERING: debug_label.modulate = Color.SANDY_BROWN
+			State.WANDER_PAUSE: debug_label.modulate = Color.TAN
