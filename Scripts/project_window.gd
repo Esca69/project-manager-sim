@@ -29,7 +29,7 @@ func setup(data: ProjectData, selector_node):
 	
 	title_label.text = project.title
 	budget_label.text = "Бюджет: $%d" % project.budget
-	deadline_label.text = "Дедлайн: %d дн." % project.deadline_day
+	deadline_label.text = "Дедлайн: день %d" % project.deadline_day
 	
 	# Очистка
 	for child in tracks_container.get_children():
@@ -83,14 +83,14 @@ func _migrate_stage(stage: Dictionary):
 		stage["workers"] = []
 
 func update_buttons_visibility():
-	if project.state == ProjectData.State.IN_PROGRESS:
+	if project.state == ProjectData.State.IN_PROGRESS or project.state == ProjectData.State.FINISHED:
 		start_btn.visible = false
 		cancel_btn.visible = false
 	else:
 		start_btn.visible = true
 		cancel_btn.visible = true
 
-# --- ХЕЛ��ЕР: Получаем точное время ---
+# --- ХЕЛПЕР: Получаем точное время ---
 func get_current_global_time() -> float:
 	var day_part = float(GameTime.hour) / 24.0
 	var min_part = float(GameTime.minute) / (24.0 * 60.0)
@@ -110,75 +110,49 @@ func _on_start_pressed():
 func _on_cancel_pressed():
 	visible = false
 
-# --- 1. ЛОГИКА РАБОТЫ ---
-func _physics_process(delta):
-	if not project or project.state != ProjectData.State.IN_PROGRESS:
-		return
-	
-	var now = get_current_global_time()
-	
-	if project.start_global_time < 0.01:
-		project.start_global_time = now
-		print("!!! САМОКОРРЕКЦИЯ ВРЕМЕНИ !!!")
-	
-	project.elapsed_days = now - project.start_global_time
-	
-	var is_working_hours = GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
-	
-	var active_stage = null
-	for i in range(project.stages.size()):
-		var stage = project.stages[i]
-		if stage.get("is_completed", false): continue
-		
-		var prev_ok = true
-		if i > 0: prev_ok = project.stages[i-1].get("is_completed", false)
-		
-		if prev_ok:
-			active_stage = stage
-			break 
-	
-	if active_stage:
-		if active_stage["actual_start"] == -1.0:
-			active_stage["actual_start"] = project.elapsed_days
-		
-		if is_working_hours and active_stage.workers.size() > 0:
-			for worker_data in active_stage.workers:
-				var worker_node = get_employee_node(worker_data)
-				
-				if worker_node and worker_node.current_state == worker_node.State.WORKING:
-					var skill = get_skill_for_stage(active_stage.type, worker_data)
-					var efficiency = worker_data.get_efficiency_multiplier()
-					
-					var speed_per_second = (float(skill) * efficiency) / 60.0
-					active_stage.progress += speed_per_second * delta
-			
-		if active_stage.progress >= active_stage.amount:
-			active_stage.progress = active_stage.amount
-			active_stage["is_completed"] = true
-			active_stage["actual_end"] = project.elapsed_days
-
-	else:
-		finish_project()
-
-func finish_project():
-	if project.state == ProjectData.State.FINISHED:
-		return 
-		
-	print("ПРОЕКТ ПОЛНОСТЬЮ ЗАВЕРШЕН!")
-	project.state = ProjectData.State.FINISHED
-	GameState.change_balance(project.budget)
-	
-	var timer = get_tree().create_timer(1.0)
-	await timer.timeout
-	visible = false
-
-# --- 2. ВИЗУАЛИЗАЦИЯ ---
+# --- ВИЗУАЛИЗАЦИЯ ---
 func _process(delta):
 	if not project: return
-	if project.state == ProjectData.State.DRAFTING: return
+	if not visible: return
+	
+	var origin_day = project.created_at_day
+	
+	if project.state == ProjectData.State.DRAFTING:
+		# --- [ИЗМЕНЕНИЕ] Рисуем хедер даже для DRAFTING ---
+		# Считаем горизонт как расстояние от дня создания до дедлайна * 1.1
+		var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
+		if horizon_from_origin < 5.0:
+			horizon_from_origin = 5.0
+		var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
+		
+		# Скрываем линию текущего времени в драфте
+		if current_time_line:
+			current_time_line.visible = false
+		
+		# Оранжевая линия: софт-дедлайн
+		if soft_deadline_line and project.soft_deadline_day > 0:
+			var soft_offset = float(project.soft_deadline_day - origin_day)
+			soft_deadline_line.position.x = soft_offset * pixels_per_day
+			soft_deadline_line.size.y = max(tracks_container.size.y + 50, 500)
+			soft_deadline_line.visible = true
+		
+		# Красная линия: хард-дедлайн
+		if hard_deadline_line and project.deadline_day > 0:
+			var hard_offset = float(project.deadline_day - origin_day)
+			hard_deadline_line.position.x = hard_offset * pixels_per_day
+			hard_deadline_line.size.y = max(tracks_container.size.y + 50, 500)
+			hard_deadline_line.visible = true
+		
+		draw_dynamic_header(pixels_per_day, horizon_from_origin, origin_day)
+		return
+	
+	# --- Проект IN_PROGRESS или FINISHED ---
+	var now = get_current_global_time()
+	if project.start_global_time > 0.01:
+		project.elapsed_days = now - project.start_global_time
 
-	var horizon_days = max(project.deadline_day * 1.1, project.elapsed_days + 2.0)
-	var pixels_per_day = GANTT_VIEW_WIDTH / horizon_days
+	var horizon_from_origin = max(float(project.deadline_day - origin_day) * 1.1, project.elapsed_days + 2.0)
+	var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
 	
 	for i in range(project.stages.size()):
 		if i < tracks_container.get_child_count():
@@ -203,20 +177,19 @@ func _process(delta):
 	
 	# --- Оранжевая линия: софт-дедлайн ---
 	if soft_deadline_line and project.soft_deadline_day > 0:
-		var soft_offset = float(project.soft_deadline_day - project.created_at_day)
+		var soft_offset = float(project.soft_deadline_day - origin_day)
 		soft_deadline_line.position.x = soft_offset * pixels_per_day
 		soft_deadline_line.size.y = line_height
 		soft_deadline_line.visible = true
 	
 	# --- Красная линия: хард-дедлайн ---
 	if hard_deadline_line and project.deadline_day > 0:
-		var hard_offset = float(project.deadline_day - project.created_at_day)
+		var hard_offset = float(project.deadline_day - origin_day)
 		hard_deadline_line.position.x = hard_offset * pixels_per_day
 		hard_deadline_line.size.y = line_height
 		hard_deadline_line.visible = true
 		
-	# Хедер
-	draw_dynamic_header(pixels_per_day, horizon_days)
+	draw_dynamic_header(pixels_per_day, horizon_from_origin, origin_day)
 
 # --- ВСПОМОГАТЕЛЬНЫЕ ---
 
@@ -261,7 +234,8 @@ func freeze_plan():
 		stage["plan_duration"] = duration_days
 		current_time_offset_days += duration_days
 
-func draw_dynamic_header(px_per_day, horizon_days):
+# --- [ИЗМЕНЕНИЕ] Хедер показывает номера дней от дня создания ---
+func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 	for child in timeline_header.get_children():
 		if child == current_time_line: continue
 		if child == soft_deadline_line: continue
@@ -272,7 +246,7 @@ func draw_dynamic_header(px_per_day, horizon_days):
 	
 	for i in range(0, int(horizon_days) + 1, step):
 		var lbl = Label.new()
-		lbl.text = str(i + 1)
+		lbl.text = str(origin_day + i)
 		lbl.modulate = Color(0, 0, 0, 0.5)
 		lbl.position = Vector2(i * px_per_day + 2, 0)
 		timeline_header.add_child(lbl)
@@ -290,10 +264,17 @@ func get_employee_node(data):
 		if npc.data == data: return npc
 	return null
 
+# --- [ИЗМЕНЕНИЕ] Превью колбасок с учётом created_at_day ---
 func recalculate_schedule_preview():
 	if project.state == ProjectData.State.IN_PROGRESS: return
+	
+	var origin_day = project.created_at_day
+	var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
+	if horizon_from_origin < 5.0:
+		horizon_from_origin = 5.0
+	var preview_px_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
+	
 	var current_offset = 0.0 
-	var preview_px_per_day = 50.0 
 	var all_assigned = true
 	
 	for i in range(project.stages.size()):
@@ -334,7 +315,7 @@ func get_color_for_stage(type):
 		"QA": return Color("98FB98") 
 	return Color.GRAY
 
-# --- Передаём ��ип этапа в selector ---
+# --- Передаём тип этапа в selector ---
 func _on_track_assignment_requested(index):
 	current_selecting_track_index = index
 	var stage_type = project.stages[index].type
@@ -358,7 +339,7 @@ func _on_employee_chosen(emp_data):
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()
 
-# --- НОВОЕ: Удаление сотрудника с этапа ---
+# --- Удаление сотрудника с этапа ---
 func _on_worker_removed(stage_index: int, worker_index: int):
 	var stage = project.stages[stage_index]
 	

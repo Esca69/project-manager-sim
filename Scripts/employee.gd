@@ -11,39 +11,33 @@ enum State {
 	COFFEE_BREAK,
 	GOING_TOILET,
 	TOILET_BREAK,
-	WANDERING,     # Слоняется по офису
-	WANDER_PAUSE   # Стоит на месте, "думает"
+	WANDERING,
+	WANDER_PAUSE
 }
 
 var current_state = State.IDLE
 var movement_speed = 100.0 
 
-# Настройка потери энергии (10 ед в игровой час)
 const ENERGY_LOSS_PER_GAME_HOUR = 10.0
 
-# Кофе-настройки (БАЗОВЫЕ значения)
 const COFFEE_THRESHOLD = 70.0
 const COFFEE_MIN_GAIN = 10.0
 const COFFEE_MAX_GAIN = 15.0
 const COFFEE_MIN_MINUTES = 10.0
 const COFFEE_MAX_MINUTES = 15.0
 
-# Кофе-множитель для трейта "coffee_lover"
 const COFFEE_LOVER_DURATION_MULT = 2.0
 
-# Туалет-настройки
 const TOILET_VISITS_PER_DAY = 2
 const TOILET_BREAK_MINUTES = 15.0
 
-# Наклон при ходьбе
 const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
 
-# --- НАСТРОЙКИ СЛОНЯНИЯ ---
-const WANDER_RADIUS = 1000.0          # Максимальный радиус от текущей позиции
-const WANDER_PAUSE_MIN = 2.0         # Мин. время стоянки (реальные секунды)
-const WANDER_PAUSE_MAX = 5.0         # Макс. время стоянки (реальные секунды)
-const WANDER_SPEED_MULT = 0.5        # Скорость при слонянии (50% от нормальной)
+const WANDER_RADIUS = 1000.0
+const WANDER_PAUSE_MIN = 2.0
+const WANDER_PAUSE_MAX = 5.0
+const WANDER_SPEED_MULT = 0.5
 
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
@@ -54,9 +48,8 @@ var toilet_break_minutes_left := 0.0
 var toilet_visit_times: Array[int] = []
 var toilet_visits_done := 0
 
-# --- ПЕРЕМЕННЫЕ СЛОНЯНИЯ ---
-var _wander_pause_timer := 0.0       # Сколько ещё стоять на месте
-var _wander_origin: Vector2 = Vector2.ZERO  # Точка спавна (центр слоняния)
+var _wander_pause_timer := 0.0
+var _wander_origin: Vector2 = Vector2.ZERO
 
 @export var data: EmployeeData
 
@@ -64,8 +57,6 @@ var _wander_origin: Vector2 = Vector2.ZERO  # Точка спавна (цент�
 @onready var head_sprite = $Visuals/Body/Head
 @onready var nav_agent = $NavigationAgent2D 
 @onready var debug_label = $DebugLabel
-
-# --- КРУЖКА ---
 @onready var coffee_cup_holder = $CoffeeCupHolder
 
 func _ready():
@@ -93,7 +84,6 @@ func _physics_process(delta):
 	match current_state:
 		State.IDLE:
 			_apply_lean(Vector2.ZERO, delta)
-			# Если рабочее время и нет стола — начинаем слоняться
 			if my_desk_position == Vector2.ZERO and _is_work_time():
 				_start_wandering()
 		
@@ -101,14 +91,11 @@ func _physics_process(delta):
 			_apply_lean(Vector2.ZERO, delta)
 			
 		State.WORKING:
-			# --- [ИЗМЕНЕНИЕ] Энергия расходуется ТОЛЬКО в состоянии WORKING ---
 			var loss_speed = (ENERGY_LOSS_PER_GAME_HOUR / 60.0) * GameTime.MINUTES_PER_REAL_SECOND
 			data.current_energy -= loss_speed * delta
 			if data.current_energy < 0:
 				data.current_energy = 0
 			
-			# --- [ИЗМЕНЕНИЕ] Проверяем, наш ли сейчас этап ---
-			# Если у нас есть стол, но наш этап НЕ активен — уходим слоняться
 			if not _is_my_stage_active():
 				print("📋 ", data.employee_name, " — мой этап закончился/ещё не начался. Встаю из-за стола.")
 				_leave_desk_to_wander()
@@ -134,26 +121,20 @@ func _physics_process(delta):
 
 		State.COFFEE_BREAK:
 			coffee_cup_holder.visible = true
-			# Энергия НЕ расходуется на перерыве
 			coffee_break_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
 			if coffee_break_minutes_left <= 0.0:
 				_finish_coffee_break()
 			_apply_lean(Vector2.ZERO, delta)
 
 		State.TOILET_BREAK:
-			# Энергия НЕ расходуется на перерыве
 			toilet_break_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
 			if toilet_break_minutes_left <= 0.0:
 				_finish_toilet_break()
 			_apply_lean(Vector2.ZERO, delta)
 
-		# --- СЛОНЯНИЕ: идёт к случайной точке ---
 		State.WANDERING:
-			# Энергия НЕ расходуется при слонянии
-			
-			# --- [ИЗМЕНЕНИЕ] Проверяем, пора ли сесть за стол ---
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
-				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
+				print("📋 ", data.employee_name, " — мой этап начался! ��ду к столу.")
 				move_to_desk(my_desk_position)
 				return
 			
@@ -163,11 +144,7 @@ func _physics_process(delta):
 				return
 			_move_along_path_slow(delta)
 
-		# --- СЛОНЯНИЕ: стоит на месте, "думает" ---
 		State.WANDER_PAUSE:
-			# Энергия НЕ расходуется при паузе
-			
-			# --- [ИЗМЕНЕНИЕ] Проверяем, пора ли сесть за стол ---
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
 				move_to_desk(my_desk_position)
@@ -178,56 +155,14 @@ func _physics_process(delta):
 			if _wander_pause_timer <= 0.0:
 				_pick_next_wander_target()
 
-# --- [НОВОЕ] ПРОВЕРКА: АКТИВЕН ЛИ МОЙ ЭТАП НА ПРОЕКТЕ? ---
+# --- ПРОВЕРКА: АКТИВЕН ЛИ МОЙ ЭТАП НА ЛЮБОМ ПРОЕКТЕ? ---
 func _is_my_stage_active() -> bool:
-	# Если нет данных — считаем что нет проекта, значит "не активен"
 	if not data:
 		return false
-	
-	# Получаем HUD -> активный проект
-	var hud = get_tree().get_first_node_in_group("ui")
-	if not hud:
-		return false
-	
-	var project = hud.active_project
-	if not project or project.state != ProjectData.State.IN_PROGRESS:
-		# Проект не запущен — сотрудник НЕ должен работать
-		# Но если проекта нет совсем — пусть сидит за столом (обратная совместимость)
-		if not project:
-			return true  # Нет проекта — просто сидим за столом как раньше
-		if project.state == ProjectData.State.DRAFTING:
-			return false  # Проект есть, но не начат — не работаем
-		return false
-	
-	# Ищем текущий активный этап (первый незавершённый, у которого предыдущий завершён)
-	var active_stage = null
-	for i in range(project.stages.size()):
-		var stage = project.stages[i]
-		if stage.get("is_completed", false):
-			continue
-		
-		var prev_ok = true
-		if i > 0:
-			prev_ok = project.stages[i - 1].get("is_completed", false)
-		
-		if prev_ok:
-			active_stage = stage
-			break
-	
-	if not active_stage:
-		return false  # Все этапы завершены или нет этапов
-	
-	# Проверяем, назначен ли я (мой EmployeeData) на этот активный этап
-	for worker_data in active_stage.workers:
-		if worker_data == data:
-			return true
-	
-	return false
+	return ProjectManager.is_employee_on_active_stage(data)
 
-# --- [НОВОЕ] Уходим от стола в слоняние (но стол остаётся за нами) ---
+# --- Уходим от стола в слоня��ие (стол остаётся за нами) ---
 func _leave_desk_to_wander():
-	# НЕ сбрасываем my_desk_position — стол по-прежнему наш!
-	# Просто перес��аём работать и идём слоняться
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:
 		coffee_machine_ref.release(self)
@@ -251,7 +186,6 @@ func _move_along_path(delta):
 	move_and_slide()
 	_apply_lean(direction, delta)
 
-# Медленная ходьба для слоняния
 func _move_along_path_slow(delta):
 	var next_path_position = nav_agent.get_next_path_position()
 	var direction = global_position.direction_to(next_path_position)
@@ -275,12 +209,10 @@ func _is_work_time() -> bool:
 	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
 
 func _start_wandering():
-	# Запоминаем точку, вокруг которой будем слоняться
 	_wander_origin = global_position
 	_pick_next_wander_target()
 
 func _pick_next_wander_target():
-	# --- [ИЗМЕНЕНИЕ] Если есть стол И наш этап активен — идём к столу ---
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
 		return
@@ -289,18 +221,15 @@ func _pick_next_wander_target():
 		_on_work_ended()
 		return
 	
-	# Выбираем случайную точку в радиусе
 	var random_angle = randf() * TAU
 	var random_dist = randf_range(50.0, WANDER_RADIUS)
 	var raw_target = _wander_origin + Vector2(cos(random_angle), sin(random_angle)) * random_dist
 	
-	# Привязываем к ближайшей ВАЛИДНОЙ точке на навигационной карте
 	var nav_map = get_world_2d().navigation_map
 	var safe_target = NavigationServer2D.map_get_closest_point(nav_map, raw_target)
 	
-	# Защита: если точка слишком близко — выбираем заново
 	if global_position.distance_to(safe_target) < 30.0:
-		_wander_pause_timer = 0.5  # Подождём полсекунды и попробуем снова
+		_wander_pause_timer = 0.5
 		current_state = State.WANDER_PAUSE
 		return
 	
@@ -309,7 +238,6 @@ func _pick_next_wander_target():
 	z_index = 0
 
 func _on_wander_arrived():
-	# Пришёл к точке — останавливаемся, стоим какое-то время
 	velocity = Vector2.ZERO
 	current_state = State.WANDER_PAUSE
 	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
@@ -332,7 +260,6 @@ func _start_coffee_break():
 	
 	coffee_cup_holder.visible = true
 	
-	# --- ТРЕЙТ: ОБОЖАЕТ КОФЕ ---
 	var min_minutes = COFFEE_MIN_MINUTES
 	var max_minutes = COFFEE_MAX_MINUTES
 	
@@ -352,14 +279,10 @@ func _finish_coffee_break():
 	
 	data.current_energy = min(100.0, data.current_energy + randf_range(COFFEE_MIN_GAIN, COFFEE_MAX_GAIN))
 	
-	# --- [ИЗМЕНЕНИЕ] После кофе проверяем, наш ли этап ---
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
 	elif my_desk_position != Vector2.ZERO:
-		# Стол есть, но этап не наш — слоняемся
 		_start_wandering()
-	elif my_desk_position != Vector2.ZERO:
-		move_to_desk(my_desk_position)
 
 # --- ТУАЛЕТ ---
 func _setup_toilet_schedule():
@@ -376,10 +299,8 @@ func _setup_toilet_schedule():
 func _try_start_toilet_break():
 	if toilet_visits_done >= TOILET_VISITS_PER_DAY:
 		return
-	
 	if GameTime.hour < GameTime.START_HOUR or GameTime.hour >= GameTime.END_HOUR:
 		return
-	
 	if toilet_visit_times.is_empty():
 		return
 	
@@ -397,7 +318,6 @@ func _try_start_toilet_break():
 func _start_toilet_break():
 	current_state = State.TOILET_BREAK
 	velocity = Vector2.ZERO
-	
 	toilet_break_minutes_left = TOILET_BREAK_MINUTES
 
 func _finish_toilet_break():
@@ -407,11 +327,9 @@ func _finish_toilet_break():
 	
 	toilet_visits_done += 1
 	
-	# --- [ИЗМЕНЕНИЕ] После туалета проверяем, наш ли этап ---
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
 	elif my_desk_position != Vector2.ZERO:
-		# Стол есть, но этап не наш — слоняемся
 		_start_wandering()
 
 # --- ФУНКЦИИ УПРАВЛЕНИЯ ---
@@ -422,7 +340,6 @@ func move_to_desk(target_point: Vector2):
 		_go_to_sleep_instant()
 		return
 	
-	# --- [ИЗМЕНЕНИЕ] Проверяем, наш ли этап, перед тем как идти к столу ---
 	if not _is_my_stage_active():
 		print("📋 ", data.employee_name, " — назначен на стол, но мой этап ещё не пришёл. Слоняюсь.")
 		if _is_work_time():
@@ -437,14 +354,11 @@ func move_to_desk(target_point: Vector2):
 	visible = true
 	$CollisionShape2D.disabled = false
 
-# --- Сотрудник "встаёт" из-за стола ---
 func release_from_desk():
 	print("🚶 ", data.employee_name, " встаёт из-за стола")
 	
-	# Сбрасываем привязку к столу
 	my_desk_position = Vector2.ZERO
 	
-	# Останавливаем кофе/туалет если был в процессе
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:
 		coffee_machine_ref.release(self)
@@ -453,7 +367,6 @@ func release_from_desk():
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	# Начинаем слоняться, если рабочее время
 	if _is_work_time():
 		_start_wandering()
 	else:
@@ -468,7 +381,6 @@ func _on_navigation_finished():
 		_start_toilet_break()
 		return
 	
-	# --- [ИЗМЕНЕНИЕ] Дошли до стола — проверяем этап перед тем как сесть ---
 	if not _is_my_stage_active():
 		print("📋 ", data.employee_name, " — дошёл до стола, но мой этап не активен. Слоняюсь.")
 		_start_wandering()
@@ -486,7 +398,6 @@ func _on_work_started():
 	_setup_toilet_schedule()
 	
 	if my_desk_position == Vector2.ZERO:
-		# Нет стола — начинаем слоняться
 		visible = true
 		$CollisionShape2D.disabled = false
 		z_index = 0
@@ -506,12 +417,10 @@ func _on_work_started():
 	$CollisionShape2D.disabled = false
 	z_index = 0 
 	
-	# --- [ИЗМЕНЕНИЕ] Проверяем, наш ли этап, при начале рабочего дня ---
 	if _is_my_stage_active():
 		current_state = State.MOVING
 		nav_agent.target_position = my_desk_position
 	else:
-		# Стол есть, но этап не наш — слоняемся
 		print("📋 ", data.employee_name, " — пришёл на работу, но мой этап ещё не начался. Слоняюсь.")
 		_start_wandering()
 

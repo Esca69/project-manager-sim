@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://l6ojv8bflski"]
+[gd_scene load_steps=10 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
 [ext_resource type="Script" uid="uid://dkjxe22ou16fk" path="res://Scripts/speed_controls.gd" id="2_8jye8"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://ydl7ldgl5qyc" path="res://Scenes/employee_selector.tscn" id="3_bjfho"]
 [ext_resource type="PackedScene" uid="uid://dum7oe0xx61nt" path="res://Scenes/ProjectSelectionUI.tscn" id="4_6fbih"]
 [ext_resource type="PackedScene" uid="uid://c7cwh26kidn2f" path="res://Scenes/AssignmentMenu.tscn" id="6_36asn"]
+[ext_resource type="PackedScene" uid="uid://dpu8813cqsnr0" path="res://Scenes/ProjectListMenu.tscn" id="8_43w4t"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jye8"]
 bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
@@ -139,5 +140,7 @@ grow_vertical = 0
 size_flags_horizontal = 4
 size_flags_vertical = 8
 text = "Закончить день"
+
+[node name="ProjectListMenu" parent="." instance=ExtResource("8_43w4t")]
 
 [connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]

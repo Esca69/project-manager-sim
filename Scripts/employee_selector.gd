@@ -9,30 +9,38 @@ signal employee_selected(data: EmployeeData)
 var _filter_stage_type: String = ""
 
 func _ready():
-	visible = false # Скрыт по умолчанию
+	visible = false
 
-# --- С фильтрацией по типу этапа ---
-# stage_type: "BA", "DEV", "QA" или "" (показать всех)
 func open_list(stage_type: String = ""):
 	_filter_stage_type = stage_type
 	item_list.clear()
 	visible = true
 	
-	# 1. Ищем всех NPC в сцене (по группе "npc")
 	var npcs = get_tree().get_nodes_in_group("npc")
 	
 	for npc in npcs:
-		# Проверяем, есть ли у NPC данные (паспорт)
 		if npc.data:
-			# 2. Фильтрация: если задан тип — показываем только подходящих
+			# Фильтрация по роли
 			if _filter_stage_type != "" and not _matches_stage_type(npc.data, _filter_stage_type):
 				continue
 			
-			# 3. Добавляем строчку в список
-			var index = item_list.add_item(npc.data.employee_name + " (" + npc.data.job_title + ")")
+			# --- [НОВОЕ] Проверяем, занят ли сотрудник на ЛЮБОМ проекте ---
+			var is_busy = _is_employee_assigned_to_any_project(npc.data)
 			
-			# 4. Прячем ссылку на данные ВНУТРИ строки
+			var display_name = npc.data.employee_name + " (" + npc.data.job_title + ")"
+			
+			if is_busy:
+				display_name += " — 🔒 Занят на проекте"
+			
+			var index = item_list.add_item(display_name)
 			item_list.set_item_metadata(index, npc.data)
+			
+			# Если занят — делаем строку недоступной
+			if is_busy:
+				item_list.set_item_disabled(index, true)
+				item_list.set_item_selectable(index, false)
+				# Серый цвет для занятых
+				item_list.set_item_custom_fg_color(index, Color(0.6, 0.6, 0.6, 1))
 	
 	# Если после фильтрации список пуст — показываем подсказку
 	if item_list.item_count == 0:
@@ -41,7 +49,22 @@ func open_list(stage_type: String = ""):
 		item_list.set_item_disabled(0, true)
 		item_list.set_item_selectable(0, false)
 
-# Проверяет, подходит ли сотрудник для данного типа этапа
+# --- [НОВОЕ] Проверяем, назначен ли сотрудник на ЛЮБОЙ этап ЛЮБОГО проекта ---
+func _is_employee_assigned_to_any_project(emp_data: EmployeeData) -> bool:
+	for project in ProjectManager.active_projects:
+		# Проверяем только незавершённые проекты
+		if project.state == ProjectData.State.FINISHED:
+			continue
+		if project.state == ProjectData.State.FAILED:
+			continue
+		
+		for stage in project.stages:
+			for worker in stage.workers:
+				if worker == emp_data:
+					return true
+	
+	return false
+
 func _matches_stage_type(data: EmployeeData, stage_type: String) -> bool:
 	match stage_type:
 		"BA":
@@ -52,7 +75,6 @@ func _matches_stage_type(data: EmployeeData, stage_type: String) -> bool:
 			return data.job_title == "QA Engineer"
 	return true
 
-# Возвращает читаемое название роли для подсказки
 func _get_role_name(stage_type: String) -> String:
 	match stage_type:
 		"BA": return "Business Analyst"
@@ -60,15 +82,12 @@ func _get_role_name(stage_type: String) -> String:
 		"QA": return "QA Engineer"
 	return stage_type
 
-# Когда нажали н�� кнопку "Отмена" или "X"
 func _on_cancel_button_pressed():
 	visible = false
 
-# Когда кликнули по элементу списка
 func _on_item_list_item_activated(index):
 	var data = item_list.get_item_metadata(index)
 	
-	# Защита: если metadata пуст (например кликнули на подсказку)
 	if data == null:
 		return
 	
