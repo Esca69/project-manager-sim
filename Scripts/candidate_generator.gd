@@ -1,11 +1,18 @@
 extends Node
 
-var first_names = ["Олег", "Мария", "Алексей", "Дарья", "Иван", "Еле��а", "Макс", "Сергей", "Анна"]
+var first_names = ["Олег", "Мария", "Алексей", "Дарья", "Иван", "Елена", "Макс", "Сергей", "Анна"]
 var last_names = ["Петров(а)", "Смирнов(а)", "Кузнецов(а)", "Попов(а)", "Васильев(а)", "Соколов(а)", "Михайлов(а)"]
 var roles = ["Business Analyst", "Backend Developer", "QA Engineer"]
 
-# Все доступные трейты
 var all_traits = ["fast_learner", "energizer", "early_bird", "cheap_hire", "toilet_lover", "coffee_lover", "slowpoke", "expensive"]
+
+# === ЗАРПЛАТЫ ПО РОЛЯМ ===
+# Формула: base + skill × multiplier ± rand
+const SALARY_CONFIG = {
+	"QA Engineer":        { "base": 800,  "mult": 8,  "rand": 200 },
+	"Business Analyst":   { "base": 1000, "mult": 12, "rand": 200 },
+	"Backend Developer":  { "base": 1200, "mult": 16, "rand": 200 },
+}
 
 func generate_random_candidate() -> EmployeeData:
 	var new_emp = EmployeeData.new()
@@ -30,9 +37,9 @@ func generate_random_candidate() -> EmployeeData:
 		"QA Engineer":
 			new_emp.skill_qa = primary_skill_value
 	
-	# 3. Зарплата (базовая, до модификации трейтами)
-	var raw_salary = 1000 + (primary_skill_value * 10)
-	raw_salary += randi_range(-200, 200)
+	# 3. Зарплата ПО РОЛИ (разная для BA, DEV, QA)
+	var cfg = SALARY_CONFIG[role]
+	var raw_salary = cfg["base"] + (primary_skill_value * cfg["mult"]) + randi_range(-cfg["rand"], cfg["rand"])
 	
 	# 4. Генерация трейтов (0-3)
 	new_emp.traits.clear()
@@ -45,13 +52,9 @@ func generate_random_candidate() -> EmployeeData:
 		for i in range(trait_count):
 			if available.is_empty():
 				break
-			
 			var picked = available.pop_front()
-			
-			# Проверяем конфликты
 			if _has_conflict(picked, new_emp.traits):
 				continue
-			
 			new_emp.traits.append(picked)
 	
 	# 5. Модификация зарплаты трейтами
@@ -67,7 +70,6 @@ func generate_random_candidate() -> EmployeeData:
 	
 	return new_emp
 
-# Определяем количество трейтов: 0 (30%), 1 (40%), 2 (20%), 3 (10%)
 func _pick_trait_count() -> int:
 	var roll = randf()
 	if roll < 0.30:
@@ -79,7 +81,6 @@ func _pick_trait_count() -> int:
 	else:
 		return 3
 
-# Проверяем, конфликтует ли новый трейт с уже выбранными
 func _has_conflict(new_trait: String, existing: Array[String]) -> bool:
 	for pair in EmployeeData.CONFLICTING_PAIRS:
 		if new_trait == pair[0] and pair[1] in existing:

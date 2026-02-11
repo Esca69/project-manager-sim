@@ -8,6 +8,7 @@ signal project_opened(proj: ProjectData)
 
 var card_style_normal: StyleBoxFlat
 var card_style_finished: StyleBoxFlat
+var card_style_failed: StyleBoxFlat
 var btn_style: StyleBoxFlat
 
 func _ready():
@@ -39,6 +40,18 @@ func _ready():
 	card_style_finished.corner_radius_top_right = 20
 	card_style_finished.corner_radius_bottom_right = 20
 	card_style_finished.corner_radius_bottom_left = 20
+	
+	card_style_failed = StyleBoxFlat.new()
+	card_style_failed.bg_color = Color(0.98, 0.92, 0.92, 1)
+	card_style_failed.border_width_left = 3
+	card_style_failed.border_width_top = 3
+	card_style_failed.border_width_right = 3
+	card_style_failed.border_width_bottom = 3
+	card_style_failed.border_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+	card_style_failed.corner_radius_top_left = 20
+	card_style_failed.corner_radius_top_right = 20
+	card_style_failed.corner_radius_bottom_right = 20
+	card_style_failed.corner_radius_bottom_left = 20
 	
 	btn_style = StyleBoxFlat.new()
 	btn_style.bg_color = Color(1, 1, 1, 1)
@@ -81,10 +94,13 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.custom_minimum_size = Vector2(1400, 0)
 	
-	if proj.state == ProjectData.State.FINISHED:
-		card.add_theme_stylebox_override("panel", card_style_finished)
-	else:
-		card.add_theme_stylebox_override("panel", card_style_normal)
+	match proj.state:
+		ProjectData.State.FINISHED:
+			card.add_theme_stylebox_override("panel", card_style_finished)
+		ProjectData.State.FAILED:
+			card.add_theme_stylebox_override("panel", card_style_failed)
+		_:
+			card.add_theme_stylebox_override("panel", card_style_normal)
 	
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
@@ -103,9 +119,13 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
 	
-	var title_text = proj.title
+	# Название с категорией
+	var cat_label = "[MICRO]" if proj.category == "micro" else "[SIMPLE]"
+	var title_text = cat_label + " " + proj.title
 	if proj.state == ProjectData.State.FINISHED:
-		title_text = "✅ " + proj.title
+		title_text = "✅ " + title_text
+	elif proj.state == ProjectData.State.FAILED:
+		title_text = "❌ " + title_text
 	
 	var name_lbl = Label.new()
 	name_lbl.text = title_text
@@ -115,7 +135,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var status_lbl = Label.new()
 	match proj.state:
 		ProjectData.State.DRAFTING:
-			status_lbl.text = "📝 Черновик — назначьте людей и нажмите Ст��рт"
+			status_lbl.text = "📝 Черновик — назначьте людей и нажмите Старт"
 			status_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 		ProjectData.State.IN_PROGRESS:
 			var stage_name = _get_current_stage_name(proj)
@@ -125,7 +145,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 			status_lbl.text = "✅ Завершён"
 			status_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 		ProjectData.State.FAILED:
-			status_lbl.text = "❌ Провален"
+			status_lbl.text = "❌ Провален — хард-дедлайн истёк"
 			status_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	left_info.add_child(status_lbl)
 	
@@ -150,15 +170,16 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	right_info.add_child(budget_lbl)
 	
-	var open_btn = Button.new()
-	open_btn.text = "Открыть"
-	open_btn.custom_minimum_size = Vector2(180, 40)
-	open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	open_btn.add_theme_stylebox_override("normal", btn_style)
-	open_btn.pressed.connect(_on_open_pressed.bind(index))
-	right_info.add_child(open_btn)
+	if proj.state != ProjectData.State.FAILED:
+		var open_btn = Button.new()
+		open_btn.text = "Открыть"
+		open_btn.custom_minimum_size = Vector2(180, 40)
+		open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		open_btn.add_theme_stylebox_override("normal", btn_style)
+		open_btn.pressed.connect(_on_open_pressed.bind(index))
+		right_info.add_child(open_btn)
 	
-	# --- [ИЗМЕНЕНИЕ] Дедлайны в новом формате с да��ами ---
+	# Дедлайны
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	vbox.add_child(deadlines_hbox)
@@ -169,8 +190,8 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var hard_date = GameTime.get_date_short(proj.deadline_day)
 	
 	var soft_lbl = Label.new()
-	soft_lbl.text = "Софт: %s (ост. %d дн.)" % [soft_date, soft_days]
-	soft_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
+	soft_lbl.text = "Софт: %s (ост. %d дн.) | штраф -%d%%" % [soft_date, soft_days, proj.soft_deadline_penalty_percent]
+	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
 	deadlines_hbox.add_child(soft_lbl)
 	
 	var hard_lbl = Label.new()
@@ -187,7 +208,6 @@ func _on_open_pressed(index: int):
 	emit_signal("project_opened", proj)
 	visible = false
 
-# --- ВСПОМОГАТЕЛЬНЫЕ ---
 func _get_current_stage_name(proj: ProjectData) -> String:
 	for i in range(proj.stages.size()):
 		var stage = proj.stages[i]

@@ -1,18 +1,15 @@
 extends Node
 
-# --- МАССИВ ВСЕХ АКТИВНЫХ ПРОЕКТОВ ---
 var active_projects: Array = []
 
-# Максимум одновременных проектов (можно менять для баланса)
 const MAX_PROJECTS = 5
 
-# Сигнал — проект завершён (для UI-уведомлений в будущем)
 signal project_finished(proj: ProjectData)
+signal project_failed(proj: ProjectData)
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-# --- ДОБАВИТЬ ПРОЕКТ ---
 func add_project(proj: ProjectData):
 	if active_projects.size() >= MAX_PROJECTS:
 		print("⚠ Максимум проектов достигнут! (", MAX_PROJECTS, ")")
@@ -21,17 +18,14 @@ func add_project(proj: ProjectData):
 	print("📋 Проект добавлен: ", proj.title, " (всего: ", active_projects.size(), ")")
 	return true
 
-# --- ПРОВЕРКА ЛИМИТА ---
 func can_take_more() -> bool:
 	return active_projects.size() < MAX_PROJECTS
 
-# --- ХЕЛПЕР: Получаем точное время (копия из project_window) ---
 func get_current_global_time() -> float:
 	var day_part = float(GameTime.hour) / 24.0
 	var min_part = float(GameTime.minute) / (24.0 * 60.0)
 	return float(GameTime.day) + day_part + min_part
 
-# --- ТИКАНИЕ ВСЕХ ПРОЕКТОВ ---
 func _physics_process(delta):
 	for project in active_projects:
 		if project.state != ProjectData.State.IN_PROGRESS:
@@ -44,9 +38,13 @@ func _physics_process(delta):
 		
 		project.elapsed_days = now - project.start_global_time
 		
+		# [НОВОЕ] Проверяем хард-дедлайн
+		if GameTime.day > project.deadline_day:
+			_fail_project(project)
+			continue
+		
 		var is_working_hours = GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
 		
-		# Ищем активный этап
 		var active_stage = null
 		for i in range(project.stages.size()):
 			var stage = project.stages[i]
@@ -73,7 +71,10 @@ func _physics_process(delta):
 						var skill = _get_skill_for_stage(active_stage.type, worker_data)
 						var efficiency = worker_data.get_efficiency_multiplier()
 						
-						var speed_per_second = (float(skill) * efficiency) / 60.0
+						# [НОВОЕ] Учитываем work_speed_multiplier (fast_learner/slowpoke)
+						var speed_mult = worker_data.get_work_speed_multiplier()
+						
+						var speed_per_second = (float(skill) * efficiency * speed_mult) / 60.0
 						active_stage.progress += speed_per_second * delta
 			
 			if active_stage.progress >= active_stage.amount:
@@ -82,19 +83,34 @@ func _physics_process(delta):
 				active_stage["actual_end"] = project.elapsed_days
 		
 		else:
-			# Все этапы завершены
 			_finish_project(project)
+
+# [НОВОЕ] Провал проекта — $0
+func _fail_project(project: ProjectData):
+	if project.state == ProjectData.State.FAILED:
+		return
+	
+	print("❌ ПРОЕКТ ПРОВАЛЕН (хард-дедлайн): ", project.title)
+	project.state = ProjectData.State.FAILED
+	emit_signal("project_failed", project)
 
 func _finish_project(project: ProjectData):
 	if project.state == ProjectData.State.FINISHED:
 		return
 	
-	print("🎉 ПРОЕКТ ПОЛНОСТЬЮ ЗАВЕРШЕН: ", project.title)
+	# [НОВОЕ] Расчёт выплаты с учётом дедлайнов
+	var payout = project.get_final_payout(GameTime.day)
+	
+	if payout < project.budget:
+		var penalty = project.budget - payout
+		print("⚠️ ПРОЕКТ ЗАВЕРШЁН С ПРОСРОЧКОЙ: ", project.title, " | Штраф: -$", penalty, " | Выплата: $", payout)
+	else:
+		print("🎉 ПРОЕКТ ЗАВЕРШЁН ВОВРЕМЯ: ", project.title, " | Выплата: $", payout)
+	
 	project.state = ProjectData.State.FINISHED
-	GameState.change_balance(project.budget)
+	GameState.change_balance(payout)
 	emit_signal("project_finished", project)
 
-# --- ВСПОМОГАТЕЛЬНЫЕ ---
 func _get_employee_node(data):
 	if not data:
 		return null
@@ -110,13 +126,11 @@ func _get_skill_for_stage(type, worker):
 		"QA": return worker.skill_qa
 	return 10
 
-# --- ПРОВЕРКА: назначен ли сотрудник на активный этап ЛЮБОГО проекта ---
 func is_employee_on_active_stage(emp_data: EmployeeData) -> bool:
 	for project in active_projects:
 		if project.state != ProjectData.State.IN_PROGRESS:
 			continue
 		
-		# Ищем текущий активный этап
 		var active_stage = null
 		for i in range(project.stages.size()):
 			var stage = project.stages[i]

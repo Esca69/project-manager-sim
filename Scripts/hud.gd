@@ -8,7 +8,7 @@ extends CanvasLayer
 @onready var btn_2x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed2Btn
 @onready var btn_5x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed5Btn
 
-@onready var info_panel = $Panel 
+@onready var info_panel = $Panel
 @onready var name_label = $Panel/VBoxContainer/NameLabel
 @onready var role_label = $Panel/VBoxContainer/RoleLabel
 @onready var salary_label = $Panel/VBoxContainer/SalaryLabel
@@ -19,7 +19,6 @@ extends CanvasLayer
 @onready var end_day_button = $EndDayButton
 @onready var project_list_menu = $ProjectListMenu
 
-# --- [НОВОЕ] Нижняя панель и экран сотрудников ---
 @onready var bottom_bar = $BottomBar
 @onready var employee_roster = $EmployeeRoster
 
@@ -50,7 +49,6 @@ func _ready():
 	if not project_list_menu.project_opened.is_connected(_on_project_list_opened):
 		project_list_menu.project_opened.connect(_on_project_list_opened)
 	
-	# --- [НОВОЕ] Подключаем нижнюю панель ---
 	if bottom_bar and not bottom_bar.tab_pressed.is_connected(_on_bottom_tab_pressed):
 		bottom_bar.tab_pressed.connect(_on_bottom_tab_pressed)
 	
@@ -106,19 +104,17 @@ func open_work_menu():
 		return
 	project_list_menu.open_menu()
 
+# [ИЗМЕНЕНИЕ] Не закрываем selection_ui — игрок может взять ещё проект из списка
 func _on_project_taken(proj_data):
 	ProjectManager.add_project(proj_data)
-	selection_ui.visible = false
 
 func _on_project_list_opened(proj_data: ProjectData):
 	project_window.setup(proj_data, employee_selector)
 	project_window.visible = true
 
-# --- [НОВОЕ] Обработка нажатий нижней панели ---
 func _on_bottom_tab_pressed(tab_name: String):
 	match tab_name:
 		"employees":
-			# Тоггл: нажал — открыл, нажал ещё раз — закрыл
 			if employee_roster.visible:
 				employee_roster.visible = false
 			else:
