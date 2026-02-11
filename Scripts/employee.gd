@@ -30,6 +30,8 @@ const COFFEE_LOVER_DURATION_MULT = 2.0
 
 const TOILET_VISITS_PER_DAY = 2
 const TOILET_BREAK_MINUTES = 15.0
+# [НОВОЕ] Множитель для toilet_lover
+const TOILET_LOVER_DURATION_MULT = 2.0
 
 const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
@@ -38,6 +40,13 @@ const WANDER_RADIUS = 1000.0
 const WANDER_PAUSE_MIN = 2.0
 const WANDER_PAUSE_MAX = 5.0
 const WANDER_SPEED_MULT = 0.5
+
+# [НОВОЕ] Early bird: приходит на 30-40 мин раньше
+const EARLY_BIRD_MINUTES_EARLY_MIN = 30
+const EARLY_BIRD_MINUTES_EARLY_MAX = 40
+var _early_bird_start_hour: int = -1
+var _early_bird_start_minute: int = -1
+var _early_bird_arrived: bool = false
 
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
@@ -69,14 +78,45 @@ func _ready():
 	if data:
 		update_visuals()
 		data.current_energy = 100.0
+		_setup_early_bird()
 
 	coffee_cup_holder.visible = false
 
 	GameTime.work_started.connect(_on_work_started)
 	GameTime.work_ended.connect(_on_work_ended)
+	GameTime.time_tick.connect(_on_time_tick)
 	
 	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
 		_go_to_sleep_instant()
+
+# [НОВОЕ] Настраиваем время прихода для early_bird
+func _setup_early_bird():
+	if not data or not data.has_trait("early_bird"):
+		_early_bird_start_hour = -1
+		_early_bird_start_minute = -1
+		return
+	
+	var minutes_early = randi_range(EARLY_BIRD_MINUTES_EARLY_MIN, EARLY_BIRD_MINUTES_EARLY_MAX)
+	var start_total_minutes = GameTime.START_HOUR * 60 - minutes_early
+	_early_bird_start_hour = start_total_minutes / 60
+	_early_bird_start_minute = start_total_minutes % 60
+	_early_bird_arrived = false
+
+# [НОВОЕ] Проверяем каждый тик — пора ли early_bird приходить
+func _on_time_tick(_hour, _minute):
+	if not data: return
+	if not data.has_trait("early_bird"): return
+	if _early_bird_start_hour < 0: return
+	if _early_bird_arrived: return
+	if GameTime.is_weekend(): return
+	if current_state != State.HOME: return
+	
+	var current_total = GameTime.hour * 60 + GameTime.minute
+	var early_total = _early_bird_start_hour * 60 + _early_bird_start_minute
+	
+	if current_total >= early_total:
+		_early_bird_arrived = true
+		_on_work_started()
 
 func _physics_process(delta):
 	update_debug_label()
@@ -91,7 +131,9 @@ func _physics_process(delta):
 			_apply_lean(Vector2.ZERO, delta)
 			
 		State.WORKING:
-			var loss_speed = (ENERGY_LOSS_PER_GAME_HOUR / 60.0) * GameTime.MINUTES_PER_REAL_SECOND
+			# [ИЗМЕНЕНИЕ] Учитываем energizer
+			var drain_mult = data.get_energy_drain_multiplier()
+			var loss_speed = (ENERGY_LOSS_PER_GAME_HOUR / 60.0) * GameTime.MINUTES_PER_REAL_SECOND * drain_mult
 			data.current_energy -= loss_speed * delta
 			if data.current_energy < 0:
 				data.current_energy = 0
@@ -138,11 +180,28 @@ func _physics_process(delta):
 				move_to_desk(my_desk_position)
 				return
 			
+			# [НОВОЕ] Туалет во время слоняния
+			_try_start_toilet_break()
+			
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_wander_arrived()
 				return
 			_move_along_path_slow(delta)
+
+		State.WANDER_PAUSE:
+			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
+				move_to_desk(my_desk_position)
+				return
+			
+			# [НОВОЕ] Туалет во время паузы слоняния
+			_try_start_toilet_break()
+			
+			_wander_pause_timer -= delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _wander_pause_timer <= 0.0:
+				_pick_next_wander_target()
 
 		State.WANDER_PAUSE:
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
@@ -203,10 +262,12 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
 
 # --- СЛОНЯНИЕ ---
-# [ИЗМЕНЕНИЕ] Теперь проверяем и выходные
 func _is_work_time() -> bool:
 	if GameTime.is_weekend():
 		return false
+	# [НОВОЕ] Early bird может работать раньше
+	if data and data.has_trait("early_bird") and _early_bird_arrived:
+		return GameTime.hour >= _early_bird_start_hour and GameTime.hour < GameTime.END_HOUR
 	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
 
 func _start_wandering():
@@ -267,7 +328,7 @@ func _start_coffee_break():
 	if data and data.has_trait("coffee_lover"):
 		min_minutes *= COFFEE_LOVER_DURATION_MULT
 		max_minutes *= COFFEE_LOVER_DURATION_MULT
-		print("☕ ", data.employee_name, " ОБОЖАЕТ КОФЕ! Перерыв удлинён: ", min_minutes, "-", max_minutes, " мин.")
+		print("☕ ", data.employee_name, " КОФЕМАН! Перерыв удлинён: ", min_minutes, "-", max_minutes, " мин.")
 	
 	coffee_break_minutes_left = randf_range(min_minutes, max_minutes)
 
@@ -319,7 +380,14 @@ func _try_start_toilet_break():
 func _start_toilet_break():
 	current_state = State.TOILET_BREAK
 	velocity = Vector2.ZERO
-	toilet_break_minutes_left = TOILET_BREAK_MINUTES
+	
+	var duration = TOILET_BREAK_MINUTES
+	# [НОВОЕ] toilet_lover — x2 длительность
+	if data and data.has_trait("toilet_lover"):
+		duration *= TOILET_LOVER_DURATION_MULT
+		print("🚽 ", data.employee_name, " ЛЮБИТ ПОКАКАТЬ! Визит удлинён: ", duration, " мин.")
+	
+	toilet_break_minutes_left = duration
 
 func _finish_toilet_break():
 	if toilet_ref:
@@ -330,8 +398,12 @@ func _finish_toilet_break():
 	
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
-	elif my_desk_position != Vector2.ZERO:
+	elif _is_work_time():
+		# [НОВОЕ] Если нет стола или этап не активен — продолжаем слоняться
 		_start_wandering()
+	else:
+		current_state = State.IDLE
+		velocity = Vector2.ZERO
 
 # --- ФУНКЦИИ УПРАВЛЕНИЯ ---
 func move_to_desk(target_point: Vector2):
@@ -397,6 +469,7 @@ func _on_work_started():
 		data.current_energy = 100.0
 		
 	_setup_toilet_schedule()
+	_setup_early_bird()
 	
 	if my_desk_position == Vector2.ZERO:
 		visible = true
@@ -475,6 +548,7 @@ func setup_employee(new_data: EmployeeData):
 	data = new_data
 	data.current_energy = 100.0
 	update_visuals()
+	_setup_early_bird()
 
 func update_visuals():
 	if not body_sprite: return

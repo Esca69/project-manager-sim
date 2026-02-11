@@ -6,18 +6,15 @@ signal employee_fired(emp_data: EmployeeData)
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var empty_label = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer/EmptyLabel
 
-# --- Стили ---
 var card_style: StyleBoxFlat
 var fire_btn_style: StyleBoxFlat
 var fire_btn_hover_style: StyleBoxFlat
 
-# --- Диалог подтверждения ---
 var _dialog_layer: Control
 var _confirm_label: Label
 var _pending_fire_data: EmployeeData = null
 var _pending_fire_node = null
 
-# --- Текстуры спрайтов ---
 var _body_texture: Texture2D
 var _head_texture: Texture2D
 
@@ -76,7 +73,6 @@ func open():
 func _on_close_pressed():
 	visible = false
 
-# === ОБНОВЛЕНИЕ В РЕАЛЬНОМ ВРЕМЕНИ ===
 func _process(_delta):
 	if not visible: return
 	_update_live_data()
@@ -111,7 +107,6 @@ func _update_live_data():
 				status_lbl.text = _get_status_text(npc_node)
 				status_lbl.add_theme_color_override("font_color", _get_status_color(npc_node))
 
-# === ПОСТРОЕНИЕ КАРТОЧЕК ===
 func _rebuild_cards():
 	for child in cards_container.get_children():
 		if child == empty_label: continue
@@ -150,11 +145,9 @@ func _create_card(npc_node) -> PanelContainer:
 	main_hbox.add_theme_constant_override("separation", 15)
 	margin.add_child(main_hbox)
 	
-	# === ЛЕВАЯ ЧАСТЬ: Спрайт сотрудника (уменьшенный, центрированный) ===
 	var sprite_container = _create_employee_sprite(emp)
 	main_hbox.add_child(sprite_container)
 	
-	# === ЦЕНТР: Информация ===
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.add_theme_constant_override("separation", 3)
@@ -178,13 +171,10 @@ func _create_card(npc_node) -> PanelContainer:
 	salary_lbl.add_theme_font_size_override("font_size", 13)
 	info_vbox.add_child(salary_lbl)
 	
-	var trait_text = emp.build_trait_text()
-	if trait_text != "":
-		var trait_lbl = Label.new()
-		trait_lbl.text = "Черты: " + trait_text
-		trait_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
-		trait_lbl.add_theme_font_size_override("font_size", 13)
-		info_vbox.add_child(trait_lbl)
+	# [ИЗМЕНЕНИЕ] Трейты в строку
+	if not emp.traits.is_empty():
+		var traits_row = TraitUIHelper.create_traits_row(emp, self)
+		info_vbox.add_child(traits_row)
 	
 	# === ПРАВАЯ ЧАСТЬ ===
 	var right_vbox = VBoxContainer.new()
@@ -238,25 +228,20 @@ func _create_card(npc_node) -> PanelContainer:
 	
 	return card
 
-# === СПРАЙТ — уменьшенный, центрированный внутри рамки ===
 func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
-	# CenterContainer гарантирует центрирование внутри карточки
 	var center = CenterContainer.new()
 	center.custom_minimum_size = Vector2(55, 70)
 	
-	# Внутренний контейнер с фиксированным размером
 	var inner = Control.new()
 	inner.custom_minimum_size = Vector2(40, 60)
 	center.add_child(inner)
 	
-	# Цвет по роли
 	var body_color = Color.WHITE
 	match emp.job_title:
 		"Backend Developer": body_color = Color(0.4, 0.4, 1.0)
 		"Business Analyst": body_color = Color(1.0, 0.4, 0.4)
 		"QA Engineer": body_color = Color(0.4, 1.0, 0.4)
 	
-	# Тело — маленькое (масштаб ~0.35 от оригинала)
 	var body_tex = TextureRect.new()
 	body_tex.texture = _body_texture
 	body_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -266,7 +251,6 @@ func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
 	body_tex.self_modulate = body_color
 	inner.add_child(body_tex)
 	
-	# Голова — маленькая
 	var head_tex = TextureRect.new()
 	head_tex.texture = _head_texture
 	head_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -277,7 +261,6 @@ func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
 	
 	return center
 
-# === СТАТУС ===
 func _get_status_text(npc_node) -> String:
 	if not npc_node or not is_instance_valid(npc_node):
 		return "—"
@@ -377,8 +360,13 @@ func _confirm_fire():
 				stage.workers.remove_at(idx)
 				print("❌ Снят с проекта: ", project.title, ", этап: ", stage.type)
 	
-	# [ИСПРАВЛЕНИЕ] 2. Освобождаем стол, если сотрудник был назначен
+	# [ИСПРАВЛЕНИЕ] 2. Освобождаем стол — только employee_desk, не computer_desk
 	for desk in get_tree().get_nodes_in_group("desk"):
+		# Проверяем что у объекта ЕСТЬ свойство assigned_employee
+		if not desk.has_method("unassign_employee"):
+			continue
+		if not ("assigned_employee" in desk):
+			continue
 		if desk.assigned_employee == _pending_fire_data:
 			desk.unassign_employee()
 			print("🪑 Стол освобождён")
@@ -404,7 +392,6 @@ func _cancel_fire():
 	_pending_fire_node = null
 	_dialog_layer.visible = false
 
-# === ДИАЛОГ ===
 func _build_confirm_dialog():
 	_dialog_layer = Control.new()
 	_dialog_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
