@@ -17,32 +17,30 @@ const BASE_TRACK_HEIGHT = 60.0
 
 var stage_index: int = -1
 var stage_data: Dictionary = {}
+var is_readonly: bool = false
 
-# Сохранённый стиль оригинальной кнопки
 var _btn_style: StyleBox = null
 var _btn_font_color: Color = Color.WHITE
 var _btn_min_size: Vector2 = Vector2(180, 40)
 
-# Контейнер для динамических кнопок
 var _buttons_container: VBoxContainer = null
 
-func setup(index: int, data: Dictionary):
+func setup(index: int, data: Dictionary, readonly: bool = false):
 	stage_index = index
 	stage_data = data
+	is_readonly = readonly
 	role_label.text = data.type
 	progress_label.text = "%d / %d" % [int(data.progress), int(data.amount)]
 	
 	_capture_original_style()
 	rebuild_worker_buttons()
 	
-	# Скрываем до отрисовки
 	visual_bar.visible = false
 	progress_bar.visible = false
 
 func _ready():
 	pass
 
-# --- Запоминаем стиль оригинальной кнопки ---
 func _capture_original_style():
 	if original_btn:
 		var style = original_btn.get_theme_stylebox("normal")
@@ -52,10 +50,8 @@ func _capture_original_style():
 		_btn_font_color = original_btn.get_theme_color("font_color")
 		_btn_min_size = original_btn.custom_minimum_size
 		
-		# Прячем оригинальную кнопку навсегда
 		original_btn.visible = false
 
-# --- Создаём стилизованную кнопку (копия стиля оригинала) ---
 func _create_styled_button(text: String) -> Button:
 	var btn = Button.new()
 	btn.text = text
@@ -68,7 +64,6 @@ func _create_styled_button(text: String) -> Button:
 	
 	return btn
 
-# --- Создаём кнопку удаления "−" ---
 func _create_remove_button() -> Button:
 	var btn = Button.new()
 	btn.text = "−"
@@ -93,15 +88,12 @@ func _create_remove_button() -> Button:
 	
 	return btn
 
-# --- ДИНАМИЧЕСКИЕ КНОПКИ ---
 func rebuild_worker_buttons():
-	# 1. Удаляем старый контейнер (если был)
 	if _buttons_container:
 		assign_wrapper.remove_child(_buttons_container)
 		_buttons_container.queue_free()
 		_buttons_container = null
 	
-	# 2. Создаём новый VBoxContainer внутри AssignWrapper
 	_buttons_container = VBoxContainer.new()
 	_buttons_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	_buttons_container.add_theme_constant_override("separation", 8)
@@ -109,51 +101,57 @@ func rebuild_worker_buttons():
 	
 	var workers = stage_data.get("workers", [])
 	
-	# 3. Для каждого назначенного работника — строка: [кнопка "−"] + [Label с именем]
 	for i in range(workers.size()):
 		var worker = workers[i]
 		
-		# Горизонтальный контейнер
 		var row = HBoxContainer.new()
 		row.add_theme_constant_override("separation", 6)
 		row.alignment = BoxContainer.ALIGNMENT_CENTER
 		
-		# Кнопка удаления "−"
-		var remove_btn = _create_remove_button()
-		var worker_idx = i
-		remove_btn.pressed.connect(func(): emit_signal("worker_removed", stage_index, worker_idx))
-		row.add_child(remove_btn)
+		# Кнопка "−" только если НЕ readonly
+		if not is_readonly:
+			var remove_btn = _create_remove_button()
+			var worker_idx = i
+			remove_btn.pressed.connect(func(): emit_signal("worker_removed", stage_index, worker_idx))
+			row.add_child(remove_btn)
 		
-		# Label с именем (просто текст, не кнопка)
 		var name_label = Label.new()
 		name_label.text = "👤 " + worker.employee_name
 		name_label.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 		name_label.custom_minimum_size = Vector2(140, 30)
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(name_label)
 		
 		_buttons_container.add_child(row)
 	
-	# 4. Кнопка "+ Назначить" (всегда внизу)
-	var add_btn = _create_styled_button("+ Назначить")
-	add_btn.modulate = Color.WHITE
-	add_btn.pressed.connect(func(): emit_signal("assignment_requested", stage_index))
-	_buttons_container.add_child(add_btn)
+	# Кнопка "+ Назначить" только если НЕ readonly
+	if not is_readonly:
+		var add_btn = _create_styled_button("+ Назначить")
+		add_btn.modulate = Color.WHITE
+		add_btn.pressed.connect(func(): emit_signal("assignment_requested", stage_index))
+		_buttons_container.add_child(add_btn)
 	
-	# 5. Пересчитываем высоту трека
 	_update_track_height(workers.size())
 
 func _update_track_height(worker_count: int):
-	var total_buttons = worker_count + 1
+	var extra = 1 if not is_readonly else 0
+	var total_buttons = worker_count + extra
 	var needed_height = max(BASE_TRACK_HEIGHT, total_buttons * (BUTTON_HEIGHT + 10) + 20)
 	custom_minimum_size.y = needed_height
 
-# Совместимость: вызывается из project_window после назначения
 func update_button_visuals():
 	rebuild_worker_buttons()
 
-# --- ГЛАВНАЯ ФУНКЦИЯ ОТРИСОВКИ (ДИНАМИКА) ---
+# --- ОТРИСОВКА ДИНАМИКА (старая, для совместимости) ---
 func update_visuals_dynamic(px_per_day: float, current_project_time: float, color: Color):
+	update_visuals_dynamic_offset(px_per_day, current_project_time, color, 0.0)
+
+# --- [ПУНКТ 3] НОВАЯ: ОТРИСОВКА С УЧЁТОМ СДВИГА ---
+# start_offset = сколько дней прошло от origin_time до start_global_time проекта
+# plan_start и actual_start хранятся относительно старта проекта,
+# поэтому на таймлайне их X = (start_offset + значение) * px_per_day
+func update_visuals_dynamic_offset(px_per_day: float, current_project_time: float, color: Color, start_offset: float):
 	var workers = stage_data.get("workers", [])
 	if workers.size() == 0:
 		visual_bar.visible = false
@@ -165,7 +163,7 @@ func update_visuals_dynamic(px_per_day: float, current_project_time: float, colo
 	var plan_start = stage_data.get("plan_start", 0.0)
 	var plan_dur = stage_data.get("plan_duration", 0.0)
 	
-	visual_bar.position.x = plan_start * px_per_day
+	visual_bar.position.x = (start_offset + plan_start) * px_per_day
 	visual_bar.size.x = plan_dur * px_per_day
 	visual_bar.size.y = BAR_HEIGHT
 	visual_bar.position.y = (size.y - BAR_HEIGHT) / 2.0
@@ -188,7 +186,7 @@ func update_visuals_dynamic(px_per_day: float, current_project_time: float, colo
 		var fact_height = BAR_HEIGHT * 0.6
 		progress_bar.size.y = fact_height
 		progress_bar.position.y = (size.y - fact_height) / 2.0
-		progress_bar.position.x = act_start * px_per_day
+		progress_bar.position.x = (start_offset + act_start) * px_per_day
 		
 		var duration = 0.0
 		if act_end != -1.0:

@@ -16,24 +16,26 @@ var selector_ref
 var current_selecting_track_index: int = -1
 
 const GANTT_VIEW_WIDTH = 900.0
-# [ПУНКТ 2] Минимум 7 дней отображения на таймлайне
 const MIN_TIMELINE_DAYS = 7.0
 
 var current_time_line: ColorRect
 var soft_deadline_line: ColorRect
 var hard_deadline_line: ColorRect
 
+# [ПУНКТ 3] Базовое время origin — начало рабочего дня (START_HOUR) в день создания проекта
+# Все позиции на таймлайне считаются относительно этого момента
+func _get_origin_time() -> float:
+	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
+
 func setup(data: ProjectData, selector_node):
 	project = data
 	selector_ref = selector_node
 	
-	# Название с категорией
 	var cat_label = "[MICRO]" if project.category == "micro" else "[SIMPLE]"
 	title_label.text = cat_label + " " + project.title
 	
 	budget_label.text = "Бюджет: $%d" % project.budget
 	
-	# Дедлайн + штраф
 	var deadline_date = GameTime.get_date_short(project.deadline_day)
 	var days_left = project.deadline_day - GameTime.day
 	var soft_date = GameTime.get_date_short(project.soft_deadline_day)
@@ -42,7 +44,9 @@ func setup(data: ProjectData, selector_node):
 		soft_date, soft_left, project.soft_deadline_penalty_percent, deadline_date, days_left
 	]
 	
-	# Очистка
+	# [ПУНКТ 5] Определяем readonly
+	var is_readonly = (project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED)
+	
 	for child in tracks_container.get_children():
 		tracks_container.remove_child(child)
 		child.queue_free()
@@ -61,7 +65,8 @@ func setup(data: ProjectData, selector_node):
 			
 		var new_track = track_scene.instantiate()
 		tracks_container.add_child(new_track)
-		new_track.setup(i, stage)
+		# [ПУНКТ 5] Передаём readonly
+		new_track.setup(i, stage, is_readonly)
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
 		new_track.worker_removed.connect(_on_worker_removed)
 	
@@ -90,7 +95,6 @@ func _migrate_stage(stage: Dictionary):
 	if not stage.has("workers"):
 		stage["workers"] = []
 
-# [ПУНКТ 5] Скрываем кнопки для IN_PROGRESS, FINISHED, FAILED
 func update_buttons_visibility():
 	if project.state == ProjectData.State.IN_PROGRESS or project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
 		start_btn.visible = false
@@ -124,19 +128,21 @@ func _process(delta):
 	if not visible: return
 	
 	var origin_day = project.created_at_day
+	var origin_time = _get_origin_time()
 	
 	if project.state == ProjectData.State.DRAFTING:
-		# [ПУНКТ 2+3] Горизонт от origin_day до дедлайна, минимум MIN_TIMELINE_DAYS
+		# Горизонт: от origin_day до дедлайна
 		var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
 		if horizon_from_origin < MIN_TIMELINE_DAYS:
 			horizon_from_origin = MIN_TIMELINE_DAYS
 		var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
 		
-		# [ПУНКТ 3] Синяя линия показывает текущий день даже в DRAFTING
 		var line_height = max(tracks_container.size.y + 50, 500)
 		
+		# [ПУНКТ 3] Синяя линия = (текущее_время - origin_time)
+		# При 8:00 первого дня это будет ровно 0 (начало таймлайна)
 		if current_time_line:
-			var now_offset = get_current_global_time() - float(origin_day)
+			var now_offset = get_current_global_time() - origin_time
 			current_time_line.position.x = now_offset * pixels_per_day
 			current_time_line.size.y = line_height
 			current_time_line.visible = true
@@ -161,10 +167,8 @@ func _process(delta):
 	if project.start_global_time > 0.01:
 		project.elapsed_days = now - project.start_global_time
 
-	# [ПУНКТ 2+3] Горизонт от origin_day, минимум MIN_TIMELINE_DAYS
 	var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
-	# Расширяем если проект уже дольше дедлайна
-	var elapsed_from_origin = now - float(origin_day)
+	var elapsed_from_origin = now - origin_time
 	if elapsed_from_origin + 2.0 > horizon_from_origin:
 		horizon_from_origin = elapsed_from_origin + 2.0
 	if horizon_from_origin < MIN_TIMELINE_DAYS:
@@ -172,12 +176,18 @@ func _process(delta):
 	
 	var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
 	
+	# [ПУНКТ 3] Колбаски: plan_start/actual_start хранятся относительно start_global_time,
+	# но рисовать нужно относительно origin_time.
+	# Сдвиг = start_global_time - origin_time (сколько дней прошло от начала таймлайна до старта проекта)
+	var start_offset = project.start_global_time - origin_time
+	
 	for i in range(project.stages.size()):
 		if i < tracks_container.get_child_count():
 			var stage = project.stages[i]
 			var track_node = tracks_container.get_child(i)
 			var stage_color = get_color_for_stage(stage.type)
-			track_node.update_visuals_dynamic(pixels_per_day, project.elapsed_days, stage_color)
+			# Передаём offset чтобы track правильно рисовал plan/actual с учётом сдвига
+			track_node.update_visuals_dynamic_offset(pixels_per_day, project.elapsed_days, stage_color, start_offset)
 			
 			var percent = 0.0
 			if stage.amount > 0:
@@ -186,9 +196,9 @@ func _process(delta):
 	
 	var line_height = max(tracks_container.size.y + 50, 500)
 	
-	# [ПУНКТ 3] Синяя линия = текущее время относительно origin_day
+	# [ПУНКТ 3] Синяя линия = текущее время относительно origin_time
 	if current_time_line:
-		var now_offset = now - float(origin_day)
+		var now_offset = now - origin_time
 		current_time_line.position.x = now_offset * pixels_per_day
 		current_time_line.size.y = line_height
 		current_time_line.visible = true
@@ -331,11 +341,6 @@ func get_employee_node(data):
 		if npc.data == data: return npc
 	return null
 
-# [ПУНКТ 6+7] Превью плановых колбасок
-# Колбаска рисуется только для этапов, где назначены сотрудники.
-# Для пустых этапов — показываем пустое место (не блокируем старт).
-# Длительность = work_units / суммарный_скилл / 9 часов_в_дне (в днях)
-# [ПУНКТ 7] Кнопка "Старт" активна если назначен хотя бы 1 работник на хотя бы 1 этап.
 func recalculate_schedule_preview():
 	if project.state == ProjectData.State.IN_PROGRESS: return
 	if project.state == ProjectData.State.FINISHED: return
@@ -364,10 +369,8 @@ func recalculate_schedule_preview():
 			track_node.update_bar_preview(current_offset * preview_px_per_day, duration_days * preview_px_per_day, color)
 			current_offset += duration_days
 		else:
-			# Пустой этап — не рисуем колбаску, но НЕ блокируем старт
 			track_node.update_bar_preview(0, 0, Color.WHITE)
 	
-	# [ПУНКТ 7] Нужен хотя бы 1 назначенный работник чтобы стартовать
 	start_btn.disabled = not any_assigned
 
 func get_total_skill_for_stage(stage: Dictionary) -> int:
@@ -390,7 +393,6 @@ func get_color_for_stage(type):
 		"QA": return Color("98FB98")
 	return Color.GRAY
 
-# [ПУНКТ 5] Блокируем назначение для завершённых/проваленных проектов
 func _on_track_assignment_requested(index):
 	if project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
 		return

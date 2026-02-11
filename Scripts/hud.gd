@@ -104,8 +104,18 @@ func open_work_menu():
 		return
 	project_list_menu.open_menu()
 
-# [ИЗМЕНЕНИЕ] Не закрываем selection_ui — игрок может взять ещё проект из списка
+# [ИСПРАВЛЕНИЕ] При взятии проекта — сдвигаем created_at_day на текущий день
+# Дедлайны сдвигаются на ту же разницу, чтобы у игрока осталось столько же дней
 func _on_project_taken(proj_data):
+	var today = GameTime.day
+	var old_created = proj_data.created_at_day
+	
+	if today != old_created:
+		var shift = today - old_created
+		proj_data.created_at_day = today
+		proj_data.deadline_day += shift
+		proj_data.soft_deadline_day += shift
+	
 	ProjectManager.add_project(proj_data)
 
 func _on_project_list_opened(proj_data: ProjectData):
