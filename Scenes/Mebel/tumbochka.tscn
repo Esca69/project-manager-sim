@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://dbkt45r0pwr26"]
+
+[ext_resource type="Texture2D" uid="uid://caq3vhg1r2ebe" path="res://Sprites/Office/tumbochka.png" id="1_q63n1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3fu04"]
+size = Vector2(91, 26)
+
+[node name="Tumbochka" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="." groups=["desk"]]
+texture = ExtResource("1_q63n1")
+offset = Vector2(0, -50)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-2, -10)
+shape = SubResource("RectangleShape2D_3fu04")
