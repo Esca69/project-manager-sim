@@ -74,11 +74,13 @@ func interact():
 	for body in bodies:
 		# NPC — показываем карточку сотрудника
 		if body.is_in_group("npc") and body.data:
+			AudioManager.play_sfx("interact")  # 🔊 Звук при взаимодействии
 			get_tree().call_group("ui", "show_employee_card", body.data)
 			return
 		
 		# Стол или другой интерактивный объект — вызываем interact()
 		# НО только если у объекта ЕСТЬ метод interact (защита от вылета)
 		if body.is_in_group("desk") and body.has_method("interact"):
+			AudioManager.play_sfx("interact")  # 🔊 Звук при взаимодействии
 			body.interact()
 			return
