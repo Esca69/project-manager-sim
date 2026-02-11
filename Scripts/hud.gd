@@ -1,16 +1,13 @@
 extends CanvasLayer
 
-# --- ССЫЛКИ НА НОВЫЙ ИНТЕРФЕЙС (ВЕРХНЯЯ ПАНЕЛЬ) ---
 @onready var time_label = $TopBar/MarginContainer/HBoxContainer/TimeLabel
 @onready var balance_label = $TopBar/MarginContainer/HBoxContainer/BalanceLabel
 
-# Кнопки скорости
 @onready var btn_pause = $TopBar/MarginContainer/HBoxContainer/SpeedControls/PauseBtn
 @onready var btn_1x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed1Btn
 @onready var btn_2x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed2Btn
 @onready var btn_5x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed5Btn
 
-# --- ССЫЛКИ НА ОКНА ---
 @onready var info_panel = $Panel 
 @onready var name_label = $Panel/VBoxContainer/NameLabel
 @onready var role_label = $Panel/VBoxContainer/RoleLabel
@@ -22,23 +19,27 @@ extends CanvasLayer
 @onready var end_day_button = $EndDayButton
 @onready var project_list_menu = $ProjectListMenu
 
+# --- [НОВОЕ] Нижняя панель и экран сотрудников ---
+@onready var bottom_bar = $BottomBar
+@onready var employee_roster = $EmployeeRoster
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Скрываем окна при старте
 	info_panel.visible = false
 	selection_ui.visible = false
 	project_window.visible = false
 	employee_selector.visible = false
 	end_day_button.visible = false
 	project_list_menu.visible = false
+	employee_roster.visible = false
 	
-	# --- ПОДКЛЮЧЕНИЕ СИГНАЛОВ ---
 	GameTime.time_tick.connect(update_time_label)
 	GameTime.work_ended.connect(_on_work_ended_show_end_day)
 	GameTime.work_started.connect(_on_work_started_hide_end_day)
 	GameTime.night_skip_started.connect(_on_night_skip_started)
 	GameTime.night_skip_finished.connect(_on_night_skip_finished)
+	GameTime.day_started.connect(_on_new_day)
 	GameState.balance_changed.connect(update_balance_ui)
 	
 	end_day_button.pressed.connect(_on_end_day_pressed)
@@ -46,25 +47,33 @@ func _ready():
 	if not selection_ui.project_selected.is_connected(_on_project_taken):
 		selection_ui.project_selected.connect(_on_project_taken)
 	
-	# --- [НОВОЕ] Сигнал из ProjectListMenu ---
 	if not project_list_menu.project_opened.is_connected(_on_project_list_opened):
 		project_list_menu.project_opened.connect(_on_project_list_opened)
 	
-	# --- ПОДКЛЮЧЕНИЕ КНОПОК СКОРОСТИ ---
+	# --- [НОВОЕ] Подключаем нижнюю панель ---
+	if bottom_bar and not bottom_bar.tab_pressed.is_connected(_on_bottom_tab_pressed):
+		bottom_bar.tab_pressed.connect(_on_bottom_tab_pressed)
+	
 	btn_pause.pressed.connect(func(): GameTime.speed_pause())
 	btn_1x.pressed.connect(func(): GameTime.speed_1x())
 	btn_2x.pressed.connect(func(): GameTime.speed_2x())
 	btn_5x.pressed.connect(func(): GameTime.speed_5x())
 	
-	# Инициализация UI
 	update_balance_ui(GameState.company_balance)
 	update_time_label(GameTime.hour, GameTime.minute)
 
 # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 
-func update_time_label(hour, minute):
-	var time_str = "%02d:%02d" % [hour, minute]
-	time_label.text = "День " + str(GameTime.day) + ", " + time_str
+func update_time_label(_hour, _minute):
+	var time_str = "%02d:%02d" % [GameTime.hour, GameTime.minute]
+	var date_str = GameTime.get_date_string()
+	
+	time_label.text = date_str + " — " + time_str
+	
+	if GameTime.is_weekend():
+		time_label.modulate = Color(1.0, 0.6, 0.6, 1.0)
+	else:
+		time_label.modulate = Color.WHITE
 
 func update_balance_ui(amount):
 	balance_label.text = "$ " + str(amount)
@@ -86,28 +95,34 @@ func _on_close_button_pressed():
 	info_panel.visible = false
 
 func open_boss_menu():
-	# --- [ИЗМЕНЕНИЕ] Убрана проверка на один проект. Проверяем лимит. ---
 	if not ProjectManager.can_take_more():
 		print("Босс: Слишком много активных проектов! (макс: ", ProjectManager.MAX_PROJECTS, ")")
 		return
 	selection_ui.open_selection()
 
 func open_work_menu():
-	# --- [ИЗМЕНЕНИЕ] Теперь открываем список проектов вместо одного ProjectWindow ---
 	if ProjectManager.active_projects.is_empty():
 		print("Компьютер: Нет активных проектов.")
 		return
 	project_list_menu.open_menu()
 
 func _on_project_taken(proj_data):
-	# --- [ИЗМЕНЕНИЕ] Добавляем в массив через ProjectManager ---
 	ProjectManager.add_project(proj_data)
 	selection_ui.visible = false
 
-# --- [НОВОЕ] Когда игрок выбрал проект из списка ---
 func _on_project_list_opened(proj_data: ProjectData):
 	project_window.setup(proj_data, employee_selector)
 	project_window.visible = true
+
+# --- [НОВОЕ] Обработка нажатий нижней панели ---
+func _on_bottom_tab_pressed(tab_name: String):
+	match tab_name:
+		"employees":
+			# Тоггл: нажал — открыл, нажал ещё раз — закрыл
+			if employee_roster.visible:
+				employee_roster.visible = false
+			else:
+				employee_roster.open()
 
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
@@ -118,6 +133,9 @@ func _on_work_ended_show_end_day():
 	end_day_button.visible = true
 
 func _on_work_started_hide_end_day():
+	end_day_button.visible = false
+
+func _on_new_day(_day_number):
 	end_day_button.visible = false
 
 func _on_night_skip_started():

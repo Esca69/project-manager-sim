@@ -1,13 +1,11 @@
 extends Control
 
-# Сигнал: игрок выбрал проект для открытия в ProjectWindow
 signal project_opened(proj: ProjectData)
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var empty_label = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer/EmptyLabel
 
-# Шаблон для стилей
 var card_style_normal: StyleBoxFlat
 var card_style_finished: StyleBoxFlat
 var btn_style: StyleBoxFlat
@@ -18,7 +16,6 @@ func _ready():
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
 	
-	# Создаем стили (как в HiringMenu / ProjectSelectionUI)
 	card_style_normal = StyleBoxFlat.new()
 	card_style_normal.bg_color = Color(1, 1, 1, 1)
 	card_style_normal.border_width_left = 3
@@ -63,7 +60,6 @@ func _on_close_pressed():
 	visible = false
 
 func _rebuild_cards():
-	# Удаляем все старые карточки (кроме EmptyLabel)
 	for child in cards_container.get_children():
 		if child == empty_label:
 			continue
@@ -90,7 +86,6 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	else:
 		card.add_theme_stylebox_override("panel", card_style_normal)
 	
-	# --- Внутренний отступ ---
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
 	margin.add_theme_constant_override("margin_top", 15)
@@ -102,14 +97,12 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 5)
 	margin.add_child(vbox)
 	
-	# --- Верхняя строка: Название + Статус + Кнопка ---
 	var top_hbox = HBoxContainer.new()
 	vbox.add_child(top_hbox)
 	
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
 	
-	# Название
 	var title_text = proj.title
 	if proj.state == ProjectData.State.FINISHED:
 		title_text = "✅ " + proj.title
@@ -119,14 +112,12 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	left_info.add_child(name_lbl)
 	
-	# Статус
 	var status_lbl = Label.new()
 	match proj.state:
 		ProjectData.State.DRAFTING:
-			status_lbl.text = "📝 Черновик — назначьте людей и нажмите Старт"
+			status_lbl.text = "📝 Черновик — назначьте людей и нажмите Ст��рт"
 			status_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 		ProjectData.State.IN_PROGRESS:
-			# Показываем текущий этап
 			var stage_name = _get_current_stage_name(proj)
 			status_lbl.text = "🔧 В работе — этап: " + stage_name
 			status_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
@@ -138,7 +129,6 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 			status_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	left_info.add_child(status_lbl)
 	
-	# Прогресс текущего этапа (если в работе)
 	if proj.state == ProjectData.State.IN_PROGRESS:
 		var progress_text = _get_progress_text(proj)
 		var progress_lbl = Label.new()
@@ -146,12 +136,10 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 		progress_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 		left_info.add_child(progress_lbl)
 	
-	# Spacer
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
 	
-	# Правая часть: Бюджет + Кнопка
 	var right_info = VBoxContainer.new()
 	top_hbox.add_child(right_info)
 	
@@ -170,21 +158,23 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	open_btn.pressed.connect(_on_open_pressed.bind(index))
 	right_info.add_child(open_btn)
 	
-	# Нижняя строка: Дедлайны
+	# --- [ИЗМЕНЕНИЕ] Дедлайны в новом формате с да��ами ---
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	vbox.add_child(deadlines_hbox)
 	
 	var soft_days = proj.soft_deadline_day - GameTime.day
 	var hard_days = proj.deadline_day - GameTime.day
+	var soft_date = GameTime.get_date_short(proj.soft_deadline_day)
+	var hard_date = GameTime.get_date_short(proj.deadline_day)
 	
 	var soft_lbl = Label.new()
-	soft_lbl.text = "Софт-дедлайн: " + str(soft_days) + " дн."
+	soft_lbl.text = "Софт: %s (ост. %d дн.)" % [soft_date, soft_days]
 	soft_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	deadlines_hbox.add_child(soft_lbl)
 	
 	var hard_lbl = Label.new()
-	hard_lbl.text = "Хард-дедлайн: " + str(hard_days) + " дн."
+	hard_lbl.text = "Хард: %s (ост. %d дн.)" % [hard_date, hard_days]
 	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	deadlines_hbox.add_child(hard_lbl)
 	

@@ -44,10 +44,11 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	new_proj.budget = int(total_points * 1.5)
 	
 	# 4. Расчет Хард-дедлайна
+	# [ИЗМЕНЕНИЕ] Сокращён в ~2 раза: было 1.4-1.8, стало 0.7-0.9
 	var hours_needed_ideal = total_points / MARKET_SPEED_PER_HOUR
 	var days_needed_ideal = hours_needed_ideal / WORK_HOURS_PER_DAY
 	
-	var buffer_coef = randf_range(1.4, 1.8) 
+	var buffer_coef = randf_range(0.7, 0.9) 
 	var days_given = ceil(days_needed_ideal * buffer_coef) + 1
 	
 	new_proj.deadline_day = current_game_day + int(days_given)

@@ -1,20 +1,15 @@
 extends Node
 
-# Глобальные сигналы (на них подпишутся все: UI, сотрудники, календарь)
 signal time_tick(hour, minute)
 signal day_started(day_number)
-signal day_ended # Можно использовать для сна игрока
+signal day_ended
 
-# --- СИГНАЛЫ ДЛЯ AI ---
-signal work_started # Сработает в 09:00
-signal work_ended   # Сработает в 18:00
+signal work_started
+signal work_ended
 
-# --- СИГНАЛЫ ДЛЯ НОЧНОЙ ПРОМОТКИ ---
 signal night_skip_started
 signal night_skip_finished
 
-# Настройки времени
-# При Engine.time_scale = 1.0, одна игровая минута пройдет за 1 реальную секунду (если тут стоит 1.0)
 const MINUTES_PER_REAL_SECOND = 1.0 
 
 const START_HOUR = 9  
@@ -22,88 +17,158 @@ const END_HOUR = 18
 const NIGHT_SKIP_END_HOUR = 8
 const NIGHT_SKIP_DURATION_SECONDS = 3.0
 
-# Текущее состояние
+# --- КАЛЕНДАРЬ ---
+const DAYS_IN_MONTH = 30
+const DAYS_IN_WEEK = 7
+const WEEKDAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+const WEEKDAY_NAMES_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббо��а", "Воскресенье"]
+
 var day = 1
 var hour = 8 
 var minute = 0
 
 var time_accumulator = 0.0 
 
-# --- [НОВОЕ] ПЕРЕМЕННЫЕ СКОРОСТИ ---
 var current_speed_scale: float = 1.0
 var is_game_paused: bool = false
 
-# --- [НОВОЕ] НОЧНАЯ ПРОМОТКА ---
 var is_night_skip: bool = false
 var skip_target_day: int = 0
 
 func _ready():
-	# GameTime должен работать даже если все на паузе
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Всегда сбрасываем скорость на нормальную при старте игры
 	Engine.time_scale = 1.0
 	current_speed_scale = 1.0
 	is_game_paused = false
 	is_night_skip = false
 
 func _process(delta):
-	# При Engine.time_scale > 1, delta будет больше (или приходить чаще),
-	# поэтому время в игре побежит быстрее само собой.
-	
 	time_accumulator += delta * MINUTES_PER_REAL_SECOND
 	
-	# Если набежала целая минута (или несколько)
 	while time_accumulator >= 1.0:
 		minute += 1
 		time_accumulator -= 1.0
 		
-		# Логика перевода часов
 		if minute >= 60:
 			minute = 0
 			hour += 1
 			
-			# --- ПРОВЕРКА РАСПИСАНИЯ ---
 			if hour == START_HOUR:
-				emit_signal("work_started")
-				print("🔔 09:00: СТАРТ РАБОТЫ")
+				if not is_weekend():
+					emit_signal("work_started")
+					print("🔔 09:00: СТАРТ РАБОТЫ (", get_weekday_name(), ")")
+				else:
+					print("🔔 09:00: ВЫХОДНОЙ (", get_weekday_name(), ") — никто не работает")
 				
 			elif hour == END_HOUR:
-				emit_signal("work_ended")
-				print("🔔 18:00: КОНЕЦ РАБОТЫ")
+				if not is_weekend():
+					emit_signal("work_ended")
+					print("🔔 18:00: КОНЕЦ РАБОТЫ")
 			
-			# Новый день
 			if hour >= 24:
 				hour = 0
 				day += 1
 				emit_signal("day_started", day)
-				GameState.pay_daily_salaries()
+				if not is_weekend():
+					GameState.pay_daily_salaries()
 			
 			# --- ПРОВЕРКА ОКОНЧАНИЯ ПРОМОТКИ ---
-			if is_night_skip and day == skip_target_day and hour == NIGHT_SKIP_END_HOUR and minute == 0:
-				finish_night_skip()
+			if is_night_skip:
+				if day >= skip_target_day and hour >= NIGHT_SKIP_END_HOUR:
+					if is_weekend():
+						pass
+					else:
+						finish_night_skip()
 		
-		# Сообщаем всем, сколько сейчас времени
 		emit_signal("time_tick", hour, minute)
 
-# --- НОЧНАЯ ПРОМОТКА ---
+# === ФУНКЦИИ КАЛЕНДАРЯ ===
 
+func get_month(d: int = -1) -> int:
+	if d == -1: d = day
+	return ((d - 1) / DAYS_IN_MONTH) + 1
+
+func get_day_in_month(d: int = -1) -> int:
+	if d == -1: d = day
+	return ((d - 1) % DAYS_IN_MONTH) + 1
+
+func get_weekday_index(d: int = -1) -> int:
+	if d == -1: d = day
+	return (d - 1) % DAYS_IN_WEEK
+
+func get_weekday_name(d: int = -1) -> String:
+	return WEEKDAY_NAMES[get_weekday_index(d)]
+
+func get_weekday_name_full(d: int = -1) -> String:
+	return WEEKDAY_NAMES_FULL[get_weekday_index(d)]
+
+func is_weekend(d: int = -1) -> bool:
+	var idx = get_weekday_index(d)
+	return idx == 5 or idx == 6
+
+func get_date_string(d: int = -1) -> String:
+	if d == -1: d = day
+	var m = get_month(d)
+	var dm = get_day_in_month(d)
+	var wd = get_weekday_name(d)
+	return "Мес. %d, День %d (%s)" % [m, dm, wd]
+
+func get_date_short(d: int) -> String:
+	var m = get_month(d)
+	var dm = get_day_in_month(d)
+	return "Мес. %d, День %d" % [m, dm]
+
+# === НОЧНАЯ ПРОМОТКА ===
+
+# [ИСПРАВЛЕНИЕ] Всегда мотаем до СЛЕДУЮЩЕГО рабочего дня 08:00,
+# независимо от того, когда нажали кнопку
 func start_night_skip():
 	if is_night_skip:
 		return
 	
 	is_night_skip = true
-	skip_target_day = day + 1
 	
-	var minutes_remaining_today = ((24 - hour) * 60) - minute
-	var minutes_until_target = minutes_remaining_today + (NIGHT_SKIP_END_HOUR * 60)
+	# --- [ИСПРАВЛЕНИЕ] Определяем целевой день ---
+	# Если сейчас ДО 08:00 текущего дня — целевой день = сегодня (если рабочий)
+	# Если сейчас ПОСЛЕ 08:00 — целевой день = завтра+
+	var target: int
+	if hour < NIGHT_SKIP_END_HOUR:
+		# Ещё не наступило утро текущего дня — мотаем до сегодняшнего утра
+		target = day
+	else:
+		# Уже прошло утро — мотаем до следующего дня
+		target = day + 1
 	
-	var skip_speed = max(1.0, minutes_until_target / NIGHT_SKIP_DURATION_SECONDS)
+	# Пропускаем выходные
+	while is_weekend(target):
+		target += 1
+	
+	skip_target_day = target
+	
+	# Считаем сколько минут мотать
+	var minutes_until_target: int
+	if target == day:
+		# Мотаем до сегодняшнего утра (мы до 08:00)
+		minutes_until_target = (NIGHT_SKIP_END_HOUR - hour) * 60 - minute
+	else:
+		# Мотаем до другого дня
+		var minutes_remaining_today = ((24 - hour) * 60) - minute
+		var full_days_between = target - day - 1
+		var minutes_full_days = full_days_between * 24 * 60
+		var minutes_target_morning = NIGHT_SKIP_END_HOUR * 60
+		minutes_until_target = minutes_remaining_today + minutes_full_days + minutes_target_morning
+	
+	if minutes_until_target <= 0:
+		minutes_until_target = 1
+	
+	var skip_speed = max(1.0, float(minutes_until_target) / NIGHT_SKIP_DURATION_SECONDS)
 	current_speed_scale = skip_speed
 	Engine.time_scale = current_speed_scale
 	
-	# ВАЖНО: замораживаем весь мир, чтобы камера не уезжала
 	get_tree().paused = true
+	
+	print("🌙 Промотка до дня ", skip_target_day, " (", get_weekday_name(skip_target_day), ") 08:00")
 	
 	emit_signal("night_skip_started")
 
@@ -115,14 +180,12 @@ func finish_night_skip():
 	current_speed_scale = 1.0
 	Engine.time_scale = current_speed_scale
 	
-	# Возвращаем мир
 	get_tree().paused = false
 	
 	emit_signal("night_skip_finished")
 
-# --- [НОВОЕ] УПРАВЛЕНИЕ СКОРОСТЬЮ ---
+# === УПРАВЛЕНИЕ СКОРОСТЬЮ ===
 
-# Основная функция смены скорости
 func set_speed(new_scale: float):
 	if is_night_skip:
 		return
@@ -131,26 +194,22 @@ func set_speed(new_scale: float):
 		set_paused(true)
 		return
 	
-	set_paused(false) # Снимаем с паузы, если была
+	set_paused(false)
 	
 	current_speed_scale = new_scale
 	Engine.time_scale = current_speed_scale
 	print("⏩ Скорость игры: x", current_speed_scale)
 
-# Функция паузы
 func set_paused(state: bool):
 	if is_night_skip:
 		return
 	
 	is_game_paused = state
-	# get_tree().paused замораживает _process и _physics_process у всех узлов,
-	# кроме тех, у кого Process Mode стоит "Always" или "When Paused".
 	get_tree().paused = is_game_paused
 	
 	if is_game_paused:
 		print("⏸ ИГРА НА ПАУЗЕ")
 
-# Быстрые методы для кнопок UI
 func speed_pause(): set_speed(0.0)
 func speed_1x(): set_speed(1.0)
 func speed_2x(): set_speed(2.0)

@@ -75,7 +75,7 @@ func _ready():
 	GameTime.work_started.connect(_on_work_started)
 	GameTime.work_ended.connect(_on_work_ended)
 	
-	if GameTime.hour < 9 or GameTime.hour >= 18:
+	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
 		_go_to_sleep_instant()
 
 func _physics_process(delta):
@@ -134,7 +134,7 @@ func _physics_process(delta):
 
 		State.WANDERING:
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
-				print("📋 ", data.employee_name, " — мой этап начался! ��ду к столу.")
+				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
 				move_to_desk(my_desk_position)
 				return
 			
@@ -155,13 +155,11 @@ func _physics_process(delta):
 			if _wander_pause_timer <= 0.0:
 				_pick_next_wander_target()
 
-# --- ПРОВЕРКА: АКТИВЕН ЛИ МОЙ ЭТАП НА ЛЮБОМ ПРОЕКТЕ? ---
 func _is_my_stage_active() -> bool:
 	if not data:
 		return false
 	return ProjectManager.is_employee_on_active_stage(data)
 
-# --- Уходим от стола в слоня��ие (стол остаётся за нами) ---
 func _leave_desk_to_wander():
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:
@@ -205,7 +203,10 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
 
 # --- СЛОНЯНИЕ ---
+# [ИЗМЕНЕНИЕ] Теперь проверяем и выходные
 func _is_work_time() -> bool:
+	if GameTime.is_weekend():
+		return false
 	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
 
 func _start_wandering():
@@ -336,7 +337,7 @@ func _finish_toilet_break():
 func move_to_desk(target_point: Vector2):
 	my_desk_position = target_point
 	
-	if GameTime.hour < GameTime.START_HOUR or GameTime.hour >= GameTime.END_HOUR:
+	if not _is_work_time():
 		_go_to_sleep_instant()
 		return
 	

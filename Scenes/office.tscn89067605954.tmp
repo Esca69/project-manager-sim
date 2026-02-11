@@ -1,0 +1,222 @@
+[gd_scene load_steps=33 format=3 uid="uid://kr52uj1nuu18"]
+
+[ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
+[ext_resource type="Texture2D" uid="uid://dcavcc5unw2pm" path="res://Sprites/Office/full_office4.png" id="2_oaeid"]
+[ext_resource type="PackedScene" uid="uid://cebrvtrf38laf" path="res://Scenes/player.tscn" id="2_vggx3"]
+[ext_resource type="Texture2D" uid="uid://cphov4wpd03ef" path="res://Sprites/Office/boss.png" id="5_q644x"]
+[ext_resource type="PackedScene" uid="uid://l6ojv8bflski" path="res://Scenes/hud.tscn" id="6_7xo7e"]
+[ext_resource type="PackedScene" uid="uid://cmjsjpufedl22" path="res://Scenes/ComputerDesk.tscn" id="7_eqlnk"]
+[ext_resource type="PackedScene" uid="uid://800ken273kfj" path="res://Scenes/EmployeeDesk.tscn" id="8_2vylc"]
+[ext_resource type="PackedScene" uid="uid://bwgwnl47ai4v6" path="res://Scenes/BossDesk.tscn" id="8_o84nh"]
+[ext_resource type="PackedScene" uid="uid://4pf53kcu8eo0" path="res://Scenes/coffee_machine.tscn" id="9_o2cca"]
+[ext_resource type="Texture2D" uid="uid://ba15ne35mp3sh" path="res://Sprites/Office/board.png" id="9_rs1ao"]
+[ext_resource type="PackedScene" uid="uid://rn7ywspbl6ht" path="res://Scenes/hr_desk.tscn" id="10_4luf0"]
+[ext_resource type="Texture2D" uid="uid://cl5755gtwl5im" path="res://Sprites/Office/plant.png" id="10_o2cca"]
+[ext_resource type="PackedScene" uid="uid://482i8led1rx1" path="res://Scenes/flipchart.tscn" id="12_s31ab"]
+[ext_resource type="PackedScene" uid="uid://dat7m0ulfvmf1" path="res://Scenes/Toilet.tscn" id="13_kn5q7"]
+[ext_resource type="Texture2D" uid="uid://dy6d1s1xdgt4g" path="res://Sprites/Office/bossplate.png" id="13_v47wj"]
+[ext_resource type="Texture2D" uid="uid://bo23r50hc6iec" path="res://Sprites/Office/hrplate.png" id="14_s31ab"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_o84nh"]
+vertices = PackedVector2Array(1574.8984, 1.2109375, 2476.9688, 2.34375, 2541.2969, 3.0078125, 3113.2813, 92.09375, 1558.2813, 106.92969, 387, 77, 984, 17, 1559.9688, 825.09375, 812.3281, 366.17188, 806.1172, 341.40625, 825.3281, 673.1719, 819.1172, 648.40625, 805.34375, 390.71875, 801.35156, 630.09375, 787.02344, 408.5, 778.1172, 623.46094, 763.5703, 414.3828, 264.32813, 684.1719, 548.6719, 668.8281, 554.8828, 693.59375, 257.34375, 708.71875, 254.34375, 402.71875, 261.32813, 378.17188, 535.6719, 361.82813, 541.8828, 386.59375, 258.1172, 659.40625, 240.35156, 641.09375, 597.4297, 620.6172, 582.8828, 411.53906, 984, -15.8984375, 3115.7031, 8.890625, 2423.1172, -505.89844, 2638, -504.07813, 2638, -350.70313, 2572.8281, -348.72656, -113.89844, -47.6875, 841, -20.039063, 841, 17, 387, -6, 818.34375, 697.71875, 1575.8594, -6.8984375, 239, -6, 33.429688, 325.6172, 239, 77, 214.11719, 328.46094, 573.97656, 626.5, 559.64844, 404.90625, 542.65625, 337.28125, 255.11719, 353.40625, 555.65625, 644.28125, 788.35156, 323.09375, 765.1172, 316.46094, 584.4297, 313.6172, 560.97656, 319.5, 237.35156, 335.09375, 9.9765625, 331.5, -8.34375, 349.28125, 800.02344, 715.5, 236.02344, 420.5, 217.11719, 634.46094, 212.57031, 426.3828, 36.429688, 631.6172, 31.882813, 423.53906, 12.9765625, 637.5, 8.6484375, 416.90625, -5.34375, 655.28125, 572.64844, 711.90625, 239.02344, 726.5, -106.078125, 840.89844, -9.1171875, 398.59375, -12.328125, 679.8281, -15.328125, 373.82813, -6.1171875, 704.59375, 11.6484375, 722.90625, 34.882813, 729.53906, 215.57031, 732.3828, 776.5703, 721.3828, 595.8828, 718.53906)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3, 4, 5, 6), PackedInt32Array(4, 7, 8, 9), PackedInt32Array(8, 7, 10, 11, 12), PackedInt32Array(12, 11, 13, 14), PackedInt32Array(14, 13, 15, 16), PackedInt32Array(17, 18, 19, 20), PackedInt32Array(21, 22, 23, 24, 25, 26), PackedInt32Array(16, 15, 27, 28), PackedInt32Array(6, 29, 0), PackedInt32Array(2, 30, 3), PackedInt32Array(31, 32, 33, 34), PackedInt32Array(1, 31, 34, 2), PackedInt32Array(35, 36, 37, 38), PackedInt32Array(39, 10, 7), PackedInt32Array(0, 40, 1), PackedInt32Array(37, 6, 5), PackedInt32Array(37, 5, 38), PackedInt32Array(35, 38, 41), PackedInt32Array(42, 35, 41, 43, 44), PackedInt32Array(28, 27, 45, 46), PackedInt32Array(5, 47, 23, 22, 48, 43), PackedInt32Array(46, 49, 18, 17, 25, 24), PackedInt32Array(4, 9, 50), PackedInt32Array(5, 4, 50, 51), PackedInt32Array(5, 51, 52), PackedInt32Array(5, 52, 53), PackedInt32Array(5, 53, 47), PackedInt32Array(43, 48, 54), PackedInt32Array(43, 54, 44), PackedInt32Array(35, 42, 55), PackedInt32Array(35, 55, 56), PackedInt32Array(57, 39, 7), PackedInt32Array(46, 45, 49), PackedInt32Array(58, 21, 26, 59), PackedInt32Array(60, 58, 59, 61), PackedInt32Array(62, 60, 61, 63), PackedInt32Array(64, 62, 63, 65), PackedInt32Array(20, 19, 66, 67), PackedInt32Array(68, 69, 64, 65, 70), PackedInt32Array(35, 56, 71), PackedInt32Array(68, 35, 71), PackedInt32Array(68, 71, 69), PackedInt32Array(68, 70, 72), PackedInt32Array(68, 72, 73), PackedInt32Array(68, 73, 74), PackedInt32Array(7, 68, 74, 75), PackedInt32Array(76, 7, 75, 67, 77), PackedInt32Array(76, 57, 7), PackedInt32Array(77, 67, 66)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-124, -58, 1568, -9, 1570, 835, -116, 851), PackedVector2Array(1567, -17, 3126, -1, 3123, 102, 1551, 117), PackedVector2Array(2469, 22, 2412, -516, 2648, -514, 2648, -341, 2582, -339, 2550, 18)])
+source_geometry_mode = 1
+source_geometry_group_name = &"desk"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o84nh"]
+size = Vector2(1495.5, 256.375)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2vylc"]
+size = Vector2(62, 1230)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4luf0"]
+size = Vector2(1778, 172.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_q644x"]
+size = Vector2(74.25, 753)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rs1ao"]
+size = Vector2(707.25, 331)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o2cca"]
+size = Vector2(68, 1018.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_v47wj"]
+size = Vector2(501, 264)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s31ab"]
+size = Vector2(1504, 68)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_oaeid"]
+size = Vector2(71, 786)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kn5q7"]
+size = Vector2(558, 261.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lsk72"]
+size = Vector2(71, 525)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ari0y"]
+size = Vector2(67, 437)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_uc7l7"]
+size = Vector2(244.5, 257.5)
+
+[sub_resource type="Gradient" id="Gradient_s31ab"]
+offsets = PackedFloat32Array(0.061728396, 1)
+colors = PackedColorArray(0.21568628, 0.79607844, 0.9647059, 0.25490198, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_oaeid"]
+gradient = SubResource("Gradient_s31ab")
+fill_from = Vector2(0.48598132, 0)
+fill_to = Vector2(0.5046729, 1)
+
+[node name="Office" type="Node2D"]
+z_as_relative = false
+script = ExtResource("1_2vylc")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavigationPolygon_o84nh")
+
+[node name="FullOffice" type="Sprite2D" parent="."]
+z_index = -10
+position = Vector2(1498, -96)
+texture = ExtResource("2_oaeid")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="FullOffice"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-898.75, -110.1875)
+shape = SubResource("RectangleShape2D_o84nh")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-1679, 383)
+shape = SubResource("RectangleShape2D_2vylc")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-758, 1014.25)
+shape = SubResource("RectangleShape2D_4luf0")
+
+[node name="CollisionShape2D5" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-662, -620)
+shape = SubResource("RectangleShape2D_q644x")
+
+[node name="CollisionShape2D6" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-280, -907)
+shape = SubResource("RectangleShape2D_rs1ao")
+
+[node name="CollisionShape2D7" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(495, -909)
+shape = SubResource("RectangleShape2D_rs1ao")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(106, -492.75)
+shape = SubResource("RectangleShape2D_o2cca")
+
+[node name="CollisionShape2D8" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(879, -492)
+shape = SubResource("RectangleShape2D_o2cca")
+
+[node name="CollisionShape2D9" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(391.5, -115)
+shape = SubResource("RectangleShape2D_v47wj")
+
+[node name="CollisionShape2D10" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(894, 247)
+shape = SubResource("RectangleShape2D_s31ab")
+
+[node name="CollisionShape2D11" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(110, 607)
+shape = SubResource("RectangleShape2D_oaeid")
+
+[node name="CollisionShape2D12" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(1366, -111.75)
+shape = SubResource("RectangleShape2D_kn5q7")
+
+[node name="CollisionShape2D13" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(1676.5, 19.5)
+shape = SubResource("RectangleShape2D_lsk72")
+
+[node name="CollisionShape2D14" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(1185.5, -460.5)
+shape = SubResource("RectangleShape2D_ari0y")
+
+[node name="CollisionShape2D15" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(1032.75, -547.75)
+shape = SubResource("RectangleShape2D_uc7l7")
+
+[node name="WorldObjects" type="Node2D" parent="." groups=["world_layer"]]
+y_sort_enabled = true
+
+[node name="Player" parent="WorldObjects" groups=["NPC"] instance=ExtResource("2_vggx3")]
+position = Vector2(119, 249)
+
+[node name="ComputerDesk" parent="WorldObjects" instance=ExtResource("7_eqlnk")]
+position = Vector2(313, 34)
+
+[node name="Boss" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(1459, -754)
+texture = ExtResource("5_q644x")
+
+[node name="BossDesk" parent="WorldObjects" instance=ExtResource("8_o84nh")]
+position = Vector2(1436, -674)
+
+[node name="HrDesk" parent="WorldObjects" instance=ExtResource("10_4luf0")]
+position = Vector2(2156, -614)
+
+[node name="EmployeeDesk" parent="WorldObjects" instance=ExtResource("8_2vylc")]
+position = Vector2(126, 727)
+
+[node name="EmployeeDesk2" parent="WorldObjects" instance=ExtResource("8_2vylc")]
+position = Vector2(674, 409)
+
+[node name="EmployeeDesk4" parent="WorldObjects" instance=ExtResource("8_2vylc")]
+position = Vector2(687, 716)
+
+[node name="EmployeeDesk3" parent="WorldObjects" instance=ExtResource("8_2vylc")]
+position = Vector2(123, 421)
+
+[node name="CoffeeMachine" parent="WorldObjects" groups=["desk"] instance=ExtResource("9_o2cca")]
+position = Vector2(912, 12)
+
+[node name="Board" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(1209, -938)
+texture = ExtResource("9_rs1ao")
+
+[node name="Plant" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(980, -451)
+texture = ExtResource("10_o2cca")
+
+[node name="Flipchart" parent="WorldObjects" instance=ExtResource("12_s31ab")]
+position = Vector2(632, -34)
+
+[node name="Toilet" parent="WorldObjects" instance=ExtResource("13_kn5q7")]
+position = Vector2(2473, -472)
+
+[node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
+
+[node name="SpawnPoint" type="Marker2D" parent="."]
+position = Vector2(1099, 818)
+
+[node name="OfficeEntrance" type="Marker2D" parent="." groups=["entrance"]]
+position = Vector2(1106, 773)
+
+[node name="Bossplate" type="Sprite2D" parent="."]
+position = Vector2(1236, -208)
+texture = ExtResource("13_v47wj")
+
+[node name="Hrplate" type="Sprite2D" parent="."]
+position = Vector2(2037, -208)
+texture = ExtResource("14_s31ab")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(324, -378.12015)
+scale = Vector2(14.875001, 3.5014648)
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 1)
+shadow_filter = 1
+texture = SubResource("GradientTexture2D_oaeid")
+offset = Vector2(0, 50)

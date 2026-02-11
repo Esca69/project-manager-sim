@@ -29,7 +29,11 @@ func setup(data: ProjectData, selector_node):
 	
 	title_label.text = project.title
 	budget_label.text = "Бюджет: $%d" % project.budget
-	deadline_label.text = "Дедлайн: день %d" % project.deadline_day
+	
+	# [ИЗМЕНЕНИЕ] Дедлайн теперь показывает дату
+	var deadline_date = GameTime.get_date_short(project.deadline_day)
+	var days_left = project.deadline_day - GameTime.day
+	deadline_label.text = "Дедлайн: %s (ост. %d дн.)" % [deadline_date, days_left]
 	
 	# Очистка
 	for child in tracks_container.get_children():
@@ -39,7 +43,6 @@ func setup(data: ProjectData, selector_node):
 	for i in range(project.stages.size()):
 		var stage = project.stages[i]
 		
-		# --- ОБРАТНАЯ СОВМЕСТИМОСТЬ ---
 		_migrate_stage(stage)
 		
 		if not stage.has("plan_start"):
@@ -61,7 +64,6 @@ func setup(data: ProjectData, selector_node):
 	update_buttons_visibility()
 	create_time_line_if_needed()
 
-	# Превью графика
 	call_deferred("recalculate_schedule_preview")
 
 func _ready():
@@ -71,7 +73,6 @@ func _ready():
 	start_btn.pressed.connect(_on_start_pressed)
 	close_window_btn.pressed.connect(func(): visible = false)
 
-# --- ОБРАТНАЯ СОВМЕСТИМОСТЬ ---
 func _migrate_stage(stage: Dictionary):
 	if stage.has("worker"):
 		if not stage.has("workers"):
@@ -90,7 +91,6 @@ func update_buttons_visibility():
 		start_btn.visible = true
 		cancel_btn.visible = true
 
-# --- ХЕЛПЕР: Получаем точное время ---
 func get_current_global_time() -> float:
 	var day_part = float(GameTime.hour) / 24.0
 	var min_part = float(GameTime.minute) / (24.0 * 60.0)
@@ -118,29 +118,26 @@ func _process(delta):
 	var origin_day = project.created_at_day
 	
 	if project.state == ProjectData.State.DRAFTING:
-		# --- [ИЗМЕНЕНИЕ] Рисуем хедер даже для DRAFTING ---
-		# Считаем горизонт как расстояние от дня создания до дедлайна * 1.1
 		var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
 		if horizon_from_origin < 5.0:
 			horizon_from_origin = 5.0
 		var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
 		
-		# Скрываем линию текущего времени в драфте
 		if current_time_line:
 			current_time_line.visible = false
 		
-		# Оранжевая линия: софт-дедлайн
+		var line_height = max(tracks_container.size.y + 50, 500)
+		
 		if soft_deadline_line and project.soft_deadline_day > 0:
 			var soft_offset = float(project.soft_deadline_day - origin_day)
 			soft_deadline_line.position.x = soft_offset * pixels_per_day
-			soft_deadline_line.size.y = max(tracks_container.size.y + 50, 500)
+			soft_deadline_line.size.y = line_height
 			soft_deadline_line.visible = true
 		
-		# Красная линия: хард-дедлайн
 		if hard_deadline_line and project.deadline_day > 0:
 			var hard_offset = float(project.deadline_day - origin_day)
 			hard_deadline_line.position.x = hard_offset * pixels_per_day
-			hard_deadline_line.size.y = max(tracks_container.size.y + 50, 500)
+			hard_deadline_line.size.y = line_height
 			hard_deadline_line.visible = true
 		
 		draw_dynamic_header(pixels_per_day, horizon_from_origin, origin_day)
@@ -166,23 +163,19 @@ func _process(delta):
 				percent = float(stage.progress) / float(stage.amount)
 			track_node.update_progress(percent)
 	
-	# --- Высота линий ---
 	var line_height = max(tracks_container.size.y + 50, 500)
 	
-	# --- Синяя линия: текущее время ---
 	if current_time_line:
 		current_time_line.position.x = project.elapsed_days * pixels_per_day
 		current_time_line.size.y = line_height
 		current_time_line.visible = true
 	
-	# --- Оранжевая линия: софт-дедлайн ---
 	if soft_deadline_line and project.soft_deadline_day > 0:
 		var soft_offset = float(project.soft_deadline_day - origin_day)
 		soft_deadline_line.position.x = soft_offset * pixels_per_day
 		soft_deadline_line.size.y = line_height
 		soft_deadline_line.visible = true
 	
-	# --- Красная линия: хард-дедлайн ---
 	if hard_deadline_line and project.deadline_day > 0:
 		var hard_offset = float(project.deadline_day - origin_day)
 		hard_deadline_line.position.x = hard_offset * pixels_per_day
@@ -234,7 +227,7 @@ func freeze_plan():
 		stage["plan_duration"] = duration_days
 		current_time_offset_days += duration_days
 
-# --- [ИЗМЕНЕНИЕ] Хедер показывает номера дней от дня создания ---
+# --- [ИЗМЕНЕНИЕ] Двухуровневый хедер: месяцы сверху, дни снизу, выходные затенены ---
 func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 	for child in timeline_header.get_children():
 		if child == current_time_line: continue
@@ -242,20 +235,78 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 		if child == hard_deadline_line: continue
 		child.queue_free()
 	
-	var step = 1
+	var line_height = max(tracks_container.size.y + 80, 500)
+	var prev_month = -1
 	
-	for i in range(0, int(horizon_days) + 1, step):
-		var lbl = Label.new()
-		lbl.text = str(origin_day + i)
-		lbl.modulate = Color(0, 0, 0, 0.5)
-		lbl.position = Vector2(i * px_per_day + 2, 0)
-		timeline_header.add_child(lbl)
+	for i in range(0, int(horizon_days) + 1):
+		var abs_day = origin_day + i
+		var day_in_month = GameTime.get_day_in_month(abs_day)
+		var month_num = GameTime.get_month(abs_day)
+		var weekday = GameTime.get_weekday_name(abs_day)
+		var is_wknd = GameTime.is_weekend(abs_day)
 		
+		var x_pos = float(i) * px_per_day
+		
+		# --- Подсветка выходных (серый фон на всю высоту) ---
+		if is_wknd:
+			var wknd_bg = ColorRect.new()
+			wknd_bg.color = Color(0.0, 0.0, 0.0, 0.06)
+			wknd_bg.size = Vector2(px_per_day, line_height)
+			wknd_bg.position = Vector2(x_pos, 0)
+			wknd_bg.z_index = -2
+			wknd_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			timeline_header.add_child(wknd_bg)
+		
+		# --- Верхний уровень: полоска месяца (рисуем при смене месяца) ---
+		if month_num != prev_month:
+			var month_lbl = Label.new()
+			month_lbl.text = "Мес. " + str(month_num)
+			month_lbl.add_theme_font_size_override("font_size", 11)
+			month_lbl.modulate = Color(0.17, 0.31, 0.57, 0.8)
+			month_lbl.position = Vector2(x_pos + 2, -2)
+			timeline_header.add_child(month_lbl)
+			
+			# Жирная линия границы месяца
+			if prev_month != -1:
+				var month_line = ColorRect.new()
+				month_line.color = Color(0.17, 0.31, 0.57, 0.4)
+				month_line.size = Vector2(2, line_height)
+				month_line.position = Vector2(x_pos, 0)
+				month_line.z_index = -1
+				month_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				timeline_header.add_child(month_line)
+			
+			prev_month = month_num
+		
+		# --- Нижний уровень: номер дня + день недели ---
+		var day_lbl = Label.new()
+		day_lbl.text = str(day_in_month)
+		day_lbl.add_theme_font_size_override("font_size", 11)
+		
+		if is_wknd:
+			day_lbl.modulate = Color(0.8, 0.3, 0.3, 0.7)
+		else:
+			day_lbl.modulate = Color(0, 0, 0, 0.5)
+		
+		day_lbl.position = Vector2(x_pos + 2, 12)
+		timeline_header.add_child(day_lbl)
+		
+		# День недели (только если хватает места — px_per_day > 25)
+		if px_per_day > 25:
+			var wd_lbl = Label.new()
+			wd_lbl.text = weekday
+			wd_lbl.add_theme_font_size_override("font_size", 9)
+			wd_lbl.modulate = Color(0, 0, 0, 0.35)
+			wd_lbl.position = Vector2(x_pos + 2, 24)
+			timeline_header.add_child(wd_lbl)
+		
+		# Тонкая вертикальная линия дня
 		var line = ColorRect.new()
-		line.color = Color(0.0, 0.0, 0.0, 0.1)
-		line.size = Vector2(1, 1000)
-		line.position = Vector2(i * px_per_day, 15)
+		line.color = Color(0.0, 0.0, 0.0, 0.08)
+		line.size = Vector2(1, line_height)
+		line.position = Vector2(x_pos, 35)
 		line.z_index = -1
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		timeline_header.add_child(line)
 
 func get_employee_node(data):
@@ -264,7 +315,6 @@ func get_employee_node(data):
 		if npc.data == data: return npc
 	return null
 
-# --- [ИЗМЕНЕНИЕ] Превью колбасок с учётом created_at_day ---
 func recalculate_schedule_preview():
 	if project.state == ProjectData.State.IN_PROGRESS: return
 	
@@ -315,13 +365,11 @@ func get_color_for_stage(type):
 		"QA": return Color("98FB98") 
 	return Color.GRAY
 
-# --- Передаём тип этапа в selector ---
 func _on_track_assignment_requested(index):
 	current_selecting_track_index = index
 	var stage_type = project.stages[index].type
 	selector_ref.open_list(stage_type)
 
-# --- Добавляем (append), а не заменяем ---
 func _on_employee_chosen(emp_data):
 	if current_selecting_track_index == -1: return
 	
@@ -339,7 +387,6 @@ func _on_employee_chosen(emp_data):
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()
 
-# --- Удаление сотрудника с этапа ---
 func _on_worker_removed(stage_index: int, worker_index: int):
 	var stage = project.stages[stage_index]
 	
@@ -350,7 +397,6 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 	stage.workers.remove_at(worker_index)
 	print("❌ Снят: ", removed.employee_name, " с этапа ", stage.type, " (осталось: ", stage.workers.size(), ")")
 	
-	# Перестраиваем кнопки
 	var track_node = tracks_container.get_child(stage_index)
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()

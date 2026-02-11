@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://cx2at243shh3h"]
+
+[ext_resource type="Script" uid="uid://n8vtbhvtf6nj" path="res://Scripts/bottom_bar.gd" id="1_bb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bb"]
+bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+border_width_top = 3
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+
+[node name="BottomBar" type="PanelContainer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bb")
+script = ExtResource("1_bb")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 6
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8

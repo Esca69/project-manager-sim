@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://l6ojv8bflski"]
+[gd_scene load_steps=12 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
 [ext_resource type="Script" uid="uid://dkjxe22ou16fk" path="res://Scripts/speed_controls.gd" id="2_8jye8"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://dum7oe0xx61nt" path="res://Scenes/ProjectSelectionUI.tscn" id="4_6fbih"]
 [ext_resource type="PackedScene" uid="uid://c7cwh26kidn2f" path="res://Scenes/AssignmentMenu.tscn" id="6_36asn"]
 [ext_resource type="PackedScene" uid="uid://dpu8813cqsnr0" path="res://Scenes/ProjectListMenu.tscn" id="8_43w4t"]
+[ext_resource type="PackedScene" path="res://Scenes/BottomBar.tscn" id="9_bb"]
+[ext_resource type="PackedScene" path="res://Scenes/EmployeeRoster.tscn" id="10_er"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jye8"]
 bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
@@ -133,8 +135,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -69.5
-offset_top = -31.0
+offset_top = -81.0
 offset_right = 69.5
+offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 0
 size_flags_horizontal = 4
@@ -142,5 +145,10 @@ size_flags_vertical = 8
 text = "Закончить день"
 
 [node name="ProjectListMenu" parent="." instance=ExtResource("8_43w4t")]
+
+[node name="EmployeeRoster" parent="." instance=ExtResource("10_er")]
+visible = false
+
+[node name="BottomBar" parent="." instance=ExtResource("9_bb")]
 
 [connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]
