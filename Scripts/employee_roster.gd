@@ -176,14 +176,30 @@ func _create_card(npc_node) -> PanelContainer:
 	salary_lbl.add_theme_font_size_override("font_size", 13)
 	info_vbox.add_child(salary_lbl)
 	
-	# === ТРЕЙТЫ — фильтрация через PMData ===
-	var visible_count = PMData.get_visible_traits_count()
-	if visible_count > 0 and not emp.traits.is_empty():
-		var display_data = emp.duplicate()
-		if visible_count < emp.traits.size():
-			display_data.traits = emp.traits.slice(0, visible_count)
-		var traits_row = TraitUIHelper.create_traits_row(display_data, self)
-		info_vbox.add_child(traits_row)
+	# === ТРЕЙТЫ — показываем всегда, скрытые = заглушки ===
+	if not emp.traits.is_empty():
+		var visible_count = PMData.get_visible_traits_count()
+		
+		if visible_count >= emp.traits.size():
+			# Все видно
+			var traits_row = TraitUIHelper.create_traits_row(emp, self)
+			info_vbox.add_child(traits_row)
+		else:
+			# Часть или все скрыты
+			var flow = HFlowContainer.new()
+			flow.add_theme_constant_override("h_separation", 12)
+			flow.add_theme_constant_override("v_separation", 4)
+			
+			for t_idx in range(emp.traits.size()):
+				if t_idx < visible_count:
+					var trait_id = emp.traits[t_idx]
+					var item = _create_visible_trait(trait_id, emp)
+					flow.add_child(item)
+				else:
+					var item = _create_hidden_trait()
+					flow.add_child(item)
+			
+			info_vbox.add_child(flow)
 	
 	# === ПРАВАЯ ЧАСТЬ ===
 	var right_vbox = VBoxContainer.new()
@@ -236,6 +252,100 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(fire_btn)
 	
 	return card
+
+# Видимый трейт (имя + кнопка ?)
+func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	
+	var color = Color(0.8980392, 0.22352941, 0.20784314, 1)
+	if emp.is_positive_trait(trait_id):
+		color = Color(0.29803923, 0.6862745, 0.3137255, 1)
+	
+	var name_text = EmployeeData.TRAIT_NAMES.get(trait_id, trait_id)
+	var lbl = Label.new()
+	lbl.text = name_text
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_font_size_override("font_size", 13)
+	hbox.add_child(lbl)
+	
+	var help_btn = Button.new()
+	help_btn.text = "?"
+	help_btn.custom_minimum_size = Vector2(22, 22)
+	help_btn.focus_mode = Control.FOCUS_NONE
+	help_btn.add_theme_font_size_override("font_size", 11)
+	help_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(1, 1, 1, 1)
+	btn_style.border_width_left = 2
+	btn_style.border_width_top = 2
+	btn_style.border_width_right = 2
+	btn_style.border_width_bottom = 2
+	btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	btn_style.corner_radius_top_left = 11
+	btn_style.corner_radius_top_right = 11
+	btn_style.corner_radius_bottom_right = 11
+	btn_style.corner_radius_bottom_left = 11
+	help_btn.add_theme_stylebox_override("normal", btn_style)
+	
+	var description = emp.get_trait_description(trait_id)
+	var tooltip_ref: Array = [null]
+	
+	help_btn.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip(description, color)
+		self.add_child(tp)
+		var btn_global = help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		tooltip_ref[0] = tp
+	)
+	
+	help_btn.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+	
+	hbox.add_child(help_btn)
+	return hbox
+
+# Скрытый трейт — заглушка "???"
+func _create_hidden_trait() -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	
+	var lbl = Label.new()
+	lbl.text = "???"
+	lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	lbl.add_theme_font_size_override("font_size", 13)
+	hbox.add_child(lbl)
+	
+	var help_btn = Button.new()
+	help_btn.text = "?"
+	help_btn.custom_minimum_size = Vector2(22, 22)
+	help_btn.focus_mode = Control.FOCUS_NONE
+	help_btn.disabled = true
+	help_btn.add_theme_font_size_override("font_size", 11)
+	help_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.93, 0.93, 0.93, 1)
+	btn_style.border_width_left = 2
+	btn_style.border_width_top = 2
+	btn_style.border_width_right = 2
+	btn_style.border_width_bottom = 2
+	btn_style.border_color = Color(0.7, 0.7, 0.7, 1)
+	btn_style.corner_radius_top_left = 11
+	btn_style.corner_radius_top_right = 11
+	btn_style.corner_radius_bottom_right = 11
+	btn_style.corner_radius_bottom_left = 11
+	help_btn.add_theme_stylebox_override("normal", btn_style)
+	help_btn.add_theme_stylebox_override("disabled", btn_style)
+	
+	hbox.add_child(help_btn)
+	return hbox
 
 func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
 	var center = CenterContainer.new()
@@ -357,7 +467,6 @@ func _confirm_fire():
 		_dialog_layer.visible = false
 		return
 	
-	# 1. Снимаем со ВСЕХ проектов
 	for project in ProjectManager.active_projects:
 		for stage in project.stages:
 			var idx = -1
@@ -369,7 +478,6 @@ func _confirm_fire():
 				stage.workers.remove_at(idx)
 				print("❌ Снят с проекта: ", project.title, ", этап: ", stage.type)
 	
-	# [ИСПРАВЛЕНИЕ] 2. Освобождаем стол — только employee_desk, не computer_desk
 	for desk in get_tree().get_nodes_in_group("desk"):
 		if not desk.has_method("unassign_employee"):
 			continue
@@ -380,7 +488,6 @@ func _confirm_fire():
 			print("🪑 Стол освобождён")
 			break
 	
-	# 3. Освобождаем NPC + удаляем
 	if _pending_fire_node and is_instance_valid(_pending_fire_node):
 		_pending_fire_node.release_from_desk()
 		_pending_fire_node.remove_from_group("npc")
