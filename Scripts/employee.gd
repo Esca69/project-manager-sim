@@ -58,6 +58,9 @@ var toilet_visits_done := 0
 var _wander_pause_timer := 0.0
 var _wander_origin: Vector2 = Vector2.ZERO
 
+# [FIX] Флаг: сигнал work_ended получен — нужно идти домой
+var _should_go_home: bool = false
+
 @export var data: EmployeeData
 
 @onready var body_sprite = $Visuals/Body
@@ -87,8 +90,6 @@ func _ready():
 	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
 		_go_to_sleep_instant()
 
-# [FIX] Настраиваем время прихода для early_bird
-# НЕ сбрасываем _early_bird_arrived если он уже пришёл сегодня
 func _setup_early_bird():
 	if not data or not data.has_trait("early_bird"):
 		_early_bird_start_hour = -1
@@ -99,9 +100,7 @@ func _setup_early_bird():
 	var start_total_minutes = GameTime.START_HOUR * 60 - minutes_early
 	_early_bird_start_hour = start_total_minutes / 60
 	_early_bird_start_minute = start_total_minutes % 60
-	# НЕ трогаем _early_bird_arrived здесь! Сброс только в _reset_early_bird_for_new_day()
 
-# [FIX] Сброс флага early_bird — вызывается ТОЛЬКО при новом рабочем дне (из _on_work_started по сигналу 9:00)
 func _reset_early_bird_for_new_day():
 	_early_bird_arrived = false
 
@@ -120,13 +119,11 @@ func _on_time_tick(_hour, _minute):
 		_early_bird_arrived = true
 		_arrive_early_bird()
 
-# [FIX] Отдельная функция прихода early_bird (не вызывает _setup_early_bird повторно!)
 func _arrive_early_bird():
 	if data:
 		data.current_energy = 100.0
 	
 	_setup_toilet_schedule()
-	# НЕ вызываем _setup_early_bird() — он уже настроен и _early_bird_arrived = true
 	
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
@@ -144,6 +141,13 @@ func _arrive_early_bird():
 
 func _physics_process(delta):
 	update_debug_label()
+	
+	# [FIX] Если получен сигнал "пора домой" — принудительно уходим,
+	# независимо от текущего состояния
+	if _should_go_home:
+		_should_go_home = false
+		_force_go_home()
+		return
 	
 	match current_state:
 		State.IDLE:
@@ -211,7 +215,6 @@ func _physics_process(delta):
 				return
 			_move_along_path_slow(delta)
 
-		# [FIX] Убран дубликат State.WANDER_PAUSE
 		State.WANDER_PAUSE:
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
@@ -230,6 +233,38 @@ func _is_my_stage_active() -> bool:
 		return false
 	return ProjectManager.is_employee_on_active_stage(data)
 
+# [FIX] Принудительный уход домой — очищает ВСЁ и идёт к выходу
+# [FIX] Принудительный уход домой — и подготовка early_bird на завтра
+func _force_go_home():
+	coffee_cup_holder.visible = false
+	
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
+	if current_state == State.HOME or current_state == State.GOING_HOME:
+		return
+	
+	# [FIX] Настраиваем early_bird на ЗАВТРА прямо сейчас,
+	# пока он ещё не ушёл. Сбрасываем флаг arrived.
+	if data and data.has_trait("early_bird"):
+		_early_bird_arrived = false
+		_setup_early_bird()
+	
+	velocity = Vector2.ZERO
+	z_index = 0
+	
+	var entrance = get_tree().get_first_node_in_group("entrance")
+	if entrance:
+		nav_agent.target_position = entrance.global_position
+		current_state = State.GOING_HOME
+		print("🏠 ", data.employee_name, " — принудител��но идёт домой")
+	else:
+		_on_arrived_home()
+
 func _leave_desk_to_wander():
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:
@@ -244,7 +279,8 @@ func _leave_desk_to_wander():
 	if _is_work_time():
 		_start_wandering()
 	else:
-		current_state = State.IDLE
+		# [FIX] Не ставим IDLE — сразу идём домой
+		_force_go_home()
 
 func _move_along_path(delta):
 	var next_path_position = nav_agent.get_next_path_position()
@@ -276,7 +312,6 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 func _is_work_time() -> bool:
 	if GameTime.is_weekend():
 		return false
-	# [FIX] Early bird: если уже пришёл — рабочее время расширено
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		return GameTime.hour >= _early_bird_start_hour and GameTime.hour < GameTime.END_HOUR
 	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
@@ -291,7 +326,8 @@ func _pick_next_wander_target():
 		return
 	
 	if not _is_work_time():
-		_on_work_ended()
+		# [FIX] Вместо вызова _on_work_ended() — сразу идём домой
+		_force_go_home()
 		return
 	
 	var random_angle = randf() * TAU
@@ -357,7 +393,7 @@ func _finish_coffee_break():
 	elif _is_work_time():
 		_start_wandering()
 	else:
-		_on_work_ended()
+		_force_go_home()
 
 # --- ТУАЛЕТ ---
 func _setup_toilet_schedule():
@@ -413,7 +449,7 @@ func _finish_toilet_break():
 	elif _is_work_time():
 		_start_wandering()
 	else:
-		_on_work_ended()
+		_force_go_home()
 
 # --- ФУНКЦИИ УПРАВЛЕНИЯ ---
 func move_to_desk(target_point: Vector2):
@@ -475,25 +511,31 @@ func _on_navigation_finished():
 
 # --- ЛОГИКА ДЕНЬ/НОЧЬ ---
 
-# [FIX] _on_work_started вызывается по сигналу work_started (9:00)
-# Для early_bird это будет ВТОРОЙ вызов (первый — _arrive_early_bird в ~8:20)
-# Поэтому: если early_bird уже на работе — просто пропускаем
 func _on_work_started():
-	# [FIX] Если early_bird уже пришёл и работает — не трогаем его
+	# [FIX] Early bird: в 9:00 он уже должен быть на работе (пришёл в ~8:20)
+	# Если он уже пришёл — не трогаем
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		if current_state != State.HOME:
-			# Уже на работе, ничего не делаем
 			return
+	
+	# [FIX] Early bird: если он ещё дома — значит что-то пошло не так,
+	# но мы НЕ должны его выводить через обычную логику.
+	# Он придёт сам через _on_time_tick (его время ~8:20 уже прошло,
+	# поэтому _on_time_tick сработает в ближайшую минуту)
+	if data and data.has_trait("early_bird"):
+		# Просто сбрасываем энергию и расписание, но НЕ телепортируем на работу
+		data.current_energy = 100.0
+		_setup_toilet_schedule()
+		# НЕ вызываем _setup_early_bird() — он уже настроен с вечера
+		# НЕ сбрасываем _early_bird_arrived — пусть _on_time_tick разберётся
+		_should_go_home = false
+		return
 	
 	if data:
 		data.current_energy = 100.0
 		
 	_setup_toilet_schedule()
-	_setup_early_bird()
-	# [FIX] Сбрасываем early_bird флаг для нового дня
-	# (для обычных сотрудников это ничего не делает)
-	# Для early_bird: если мы здесь — значит он в HOME, новый день
-	_early_bird_arrived = false
+	_should_go_home = false
 	
 	if my_desk_position == Vector2.ZERO:
 		visible = true
@@ -522,30 +564,15 @@ func _on_work_started():
 		print("📋 ", data.employee_name, " — пришёл на работу, но мой этап ещё не начался. Слоняюсь.")
 		_start_wandering()
 
-# [FIX] _on_work_ended — early_bird тоже уходит в 18:00 как все
-# Не проверяем _is_work_time(), просто идём домой безусловно
+# [FIX] _on_work_ended теперь ставит флаг вместо прямого изменения state
+# Это гарантирует что _physics_process обработает его в начале следующего кадра
 func _on_work_ended():
-	coffee_cup_holder.visible = false
-	
-	if coffee_machine_ref:
-		coffee_machine_ref.release(self)
-		coffee_machine_ref = null
-	
-	if toilet_ref:
-		toilet_ref.release(self)
-		toilet_ref = null
-	
-	# [FIX] Если уже дома или уже идём домой — не дублируем
+	# Если уже дома — ничего не делаем
 	if current_state == State.HOME or current_state == State.GOING_HOME:
 		return
 	
-	z_index = 0 
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		nav_agent.target_position = entrance.global_position
-		current_state = State.GOING_HOME
-	else:
-		_on_arrived_home()
+	# Ставим флаг — в следующем кадре _physics_process обработает
+	_should_go_home = true
 
 func _on_arrived_home():
 	visible = false

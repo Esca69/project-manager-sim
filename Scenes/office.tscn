@@ -223,6 +223,9 @@ position = Vector2(405, 336)
 [node name="Sofa" parent="WorldObjects" groups=["desk"] instance=ExtResource("17_oqaoe")]
 position = Vector2(1567, 718)
 
+[node name="Lampa" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_2uc8b")]
+position = Vector2(1381, 728)
+
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
 
 [node name="SpawnPoint" type="Marker2D" parent="."]
@@ -238,6 +241,3 @@ texture = ExtResource("13_v47wj")
 [node name="Hrplate" type="Sprite2D" parent="."]
 position = Vector2(2289, -388)
 texture = ExtResource("14_s31ab")
-
-[node name="Sofa" parent="." groups=["desk"] instance=ExtResource("21_2uc8b")]
-position = Vector2(1381, 728)

@@ -14,7 +14,7 @@ extends Node
 # --- БИБЛИОТЕКА ЗВУКОВЫХ ЭФФЕКТОВ ---
 # Ключ → путь к файлу. Добавляй сюда новые звуки.
 const SFX_LIBRARY = {
-	"interact": "res://Assets/Sounds/popsnd.mp3",
+	"interact": "res://Sound/popsnd.mp3",
 	# Примеры для будущего:
 	# "hire": "res://Assets/Sounds/hire.mp3",
 	# "project_complete": "res://Assets/Sounds/complete.mp3",
@@ -26,7 +26,7 @@ const SFX_LIBRARY = {
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
 # Эти значения можно менять в рантайме и сохранять в настройки
 var master_volume: float = 1.0
-var music_volume: float = 1.0      # Музыка тише, чтобы не давила
+var music_volume: float = 0.3      # Музыка тише, чтобы не давила
 var sfx_volume: float = 0.7        # Эффекты громче
 
 # --- ВНУТРЕННИЕ НОДЫ ---
@@ -55,7 +55,7 @@ func _ready():
 		_sfx_players.append(player)
 	
 	# --- Запускаем музыку ---
-	_start_music("res://Assets/Sounds/maintheme.mp3")
+	_start_music("res://Sound/maintheme.mp3")
 
 # ============================
 # МУЗЫКА
