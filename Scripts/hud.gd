@@ -60,6 +60,25 @@ func _ready():
 	update_balance_ui(GameState.company_balance)
 	update_time_label(GameTime.hour, GameTime.minute)
 
+# --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
+# Вызывается из player.gd, чтобы блокировать движение/взаимодействие
+func is_any_menu_open() -> bool:
+	if info_panel.visible: return true
+	if selection_ui.visible: return true
+	if project_window.visible: return true
+	if employee_selector.visible: return true
+	if project_list_menu.visible: return true
+	if employee_roster.visible: return true
+	
+	# Проверяем HiringMenu и AssignmentMenu
+	var hiring_menu = get_node_or_null("HiringMenu")
+	if hiring_menu and hiring_menu.visible: return true
+	
+	var assignment_menu = get_node_or_null("AssignmentMenu")
+	if assignment_menu and assignment_menu.visible: return true
+	
+	return false
+
 # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 
 func update_time_label(_hour, _minute):

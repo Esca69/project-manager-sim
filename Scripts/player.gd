@@ -21,7 +21,7 @@ var target_zoom: Vector2 = Vector2.ONE
 # --- ПОДСКАЗКА ВЗАИМОДЕЙСТВИЯ [E] ---
 var _interact_hint: PanelContainer = null
 var _interact_hint_label: Label = null
-var _current_hint_target = null  # Объект, над которым сейчас висит подсказка
+var _current_hint_target = null
 
 func _ready():
 	target_zoom = camera.zoom
@@ -31,7 +31,7 @@ func _create_interact_hint():
 	_interact_hint = PanelContainer.new()
 	
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)  # Тёмно-синий
+	style.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
 	style.corner_radius_bottom_right = 12
@@ -40,13 +40,11 @@ func _create_interact_hint():
 	style.content_margin_right = 18
 	style.content_margin_top = 10
 	style.content_margin_bottom = 10
-	# Чёрная обводка
 	style.border_width_left = 3
 	style.border_width_top = 3
 	style.border_width_right = 3
 	style.border_width_bottom = 3
 	style.border_color = Color(0, 0, 0, 1)
-	# Тень
 	style.shadow_color = Color(0, 0, 0, 0.25)
 	style.shadow_size = 4
 	_interact_hint.add_theme_stylebox_override("panel", style)
@@ -69,8 +67,14 @@ func _attach_hint_to_hud():
 	if hud:
 		hud.add_child(_interact_hint)
 	else:
-		# Фолбэк — добавляем к себе (будет масштабироваться с камерой, но хотя бы работает)
 		add_child(_interact_hint)
+
+# --- Проверка: открыто ли меню в HUD ---
+func _is_ui_blocking() -> bool:
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_any_menu_open"):
+		return hud.is_any_menu_open()
+	return false
 
 func _physics_process(delta):
 	# --- БЛОК БЛОКИРОВКИ УПРАВЛЕНИЯ ---
@@ -80,7 +84,14 @@ func _physics_process(delta):
 		_hide_interact_hint()
 		return
 	
-	# --- БЛОК ДВИЖЕНИЯ (старый) ---
+	# --- БЛОК БЛОКИРОВКИ: ОТКРЫТ ИНТЕРФЕЙС ---
+	if _is_ui_blocking():
+		velocity = Vector2.ZERO
+		move_and_slide()
+		_hide_interact_hint()
+		return
+	
+	# --- БЛОК ДВИЖЕНИЯ ---
 	var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if direction:
 		velocity = direction * SPEED
@@ -101,18 +112,15 @@ func _physics_process(delta):
 	# --- ПОДСКАЗКА [E] ---
 	_update_interact_hint()
 
-	# --- БЛОК ВЗАИМОДЕЙСТВИЯ (новый) ---
-	# Если нажали кноп��у "interact" (наша E)
+	# --- БЛОК ВЗАИМОДЕЙСТВИЯ ---
 	if Input.is_action_just_pressed("interact"):
 		interact()
 
 func _process(delta):
-	# Плавное приближение к целевому зуму
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 
 func _unhandled_input(event):
 	if event is InputEventMouseButton and event.pressed:
-		# Вверх = приблизить, вниз = отдалить
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_set_zoom(ZOOM_STEP)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
@@ -132,21 +140,17 @@ func _update_interact_hint():
 		_hide_interact_hint()
 		return
 	
-	# Показываем подсказку и позиционируем над объектом
 	_current_hint_target = target
 	_interact_hint.visible = true
 	
-	# Конвертируем мировую позицию объекта в экранную
 	var target_world_pos: Vector2
 	if target is Node2D:
-		target_world_pos = target.global_position + Vector2(0, -80)  # Смещение вверх
+		target_world_pos = target.global_position + Vector2(0, -80)
 	else:
 		target_world_pos = target.global_position + Vector2(0, -80)
 	
-	# Мировые координаты → экранные через камеру
 	var screen_pos = _world_to_screen(target_world_pos)
 	
-	# Центрируем подсказку по X
 	var hint_size = _interact_hint.size
 	_interact_hint.global_position = Vector2(
 		screen_pos.x - hint_size.x / 2.0,
@@ -154,11 +158,11 @@ func _update_interact_hint():
 	)
 
 func _hide_interact_hint():
-	_interact_hint.visible = false
+	if _interact_hint:
+		_interact_hint.visible = false
 	_current_hint_target = null
 
 func _get_nearest_interactable():
-	# Та же логика, что и в interact(), но без вызова — просто ищем цель
 	var bodies = interaction_zone.get_overlapping_bodies()
 	for body in bodies:
 		if body.is_in_group("npc") and "data" in body and body.data:
@@ -168,22 +172,18 @@ func _get_nearest_interactable():
 	return null
 
 func _world_to_screen(world_pos: Vector2) -> Vector2:
-	# Переводим мировые координаты в экранные с учётом камеры
 	var canvas_transform = get_viewport().get_canvas_transform()
 	return canvas_transform * world_pos
 
 func interact():
 	var bodies = interaction_zone.get_overlapping_bodies()
 	for body in bodies:
-		# NPC — показываем карточку сотрудника
 		if body.is_in_group("npc") and body.data:
-			AudioManager.play_sfx("interact")  # 🔊 Звук при взаимодействии
+			AudioManager.play_sfx("interact")
 			get_tree().call_group("ui", "show_employee_card", body.data)
 			return
 		
-		# Стол или другой интерактивный объект — вызываем interact()
-		# НО только если у объекта ЕСТЬ метод interact (защита от вылета)
 		if body.is_in_group("desk") and body.has_method("interact"):
-			AudioManager.play_sfx("interact")  # 🔊 Звук при взаимодействии
+			AudioManager.play_sfx("interact")
 			body.interact()
 			return
