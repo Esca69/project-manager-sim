@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
-[ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PmSkillTree.tscn" id="2_4f5kr"]
+[ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PMSkillTree.tscn" id="2_4f5kr"]
 [ext_resource type="Script" uid="uid://dkjxe22ou16fk" path="res://Scripts/speed_controls.gd" id="2_8jye8"]
 [ext_resource type="PackedScene" uid="uid://ciautqikan3tu" path="res://Scenes/project_window.tscn" id="2_fccik"]
 [ext_resource type="PackedScene" uid="uid://cm0p2pu0821ay" path="res://Scenes/HiringMenu.tscn" id="2_t1xeu"]
