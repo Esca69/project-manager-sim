@@ -10,7 +10,6 @@ var btn_style_hover: StyleBoxFlat
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Стиль как у кнопок "Нанять" / "Открыть" — белый фон, синяя обводка
 	btn_style_normal = StyleBoxFlat.new()
 	btn_style_normal.bg_color = Color(1, 1, 1, 1)
 	btn_style_normal.border_width_left = 2
@@ -36,9 +35,7 @@ func _ready():
 	btn_style_hover.corner_radius_bottom_left = 10
 	
 	_add_tab_button("👥 Сотрудники", "employees")
-	# Сюда потом:
-	# _add_tab_button("📋 Проекты", "projects")
-	# _add_tab_button("💰 Финансы", "finances")
+	_add_tab_button("🧠 Навыки PM", "pm_skills")
 
 func _add_tab_button(label_text: String, tab_name: String):
 	var btn = Button.new()

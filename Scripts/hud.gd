@@ -21,6 +21,7 @@ extends CanvasLayer
 
 @onready var bottom_bar = $BottomBar
 @onready var employee_roster = $EmployeeRoster
+@onready var pm_skill_tree = $PMSkillTree
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -59,6 +60,12 @@ func _ready():
 	
 	update_balance_ui(GameState.company_balance)
 	update_time_label(GameTime.hour, GameTime.minute)
+	
+	pm_skill_tree.visible = false
+	
+	# XP за проекты
+	ProjectManager.project_finished.connect(_on_project_finished_xp)
+	ProjectManager.project_failed.connect(_on_project_failed_xp)
 
 # --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
 # Вызывается из player.gd, чтобы блокировать движение/взаимодействие
@@ -69,6 +76,7 @@ func is_any_menu_open() -> bool:
 	if employee_selector.visible: return true
 	if project_list_menu.visible: return true
 	if employee_roster.visible: return true
+	if pm_skill_tree.visible: return true
 	
 	# Проверяем HiringMenu и AssignmentMenu
 	var hiring_menu = get_node_or_null("HiringMenu")
@@ -78,6 +86,14 @@ func is_any_menu_open() -> bool:
 	if assignment_menu and assignment_menu.visible: return true
 	
 	return false
+
+func _on_project_finished_xp(_proj):
+	PMData.add_xp(30)
+	print("🎯 PM +30 XP за завершённый проект")
+
+func _on_project_failed_xp(_proj):
+	PMData.add_xp(10)
+	print("🎯 PM +10 XP за проваленный проект (опыт всё равно)")
 
 # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 
@@ -147,7 +163,16 @@ func _on_bottom_tab_pressed(tab_name: String):
 			if employee_roster.visible:
 				employee_roster.visible = false
 			else:
+				pm_skill_tree.visible = false
 				employee_roster.open()
+		"pm_skills":
+			if pm_skill_tree.visible:
+				pm_skill_tree.visible = false
+			else:
+				employee_roster.visible = false
+				pm_skill_tree.open()
+
+
 
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
