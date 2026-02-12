@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmx8w5rc3w3uv"]
 
-[ext_resource type="Script" uid="uid://bokiv2ecrpdvc" path="res://Scripts/pm_skill_tree.gd" id="1_yc2y8"]
+[ext_resource type="Script" uid="uid://bokiv2ecrpdvc" path="res://Scripts/pm_skill_tree.gd" id="1_kk8ki"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 bg_color = Color(1, 1, 1, 1)
@@ -36,7 +36,7 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_yc2y8")
+script = ExtResource("1_kk8ki")
 
 [node name="Window" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -57,12 +57,12 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_window")
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="HeaderPanel" type="Panel" parent="Window/MainVBox"]
+[node name="Header" type="Panel" parent="Window/MainVBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_header")
 
-[node name="TitleLabel" type="Label" parent="Window/MainVBox/HeaderPanel"]
+[node name="TitleLabel" type="Label" parent="Window/MainVBox/Header"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -76,10 +76,10 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
-text = "Сотрудники"
+text = "Навыки менеджера"
 horizontal_alignment = 1
 
-[node name="CloseButton" type="Button" parent="Window/MainVBox/HeaderPanel"]
+[node name="CloseButton" type="Button" parent="Window/MainVBox/Header"]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0

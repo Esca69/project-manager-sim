@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
-[ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PMSkillTree.tscn" id="2_4f5kr"]
+[ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PmSkillTree.tscn" id="2_4f5kr"]
 [ext_resource type="Script" uid="uid://dkjxe22ou16fk" path="res://Scripts/speed_controls.gd" id="2_8jye8"]
 [ext_resource type="PackedScene" uid="uid://ciautqikan3tu" path="res://Scenes/project_window.tscn" id="2_fccik"]
 [ext_resource type="PackedScene" uid="uid://cm0p2pu0821ay" path="res://Scenes/HiringMenu.tscn" id="2_t1xeu"]
@@ -87,8 +87,6 @@ func _on_tab_pressed(tab_name: String):
 
 [node name="HUD" type="CanvasLayer" groups=["ui"]]
 script = ExtResource("1_e0onf")
-
-[node name="PMSkillTree" parent="." instance=ExtResource("2_4f5kr")]
 
 [node name="TopBar" type="PanelContainer" parent="."]
 anchors_preset = 10
@@ -219,5 +217,7 @@ visible = false
 
 [node name="BottomBar" parent="." instance=ExtResource("9_bb")]
 script = SubResource("GDScript_piegi")
+
+[node name="PMSkillTree" parent="." instance=ExtResource("2_4f5kr")]
 
 [connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]
