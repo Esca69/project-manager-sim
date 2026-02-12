@@ -70,10 +70,14 @@ func update_ui():
 			if role_lbl: role_lbl.text = data.job_title
 			if salary_lbl: salary_lbl.text = "$ " + str(data.monthly_salary)
 			
+			# === НАВЫКИ — размытие через PMData ===
 			var skill_text = ""
-			if data.skill_business_analysis > 0: skill_text = "BA: " + str(data.skill_business_analysis)
-			elif data.skill_backend > 0: skill_text = "Backend: " + str(data.skill_backend)
-			elif data.skill_qa > 0: skill_text = "QA: " + str(data.skill_qa)
+			if data.skill_business_analysis > 0:
+				skill_text = "BA: " + PMData.get_blurred_skill(data.skill_business_analysis)
+			elif data.skill_backend > 0:
+				skill_text = "Backend: " + PMData.get_blurred_skill(data.skill_backend)
+			elif data.skill_qa > 0:
+				skill_text = "QA: " + PMData.get_blurred_skill(data.skill_qa)
 			
 			if skill_lbl: skill_lbl.text = skill_text
 			
@@ -82,12 +86,23 @@ func update_ui():
 				traits_lbl.text = ""
 				traits_lbl.visible = false
 			
-			# Добавляем трейты в строку
+			# === ТРЕЙТЫ — фильтрация по навыку PM ===
 			var card_vbox = find_node_by_name(card, "CardVBox")
-			if card_vbox and data.traits.size() > 0:
-				var traits_row = TraitUIHelper.create_traits_row(data, self)
-				card_vbox.add_child(traits_row)
-				_trait_containers.append(traits_row)
+			if card_vbox:
+				var visible_count = PMData.get_visible_traits_count()
+				
+				if visible_count == 0 or data.traits.is_empty():
+					# Ничего не показываем — PM ещё не умеет читать людей
+					pass
+				else:
+					# Создаём временный EmployeeData с ограниченным набором трейтов
+					var display_data = data.duplicate()
+					if visible_count < data.traits.size():
+						display_data.traits = data.traits.slice(0, visible_count)
+					
+					var traits_row = TraitUIHelper.create_traits_row(display_data, self)
+					card_vbox.add_child(traits_row)
+					_trait_containers.append(traits_row)
 				
 		else:
 			card.modulate = Color(1, 1, 1, 0.5)

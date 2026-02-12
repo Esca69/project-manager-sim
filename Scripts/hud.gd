@@ -23,6 +23,11 @@ extends CanvasLayer
 @onready var employee_roster = $EmployeeRoster
 @onready var pm_skill_tree = $PMSkillTree
 
+# --- PM Level UI (создаются в коде) ---
+var _pm_level_label: Label
+var _pm_xp_bar: ProgressBar
+var _pm_xp_label: Label
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -63,12 +68,100 @@ func _ready():
 	
 	pm_skill_tree.visible = false
 	
+	# --- Создаём UI уровня PM в TopBar ---
+	_build_pm_level_ui()
+	_update_pm_level_ui()
+	
 	# XP за проекты
 	ProjectManager.project_finished.connect(_on_project_finished_xp)
 	ProjectManager.project_failed.connect(_on_project_failed_xp)
+	
+	# XP обновление UI
+	PMData.xp_changed.connect(_on_pm_xp_changed)
+
+# --- PM LEVEL UI ---
+func _build_pm_level_ui():
+	var hbox_container = $TopBar/MarginContainer/HBoxContainer
+	
+	# Контейнер для уровня
+	var level_vbox = VBoxContainer.new()
+	level_vbox.add_theme_constant_override("separation", 2)
+	level_vbox.custom_minimum_size = Vector2(140, 0)
+	
+	# Лейбл "Ур. 1"
+	_pm_level_label = Label.new()
+	_pm_level_label.text = "PM Ур. 1"
+	_pm_level_label.add_theme_font_size_override("font_size", 13)
+	_pm_level_label.add_theme_color_override("font_color", Color(0.85, 0.85, 1.0, 1))
+	_pm_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_vbox.add_child(_pm_level_label)
+	
+	# Прогресс-бар
+	_pm_xp_bar = ProgressBar.new()
+	_pm_xp_bar.custom_minimum_size = Vector2(130, 12)
+	_pm_xp_bar.max_value = 100
+	_pm_xp_bar.value = 0
+	_pm_xp_bar.show_percentage = false
+	
+	# Стиль фона прогресс-бара
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.1, 0.2, 0.4, 0.8)
+	bg_style.corner_radius_top_left = 6
+	bg_style.corner_radius_top_right = 6
+	bg_style.corner_radius_bottom_right = 6
+	bg_style.corner_radius_bottom_left = 6
+	_pm_xp_bar.add_theme_stylebox_override("background", bg_style)
+	
+	# Стиль заполнения прогресс-бара
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.4, 0.75, 1.0, 1)
+	fill_style.corner_radius_top_left = 6
+	fill_style.corner_radius_top_right = 6
+	fill_style.corner_radius_bottom_right = 6
+	fill_style.corner_radius_bottom_left = 6
+	_pm_xp_bar.add_theme_stylebox_override("fill", fill_style)
+	
+	level_vbox.add_child(_pm_xp_bar)
+	
+	# Лейбл "0 / 50 XP"
+	_pm_xp_label = Label.new()
+	_pm_xp_label.text = "0 / 50 XP"
+	_pm_xp_label.add_theme_font_size_override("font_size", 11)
+	_pm_xp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.9, 1))
+	_pm_xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	level_vbox.add_child(_pm_xp_label)
+	
+	# Вставляем после BalanceLabel (перед Spacer)
+	# BalanceLabel — индекс 1, Spacer — индекс 2
+	var spacer_index = -1
+	for i in range(hbox_container.get_child_count()):
+		if hbox_container.get_child(i).name == "Spacer":
+			spacer_index = i
+			break
+	
+	if spacer_index >= 0:
+		hbox_container.add_child(level_vbox)
+		hbox_container.move_child(level_vbox, spacer_index)
+	else:
+		hbox_container.add_child(level_vbox)
+
+func _update_pm_level_ui():
+	var level = PMData.get_level()
+	_pm_level_label.text = "PM Ур. %d" % level
+	
+	var progress = PMData.get_level_progress()
+	var current_in_level = progress[0]
+	var needed_for_level = progress[1]
+	
+	_pm_xp_bar.max_value = needed_for_level
+	_pm_xp_bar.value = current_in_level
+	
+	_pm_xp_label.text = "%d / %d XP" % [current_in_level, needed_for_level]
+
+func _on_pm_xp_changed(_new_xp, _new_sp):
+	_update_pm_level_ui()
 
 # --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
-# Вызывается из player.gd, чтобы блокировать движение/взаимодействие
 func is_any_menu_open() -> bool:
 	if info_panel.visible: return true
 	if selection_ui.visible: return true
@@ -78,7 +171,6 @@ func is_any_menu_open() -> bool:
 	if employee_roster.visible: return true
 	if pm_skill_tree.visible: return true
 	
-	# Проверяем HiringMenu и AssignmentMenu
 	var hiring_menu = get_node_or_null("HiringMenu")
 	if hiring_menu and hiring_menu.visible: return true
 	
@@ -139,8 +231,6 @@ func open_work_menu():
 		return
 	project_list_menu.open_menu()
 
-# [ИСПРАВЛЕНИЕ] При взятии проекта — сдвигаем created_at_day на текущий день
-# Дедлайны сдвигаются на ту же разницу, чтобы у игрока осталось столько же дней
 func _on_project_taken(proj_data):
 	var today = GameTime.day
 	var old_created = proj_data.created_at_day
@@ -152,6 +242,10 @@ func _on_project_taken(proj_data):
 		proj_data.soft_deadline_day += shift
 	
 	ProjectManager.add_project(proj_data)
+	
+	# XP за взятие проекта
+	PMData.add_xp(5)
+	print("🎯 PM +5 XP за взятие проекта")
 
 func _on_project_list_opened(proj_data: ProjectData):
 	project_window.setup(proj_data, employee_selector)
@@ -171,8 +265,6 @@ func _on_bottom_tab_pressed(tab_name: String):
 			else:
 				employee_roster.visible = false
 				pm_skill_tree.open()
-
-
 
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return

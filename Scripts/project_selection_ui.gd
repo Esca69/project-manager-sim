@@ -76,15 +76,15 @@ func update_ui():
 			var cat_label = "[MICRO]" if data.category == "micro" else "[SIMPLE]"
 			if name_lbl: name_lbl.text = cat_label + " " + data.title
 			
-			# Необходимые работы — только те этапы, что есть
+			# Необходимые работы — размытие через навыки PM
 			if work_lbl:
 				var parts = []
 				for stage in data.stages:
-					parts.append(stage.type + " " + str(stage.amount))
+					parts.append(stage.type + " " + PMData.get_blurred_work(stage.amount))
 				work_lbl.text = "Работы:  " + "    ".join(parts)
 			
-			# Бюджет
-			if budget_lbl: budget_lbl.text = "Бюджет $" + str(data.budget)
+			# Бюджет — размытие через навыки PM
+			if budget_lbl: budget_lbl.text = "Бюджет " + PMData.get_blurred_budget(data.budget)
 			
 			# Дедлайны
 			var soft_days = data.soft_deadline_day - GameTime.day

@@ -159,8 +159,13 @@ func _create_card(npc_node) -> PanelContainer:
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	info_vbox.add_child(name_lbl)
 	
+	# === НАВЫКИ — размытие через PMData ===
+	var ba_text = PMData.get_blurred_skill(emp.skill_business_analysis)
+	var dev_text = PMData.get_blurred_skill(emp.skill_backend)
+	var qa_text = PMData.get_blurred_skill(emp.skill_qa)
+	
 	var skills_lbl = Label.new()
-	skills_lbl.text = "Навыки:  BA %d  |  DEV %d  |  QA %d" % [emp.skill_business_analysis, emp.skill_backend, emp.skill_qa]
+	skills_lbl.text = "Навыки:  BA %s  |  DEV %s  |  QA %s" % [ba_text, dev_text, qa_text]
 	skills_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	skills_lbl.add_theme_font_size_override("font_size", 13)
 	info_vbox.add_child(skills_lbl)
@@ -171,9 +176,13 @@ func _create_card(npc_node) -> PanelContainer:
 	salary_lbl.add_theme_font_size_override("font_size", 13)
 	info_vbox.add_child(salary_lbl)
 	
-	# [ИЗМЕНЕНИЕ] Трейты в строку
-	if not emp.traits.is_empty():
-		var traits_row = TraitUIHelper.create_traits_row(emp, self)
+	# === ТРЕЙТЫ — фильтрация через PMData ===
+	var visible_count = PMData.get_visible_traits_count()
+	if visible_count > 0 and not emp.traits.is_empty():
+		var display_data = emp.duplicate()
+		if visible_count < emp.traits.size():
+			display_data.traits = emp.traits.slice(0, visible_count)
+		var traits_row = TraitUIHelper.create_traits_row(display_data, self)
 		info_vbox.add_child(traits_row)
 	
 	# === ПРАВАЯ ЧАСТЬ ===
@@ -362,7 +371,6 @@ func _confirm_fire():
 	
 	# [ИСПРАВЛЕНИЕ] 2. Освобождаем стол — только employee_desk, не computer_desk
 	for desk in get_tree().get_nodes_in_group("desk"):
-		# Проверяем что у объекта ЕСТЬ свойство assigned_employee
 		if not desk.has_method("unassign_employee"):
 			continue
 		if not ("assigned_employee" in desk):

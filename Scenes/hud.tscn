@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://l6ojv8bflski"]
+[gd_scene load_steps=13 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
 [ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PMSkillTree.tscn" id="2_4f5kr"]
@@ -19,71 +19,6 @@ border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
 border_color = Color(0, 0, 0, 1)
-
-[sub_resource type="GDScript" id="GDScript_piegi"]
-script/source = "extends PanelContainer
-
-signal tab_pressed(tab_name: String)
-
-@onready var hbox = $MarginContainer/HBoxContainer
-
-# Стили кнопок
-var btn_style_normal: StyleBoxFlat
-var btn_style_hover: StyleBoxFlat
-
-func _ready():
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# --- Стиль обычной кнопки ---
-	btn_style_normal = StyleBoxFlat.new()
-	btn_style_normal.bg_color = Color(0.2, 0.35, 0.6, 0.6)
-	btn_style_normal.border_width_left = 2
-	btn_style_normal.border_width_top = 2
-	btn_style_normal.border_width_right = 2
-	btn_style_normal.border_width_bottom = 2
-	btn_style_normal.border_color = Color(0.4, 0.55, 0.8, 0.8)
-	btn_style_normal.corner_radius_top_left = 12
-	btn_style_normal.corner_radius_top_right = 12
-	btn_style_normal.corner_radius_bottom_right = 12
-	btn_style_normal.corner_radius_bottom_left = 12
-	
-	# --- Стиль при наведении ---
-	btn_style_hover = StyleBoxFlat.new()
-	btn_style_hover.bg_color = Color(0.3, 0.45, 0.7, 0.8)
-	btn_style_hover.border_width_left = 2
-	btn_style_hover.border_width_top = 2
-	btn_style_hover.border_width_right = 2
-	btn_style_hover.border_width_bottom = 2
-	btn_style_hover.border_color = Color(0.5, 0.65, 0.9, 1.0)
-	btn_style_hover.corner_radius_top_left = 12
-	btn_style_hover.corner_radius_top_right = 12
-	btn_style_hover.corner_radius_bottom_right = 12
-	btn_style_hover.corner_radius_bottom_left = 12
-	
-	# --- Создаём кнопки ---
-	_add_tab_button(\"👥 Сотрудники\", \"employees\")
-	# Сюда потом добавишь:
-	# _add_tab_button(\"📋 Проекты\", \"projects\")
-	# _add_tab_button(\"💰 Финансы\", \"finances\")
-
-func _add_tab_button(label_text: String, tab_name: String):
-	var btn = Button.new()
-	btn.text = label_text
-	btn.custom_minimum_size = Vector2(180, 36)
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.add_theme_stylebox_override(\"normal\", btn_style_normal)
-	btn.add_theme_stylebox_override(\"hover\", btn_style_hover)
-	btn.add_theme_stylebox_override(\"pressed\", btn_style_hover)
-	btn.add_theme_color_override(\"font_color\", Color.WHITE)
-	btn.add_theme_color_override(\"font_hover_color\", Color.WHITE)
-	btn.add_theme_color_override(\"font_pressed_color\", Color.WHITE)
-	btn.add_theme_font_size_override(\"font_size\", 15)
-	btn.pressed.connect(_on_tab_pressed.bind(tab_name))
-	hbox.add_child(btn)
-
-func _on_tab_pressed(tab_name: String):
-	emit_signal(\"tab_pressed\", tab_name)
-"
 
 [node name="HUD" type="CanvasLayer" groups=["ui"]]
 script = ExtResource("1_e0onf")
@@ -215,9 +150,8 @@ text = "Закончить день"
 [node name="EmployeeRoster" parent="." instance=ExtResource("10_er")]
 visible = false
 
-[node name="BottomBar" parent="." instance=ExtResource("9_bb")]
-script = SubResource("GDScript_piegi")
-
 [node name="PMSkillTree" parent="." instance=ExtResource("2_4f5kr")]
+
+[node name="BottomBar" parent="." instance=ExtResource("9_bb")]
 
 [connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]

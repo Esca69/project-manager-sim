@@ -18,9 +18,6 @@ const XP_THRESHOLDS = [
 var _last_threshold_index: int = -1  # Сколько порогов мы уже прошли
 
 # === ОПРЕДЕЛЕНИЕ НАВЫКОВ ===
-# Каждый навык: id, название, описание, стоимость, зависимость (prerequisite)
-# Направления: "projects_left" (влево), "people_right" (вправо)
-
 const SKILL_TREE = {
 	# === ВЛЕВО: ПРОЕКТЫ ===
 	# --- Ветка 1: Оценка объёма ---
@@ -165,6 +162,34 @@ func add_xp(amount: int):
 	
 	emit_signal("xp_changed", xp, skill_points)
 
+# === УРОВЕНЬ ===
+# Уровень = сколько порогов пройдено + 1 (начинаем с 1)
+func get_level() -> int:
+	return _last_threshold_index + 2  # +2 потому что index -1 = уровень 1
+
+# XP текущего уровня и XP нужного для следующего (для прогресс-бара)
+# Возвращает [current_xp_in_level, xp_needed_for_next_level]
+func get_level_progress() -> Array:
+	var level_index = _last_threshold_index  # После��ний пройденный порог
+	
+	# XP предыдущего порога (начало текущего уровня)
+	var prev_threshold = 0
+	if level_index >= 0:
+		prev_threshold = XP_THRESHOLDS[level_index]
+	
+	# XP следующего порога (конец текущего уровня)
+	var next_index = level_index + 1
+	if next_index >= XP_THRESHOLDS.size():
+		# Максимальный уровень достигнут
+		return [1, 1]  # Полная шкала
+	
+	var next_threshold = XP_THRESHOLDS[next_index]
+	
+	var current_in_level = xp - prev_threshold
+	var needed_for_level = next_threshold - prev_threshold
+	
+	return [current_in_level, needed_for_level]
+
 # === НАВЫКИ ===
 func can_unlock(skill_id: String) -> bool:
 	if skill_id not in SKILL_TREE:
@@ -201,35 +226,30 @@ func has_skill(skill_id: String) -> bool:
 
 # === ПОМОЩНИКИ ДЛЯ UI ===
 
-# Уровень оценки объёма: 0 = ±40%, 1 = ±25%, 2 = ±10%, 3 = точно
 func get_work_estimate_level() -> int:
 	if has_skill("estimate_work_3"): return 3
 	if has_skill("estimate_work_2"): return 2
 	if has_skill("estimate_work_1"): return 1
 	return 0
 
-# Уровень оценки бюджета: 0 = ±35%, 1 = ±20%, 2 = ±8%, 3 = точно
 func get_budget_estimate_level() -> int:
 	if has_skill("estimate_budget_3"): return 3
 	if has_skill("estimate_budget_2"): return 2
 	if has_skill("estimate_budget_1"): return 1
 	return 0
 
-# Сколько трейтов видно при найме: 0, 1, 2, 999 (все)
 func get_visible_traits_count() -> int:
 	if has_skill("read_traits_3"): return 999
 	if has_skill("read_traits_2"): return 2
 	if has_skill("read_traits_1"): return 1
 	return 0
 
-# Уровень оценки навыков: 0 = скрыто, 1 = словесно, 2 = диапазон, 3 = точно
 func get_skill_read_level() -> int:
 	if has_skill("read_skills_3"): return 3
 	if has_skill("read_skills_2"): return 2
 	if has_skill("read_skills_1"): return 1
 	return 0
 
-# Размытие числа (для UI проектов и найма)
 func blur_value(real_value: int, spread_percent: float) -> String:
 	if spread_percent <= 0:
 		return str(real_value)
@@ -238,7 +258,6 @@ func blur_value(real_value: int, spread_percent: float) -> String:
 	var high = real_value + spread
 	return "%d – %d" % [low, high]
 
-# Размытие объёма работ по уровню навыка PM
 func get_blurred_work(real_value: int) -> String:
 	match get_work_estimate_level():
 		0: return blur_value(real_value, 0.40)
@@ -247,7 +266,6 @@ func get_blurred_work(real_value: int) -> String:
 		3: return str(real_value)
 	return blur_value(real_value, 0.40)
 
-# Размытие бюджета по уровню навыка PM
 func get_blurred_budget(real_value: int) -> String:
 	match get_budget_estimate_level():
 		0: return blur_value(real_value, 0.35)
@@ -256,7 +274,6 @@ func get_blurred_budget(real_value: int) -> String:
 		3: return "$" + str(real_value)
 	return blur_value(real_value, 0.35)
 
-# Размытие навыка сотрудника по уровню
 func get_blurred_skill(real_value: int) -> String:
 	match get_skill_read_level():
 		0: return "???"
