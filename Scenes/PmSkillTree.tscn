@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmx8w5rc3w3uv"]
 
-[ext_resource type="Script" uid="uid://bokiv2ecrpdvc" path="res://Scripts/pm_skill_tree.gd" id="1_kk8ki"]
+[ext_resource type="Script" uid="uid://bokiv2ecrpdvc" path="res://Scripts/pm_skill_tree.gd" id="1_yc2y8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
 bg_color = Color(1, 1, 1, 1)
@@ -27,7 +27,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="PmSkillTree" type="Control"]
+[node name="PMSkillTree" type="Control"]
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -36,7 +36,7 @@ anchor_right = 0.5
 anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_kk8ki")
+script = ExtResource("1_yc2y8")
 
 [node name="Window" type="PanelContainer" parent="."]
 layout_mode = 1

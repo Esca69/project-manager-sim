@@ -21,7 +21,7 @@ GameTime="*res://Scripts/game_time.gd"
 GameState="*res://Scripts/game_state.gd"
 ProjectManager="*res://Scripts/project_manager.gd"
 AudioManager="*res://Scripts/audio_manager.gd"
-PmData="*res://Scripts/pm_data.gd"
+PMData="*res://Scripts/pm_data.gd"
 
 [display]
 
