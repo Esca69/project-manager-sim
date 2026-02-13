@@ -6,6 +6,8 @@ const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
 const COLOR_GRAY = Color(0.7, 0.7, 0.7, 1)
 const COLOR_LOCKED = Color(0.85, 0.85, 0.85, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
+const COLOR_DARK = Color(0.2, 0.2, 0.2, 1)
+const COLOR_TEAL = Color(0.0, 0.6, 0.65, 1)
 
 # === РАЗМЕРЫ ===
 const NODE_SIZE = Vector2(180, 80)
@@ -17,11 +19,11 @@ const CENTER_NODE_SIZE = Vector2(100, 100)
 @onready var close_btn = find_child("CloseButton", true, false)
 
 var _scroll: ScrollContainer
-var _canvas: Control  # Контейнер, на котором рисуем дерево
+var _canvas: Control
 var _xp_label: Label
 var _sp_label: Label
 var _tooltip_panel: PanelContainer = null
-var _skill_nodes: Dictionary = {}  # skill_id -> Control
+var _skill_nodes: Dictionary = {}
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -40,7 +42,6 @@ func open():
 	visible = true
 
 func _build_ui():
-	# Получаем ссылку на Window/MainVBox структуру (аналогично employee_roster)
 	var window = get_node_or_null("Window")
 	if not window:
 		return
@@ -49,7 +50,6 @@ func _build_ui():
 	if not main_vbox:
 		return
 	
-	# Ищем хедер для XP/SP
 	var header = main_vbox.get_node_or_null("Header")
 	if header:
 		var header_margin = header.get_node_or_null("MarginContainer")
@@ -67,7 +67,6 @@ func _build_ui():
 			hbox.add_theme_constant_override("separation", 20)
 			header_margin.add_child(hbox)
 		
-		# Добавляем XP и SP лейблы после существующего контента
 		_xp_label = Label.new()
 		_xp_label.add_theme_color_override("font_color", COLOR_BLUE)
 		_xp_label.add_theme_font_size_override("font_size", 14)
@@ -78,11 +77,9 @@ func _build_ui():
 		_sp_label.add_theme_font_size_override("font_size", 14)
 		hbox.add_child(_sp_label)
 	
-	# Получаем ScrollContainer
 	var scroll_path = "CardsMargin/ScrollContainer"
 	_scroll = main_vbox.get_node_or_null(scroll_path)
 	if not _scroll:
-		# Ищем рекурсивно
 		for child in main_vbox.get_children():
 			if child is MarginContainer:
 				for sub in child.get_children():
@@ -91,13 +88,11 @@ func _build_ui():
 						break
 	
 	if _scroll:
-		# Удаляем дефолтный контент ScrollContainer
 		for child in _scroll.get_children():
 			child.queue_free()
 		
-		# Создаём канвас для дерева
 		_canvas = Control.new()
-		_canvas.custom_minimum_size = Vector2(1600, 600)
+		_canvas.custom_minimum_size = Vector2(1600, 850)
 		_scroll.add_child(_canvas)
 	
 	_update_header()
@@ -125,15 +120,13 @@ func _rebuild_tree():
 	if not _canvas:
 		return
 	
-	# Очищаем
 	for child in _canvas.get_children():
 		child.queue_free()
 	_skill_nodes.clear()
 	
 	_update_header()
 	
-	var center = _canvas.custom_minimum_size / 2.0
-	center.y = 280  # Немного ниже центра для лучшей компоновки
+	var center = Vector2(_canvas.custom_minimum_size.x / 2.0, 240)
 	
 	# --- Центральная нода "PM" ---
 	var center_node = _create_center_node()
@@ -141,26 +134,33 @@ func _rebuild_tree():
 	_canvas.add_child(center_node)
 	
 	# --- Левое направление: ПРОЕКТЫ ---
-	_place_branch("estimate_work", center, -1, 0)   # Верхняя ветка влево
-	_place_branch("estimate_budget", center, -1, 1)  # Нижняя ветка влево
+	_place_branch("estimate_work", center, -1, 0)
+	_place_branch("estimate_budget", center, -1, 1)
 	
 	# --- Правое направление: ЛЮДИ ---
-	_place_branch("read_traits", center, 1, 0)   # Верхняя ветка вправо
-	_place_branch("read_skills", center, 1, 1)   # Нижняя ветка вправо
+	_place_branch("read_traits", center, 1, 0)
+	_place_branch("read_skills", center, 1, 1)
+	
+	# --- Вниз: АНАЛИТИКА (3 навыка веером) ---
+	_place_analytics_branch(center)
 	
 	# --- Рисуем линии связей ---
 	_draw_connections(center)
 	
-	# --- Зоны-лейблы ---
+	# --- Зоны-лейблы (крупные, полупрозрачные) ---
 	_add_zone_label("📋 ПРОЕКТЫ", center + Vector2(-NODE_SPACING_X * 2, -NODE_SPACING_Y - 50))
 	_add_zone_label("👥 ЛЮДИ", center + Vector2(NODE_SPACING_X * 2, -NODE_SPACING_Y - 50))
+	_add_zone_label("📊 АНАЛИТИКА", center + Vector2(0, NODE_SPACING_Y + 120), COLOR_TEAL)
+	
+	# --- Подписи веток (мелкие, рядом с первым навыком) ---
+	_add_branch_label("Оценка объёма", center, -1, 0)
+	_add_branch_label("Оценка бюджета", center, -1, 1)
+	_add_branch_label("Чтение людей", center, 1, 0)
+	_add_branch_label("Оценка кадров", center, 1, 1)
 
 func _place_branch(branch_id: String, center: Vector2, dir_x: int, branch_index: int):
-	# dir_x: -1 = влево, +1 = вправо
-	# branch_index: 0 = верхняя, 1 = нижняя
 	var y_offset = -NODE_SPACING_Y / 2.0 + branch_index * NODE_SPACING_Y
 	
-	# Собираем навыки этой ветки по порядку
 	var branch_skills = []
 	for skill_id in PMData.SKILL_TREE:
 		var skill = PMData.SKILL_TREE[skill_id]
@@ -177,6 +177,35 @@ func _place_branch(branch_id: String, center: Vector2, dir_x: int, branch_index:
 		node.position = Vector2(x, y)
 		_canvas.add_child(node)
 		_skill_nodes[skill_id] = node
+
+func _place_analytics_branch(center: Vector2):
+	# 3 навыка веером вниз от центра
+	var analytics_ids = ["report_expenses", "report_projects", "report_productivity"]
+	var fan_x_offsets = [-NODE_SPACING_X, 0, NODE_SPACING_X]
+	var y_pos = center.y + NODE_SPACING_Y * 1.3
+	
+	for i in range(analytics_ids.size()):
+		var skill_id = analytics_ids[i]
+		var x = center.x + fan_x_offsets[i] - NODE_SIZE.x / 2.0
+		var y = y_pos - NODE_SIZE.y / 2.0
+		
+		var node = _create_skill_node(skill_id, COLOR_TEAL)
+		node.position = Vector2(x, y)
+		_canvas.add_child(node)
+		_skill_nodes[skill_id] = node
+
+func _add_branch_label(text: String, center: Vector2, dir_x: int, branch_index: int):
+	var y_offset = -NODE_SPACING_Y / 2.0 + branch_index * NODE_SPACING_Y
+	var x = center.x + dir_x * NODE_SPACING_X * 0.5
+	var y = center.y + y_offset - NODE_SIZE.y / 2.0 - 18
+	
+	var lbl = Label.new()
+	lbl.text = text
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color(COLOR_BLUE, 0.5))
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.position = Vector2(x - 50, y)
+	_canvas.add_child(lbl)
 
 func _create_center_node() -> PanelContainer:
 	var panel = PanelContainer.new()
@@ -205,11 +234,10 @@ func _create_center_node() -> PanelContainer:
 	
 	return panel
 
-func _create_skill_node(skill_id: String) -> PanelContainer:
+func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> PanelContainer:
 	var skill = PMData.SKILL_TREE[skill_id]
 	var is_unlocked = PMData.has_skill(skill_id)
 	var can_unlock = PMData.can_unlock(skill_id)
-	var prereq_unlocked = skill["prerequisite"] == "" or PMData.has_skill(skill["prerequisite"])
 	
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = NODE_SIZE
@@ -229,7 +257,7 @@ func _create_skill_node(skill_id: String) -> PanelContainer:
 		style.border_color = COLOR_GREEN
 	elif can_unlock:
 		style.bg_color = Color(0.95, 0.97, 1.0, 1)
-		style.border_color = COLOR_BLUE
+		style.border_color = accent_color
 	else:
 		style.bg_color = COLOR_LOCKED
 		style.border_color = Color(0.6, 0.6, 0.6, 1)
@@ -256,13 +284,12 @@ func _create_skill_node(skill_id: String) -> PanelContainer:
 		title_lbl.add_theme_color_override("font_color", COLOR_GREEN)
 		title_lbl.text = "✅ " + title_lbl.text
 	elif can_unlock:
-		title_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		title_lbl.add_theme_color_override("font_color", accent_color)
 	else:
 		title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	
 	vbox.add_child(title_lbl)
 	
-	# Стоимость
 	if not is_unlocked:
 		var cost_lbl = Label.new()
 		cost_lbl.text = "🧠 " + str(skill["cost"]) + " очк."
@@ -271,7 +298,6 @@ func _create_skill_node(skill_id: String) -> PanelContainer:
 		cost_lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4, 1))
 		vbox.add_child(cost_lbl)
 	
-	# Кнопка "Изучить" — только если можно
 	if can_unlock:
 		var btn = Button.new()
 		btn.text = "Изучить"
@@ -279,7 +305,7 @@ func _create_skill_node(skill_id: String) -> PanelContainer:
 		btn.focus_mode = Control.FOCUS_NONE
 		
 		var btn_style = StyleBoxFlat.new()
-		btn_style.bg_color = COLOR_BLUE
+		btn_style.bg_color = accent_color
 		btn_style.corner_radius_top_left = 10
 		btn_style.corner_radius_top_right = 10
 		btn_style.corner_radius_bottom_right = 10
@@ -292,24 +318,22 @@ func _create_skill_node(skill_id: String) -> PanelContainer:
 		btn.pressed.connect(_on_skill_pressed.bind(skill_id))
 		vbox.add_child(btn)
 	
-	# Тултип по наведению
 	panel.mouse_entered.connect(_show_tooltip.bind(skill_id, panel))
 	panel.mouse_exited.connect(_hide_tooltip)
 	
 	return panel
 
-func _add_zone_label(text: String, pos: Vector2):
+func _add_zone_label(text: String, pos: Vector2, color: Color = COLOR_BLUE):
 	var lbl = Label.new()
 	lbl.text = text
 	lbl.add_theme_font_size_override("font_size", 18)
-	lbl.add_theme_color_override("font_color", Color(COLOR_BLUE, 0.4))
+	lbl.add_theme_color_override("font_color", Color(color, 0.4))
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.position = pos
+	lbl.position = pos - Vector2(80, 0)
 	_canvas.add_child(lbl)
 
-# === ЛИНИИ СВЯЗЕЙ ===
+# === ЛИНИИ СВЯЗЕЙ С СТРЕЛКАМИ ===
 func _draw_connections(center: Vector2):
-	# Для каждого навыка рисуем линию от prereq (или от центра)
 	for skill_id in _skill_nodes:
 		var skill = PMData.SKILL_TREE[skill_id]
 		var node_ctrl = _skill_nodes[skill_id]
@@ -327,19 +351,67 @@ func _draw_connections(center: Vector2):
 		
 		var is_unlocked = PMData.has_skill(skill_id)
 		var prereq_ok = skill["prerequisite"] == "" or PMData.has_skill(skill["prerequisite"])
+		var is_analytics = skill["direction"] == "analytics_down"
 		
-		var line_color = COLOR_GREEN if is_unlocked else (COLOR_BLUE if prereq_ok else COLOR_GRAY)
+		var line_color: Color
+		if is_unlocked:
+			line_color = COLOR_GREEN
+		elif prereq_ok:
+			line_color = COLOR_TEAL if is_analytics else COLOR_BLUE
+		else:
+			line_color = COLOR_GRAY
 		
-		_draw_line_between(from_pos, node_center, line_color)
+		var is_locked = not is_unlocked and not prereq_ok
+		
+		_draw_arrow_line(from_pos, node_center, line_color, is_locked)
 
-func _draw_line_between(from: Vector2, to: Vector2, color: Color):
-	var line = Line2D.new()
-	line.add_point(from)
-	line.add_point(to)
-	line.width = 3.0
-	line.default_color = color
-	line.z_index = -1
-	_canvas.add_child(line)
+func _draw_arrow_line(from: Vector2, to: Vector2, color: Color, dashed: bool = false):
+	var direction = (to - from).normalized()
+	var length = from.distance_to(to)
+	
+	if dashed:
+		# Пунктирная линия для заблокированных
+		var dash_len = 12.0
+		var gap_len = 8.0
+		var current = 0.0
+		while current < length:
+			var seg_start = from + direction * current
+			var seg_end_dist = min(current + dash_len, length)
+			var seg_end = from + direction * seg_end_dist
+			var seg = Line2D.new()
+			seg.add_point(seg_start)
+			seg.add_point(seg_end)
+			seg.width = 2.0
+			seg.default_color = Color(color, 0.4)
+			seg.z_index = -1
+			_canvas.add_child(seg)
+			current += dash_len + gap_len
+	else:
+		# Сплошная линия
+		var line = Line2D.new()
+		line.add_point(from)
+		line.add_point(to)
+		line.width = 3.0
+		line.default_color = color
+		line.z_index = -1
+		_canvas.add_child(line)
+	
+	# Стрелка на конце
+	var arrow_size = 10.0
+	var arrow_tip = to - direction * 20  # Немного не доходя до ноды
+	var perp = Vector2(-direction.y, direction.x)
+	
+	var p1 = arrow_tip
+	var p2 = arrow_tip - direction * arrow_size + perp * arrow_size * 0.5
+	var p3 = arrow_tip - direction * arrow_size - perp * arrow_size * 0.5
+	
+	var arrow_color = Color(color, 0.4) if dashed else color
+	
+	var arrow = Polygon2D.new()
+	arrow.polygon = PackedVector2Array([p1, p2, p3])
+	arrow.color = arrow_color
+	arrow.z_index = -1
+	_canvas.add_child(arrow)
 
 # === КНОПКИ ===
 func _on_skill_pressed(skill_id: String):

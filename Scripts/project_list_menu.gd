@@ -13,10 +13,9 @@ var btn_style: StyleBoxFlat
 
 func _ready():
 	visible = false
-	
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
-	
+
 	card_style_normal = StyleBoxFlat.new()
 	card_style_normal.bg_color = Color(1, 1, 1, 1)
 	card_style_normal.border_width_left = 3
@@ -28,7 +27,7 @@ func _ready():
 	card_style_normal.corner_radius_top_right = 20
 	card_style_normal.corner_radius_bottom_right = 20
 	card_style_normal.corner_radius_bottom_left = 20
-	
+
 	card_style_finished = StyleBoxFlat.new()
 	card_style_finished.bg_color = Color(0.9, 0.95, 0.9, 1)
 	card_style_finished.border_width_left = 3
@@ -40,7 +39,7 @@ func _ready():
 	card_style_finished.corner_radius_top_right = 20
 	card_style_finished.corner_radius_bottom_right = 20
 	card_style_finished.corner_radius_bottom_left = 20
-	
+
 	card_style_failed = StyleBoxFlat.new()
 	card_style_failed.bg_color = Color(0.98, 0.92, 0.92, 1)
 	card_style_failed.border_width_left = 3
@@ -52,7 +51,7 @@ func _ready():
 	card_style_failed.corner_radius_top_right = 20
 	card_style_failed.corner_radius_bottom_right = 20
 	card_style_failed.corner_radius_bottom_left = 20
-	
+
 	btn_style = StyleBoxFlat.new()
 	btn_style.bg_color = Color(1, 1, 1, 1)
 	btn_style.border_width_left = 2
@@ -78,22 +77,37 @@ func _rebuild_cards():
 			continue
 		cards_container.remove_child(child)
 		child.queue_free()
-	
+
 	if ProjectManager.active_projects.is_empty():
 		empty_label.visible = true
 		return
-	
+
 	empty_label.visible = false
-	
+
+	# Сортируем: активные (DRAFTING, IN_PROGRESS) сверху, завершённые/проваленные снизу
+	var sorted_indices = []
 	for i in range(ProjectManager.active_projects.size()):
-		var proj = ProjectManager.active_projects[i]
-		var card = _create_card(proj, i)
+		sorted_indices.append(i)
+
+	sorted_indices.sort_custom(func(a, b):
+		var sa = ProjectManager.active_projects[a].state
+		var sb = ProjectManager.active_projects[b].state
+		var a_done = (sa == ProjectData.State.FINISHED or sa == ProjectData.State.FAILED)
+		var b_done = (sb == ProjectData.State.FINISHED or sb == ProjectData.State.FAILED)
+		if a_done != b_done:
+			return not a_done  # active первым
+		return a < b
+	)
+
+	for idx in sorted_indices:
+		var proj = ProjectManager.active_projects[idx]
+		var card = _create_card(proj, idx)
 		cards_container.add_child(card)
 
 func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.custom_minimum_size = Vector2(1400, 0)
-	
+
 	match proj.state:
 		ProjectData.State.FINISHED:
 			card.add_theme_stylebox_override("panel", card_style_finished)
@@ -101,37 +115,36 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 			card.add_theme_stylebox_override("panel", card_style_failed)
 		_:
 			card.add_theme_stylebox_override("panel", card_style_normal)
-	
+
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
 	margin.add_theme_constant_override("margin_top", 15)
 	margin.add_theme_constant_override("margin_right", 15)
 	margin.add_theme_constant_override("margin_bottom", 15)
 	card.add_child(margin)
-	
+
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 5)
 	margin.add_child(vbox)
-	
+
 	var top_hbox = HBoxContainer.new()
 	vbox.add_child(top_hbox)
-	
+
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
-	
-	# Название с категорией
+
 	var cat_label = "[MICRO]" if proj.category == "micro" else "[SIMPLE]"
 	var title_text = cat_label + " " + proj.title
 	if proj.state == ProjectData.State.FINISHED:
 		title_text = "✅ " + title_text
 	elif proj.state == ProjectData.State.FAILED:
 		title_text = "❌ " + title_text
-	
+
 	var name_lbl = Label.new()
 	name_lbl.text = title_text
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	left_info.add_child(name_lbl)
-	
+
 	var status_lbl = Label.new()
 	match proj.state:
 		ProjectData.State.DRAFTING:
@@ -148,57 +161,57 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 			status_lbl.text = "❌ Провален — хард-дедлайн истёк"
 			status_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	left_info.add_child(status_lbl)
-	
+
 	if proj.state == ProjectData.State.IN_PROGRESS:
 		var progress_text = _get_progress_text(proj)
 		var progress_lbl = Label.new()
 		progress_lbl.text = progress_text
 		progress_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 		left_info.add_child(progress_lbl)
-	
+
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
-	
+
 	var right_info = VBoxContainer.new()
 	top_hbox.add_child(right_info)
-	
+
 	var budget_lbl = Label.new()
 	budget_lbl.text = "Бюджет $" + str(proj.budget)
 	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	budget_lbl.add_theme_font_size_override("font_size", 20)
 	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	right_info.add_child(budget_lbl)
-	
-	if proj.state != ProjectData.State.FAILED:
-		var open_btn = Button.new()
-		open_btn.text = "Открыть"
-		open_btn.custom_minimum_size = Vector2(180, 40)
-		open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-		open_btn.add_theme_stylebox_override("normal", btn_style)
-		open_btn.pressed.connect(_on_open_pressed.bind(index))
-		right_info.add_child(open_btn)
-	
+
+	# Кнопка «Открыть» — для всех проектов (включая FAILED)
+	var open_btn = Button.new()
+	open_btn.text = "Открыть"
+	open_btn.custom_minimum_size = Vector2(180, 40)
+	open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	open_btn.add_theme_stylebox_override("normal", btn_style)
+	open_btn.pressed.connect(_on_open_pressed.bind(index))
+	right_info.add_child(open_btn)
+
 	# Дедлайны
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	vbox.add_child(deadlines_hbox)
-	
+
 	var soft_days = proj.soft_deadline_day - GameTime.day
 	var hard_days = proj.deadline_day - GameTime.day
 	var soft_date = GameTime.get_date_short(proj.soft_deadline_day)
 	var hard_date = GameTime.get_date_short(proj.deadline_day)
-	
+
 	var soft_lbl = Label.new()
 	soft_lbl.text = "Софт: %s (ост. %d дн.) | штраф -%d%%" % [soft_date, soft_days, proj.soft_deadline_penalty_percent]
 	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
 	deadlines_hbox.add_child(soft_lbl)
-	
+
 	var hard_lbl = Label.new()
 	hard_lbl.text = "Хард: %s (ост. %d дн.)" % [hard_date, hard_days]
 	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	deadlines_hbox.add_child(hard_lbl)
-	
+
 	return card
 
 func _on_open_pressed(index: int):
