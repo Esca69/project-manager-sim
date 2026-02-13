@@ -142,7 +142,7 @@ func _arrive_early_bird():
 func _physics_process(delta):
 	update_debug_label()
 	
-	# [FIX] Если получен сигнал "пора домой" — принудительно уходим,
+	# [FIX] Если получен сигнал "пора домой" — принудительн�� уходим,
 	# независимо от текущего состояния
 	if _should_go_home:
 		_should_go_home = false
@@ -159,6 +159,12 @@ func _physics_process(delta):
 			_apply_lean(Vector2.ZERO, delta)
 			
 		State.WORKING:
+			# [FIX] Если рабочее время закончилось — уходим домой
+			if not _is_work_time():
+				print("🏠 ", data.employee_name, " — рабочее время кончилось, встаю из-за стола.")
+				_force_go_home()
+				return
+			
 			var drain_mult = data.get_energy_drain_multiplier()
 			var loss_speed = (ENERGY_LOSS_PER_GAME_HOUR / 60.0) * GameTime.MINUTES_PER_REAL_SECOND * drain_mult
 			data.current_energy -= loss_speed * delta
@@ -175,6 +181,11 @@ func _physics_process(delta):
 			_apply_lean(Vector2.ZERO, delta)
 			
 		State.MOVING, State.GOING_COFFEE, State.GOING_TOILET:
+			# [FIX] Если рабочее время кончилось пока шли — домой
+			if not _is_work_time():
+				_force_go_home()
+				return
+			
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_navigation_finished()
@@ -202,6 +213,10 @@ func _physics_process(delta):
 			_apply_lean(Vector2.ZERO, delta)
 
 		State.WANDERING:
+			if not _is_work_time():
+				_force_go_home()
+				return
+			
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
 				move_to_desk(my_desk_position)
@@ -216,6 +231,10 @@ func _physics_process(delta):
 			_move_along_path_slow(delta)
 
 		State.WANDER_PAUSE:
+			if not _is_work_time():
+				_force_go_home()
+				return
+			
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
 				move_to_desk(my_desk_position)
@@ -234,7 +253,6 @@ func _is_my_stage_active() -> bool:
 	return ProjectManager.is_employee_on_active_stage(data)
 
 # [FIX] Принудительный уход домой — очищает ВСЁ и идёт к выходу
-# [FIX] Принудительный уход домой — и подготовка early_bird на завтра
 func _force_go_home():
 	coffee_cup_holder.visible = false
 	
@@ -248,8 +266,7 @@ func _force_go_home():
 	if current_state == State.HOME or current_state == State.GOING_HOME:
 		return
 	
-	# [FIX] Настраиваем early_bird на ЗАВТРА прямо сейчас,
-	# пока он ещё не ушёл. Сбрасываем флаг arrived.
+	# [FIX] Настраиваем early_bird на ЗАВТРА прям�� сейчас
 	if data and data.has_trait("early_bird"):
 		_early_bird_arrived = false
 		_setup_early_bird()
@@ -261,7 +278,7 @@ func _force_go_home():
 	if entrance:
 		nav_agent.target_position = entrance.global_position
 		current_state = State.GOING_HOME
-		print("🏠 ", data.employee_name, " — принудител��но идёт домой")
+		print("🏠 ", data.employee_name, " — принудительно идёт домой")
 	else:
 		_on_arrived_home()
 
@@ -279,7 +296,6 @@ func _leave_desk_to_wander():
 	if _is_work_time():
 		_start_wandering()
 	else:
-		# [FIX] Не ставим IDLE — сразу идём домой
 		_force_go_home()
 
 func _move_along_path(delta):
@@ -326,7 +342,6 @@ func _pick_next_wander_target():
 		return
 	
 	if not _is_work_time():
-		# [FIX] Вместо вызова _on_work_ended() — сразу идём домой
 		_force_go_home()
 		return
 	
@@ -375,7 +390,7 @@ func _start_coffee_break():
 	if data and data.has_trait("coffee_lover"):
 		min_minutes *= COFFEE_LOVER_DURATION_MULT
 		max_minutes *= COFFEE_LOVER_DURATION_MULT
-		print("☕ ", data.employee_name, " КОФЕМАН! Перерыв удлинён: ", min_minutes, "-", max_minutes, " мин.")
+		print("��� ", data.employee_name, " КОФЕМАН! Перерыв удлинён: ", min_minutes, "-", max_minutes, " мин.")
 	
 	coffee_break_minutes_left = randf_range(min_minutes, max_minutes)
 
@@ -500,6 +515,12 @@ func _on_navigation_finished():
 		_start_toilet_break()
 		return
 	
+	# [FIX] Если рабочее время закончилось — не садимся за стол, идём домой
+	if not _is_work_time():
+		print("🏠 ", data.employee_name, " — дошёл до стола, но рабочий день кончился. Иду домой.")
+		_force_go_home()
+		return
+	
 	if not _is_my_stage_active():
 		print("📋 ", data.employee_name, " — дошёл до стола, но мой этап не активен. Слоняюсь.")
 		_start_wandering()
@@ -513,21 +534,14 @@ func _on_navigation_finished():
 
 func _on_work_started():
 	# [FIX] Early bird: в 9:00 он уже должен быть на работе (пришёл в ~8:20)
-	# Если он уже пришёл — не трогаем
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		if current_state != State.HOME:
 			return
 	
-	# [FIX] Early bird: если он ещё дома — значит что-то пошло не так,
-	# но мы НЕ должны его выводить через обычную логику.
-	# Он придёт сам через _on_time_tick (его время ~8:20 уже прошло,
-	# поэтому _on_time_tick сработает в ближайшую минуту)
+	# [FIX] Early bird: если он ещё дома — просто обновляем данные
 	if data and data.has_trait("early_bird"):
-		# Просто сбрасываем энергию и расписание, но НЕ телепортируем на работу
 		data.current_energy = 100.0
 		_setup_toilet_schedule()
-		# НЕ вызываем _setup_early_bird() — он уже настроен с вечера
-		# НЕ сбрасываем _early_bird_arrived — пусть _on_time_tick разберётся
 		_should_go_home = false
 		return
 	
@@ -565,13 +579,9 @@ func _on_work_started():
 		_start_wandering()
 
 # [FIX] _on_work_ended теперь ставит флаг вместо прямого изменения state
-# Это гарантирует что _physics_process обработает его в начале следующего кадра
 func _on_work_ended():
-	# Если уже дома — ничего не делаем
 	if current_state == State.HOME or current_state == State.GOING_HOME:
 		return
-	
-	# Ставим флаг — в следующем кадре _physics_process обработает
 	_should_go_home = true
 
 func _on_arrived_home():

@@ -22,8 +22,6 @@ var current_time_line: ColorRect
 var soft_deadline_line: ColorRect
 var hard_deadline_line: ColorRect
 
-# [ПУНКТ 3] Базовое время origin — начало рабочего дня (START_HOUR) в день создания проекта
-# Все позиции на таймлайне считаются относительно этого момента
 func _get_origin_time() -> float:
 	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
 
@@ -44,7 +42,6 @@ func setup(data: ProjectData, selector_node):
 		soft_date, soft_left, project.soft_deadline_penalty_percent, deadline_date, days_left
 	]
 	
-	# [ПУНКТ 5] Определяем readonly
 	var is_readonly = (project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED)
 	
 	for child in tracks_container.get_children():
@@ -65,7 +62,6 @@ func setup(data: ProjectData, selector_node):
 			
 		var new_track = track_scene.instantiate()
 		tracks_container.add_child(new_track)
-		# [ПУНКТ 5] Передаём readonly
 		new_track.setup(i, stage, is_readonly)
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
 		new_track.worker_removed.connect(_on_worker_removed)
@@ -80,6 +76,9 @@ func setup(data: ProjectData, selector_node):
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# [FIX ПУНКТ 3] Обрезаем линии — они не выходят за пределы timeline_header
+	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	
 	cancel_btn.pressed.connect(_on_cancel_pressed)
 	start_btn.pressed.connect(_on_start_pressed)
@@ -131,7 +130,6 @@ func _process(delta):
 	var origin_time = _get_origin_time()
 	
 	if project.state == ProjectData.State.DRAFTING:
-		# Горизонт: от origin_day до дедлайна
 		var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
 		if horizon_from_origin < MIN_TIMELINE_DAYS:
 			horizon_from_origin = MIN_TIMELINE_DAYS
@@ -139,8 +137,6 @@ func _process(delta):
 		
 		var line_height = max(tracks_container.size.y + 50, 500)
 		
-		# [ПУНКТ 3] Синяя линия = (текущее_время - origin_time)
-		# При 8:00 первого дня это будет ровно 0 (начало таймлайна)
 		if current_time_line:
 			var now_offset = get_current_global_time() - origin_time
 			current_time_line.position.x = now_offset * pixels_per_day
@@ -176,9 +172,6 @@ func _process(delta):
 	
 	var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
 	
-	# [ПУНКТ 3] Колбаски: plan_start/actual_start хранятся относительно start_global_time,
-	# но рисовать нужно относительно origin_time.
-	# Сдвиг = start_global_time - origin_time (сколько дней прошло от начала таймлайна до старта проекта)
 	var start_offset = project.start_global_time - origin_time
 	
 	for i in range(project.stages.size()):
@@ -186,7 +179,6 @@ func _process(delta):
 			var stage = project.stages[i]
 			var track_node = tracks_container.get_child(i)
 			var stage_color = get_color_for_stage(stage.type)
-			# Передаём offset чтобы track правильно рисовал plan/actual с учётом сдвига
 			track_node.update_visuals_dynamic_offset(pixels_per_day, project.elapsed_days, stage_color, start_offset)
 			
 			var percent = 0.0
@@ -196,7 +188,6 @@ func _process(delta):
 	
 	var line_height = max(tracks_container.size.y + 50, 500)
 	
-	# [ПУНКТ 3] Синяя линия = текущее время относительно origin_time
 	if current_time_line:
 		var now_offset = now - origin_time
 		current_time_line.position.x = now_offset * pixels_per_day
@@ -220,11 +211,12 @@ func _process(delta):
 # --- ВСПОМОГАТЕЛЬНЫЕ ---
 
 func create_time_line_if_needed():
+	# [FIX ПУНКТ 3] z_index понижен до 5 — не перекрывает модальные окна
 	if not current_time_line:
 		current_time_line = ColorRect.new()
 		current_time_line.color = Color(0, 0.4, 1, 0.8)
 		current_time_line.size = Vector2(2, 500)
-		current_time_line.z_index = 100
+		current_time_line.z_index = 5
 		current_time_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		timeline_header.add_child(current_time_line)
 	
@@ -232,7 +224,7 @@ func create_time_line_if_needed():
 		soft_deadline_line = ColorRect.new()
 		soft_deadline_line.color = Color(1, 0.65, 0, 0.8)
 		soft_deadline_line.size = Vector2(2, 500)
-		soft_deadline_line.z_index = 99
+		soft_deadline_line.z_index = 4
 		soft_deadline_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		soft_deadline_line.visible = false
 		timeline_header.add_child(soft_deadline_line)
@@ -241,7 +233,7 @@ func create_time_line_if_needed():
 		hard_deadline_line = ColorRect.new()
 		hard_deadline_line.color = Color(1, 0, 0, 0.8)
 		hard_deadline_line.size = Vector2(2, 500)
-		hard_deadline_line.z_index = 99
+		hard_deadline_line.z_index = 4
 		hard_deadline_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hard_deadline_line.visible = false
 		timeline_header.add_child(hard_deadline_line)

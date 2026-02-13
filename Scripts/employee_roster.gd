@@ -159,7 +159,6 @@ func _create_card(npc_node) -> PanelContainer:
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	info_vbox.add_child(name_lbl)
 	
-	# === НАВЫКИ — размытие через PMData ===
 	var ba_text = PMData.get_blurred_skill(emp.skill_business_analysis)
 	var dev_text = PMData.get_blurred_skill(emp.skill_backend)
 	var qa_text = PMData.get_blurred_skill(emp.skill_qa)
@@ -176,16 +175,14 @@ func _create_card(npc_node) -> PanelContainer:
 	salary_lbl.add_theme_font_size_override("font_size", 13)
 	info_vbox.add_child(salary_lbl)
 	
-	# === ТРЕЙТЫ — показываем всегда, скрытые = заглушки ===
+	# === ТРЕЙТЫ ===
 	if not emp.traits.is_empty():
 		var visible_count = PMData.get_visible_traits_count()
 		
 		if visible_count >= emp.traits.size():
-			# Все видно
 			var traits_row = TraitUIHelper.create_traits_row(emp, self)
 			info_vbox.add_child(traits_row)
 		else:
-			# Часть или все скрыты
 			var flow = HFlowContainer.new()
 			flow.add_theme_constant_override("h_separation", 12)
 			flow.add_theme_constant_override("v_separation", 4)
@@ -253,7 +250,6 @@ func _create_card(npc_node) -> PanelContainer:
 	
 	return card
 
-# Видимый трейт (имя + кнопка ?)
 func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
@@ -311,7 +307,6 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 	hbox.add_child(help_btn)
 	return hbox
 
-# Скрытый трейт — заглушка "???"
 func _create_hidden_trait() -> HBoxContainer:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
@@ -326,7 +321,6 @@ func _create_hidden_trait() -> HBoxContainer:
 	help_btn.text = "?"
 	help_btn.custom_minimum_size = Vector2(22, 22)
 	help_btn.focus_mode = Control.FOCUS_NONE
-	help_btn.disabled = true
 	help_btn.add_theme_font_size_override("font_size", 11)
 	help_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	
@@ -342,7 +336,27 @@ func _create_hidden_trait() -> HBoxContainer:
 	btn_style.corner_radius_bottom_right = 11
 	btn_style.corner_radius_bottom_left = 11
 	help_btn.add_theme_stylebox_override("normal", btn_style)
-	help_btn.add_theme_stylebox_override("disabled", btn_style)
+	
+	# Всплывающее окно "Неизвестное качество"
+	var tooltip_ref: Array = [null]
+	var gray_color = Color(0.5, 0.5, 0.5, 1)
+	var parent_ref = self
+	
+	help_btn.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip("Неизвестное качество сотрудника.\nИзучите навык «Чтение людей» в дереве навыков PM.", gray_color)
+		parent_ref.add_child(tp)
+		var btn_global = help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		tooltip_ref[0] = tp
+	)
+	
+	help_btn.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
 	
 	hbox.add_child(help_btn)
 	return hbox
@@ -430,7 +444,6 @@ func _find_npc_node(emp_data: EmployeeData):
 			return npc
 	return null
 
-# === УВОЛЬНЕНИЕ ===
 func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 	_pending_fire_data = emp_data
 	_pending_fire_node = npc_node

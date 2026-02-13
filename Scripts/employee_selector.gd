@@ -10,6 +10,8 @@ var _filter_stage_type: String = ""
 
 func _ready():
 	visible = false
+	# [FIX] Поднимаем EmployeeSelector выше линий дедлайнов
+	z_index = 10
 
 func open_list(stage_type: String = ""):
 	_filter_stage_type = stage_type

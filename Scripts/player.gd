@@ -10,7 +10,6 @@ const ZOOM_SMOOTH_SPEED = 8.0
 const LEAN_ANGLE = 0.12 # ~7 градусов
 const LEAN_SPEED = 10.0
 
-# Ссылка на нашу зону взаимодействия (чтобы каждый раз не искать)
 @onready var interaction_zone = $InteractionZone
 @onready var camera = $Camera2D
 @onready var body_sprite = $Sprite2D
@@ -120,6 +119,12 @@ func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 
 func _unhandled_input(event):
+	# [FIX ПУНКТ 4] Блокируем зум, если открыт интерфейс или ночной скип
+	if GameTime.is_night_skip:
+		return
+	if _is_ui_blocking():
+		return
+	
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_set_zoom(ZOOM_STEP)
