@@ -28,6 +28,9 @@ var _pm_level_label: Label
 var _pm_xp_bar: ProgressBar
 var _pm_xp_label: Label
 
+# --- Day Summary (создаётся в коде) ---
+var _day_summary: Control
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -78,6 +81,18 @@ func _ready():
 	
 	# XP обновление UI
 	PMData.xp_changed.connect(_on_pm_xp_changed)
+	
+	# --- Создаём DaySummary ---
+	_build_day_summary()
+
+# --- DAY SUMMARY ---
+func _build_day_summary():
+	var day_summary_script = load("res://Scripts/day_summary.gd")
+	_day_summary = Control.new()
+	_day_summary.set_script(day_summary_script)
+	_day_summary.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_day_summary.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_day_summary)
 
 # --- PM LEVEL UI ---
 func _build_pm_level_ui():
@@ -132,7 +147,6 @@ func _build_pm_level_ui():
 	level_vbox.add_child(_pm_xp_label)
 	
 	# Вставляем после BalanceLabel (перед Spacer)
-	# BalanceLabel — индекс 1, Spacer — индекс 2
 	var spacer_index = -1
 	for i in range(hbox_container.get_child_count()):
 		if hbox_container.get_child(i).name == "Spacer":
@@ -170,6 +184,8 @@ func is_any_menu_open() -> bool:
 	if project_list_menu.visible: return true
 	if employee_roster.visible: return true
 	if pm_skill_tree.visible: return true
+	
+	if _day_summary and _day_summary.visible: return true
 	
 	var hiring_menu = get_node_or_null("HiringMenu")
 	if hiring_menu and hiring_menu.visible: return true
@@ -269,7 +285,15 @@ func _on_bottom_tab_pressed(tab_name: String):
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
 	end_day_button.visible = false
-	GameTime.start_night_skip()
+	
+	# --- Платим зарплаты ПЕРЕД показом отчёта ---
+	GameState.pay_daily_salaries()
+	
+	# --- Открываем итоги дня (ставит паузу внутри) ---
+	if _day_summary:
+		_day_summary.open()
+	else:
+		GameTime.start_night_skip()
 
 func _on_work_ended_show_end_day():
 	end_day_button.visible = true

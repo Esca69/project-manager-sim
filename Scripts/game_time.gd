@@ -21,7 +21,7 @@ const NIGHT_SKIP_DURATION_SECONDS = 3.0
 const DAYS_IN_MONTH = 30
 const DAYS_IN_WEEK = 7
 const WEEKDAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-const WEEKDAY_NAMES_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббо��а", "Воскресенье"]
+const WEEKDAY_NAMES_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
 
 var day = 1
 var hour = 8 
@@ -56,6 +56,10 @@ func _process(delta):
 			
 			if hour == START_HOUR:
 				if not is_weekend():
+					# --- Сброс дневной статистики при начале рабочего дня ---
+					GameState.reset_daily_stats()
+					_reset_employee_daily_stats()
+					
 					emit_signal("work_started")
 					print("🔔 09:00: СТАРТ РАБОТЫ (", get_weekday_name(), ")")
 				else:
@@ -70,8 +74,7 @@ func _process(delta):
 				hour = 0
 				day += 1
 				emit_signal("day_started", day)
-				if not is_weekend():
-					GameState.pay_daily_salaries()
+				# Зарплаты теперь платятся при нажатии "Завершить день" (в hud.gd)
 			
 			# --- ПРОВЕРКА ОКОНЧАНИЯ ПРОМОТКИ ---
 			if is_night_skip:
@@ -82,6 +85,14 @@ func _process(delta):
 						finish_night_skip()
 		
 		emit_signal("time_tick", hour, minute)
+
+# === СБРОС ДНЕВНОЙ СТАТИСТИКИ СОТРУДНИКОВ ===
+func _reset_employee_daily_stats():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.data:
+			npc.data.set_meta("daily_work_minutes", 0.0)
+			npc.data.set_meta("daily_progress", 0.0)
 
 # === ФУНКЦИИ КАЛЕНДАРЯ ===
 
@@ -121,38 +132,27 @@ func get_date_short(d: int) -> String:
 
 # === НОЧНАЯ ПРОМОТКА ===
 
-# [ИСПРАВЛЕНИЕ] Всегда мотаем до СЛЕДУЮЩЕГО рабочего дня 08:00,
-# независимо от того, когда нажали кнопку
 func start_night_skip():
 	if is_night_skip:
 		return
 	
 	is_night_skip = true
 	
-	# --- [ИСПРАВЛЕНИЕ] Определяем целевой день ---
-	# Если сейчас ДО 08:00 текущего дня — целевой день = сегодня (если рабочий)
-	# Если сейчас ПОСЛЕ 08:00 — целевой день = завтра+
 	var target: int
 	if hour < NIGHT_SKIP_END_HOUR:
-		# Ещё не наступило утро текущего дня — мотаем до сегодняшнего утра
 		target = day
 	else:
-		# Уже прошло утро — мотаем до следующего дня
 		target = day + 1
 	
-	# Пропускаем выходные
 	while is_weekend(target):
 		target += 1
 	
 	skip_target_day = target
 	
-	# Считаем сколько минут мотать
 	var minutes_until_target: int
 	if target == day:
-		# Мотаем до сегодняшнего утра (мы до 08:00)
 		minutes_until_target = (NIGHT_SKIP_END_HOUR - hour) * 60 - minute
 	else:
-		# Мотаем до другого дня
 		var minutes_remaining_today = ((24 - hour) * 60) - minute
 		var full_days_between = target - day - 1
 		var minutes_full_days = full_days_between * 24 * 60

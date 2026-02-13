@@ -75,7 +75,16 @@ func _physics_process(delta):
 						var speed_mult = worker_data.get_work_speed_multiplier()
 						
 						var speed_per_second = (float(skill) * efficiency * speed_mult) / 60.0
-						active_stage.progress += speed_per_second * delta
+						var progress_this_tick = speed_per_second * delta
+						active_stage.progress += progress_this_tick
+						
+						# --- ДНЕВНАЯ СТАТИСТИКА ---
+						var minutes_this_tick = GameTime.MINUTES_PER_REAL_SECOND * delta
+						var old_work = worker_data.get_meta("daily_work_minutes", 0.0) if worker_data.has_meta("daily_work_minutes") else 0.0
+						worker_data.set_meta("daily_work_minutes", old_work + minutes_this_tick)
+						
+						var old_prog = worker_data.get_meta("daily_progress", 0.0) if worker_data.has_meta("daily_progress") else 0.0
+						worker_data.set_meta("daily_progress", old_prog + progress_this_tick)
 			
 			if active_stage.progress >= active_stage.amount:
 				active_stage.progress = active_stage.amount
@@ -92,6 +101,10 @@ func _fail_project(project: ProjectData):
 	
 	print("❌ ПРОЕКТ ПРОВАЛЕН (хард-дедлайн): ", project.title)
 	project.state = ProjectData.State.FAILED
+	
+	# --- ДНЕВНАЯ СТАТИСТИКА ---
+	GameState.projects_failed_today.append(project)
+	
 	emit_signal("project_failed", project)
 
 func _finish_project(project: ProjectData):
@@ -108,7 +121,11 @@ func _finish_project(project: ProjectData):
 		print("🎉 ПРОЕКТ ЗАВЕРШЁН ВОВРЕМЯ: ", project.title, " | Выплата: $", payout)
 	
 	project.state = ProjectData.State.FINISHED
-	GameState.change_balance(payout)
+	
+	# --- ДНЕВНАЯ СТАТИСТИКА: используем add_income вместо change_balance ---
+	GameState.add_income(payout)
+	GameState.projects_finished_today.append({"project": project, "payout": payout})
+	
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):
