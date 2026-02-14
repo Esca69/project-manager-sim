@@ -34,6 +34,10 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 	role_label.text = data.type
 	progress_label.text = "%d / %d" % [int(data.progress), int(data.amount)]
 
+	if UITheme:
+		UITheme.apply_font(role_label, "semibold")
+		UITheme.apply_font(progress_label, "semibold")
+
 	_capture_original_style()
 	rebuild_worker_buttons()
 
@@ -59,6 +63,7 @@ func _create_styled_button(text: String) -> Button:
 	if _btn_style:
 		btn.add_theme_stylebox_override("normal", _btn_style.duplicate())
 	btn.add_theme_color_override("font_color", _btn_font_color)
+	if UITheme: UITheme.apply_font(btn, "semibold")
 	return btn
 
 func _create_remove_button() -> Button:
@@ -80,6 +85,7 @@ func _create_remove_button() -> Button:
 	btn.add_theme_stylebox_override("hover", style.duplicate())
 	btn.add_theme_stylebox_override("pressed", style.duplicate())
 	btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	if UITheme: UITheme.apply_font(btn, "bold")
 	return btn
 
 func rebuild_worker_buttons():
@@ -93,10 +99,8 @@ func rebuild_worker_buttons():
 	_buttons_container.add_theme_constant_override("separation", 8)
 	assign_wrapper.add_child(_buttons_container)
 
-	# Если этап завершён — показываем зафиксированные имена (без кнопок)
 	if is_stage_completed:
 		var completed_names = stage_data.get("completed_worker_names", [])
-		# Fallback: если имена ещё не зафиксированы, берём из workers
 		if completed_names.is_empty():
 			for w in stage_data.get("workers", []):
 				completed_names.append(w.employee_name)
@@ -112,6 +116,7 @@ func rebuild_worker_buttons():
 			check_lbl.custom_minimum_size = Vector2(140, 30)
 			check_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			check_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			if UITheme: UITheme.apply_font(check_lbl, "semibold")
 			row.add_child(check_lbl)
 
 			_buttons_container.add_child(row)
@@ -119,7 +124,6 @@ func rebuild_worker_buttons():
 		_update_track_height(completed_names.size())
 		return
 
-	# Обычная логика — этап не завершён
 	var workers = stage_data.get("workers", [])
 
 	for i in range(workers.size()):
@@ -141,6 +145,7 @@ func rebuild_worker_buttons():
 		name_label.custom_minimum_size = Vector2(140, 30)
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if UITheme: UITheme.apply_font(name_label, "regular")
 		row.add_child(name_label)
 
 		_buttons_container.add_child(row)
@@ -166,7 +171,6 @@ func update_visuals_dynamic(px_per_day: float, current_project_time: float, colo
 	update_visuals_dynamic_offset(px_per_day, current_project_time, color, 0.0)
 
 func update_visuals_dynamic_offset(px_per_day: float, current_project_time: float, color: Color, start_offset: float):
-	# Для завершённых этапов — всегда показываем колбаски (даже если workers очищен)
 	var has_workers = stage_data.get("workers", []).size() > 0
 	var has_completed_names = stage_data.get("completed_worker_names", []).size() > 0
 
@@ -175,7 +179,6 @@ func update_visuals_dynamic_offset(px_per_day: float, current_project_time: floa
 		progress_bar.visible = false
 		return
 
-	# 1. ПЛАН (полупрозрачный)
 	visual_bar.visible = true
 	var plan_start = stage_data.get("plan_start", 0.0)
 	var plan_dur = stage_data.get("plan_duration", 0.0)
@@ -191,7 +194,6 @@ func update_visuals_dynamic_offset(px_per_day: float, current_project_time: floa
 		visual_bar.add_theme_stylebox_override("panel", style)
 	visual_bar.modulate.a = 0.4
 
-	# 2. ФАКТ (яркий)
 	var act_start = stage_data.get("actual_start", -1.0)
 	var act_end = stage_data.get("actual_end", -1.0)
 

@@ -6,51 +6,18 @@ signal project_opened(proj: ProjectData)
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var empty_label = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer/EmptyLabel
 
-var card_style_normal: StyleBoxFlat
-var card_style_finished: StyleBoxFlat
-var card_style_failed: StyleBoxFlat
 var btn_style: StyleBoxFlat
+var btn_style_hover: StyleBoxFlat
 
 func _ready():
 	visible = false
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
+		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
-	card_style_normal = StyleBoxFlat.new()
-	card_style_normal.bg_color = Color(1, 1, 1, 1)
-	card_style_normal.border_width_left = 3
-	card_style_normal.border_width_top = 3
-	card_style_normal.border_width_right = 3
-	card_style_normal.border_width_bottom = 3
-	card_style_normal.border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
-	card_style_normal.corner_radius_top_left = 20
-	card_style_normal.corner_radius_top_right = 20
-	card_style_normal.corner_radius_bottom_right = 20
-	card_style_normal.corner_radius_bottom_left = 20
-
-	card_style_finished = StyleBoxFlat.new()
-	card_style_finished.bg_color = Color(0.9, 0.95, 0.9, 1)
-	card_style_finished.border_width_left = 3
-	card_style_finished.border_width_top = 3
-	card_style_finished.border_width_right = 3
-	card_style_finished.border_width_bottom = 3
-	card_style_finished.border_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
-	card_style_finished.corner_radius_top_left = 20
-	card_style_finished.corner_radius_top_right = 20
-	card_style_finished.corner_radius_bottom_right = 20
-	card_style_finished.corner_radius_bottom_left = 20
-
-	card_style_failed = StyleBoxFlat.new()
-	card_style_failed.bg_color = Color(0.98, 0.92, 0.92, 1)
-	card_style_failed.border_width_left = 3
-	card_style_failed.border_width_top = 3
-	card_style_failed.border_width_right = 3
-	card_style_failed.border_width_bottom = 3
-	card_style_failed.border_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
-	card_style_failed.corner_radius_top_left = 20
-	card_style_failed.corner_radius_top_right = 20
-	card_style_failed.corner_radius_bottom_right = 20
-	card_style_failed.corner_radius_bottom_left = 20
+	var scroll = cards_container.get_parent()
+	if scroll and scroll is ScrollContainer:
+		scroll.clip_contents = false
 
 	btn_style = StyleBoxFlat.new()
 	btn_style.bg_color = Color(1, 1, 1, 1)
@@ -64,12 +31,30 @@ func _ready():
 	btn_style.corner_radius_bottom_right = 20
 	btn_style.corner_radius_bottom_left = 20
 
+	btn_style_hover = StyleBoxFlat.new()
+	btn_style_hover.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	btn_style_hover.border_width_left = 2
+	btn_style_hover.border_width_top = 2
+	btn_style_hover.border_width_right = 2
+	btn_style_hover.border_width_bottom = 2
+	btn_style_hover.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	btn_style_hover.corner_radius_top_left = 20
+	btn_style_hover.corner_radius_top_right = 20
+	btn_style_hover.corner_radius_bottom_right = 20
+	btn_style_hover.corner_radius_bottom_left = 20
+
 func open_menu():
 	_rebuild_cards()
-	visible = true
+	if UITheme:
+		UITheme.fade_in(self, 0.2)
+	else:
+		visible = true
 
 func _on_close_pressed():
-	visible = false
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
 
 func _rebuild_cards():
 	for child in cards_container.get_children():
@@ -84,7 +69,6 @@ func _rebuild_cards():
 
 	empty_label.visible = false
 
-	# Сортируем: активные (DRAFTING, IN_PROGRESS) сверху, завершённые/проваленные снизу
 	var sorted_indices = []
 	for i in range(ProjectManager.active_projects.size()):
 		sorted_indices.append(i)
@@ -95,7 +79,7 @@ func _rebuild_cards():
 		var a_done = (sa == ProjectData.State.FINISHED or sa == ProjectData.State.FAILED)
 		var b_done = (sb == ProjectData.State.FINISHED or sb == ProjectData.State.FAILED)
 		if a_done != b_done:
-			return not a_done  # active первым
+			return not a_done
 		return a < b
 	)
 
@@ -104,17 +88,71 @@ func _rebuild_cards():
 		var card = _create_card(proj, idx)
 		cards_container.add_child(card)
 
-func _create_card(proj: ProjectData, index: int) -> PanelContainer:
-	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(1400, 0)
+func _make_card_style(proj: ProjectData) -> StyleBoxFlat:
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 20
+	style.border_width_left = 3
+	style.border_width_top = 3
+	style.border_width_right = 3
+	style.border_width_bottom = 3
 
 	match proj.state:
 		ProjectData.State.FINISHED:
-			card.add_theme_stylebox_override("panel", card_style_finished)
+			style.bg_color = Color(0.9, 0.95, 0.9, 1)
+			style.border_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
 		ProjectData.State.FAILED:
-			card.add_theme_stylebox_override("panel", card_style_failed)
+			style.bg_color = Color(0.98, 0.92, 0.92, 1)
+			style.border_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
 		_:
-			card.add_theme_stylebox_override("panel", card_style_normal)
+			style.bg_color = Color(1, 1, 1, 1)
+			style.border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+
+	if UITheme: UITheme.apply_shadow(style)
+	return style
+
+func _make_card_style_hover(proj: ProjectData) -> StyleBoxFlat:
+	var style = _make_card_style(proj)
+	match proj.state:
+		ProjectData.State.FINISHED:
+			style.border_color = Color(0.2, 0.55, 0.25, 1)
+			style.bg_color = Color(0.87, 0.94, 0.87, 1)
+		ProjectData.State.FAILED:
+			style.border_color = Color(0.75, 0.18, 0.17, 1)
+			style.bg_color = Color(0.96, 0.89, 0.89, 1)
+		_:
+			style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+			style.bg_color = Color(0.96, 0.97, 1.0, 1)
+	return style
+
+# === Рекурсивно ставим MOUSE_FILTER_PASS на все дочерние Control, кроме Button ===
+func _set_children_pass_filter(node: Node):
+	for child in node.get_children():
+		if child is Button:
+			# Кнопки остаются кликабельными — но PASS чтобы hover карточки не ломался
+			child.mouse_filter = Control.MOUSE_FILTER_PASS
+		elif child is Control:
+			child.mouse_filter = Control.MOUSE_FILTER_PASS
+		_set_children_pass_filter(child)
+
+func _create_card(proj: ProjectData, index: int) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var style_normal = _make_card_style(proj)
+	var style_hover = _make_card_style_hover(proj)
+	card.add_theme_stylebox_override("panel", style_normal)
+
+	# Карточка ловит все события мыши
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.mouse_entered.connect(func():
+		card.add_theme_stylebox_override("panel", style_hover)
+	)
+	card.mouse_exited.connect(func():
+		card.add_theme_stylebox_override("panel", style_normal)
+	)
 
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
@@ -143,6 +181,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var name_lbl = Label.new()
 	name_lbl.text = title_text
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
 
 	var status_lbl = Label.new()
@@ -160,6 +199,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 		ProjectData.State.FAILED:
 			status_lbl.text = "❌ Провален — хард-дедлайн истёк"
 			status_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
+	if UITheme: UITheme.apply_font(status_lbl, "regular")
 	left_info.add_child(status_lbl)
 
 	if proj.state == ProjectData.State.IN_PROGRESS:
@@ -167,6 +207,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 		var progress_lbl = Label.new()
 		progress_lbl.text = progress_text
 		progress_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		if UITheme: UITheme.apply_font(progress_lbl, "semibold")
 		left_info.add_child(progress_lbl)
 
 	var spacer = Control.new()
@@ -181,18 +222,23 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	budget_lbl.add_theme_font_size_override("font_size", 20)
 	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if UITheme: UITheme.apply_font(budget_lbl, "bold")
 	right_info.add_child(budget_lbl)
 
-	# Кнопка «Открыть» — для всех проектов (включая FAILED)
+	# Кнопка "Открыть" — остаётся кликабельной
 	var open_btn = Button.new()
 	open_btn.text = "Открыть"
 	open_btn.custom_minimum_size = Vector2(180, 40)
 	open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	open_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	open_btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
 	open_btn.add_theme_stylebox_override("normal", btn_style)
+	open_btn.add_theme_stylebox_override("hover", btn_style_hover)
+	open_btn.add_theme_stylebox_override("pressed", btn_style_hover)
+	if UITheme: UITheme.apply_font(open_btn, "semibold")
 	open_btn.pressed.connect(_on_open_pressed.bind(index))
 	right_info.add_child(open_btn)
 
-	# Дедлайны
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	vbox.add_child(deadlines_hbox)
@@ -205,12 +251,22 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var soft_lbl = Label.new()
 	soft_lbl.text = "Софт: %s (ост. %d дн.) | штраф -%d%%" % [soft_date, soft_days, proj.soft_deadline_penalty_percent]
 	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
+	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	deadlines_hbox.add_child(soft_lbl)
 
 	var hard_lbl = Label.new()
 	hard_lbl.text = "Хард: %s (ост. %d дн.)" % [hard_date, hard_days]
 	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
+	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	deadlines_hbox.add_child(hard_lbl)
+
+	# === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ===
+	# После сборки всех детей — ставим MOUSE_FILTER_PASS на всё содержимое карточки,
+	# чтобы mouse_entered / mouse_exited срабатывали на ВСЕЙ площади карточки,
+	# а не только на пустых местах между Label'ами.
+	# Кнопка "Открыть" тоже получает PASS — но она всё равно кликабельна,
+	# потому что PASS означает "обработай событие И передай родителю".
+	call_deferred("_set_children_pass_filter", card)
 
 	return card
 

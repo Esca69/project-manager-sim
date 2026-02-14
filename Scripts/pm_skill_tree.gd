@@ -31,9 +31,14 @@ func _ready():
 	visible = false
 
 	if close_btn:
-		close_btn.pressed.connect(func(): visible = false)
+		close_btn.pressed.connect(func():
+			if UITheme:
+				UITheme.fade_out(self, 0.15)
+			else:
+				visible = false
+		)
+		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
-	# PMData может быть ещё не готов — откладываем инициализацию
 	call_deferred("_deferred_init")
 
 func _deferred_init():
@@ -56,7 +61,10 @@ func open():
 	if not _initialized:
 		return
 	_rebuild_tree()
-	visible = true
+	if UITheme:
+		UITheme.fade_in(self, 0.2)
+	else:
+		visible = true
 
 func _build_ui():
 	var window = get_node_or_null("Window")
@@ -87,11 +95,13 @@ func _build_ui():
 		_xp_label = Label.new()
 		_xp_label.add_theme_color_override("font_color", COLOR_BLUE)
 		_xp_label.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(_xp_label, "semibold")
 		hbox.add_child(_xp_label)
 
 		_sp_label = Label.new()
 		_sp_label.add_theme_color_override("font_color", COLOR_GREEN)
 		_sp_label.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(_sp_label, "bold")
 		hbox.add_child(_sp_label)
 
 	var scroll_path = "CardsMargin/ScrollContainer"
@@ -123,7 +133,6 @@ func _update_header():
 			_xp_label.text = "XP: %d / %d" % [PMData.xp, next_threshold]
 		else:
 			_xp_label.text = "XP: %d (MAX)" % PMData.xp
-
 	if _sp_label:
 		_sp_label.text = "🧠 Очков навыков: %d" % PMData.skill_points
 
@@ -151,31 +160,22 @@ func _rebuild_tree():
 
 	var center = Vector2(_canvas.custom_minimum_size.x / 2.0, 240)
 
-	# --- Центральная нода "PM" ---
 	var center_node = _create_center_node()
 	center_node.position = center - CENTER_NODE_SIZE / 2.0
 	_canvas.add_child(center_node)
 
-	# --- Левое направление: ПРОЕКТЫ ---
 	_place_branch("estimate_work", center, -1, 0)
 	_place_branch("estimate_budget", center, -1, 1)
-
-	# --- Правое направление: ЛЮДИ ---
 	_place_branch("read_traits", center, 1, 0)
 	_place_branch("read_skills", center, 1, 1)
 
-	# --- Вниз: АНАЛИТИКА (3 навыка веером) ---
 	_place_analytics_branch(center)
-
-	# --- Рисуем линии связей ---
 	_draw_connections(center)
 
-	# --- Зоны-лейблы (крупные, полупрозрачные) ---
 	_add_zone_label("📋 ПРОЕКТЫ", center + Vector2(-NODE_SPACING_X * 2, -NODE_SPACING_Y - 50))
 	_add_zone_label("👥 ЛЮДИ", center + Vector2(NODE_SPACING_X * 2, -NODE_SPACING_Y - 50))
 	_add_zone_label("📊 АНАЛИТИКА", center + Vector2(0, NODE_SPACING_Y + 120), COLOR_TEAL)
 
-	# --- Подписи веток (мелкие, рядом с первым навыком) ---
 	_add_branch_label("Оценка объёма", center, -1, 0)
 	_add_branch_label("Оценка бюджета", center, -1, 1)
 	_add_branch_label("Чтение людей", center, 1, 0)
@@ -227,6 +227,7 @@ func _add_branch_label(text: String, center: Vector2, dir_x: int, branch_index: 
 	lbl.add_theme_color_override("font_color", Color(COLOR_BLUE, 0.5))
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.position = Vector2(x - 50, y)
+	if UITheme: UITheme.apply_font(lbl, "regular")
 	_canvas.add_child(lbl)
 
 func _create_center_node() -> PanelContainer:
@@ -244,6 +245,7 @@ func _create_center_node() -> PanelContainer:
 	style.border_width_right = 3
 	style.border_width_bottom = 3
 	style.border_color = Color(0, 0, 0, 0.3)
+	if UITheme: UITheme.apply_shadow(style, false)
 	panel.add_theme_stylebox_override("panel", style)
 
 	var lbl = Label.new()
@@ -252,6 +254,7 @@ func _create_center_node() -> PanelContainer:
 	lbl.add_theme_font_size_override("font_size", 16)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(lbl, "bold")
 	panel.add_child(lbl)
 
 	return panel
@@ -284,7 +287,29 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 		style.bg_color = COLOR_LOCKED
 		style.border_color = Color(0.6, 0.6, 0.6, 1)
 
+	if UITheme: UITheme.apply_shadow(style)
 	panel.add_theme_stylebox_override("panel", style)
+
+	# Hover — подсветка рамки
+	var style_hover = style.duplicate()
+	if is_unlocked:
+		style_hover.border_color = Color(0.2, 0.6, 0.25, 1)
+		style_hover.bg_color = Color(0.88, 0.95, 0.88, 1)
+	elif can_unlock:
+		style_hover.border_color = Color(accent_color.r * 0.8, accent_color.g * 0.8, accent_color.b * 1.2, 1)
+		style_hover.bg_color = Color(0.92, 0.95, 1.0, 1)
+	else:
+		style_hover.border_color = Color(0.5, 0.5, 0.5, 1)
+		style_hover.bg_color = Color(0.82, 0.82, 0.82, 1)
+	if UITheme: UITheme.apply_shadow(style_hover, false)
+
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.mouse_entered.connect(func():
+		panel.add_theme_stylebox_override("panel", style_hover)
+	)
+	panel.mouse_exited.connect(func():
+		panel.add_theme_stylebox_override("panel", style)
+	)
 
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 8)
@@ -310,6 +335,7 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 	else:
 		title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 
+	if UITheme: UITheme.apply_font(title_lbl, "semibold")
 	vbox.add_child(title_lbl)
 
 	if not is_unlocked:
@@ -318,6 +344,7 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 		cost_lbl.add_theme_font_size_override("font_size", 11)
 		cost_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		cost_lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4, 1))
+		if UITheme: UITheme.apply_font(cost_lbl, "regular")
 		vbox.add_child(cost_lbl)
 
 	if can_unlock:
@@ -332,11 +359,16 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 		btn_style.corner_radius_top_right = 10
 		btn_style.corner_radius_bottom_right = 10
 		btn_style.corner_radius_bottom_left = 10
+
+		var btn_style_hover = btn_style.duplicate()
+		btn_style_hover.bg_color = Color(accent_color.r * 0.85, accent_color.g * 0.85, accent_color.b * 0.85, 1)
+
 		btn.add_theme_stylebox_override("normal", btn_style)
-		btn.add_theme_stylebox_override("hover", btn_style)
-		btn.add_theme_stylebox_override("pressed", btn_style)
+		btn.add_theme_stylebox_override("hover", btn_style_hover)
+		btn.add_theme_stylebox_override("pressed", btn_style_hover)
 		btn.add_theme_color_override("font_color", COLOR_WHITE)
 		btn.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(btn, "semibold")
 		btn.pressed.connect(_on_skill_pressed.bind(skill_id))
 		vbox.add_child(btn)
 
@@ -352,6 +384,7 @@ func _add_zone_label(text: String, pos: Vector2, color: Color = COLOR_BLUE):
 	lbl.add_theme_color_override("font_color", Color(color, 0.4))
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.position = pos - Vector2(80, 0)
+	if UITheme: UITheme.apply_font(lbl, "bold")
 	_canvas.add_child(lbl)
 
 # === ЛИНИИ СВЯЗЕЙ С СТРЕЛКАМИ ===
@@ -464,7 +497,8 @@ func _show_tooltip(skill_id: String, anchor: Control):
 	style.corner_radius_bottom_right = 10
 	style.corner_radius_bottom_left = 10
 	style.shadow_color = Color(0, 0, 0, 0.15)
-	style.shadow_size = 4
+	style.shadow_size = 6
+	style.shadow_offset = Vector2(0, 2)
 	_tooltip_panel.add_theme_stylebox_override("panel", style)
 
 	var margin = MarginContainer.new()
@@ -480,6 +514,7 @@ func _show_tooltip(skill_id: String, anchor: Control):
 	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl.custom_minimum_size = Vector2(260, 0)
+	if UITheme: UITheme.apply_font(lbl, "regular")
 	margin.add_child(lbl)
 
 	add_child(_tooltip_panel)

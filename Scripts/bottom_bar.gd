@@ -9,7 +9,7 @@ var btn_style_hover: StyleBoxFlat
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
+
 	btn_style_normal = StyleBoxFlat.new()
 	btn_style_normal.bg_color = Color(1, 1, 1, 1)
 	btn_style_normal.border_width_left = 2
@@ -21,7 +21,7 @@ func _ready():
 	btn_style_normal.corner_radius_top_right = 10
 	btn_style_normal.corner_radius_bottom_right = 10
 	btn_style_normal.corner_radius_bottom_left = 10
-	
+
 	btn_style_hover = StyleBoxFlat.new()
 	btn_style_hover.bg_color = Color(0.9, 0.93, 1.0, 1)
 	btn_style_hover.border_width_left = 2
@@ -33,7 +33,7 @@ func _ready():
 	btn_style_hover.corner_radius_top_right = 10
 	btn_style_hover.corner_radius_bottom_right = 10
 	btn_style_hover.corner_radius_bottom_left = 10
-	
+
 	_add_tab_button("👥 Сотрудники", "employees")
 	_add_tab_button("🧠 Навыки PM", "pm_skills")
 
@@ -49,6 +49,9 @@ func _add_tab_button(label_text: String, tab_name: String):
 	btn.add_theme_color_override("font_hover_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	btn.add_theme_color_override("font_pressed_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	btn.add_theme_font_size_override("font_size", 15)
+	# Применяем шрифт Inter
+	if UITheme:
+		UITheme.apply_font(btn, "semibold")
 	btn.pressed.connect(_on_tab_pressed.bind(tab_name))
 	hbox.add_child(btn)
 

@@ -6,7 +6,8 @@ signal employee_fired(emp_data: EmployeeData)
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var empty_label = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer/EmptyLabel
 
-var card_style: StyleBoxFlat
+var card_style_normal: StyleBoxFlat
+var card_style_hover: StyleBoxFlat
 var fire_btn_style: StyleBoxFlat
 var fire_btn_hover_style: StyleBoxFlat
 
@@ -21,25 +22,40 @@ var _head_texture: Texture2D
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	
+
 	_body_texture = load("res://Sprites/body2.png")
 	_head_texture = load("res://Sprites/head2.png")
-	
+
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
-	
-	card_style = StyleBoxFlat.new()
-	card_style.bg_color = Color(1, 1, 1, 1)
-	card_style.border_width_left = 3
-	card_style.border_width_top = 3
-	card_style.border_width_right = 3
-	card_style.border_width_bottom = 3
-	card_style.border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
-	card_style.corner_radius_top_left = 20
-	card_style.corner_radius_top_right = 20
-	card_style.corner_radius_bottom_right = 20
-	card_style.corner_radius_bottom_left = 20
-	
+		if UITheme: UITheme.apply_font(close_btn, "semibold")
+
+	card_style_normal = StyleBoxFlat.new()
+	card_style_normal.bg_color = Color(1, 1, 1, 1)
+	card_style_normal.border_width_left = 3
+	card_style_normal.border_width_top = 3
+	card_style_normal.border_width_right = 3
+	card_style_normal.border_width_bottom = 3
+	card_style_normal.border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+	card_style_normal.corner_radius_top_left = 20
+	card_style_normal.corner_radius_top_right = 20
+	card_style_normal.corner_radius_bottom_right = 20
+	card_style_normal.corner_radius_bottom_left = 20
+	if UITheme: UITheme.apply_shadow(card_style_normal)
+
+	card_style_hover = StyleBoxFlat.new()
+	card_style_hover.bg_color = Color(0.96, 0.97, 1.0, 1)
+	card_style_hover.border_width_left = 3
+	card_style_hover.border_width_top = 3
+	card_style_hover.border_width_right = 3
+	card_style_hover.border_width_bottom = 3
+	card_style_hover.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	card_style_hover.corner_radius_top_left = 20
+	card_style_hover.corner_radius_top_right = 20
+	card_style_hover.corner_radius_bottom_right = 20
+	card_style_hover.corner_radius_bottom_left = 20
+	if UITheme: UITheme.apply_shadow(card_style_hover)
+
 	fire_btn_style = StyleBoxFlat.new()
 	fire_btn_style.bg_color = Color(1, 1, 1, 1)
 	fire_btn_style.border_width_left = 2
@@ -51,7 +67,7 @@ func _ready():
 	fire_btn_style.corner_radius_top_right = 20
 	fire_btn_style.corner_radius_bottom_right = 20
 	fire_btn_style.corner_radius_bottom_left = 20
-	
+
 	fire_btn_hover_style = StyleBoxFlat.new()
 	fire_btn_hover_style.bg_color = Color(0.85, 0.25, 0.2, 1)
 	fire_btn_hover_style.border_width_left = 2
@@ -63,15 +79,27 @@ func _ready():
 	fire_btn_hover_style.corner_radius_top_right = 20
 	fire_btn_hover_style.corner_radius_bottom_right = 20
 	fire_btn_hover_style.corner_radius_bottom_left = 20
-	
+
 	_build_confirm_dialog()
+
+func _set_children_pass_filter(node: Node):
+	for child in node.get_children():
+		if child is Control:
+			child.mouse_filter = Control.MOUSE_FILTER_PASS
+		_set_children_pass_filter(child)
 
 func open():
 	_rebuild_cards()
-	visible = true
+	if UITheme:
+		UITheme.fade_in(self, 0.2)
+	else:
+		visible = true
 
 func _on_close_pressed():
-	visible = false
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
 
 func _process(_delta):
 	if not visible: return
@@ -81,13 +109,13 @@ func _update_live_data():
 	for card in cards_container.get_children():
 		if card == empty_label: continue
 		if not card.has_meta("emp_data"): continue
-		
+
 		var emp_data = card.get_meta("emp_data")
-		
+
 		var energy_lbl = card.get_meta("energy_label") if card.has_meta("energy_label") else null
 		var status_lbl = card.get_meta("status_label") if card.has_meta("status_label") else null
 		var eff_lbl = card.get_meta("eff_label") if card.has_meta("eff_label") else null
-		
+
 		if energy_lbl:
 			var energy_pct = int(emp_data.current_energy)
 			energy_lbl.text = "Энергия: %d%%" % energy_pct
@@ -97,10 +125,10 @@ func _update_live_data():
 				energy_lbl.add_theme_color_override("font_color", Color(0.9, 0.7, 0.1, 1))
 			else:
 				energy_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
-		
+
 		if eff_lbl:
 			eff_lbl.text = "Эффект.: x%.1f" % emp_data.get_efficiency_multiplier()
-		
+
 		if status_lbl:
 			var npc_node = _find_npc_node(emp_data)
 			if npc_node:
@@ -112,15 +140,15 @@ func _rebuild_cards():
 		if child == empty_label: continue
 		cards_container.remove_child(child)
 		child.queue_free()
-	
+
 	var npcs = get_tree().get_nodes_in_group("npc")
-	
+
 	if npcs.is_empty():
 		empty_label.visible = true
 		return
-	
+
 	empty_label.visible = false
-	
+
 	for npc in npcs:
 		if not npc.data: continue
 		var card = _create_card(npc)
@@ -128,57 +156,69 @@ func _rebuild_cards():
 
 func _create_card(npc_node) -> PanelContainer:
 	var emp = npc_node.data
-	
+
 	var card = PanelContainer.new()
-	card.custom_minimum_size = Vector2(1400, 0)
-	card.add_theme_stylebox_override("panel", card_style)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.add_theme_stylebox_override("panel", card_style_normal)
 	card.set_meta("emp_data", emp)
-	
+
+	# Hover
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.mouse_entered.connect(func():
+		card.add_theme_stylebox_override("panel", card_style_hover)
+	)
+	card.mouse_exited.connect(func():
+		card.add_theme_stylebox_override("panel", card_style_normal)
+	)
+
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 15)
 	margin.add_theme_constant_override("margin_top", 15)
 	margin.add_theme_constant_override("margin_right", 15)
 	margin.add_theme_constant_override("margin_bottom", 15)
 	card.add_child(margin)
-	
+
 	var main_hbox = HBoxContainer.new()
 	main_hbox.add_theme_constant_override("separation", 15)
 	margin.add_child(main_hbox)
-	
+
 	var sprite_container = _create_employee_sprite(emp)
 	main_hbox.add_child(sprite_container)
-	
+
 	var info_vbox = VBoxContainer.new()
 	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.add_theme_constant_override("separation", 3)
 	main_hbox.add_child(info_vbox)
-	
+
 	var name_lbl = Label.new()
 	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	name_lbl.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	info_vbox.add_child(name_lbl)
-	
+
 	var ba_text = PMData.get_blurred_skill(emp.skill_business_analysis)
 	var dev_text = PMData.get_blurred_skill(emp.skill_backend)
 	var qa_text = PMData.get_blurred_skill(emp.skill_qa)
-	
+
 	var skills_lbl = Label.new()
 	skills_lbl.text = "Навыки:  BA %s  |  DEV %s  |  QA %s" % [ba_text, dev_text, qa_text]
 	skills_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	skills_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(skills_lbl, "semibold")
 	info_vbox.add_child(skills_lbl)
-	
+
 	var salary_lbl = Label.new()
 	salary_lbl.text = "Зарплата: %d $/мес" % emp.monthly_salary
 	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	salary_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(salary_lbl, "bold")
 	info_vbox.add_child(salary_lbl)
-	
+
 	# === ТРЕЙТЫ ===
 	if not emp.traits.is_empty():
 		var visible_count = PMData.get_visible_traits_count()
-		
+
 		if visible_count >= emp.traits.size():
 			var traits_row = TraitUIHelper.create_traits_row(emp, self)
 			info_vbox.add_child(traits_row)
@@ -186,7 +226,7 @@ func _create_card(npc_node) -> PanelContainer:
 			var flow = HFlowContainer.new()
 			flow.add_theme_constant_override("h_separation", 12)
 			flow.add_theme_constant_override("v_separation", 4)
-			
+
 			for t_idx in range(emp.traits.size()):
 				if t_idx < visible_count:
 					var trait_id = emp.traits[t_idx]
@@ -195,26 +235,28 @@ func _create_card(npc_node) -> PanelContainer:
 				else:
 					var item = _create_hidden_trait()
 					flow.add_child(item)
-			
+
 			info_vbox.add_child(flow)
-	
+
 	# === ПРАВАЯ ЧАСТЬ ===
 	var right_vbox = VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 5)
 	right_vbox.custom_minimum_size = Vector2(250, 0)
 	main_hbox.add_child(right_vbox)
-	
+
 	var status_lbl = Label.new()
 	status_lbl.text = _get_status_text(npc_node)
 	status_lbl.add_theme_color_override("font_color", _get_status_color(npc_node))
 	status_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(status_lbl, "semibold")
 	right_vbox.add_child(status_lbl)
 	card.set_meta("status_label", status_lbl)
-	
+
 	var energy_lbl = Label.new()
 	var energy_pct = int(emp.current_energy)
 	energy_lbl.text = "Энергия: %d%%" % energy_pct
 	energy_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(energy_lbl, "semibold")
 	if energy_pct >= 70:
 		energy_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
 	elif energy_pct >= 40:
@@ -223,18 +265,20 @@ func _create_card(npc_node) -> PanelContainer:
 		energy_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
 	right_vbox.add_child(energy_lbl)
 	card.set_meta("energy_label", energy_lbl)
-	
+
 	var eff_lbl = Label.new()
 	eff_lbl.text = "Эффект.: x%.1f" % emp.get_efficiency_multiplier()
 	eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	eff_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(eff_lbl, "regular")
 	right_vbox.add_child(eff_lbl)
 	card.set_meta("eff_label", eff_lbl)
-	
+
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_vbox.add_child(spacer)
-	
+
+	# Кнопка "Уволить" — КРАСНАЯ
 	var fire_btn = Button.new()
 	fire_btn.text = "Уволить"
 	fire_btn.custom_minimum_size = Vector2(180, 40)
@@ -245,49 +289,54 @@ func _create_card(npc_node) -> PanelContainer:
 	fire_btn.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
 	fire_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	fire_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	if UITheme: UITheme.apply_font(fire_btn, "semibold")
 	fire_btn.pressed.connect(_on_fire_pressed.bind(emp, npc_node))
 	right_vbox.add_child(fire_btn)
-	
+
+	# MOUSE_FILTER_PASS на все дочерние
+	call_deferred("_set_children_pass_filter", card)
+
 	return card
 
 func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
-	
+
 	var color = Color(0.8980392, 0.22352941, 0.20784314, 1)
 	if emp.is_positive_trait(trait_id):
 		color = Color(0.29803923, 0.6862745, 0.3137255, 1)
-	
+
 	var name_text = EmployeeData.TRAIT_NAMES.get(trait_id, trait_id)
 	var lbl = Label.new()
 	lbl.text = name_text
 	lbl.add_theme_color_override("font_color", color)
 	lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(lbl, "regular")
 	hbox.add_child(lbl)
-	
+
 	var help_btn = Button.new()
 	help_btn.text = "?"
 	help_btn.custom_minimum_size = Vector2(22, 22)
 	help_btn.focus_mode = Control.FOCUS_NONE
 	help_btn.add_theme_font_size_override("font_size", 11)
 	help_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	
-	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(1, 1, 1, 1)
-	btn_style.border_width_left = 2
-	btn_style.border_width_top = 2
-	btn_style.border_width_right = 2
-	btn_style.border_width_bottom = 2
-	btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-	btn_style.corner_radius_top_left = 11
-	btn_style.corner_radius_top_right = 11
-	btn_style.corner_radius_bottom_right = 11
-	btn_style.corner_radius_bottom_left = 11
-	help_btn.add_theme_stylebox_override("normal", btn_style)
-	
+
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(1, 1, 1, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	help_btn.add_theme_stylebox_override("normal", bstyle)
+
 	var description = emp.get_trait_description(trait_id)
 	var tooltip_ref: Array = [null]
-	
+
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
@@ -297,51 +346,51 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
 		tooltip_ref[0] = tp
 	)
-	
+
 	help_btn.mouse_exited.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
 		tooltip_ref[0] = null
 	)
-	
+
 	hbox.add_child(help_btn)
 	return hbox
 
 func _create_hidden_trait() -> HBoxContainer:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 4)
-	
+
 	var lbl = Label.new()
 	lbl.text = "???"
 	lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(lbl, "regular")
 	hbox.add_child(lbl)
-	
+
 	var help_btn = Button.new()
 	help_btn.text = "?"
 	help_btn.custom_minimum_size = Vector2(22, 22)
 	help_btn.focus_mode = Control.FOCUS_NONE
 	help_btn.add_theme_font_size_override("font_size", 11)
 	help_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
-	
-	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(0.93, 0.93, 0.93, 1)
-	btn_style.border_width_left = 2
-	btn_style.border_width_top = 2
-	btn_style.border_width_right = 2
-	btn_style.border_width_bottom = 2
-	btn_style.border_color = Color(0.7, 0.7, 0.7, 1)
-	btn_style.corner_radius_top_left = 11
-	btn_style.corner_radius_top_right = 11
-	btn_style.corner_radius_bottom_right = 11
-	btn_style.corner_radius_bottom_left = 11
-	help_btn.add_theme_stylebox_override("normal", btn_style)
-	
-	# Всплывающее окно "Неизвестное качество"
+
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(0.93, 0.93, 0.93, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = Color(0.7, 0.7, 0.7, 1)
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	help_btn.add_theme_stylebox_override("normal", bstyle)
+
 	var tooltip_ref: Array = [null]
 	var gray_color = Color(0.5, 0.5, 0.5, 1)
 	var parent_ref = self
-	
+
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
@@ -351,30 +400,30 @@ func _create_hidden_trait() -> HBoxContainer:
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
 		tooltip_ref[0] = tp
 	)
-	
+
 	help_btn.mouse_exited.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
 		tooltip_ref[0] = null
 	)
-	
+
 	hbox.add_child(help_btn)
 	return hbox
 
 func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
 	var center = CenterContainer.new()
 	center.custom_minimum_size = Vector2(55, 70)
-	
+
 	var inner = Control.new()
 	inner.custom_minimum_size = Vector2(40, 60)
 	center.add_child(inner)
-	
+
 	var body_color = Color.WHITE
 	match emp.job_title:
 		"Backend Developer": body_color = Color(0.4, 0.4, 1.0)
 		"Business Analyst": body_color = Color(1.0, 0.4, 0.4)
 		"QA Engineer": body_color = Color(0.4, 1.0, 0.4)
-	
+
 	var body_tex = TextureRect.new()
 	body_tex.texture = _body_texture
 	body_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -383,7 +432,7 @@ func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
 	body_tex.position = Vector2(0, 20)
 	body_tex.self_modulate = body_color
 	inner.add_child(body_tex)
-	
+
 	var head_tex = TextureRect.new()
 	head_tex.texture = _head_texture
 	head_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -391,7 +440,7 @@ func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
 	head_tex.size = Vector2(28, 28)
 	head_tex.position = Vector2(6, -2)
 	inner.add_child(head_tex)
-	
+
 	return center
 
 func _get_status_text(npc_node) -> String:
@@ -447,9 +496,9 @@ func _find_npc_node(emp_data: EmployeeData):
 func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 	_pending_fire_data = emp_data
 	_pending_fire_node = npc_node
-	
+
 	var projects_list = _get_assigned_projects(emp_data)
-	
+
 	var text = "Уволить " + emp_data.employee_name + "?"
 	if projects_list.size() > 0:
 		var proj_names = []
@@ -457,7 +506,7 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 			proj_names.append(p.title)
 		text += "\n\n⚠️ Этот сотрудник назначен на проекты:\n" + ", ".join(proj_names)
 		text += "\n\nОн будет снят со всех этапов!"
-	
+
 	_confirm_label.text = text
 	_dialog_layer.visible = true
 
@@ -479,7 +528,7 @@ func _confirm_fire():
 	if not _pending_fire_data:
 		_dialog_layer.visible = false
 		return
-	
+
 	for project in ProjectManager.active_projects:
 		for stage in project.stages:
 			var idx = -1
@@ -490,7 +539,7 @@ func _confirm_fire():
 			if idx != -1:
 				stage.workers.remove_at(idx)
 				print("❌ Снят с проекта: ", project.title, ", этап: ", stage.type)
-	
+
 	for desk in get_tree().get_nodes_in_group("desk"):
 		if not desk.has_method("unassign_employee"):
 			continue
@@ -500,19 +549,19 @@ func _confirm_fire():
 			desk.unassign_employee()
 			print("🪑 Стол освобождён")
 			break
-	
+
 	if _pending_fire_node and is_instance_valid(_pending_fire_node):
 		_pending_fire_node.release_from_desk()
 		_pending_fire_node.remove_from_group("npc")
 		_pending_fire_node.queue_free()
 		print("🔥 Уволен: ", _pending_fire_data.employee_name)
-	
+
 	emit_signal("employee_fired", _pending_fire_data)
-	
+
 	_pending_fire_data = null
 	_pending_fire_node = null
 	_dialog_layer.visible = false
-	
+
 	_rebuild_cards()
 
 func _cancel_fire():
@@ -526,20 +575,20 @@ func _build_confirm_dialog():
 	_dialog_layer.visible = false
 	_dialog_layer.z_index = 200
 	add_child(_dialog_layer)
-	
+
 	var overlay = ColorRect.new()
 	overlay.color = Color(0, 0, 0, 0.5)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	_dialog_layer.add_child(overlay)
-	
+
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_dialog_layer.add_child(center)
-	
+
 	var dialog_panel = PanelContainer.new()
 	dialog_panel.custom_minimum_size = Vector2(500, 0)
-	
+
 	var dialog_style = StyleBoxFlat.new()
 	dialog_style.bg_color = Color(1, 1, 1, 1)
 	dialog_style.border_width_left = 3
@@ -551,39 +600,42 @@ func _build_confirm_dialog():
 	dialog_style.corner_radius_top_right = 20
 	dialog_style.corner_radius_bottom_right = 20
 	dialog_style.corner_radius_bottom_left = 20
+	if UITheme: UITheme.apply_shadow(dialog_style)
 	dialog_panel.add_theme_stylebox_override("panel", dialog_style)
 	center.add_child(dialog_panel)
-	
+
 	var dialog_margin = MarginContainer.new()
 	dialog_margin.add_theme_constant_override("margin_left", 25)
 	dialog_margin.add_theme_constant_override("margin_top", 20)
 	dialog_margin.add_theme_constant_override("margin_right", 25)
 	dialog_margin.add_theme_constant_override("margin_bottom", 20)
 	dialog_panel.add_child(dialog_margin)
-	
+
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 15)
 	dialog_margin.add_child(vbox)
-	
+
 	var title_lbl = Label.new()
 	title_lbl.text = "⚠️ Подтверждение увольнения"
 	title_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
 	title_lbl.add_theme_font_size_override("font_size", 18)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(title_lbl, "bold")
 	vbox.add_child(title_lbl)
-	
+
 	_confirm_label = Label.new()
 	_confirm_label.text = ""
 	_confirm_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_confirm_label.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
 	_confirm_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_confirm_label, "regular")
 	vbox.add_child(_confirm_label)
-	
+
 	var btn_hbox = HBoxContainer.new()
 	btn_hbox.add_theme_constant_override("separation", 15)
 	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(btn_hbox)
-	
+
 	var cancel_btn = Button.new()
 	cancel_btn.text = "Отмена"
 	cancel_btn.custom_minimum_size = Vector2(180, 40)
@@ -601,14 +653,20 @@ func _build_confirm_dialog():
 	cancel_style.corner_radius_bottom_left = 20
 	cancel_btn.add_theme_stylebox_override("normal", cancel_style)
 	cancel_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	if UITheme: UITheme.apply_font(cancel_btn, "semibold")
 	cancel_btn.pressed.connect(_cancel_fire)
 	btn_hbox.add_child(cancel_btn)
-	
+
 	var confirm_btn = Button.new()
 	confirm_btn.text = "Уволить"
 	confirm_btn.custom_minimum_size = Vector2(180, 40)
 	confirm_btn.focus_mode = Control.FOCUS_NONE
 	confirm_btn.add_theme_stylebox_override("normal", fire_btn_hover_style)
+	confirm_btn.add_theme_stylebox_override("hover", fire_btn_hover_style)
+	confirm_btn.add_theme_stylebox_override("pressed", fire_btn_hover_style)
 	confirm_btn.add_theme_color_override("font_color", Color.WHITE)
+	confirm_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	confirm_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	if UITheme: UITheme.apply_font(confirm_btn, "semibold")
 	confirm_btn.pressed.connect(_confirm_fire)
 	btn_hbox.add_child(confirm_btn)

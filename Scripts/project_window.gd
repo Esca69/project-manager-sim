@@ -60,7 +60,6 @@ func setup(data: ProjectData, selector_node):
 
 		var new_track = track_scene.instantiate()
 		tracks_container.add_child(new_track)
-		# Этап readonly если весь проект readonly ИЛИ этот конкретный этап завершён
 		var stage_readonly = is_readonly or stage.get("is_completed", false)
 		new_track.setup(i, stage, stage_readonly)
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
@@ -78,7 +77,21 @@ func _ready():
 	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	cancel_btn.pressed.connect(_on_cancel_pressed)
 	start_btn.pressed.connect(_on_start_pressed)
-	close_window_btn.pressed.connect(func(): visible = false)
+	close_window_btn.pressed.connect(func():
+		if UITheme:
+			UITheme.fade_out(self, 0.15)
+		else:
+			visible = false
+	)
+
+	# Применяем шрифт
+	if UITheme:
+		UITheme.apply_font(title_label, "bold")
+		UITheme.apply_font(deadline_label, "regular")
+		UITheme.apply_font(budget_label, "bold")
+		UITheme.apply_font(start_btn, "semibold")
+		UITheme.apply_font(cancel_btn, "semibold")
+		UITheme.apply_font(close_window_btn, "semibold")
 
 func _migrate_stage(stage: Dictionary):
 	if stage.has("worker"):
@@ -112,9 +125,11 @@ func _on_start_pressed():
 	update_buttons_visibility()
 
 func _on_cancel_pressed():
-	visible = false
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
 
-# --- ВИЗУАЛИЗАЦИЯ ---
 func _process(delta):
 	if not project: return
 	if not visible: return
@@ -151,7 +166,6 @@ func _process(delta):
 		draw_dynamic_header(pixels_per_day, horizon_from_origin, origin_day)
 		return
 
-	# --- Проект IN_PROGRESS, FINISHED или FAILED ---
 	var now = get_current_global_time()
 	if not is_done and project.start_global_time > 0.01:
 		project.elapsed_days = now - project.start_global_time
@@ -181,7 +195,6 @@ func _process(delta):
 
 	var line_height = max(tracks_container.size.y + 50, 500)
 
-	# Синяя линия — скрыта для завершённых/проваленных
 	if current_time_line:
 		if is_done:
 			current_time_line.visible = false
@@ -205,7 +218,6 @@ func _process(delta):
 
 	draw_dynamic_header(pixels_per_day, horizon_from_origin, origin_day)
 
-# --- ВСПОМОГАТЕЛЬНЫЕ ---
 func create_time_line_if_needed():
 	if not current_time_line:
 		current_time_line = ColorRect.new()
@@ -278,6 +290,7 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 			month_lbl.add_theme_font_size_override("font_size", 11)
 			month_lbl.modulate = Color(0.17, 0.31, 0.57, 0.8)
 			month_lbl.position = Vector2(x_pos + 2, -2)
+			if UITheme: UITheme.apply_font(month_lbl, "semibold")
 			timeline_header.add_child(month_lbl)
 			if prev_month != -1:
 				var month_line = ColorRect.new()
@@ -297,6 +310,7 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 		else:
 			day_lbl.modulate = Color(0, 0, 0, 0.5)
 		day_lbl.position = Vector2(x_pos + 2, 12)
+		if UITheme: UITheme.apply_font(day_lbl, "regular")
 		timeline_header.add_child(day_lbl)
 
 		if px_per_day > 25:
@@ -305,6 +319,7 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 			wd_lbl.add_theme_font_size_override("font_size", 9)
 			wd_lbl.modulate = Color(0, 0, 0, 0.35)
 			wd_lbl.position = Vector2(x_pos + 2, 24)
+			if UITheme: UITheme.apply_font(wd_lbl, "regular")
 			timeline_header.add_child(wd_lbl)
 
 		var line = ColorRect.new()
@@ -374,7 +389,6 @@ func get_color_for_stage(type):
 func _on_track_assignment_requested(index):
 	if project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
 		return
-	# Не назначаем на завершённый этап
 	if project.stages[index].get("is_completed", false):
 		return
 	current_selecting_track_index = index
@@ -404,7 +418,6 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 	if project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
 		return
 	var stage = project.stages[stage_index]
-	# Нельзя удалять с завершённого этапа
 	if stage.get("is_completed", false):
 		return
 	if worker_index < 0 or worker_index >= stage.workers.size():

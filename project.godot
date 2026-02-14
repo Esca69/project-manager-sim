@@ -22,6 +22,7 @@ GameState="*res://Scripts/game_state.gd"
 ProjectManager="*res://Scripts/project_manager.gd"
 PMData="*res://Scripts/pm_data.gd"
 AudioManager="*res://Scripts/audio_manager.gd"
+UITheme="*res://Scripts/ui_theme.gd"
 
 [display]
 

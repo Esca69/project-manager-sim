@@ -14,6 +14,7 @@ const COLOR_LOCKED_BG = Color(0.94, 0.94, 0.94, 1)
 
 # === НОДЫ ===
 var _overlay: ColorRect
+var _window: PanelContainer
 var _scroll: ScrollContainer
 var _content_vbox: VBoxContainer
 var _continue_btn: Button
@@ -31,9 +32,19 @@ func open():
 	_was_paused_before = get_tree().paused
 	get_tree().paused = true
 	_populate()
-	visible = true
+	# Анимация появления
+	if UITheme:
+		UITheme.fade_in(self, 0.25)
+	else:
+		visible = true
 
 func _close():
+	if UITheme:
+		UITheme.fade_out(self, 0.2)
+		# Ждём окончания анимации
+		await get_tree().create_timer(0.2).timeout
+	else:
+		visible = false
 	visible = false
 	if not _was_paused_before:
 		get_tree().paused = false
@@ -51,8 +62,8 @@ func _build_ui():
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
 
-	var window = PanelContainer.new()
-	window.custom_minimum_size = Vector2(900, 700)
+	_window = PanelContainer.new()
+	_window.custom_minimum_size = Vector2(900, 700)
 	var window_style = StyleBoxFlat.new()
 	window_style.bg_color = COLOR_WHITE
 	window_style.border_width_left = 3
@@ -64,12 +75,15 @@ func _build_ui():
 	window_style.corner_radius_top_right = 22
 	window_style.corner_radius_bottom_right = 20
 	window_style.corner_radius_bottom_left = 20
-	window.add_theme_stylebox_override("panel", window_style)
-	center.add_child(window)
+	# Тень на окне
+	if UITheme:
+		UITheme.apply_shadow(window_style, false)
+	_window.add_theme_stylebox_override("panel", window_style)
+	center.add_child(_window)
 
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 0)
-	window.add_child(main_vbox)
+	_window.add_child(main_vbox)
 
 	var header_panel = Panel.new()
 	header_panel.custom_minimum_size = Vector2(0, 45)
@@ -89,6 +103,8 @@ func _build_ui():
 	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
 	title_label.add_theme_color_override("font_color", COLOR_WHITE)
 	title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme:
+		UITheme.apply_font(title_label, "bold")
 	header_panel.add_child(title_label)
 
 	var content_margin = MarginContainer.new()
@@ -157,6 +173,8 @@ func _build_ui():
 	_continue_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
 	_continue_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
 	_continue_btn.add_theme_font_size_override("font_size", 15)
+	if UITheme:
+		UITheme.apply_font(_continue_btn, "semibold")
 	_continue_btn.pressed.connect(_close)
 	btn_center.add_child(_continue_btn)
 
@@ -179,6 +197,8 @@ func _build_date_label():
 	lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	lbl.add_theme_font_size_override("font_size", 15)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme:
+		UITheme.apply_font(lbl, "semibold")
 	_content_vbox.add_child(lbl)
 
 func _build_separator():
@@ -214,6 +234,8 @@ func _add_locked_hint(skill_name: String):
 	lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if UITheme:
+		UITheme.apply_font(lbl, "regular")
 	margin.add_child(lbl)
 
 	_content_vbox.add_child(panel)
@@ -245,6 +267,7 @@ func _build_finance_section():
 			details_lbl.text = "    Зарплаты:"
 			details_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 			details_lbl.add_theme_font_size_override("font_size", 12)
+			if UITheme: UITheme.apply_font(details_lbl, "regular")
 			_content_vbox.add_child(details_lbl)
 			for entry in salary_details:
 				var emp_name: String = entry["name"]
@@ -253,6 +276,7 @@ func _build_finance_section():
 				det_lbl.text = "        • %s — $%d" % [emp_name, amount]
 				det_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 				det_lbl.add_theme_font_size_override("font_size", 12)
+				if UITheme: UITheme.apply_font(det_lbl, "regular")
 				_content_vbox.add_child(det_lbl)
 	else:
 		if GameState.daily_expenses > 0:
@@ -266,12 +290,14 @@ func _add_finance_row(grid: GridContainer, label_text: String, value_text: Strin
 	lbl.text = label_text
 	lbl.add_theme_color_override("font_color", COLOR_DARK)
 	lbl.add_theme_font_size_override("font_size", 15 if bold else 14)
+	if UITheme: UITheme.apply_font(lbl, "semibold" if bold else "regular")
 	grid.add_child(lbl)
 
 	var val = Label.new()
 	val.text = value_text
 	val.add_theme_color_override("font_color", value_color)
 	val.add_theme_font_size_override("font_size", 16 if bold else 14)
+	if UITheme: UITheme.apply_font(val, "bold" if bold else "semibold")
 	grid.add_child(val)
 
 # === СЕКЦИЯ ПРОЕКТОВ ===
@@ -301,10 +327,11 @@ func _build_projects_section():
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_GREEN)
 			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
 			_content_vbox.add_child(lbl)
 
 	if failed_today.size() > 0:
-		var sub_label = _create_subsection_label("❌ Пров��лены сегодня:")
+		var sub_label = _create_subsection_label("❌ Провалены сегодня:")
 		_content_vbox.add_child(sub_label)
 		for proj in failed_today:
 			var text: String
@@ -316,6 +343,7 @@ func _build_projects_section():
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_RED)
 			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
 			_content_vbox.add_child(lbl)
 
 	var in_progress = []
@@ -344,6 +372,7 @@ func _build_projects_section():
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
 
 			if has_analytics:
 				var hard_days = proj.deadline_day - GameTime.day
@@ -367,6 +396,7 @@ func _build_projects_section():
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_GRAY)
 			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
 			_content_vbox.add_child(lbl)
 
 	if not has_analytics and (in_progress.size() > 0 or finished_today.size() > 0):
@@ -377,6 +407,7 @@ func _build_projects_section():
 		lbl.text = "Нет активных проектов"
 		lbl.add_theme_color_override("font_color", COLOR_GRAY)
 		lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(lbl, "regular")
 		_content_vbox.add_child(lbl)
 
 # === СЕКЦИЯ СОТРУДНИКОВ ===
@@ -392,6 +423,7 @@ func _build_employees_section():
 		lbl.text = "Нет сотрудников"
 		lbl.add_theme_color_override("font_color", COLOR_GRAY)
 		lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(lbl, "regular")
 		_content_vbox.add_child(lbl)
 		return
 
@@ -402,6 +434,7 @@ func _build_employees_section():
 		summary_lbl.text = "👥 Всего сотрудников: %d" % total_count
 		summary_lbl.add_theme_color_override("font_color", COLOR_DARK)
 		summary_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(summary_lbl, "semibold")
 		_content_vbox.add_child(summary_lbl)
 		_add_locked_hint("Оценка продуктивности")
 		return
@@ -423,6 +456,7 @@ func _build_employees_section():
 	summary_lbl.text = "👥 Всего: %d  |  🔧 Работали: %d  |  💤 Простаивали: %d" % [total_count, worked_list.size(), idle_list.size()]
 	summary_lbl.add_theme_color_override("font_color", COLOR_DARK)
 	summary_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(summary_lbl, "semibold")
 	_content_vbox.add_child(summary_lbl)
 
 	if worked_list.size() > 0:
@@ -457,22 +491,27 @@ func _build_employees_section():
 		warn_lbl.text = "⚠ Низкая энергия: " + ", ".join(names)
 		warn_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(warn_lbl, "semibold")
 		_content_vbox.add_child(warn_lbl)
 
-# === КАРТОЧКА РАБОТАВШЕГО СОТРУДНИКА ===
+# === КАРТОЧКА РАБОТАВШЕГО СОТРУДНИКА (с тенью) ===
 func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: String) -> PanelContainer:
 	var card = PanelContainer.new()
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.96, 0.98, 1.0, 1)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = COLOR_BORDER
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
+	var style: StyleBoxFlat
+	if UITheme:
+		style = UITheme.create_card_style(Color(0.96, 0.98, 1.0, 1), COLOR_BORDER, 12)
+	else:
+		style = StyleBoxFlat.new()
+		style.bg_color = Color(0.96, 0.98, 1.0, 1)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_color = COLOR_BORDER
+		style.corner_radius_top_left = 12
+		style.corner_radius_top_right = 12
+		style.corner_radius_bottom_right = 12
+		style.corner_radius_bottom_left = 12
 	card.add_theme_stylebox_override("panel", style)
 
 	var margin = MarginContainer.new()
@@ -491,6 +530,7 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if UITheme: UITheme.apply_font(name_lbl, "semibold")
 	hbox.add_child(name_lbl)
 
 	var hours_lbl = Label.new()
@@ -498,6 +538,7 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	hours_lbl.add_theme_color_override("font_color", COLOR_DARK)
 	hours_lbl.add_theme_font_size_override("font_size", 13)
 	hours_lbl.custom_minimum_size = Vector2(140, 0)
+	if UITheme: UITheme.apply_font(hours_lbl, "regular")
 	hbox.add_child(hours_lbl)
 
 	var prog_lbl = Label.new()
@@ -505,24 +546,29 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	prog_lbl.add_theme_color_override("font_color", COLOR_GREEN)
 	prog_lbl.add_theme_font_size_override("font_size", 13)
 	prog_lbl.custom_minimum_size = Vector2(160, 0)
+	if UITheme: UITheme.apply_font(prog_lbl, "semibold")
 	hbox.add_child(prog_lbl)
 
 	return card
 
-# === КАРТОЧКА ПРОСТАИВАЮЩЕГО СОТРУДНИКА ===
+# === КАРТОЧКА ПРОСТАИВАЮЩЕГО СОТРУДНИКА (с тенью) ===
 func _create_employee_card_idle(emp: EmployeeData) -> PanelContainer:
 	var card = PanelContainer.new()
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(1.0, 0.97, 0.95, 1)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.9, 0.85, 0.8, 1)
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
+	var style: StyleBoxFlat
+	if UITheme:
+		style = UITheme.create_card_style(Color(1.0, 0.97, 0.95, 1), Color(0.9, 0.85, 0.8, 1), 12)
+	else:
+		style = StyleBoxFlat.new()
+		style.bg_color = Color(1.0, 0.97, 0.95, 1)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_color = Color(0.9, 0.85, 0.8, 1)
+		style.corner_radius_top_left = 12
+		style.corner_radius_top_right = 12
+		style.corner_radius_bottom_right = 12
+		style.corner_radius_bottom_left = 12
 	card.add_theme_stylebox_override("panel", style)
 
 	var margin = MarginContainer.new()
@@ -541,12 +587,14 @@ func _create_employee_card_idle(emp: EmployeeData) -> PanelContainer:
 	name_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if UITheme: UITheme.apply_font(name_lbl, "regular")
 	hbox.add_child(name_lbl)
 
 	var idle_lbl = Label.new()
 	idle_lbl.text = "💤 Не работал"
 	idle_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 	idle_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(idle_lbl, "semibold")
 	hbox.add_child(idle_lbl)
 
 	return card
@@ -557,6 +605,7 @@ func _create_section_label(text: String) -> Label:
 	lbl.text = text
 	lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	lbl.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(lbl, "bold")
 	return lbl
 
 func _create_subsection_label(text: String) -> Label:
@@ -564,6 +613,7 @@ func _create_subsection_label(text: String) -> Label:
 	lbl.text = text
 	lbl.add_theme_color_override("font_color", COLOR_DARK)
 	lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(lbl, "semibold")
 	return lbl
 
 func _get_current_stage_info(proj: ProjectData) -> String:
