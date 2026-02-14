@@ -9,6 +9,7 @@ var employee_scene = preload("res://Scenes/Employee.tscn")
 # Системы
 var _lighting: Node = null
 var _shadows: Node = null
+var _post_effects: Node = null
 
 func _ready():
 	# === WorldEnvironment — настраиваем кодом (deferred чтобы дерево было готово) ===
@@ -24,9 +25,19 @@ func _ready():
 	add_child(_shadows)
 	_shadows.setup(self)
 
+	# === Пост-эффекты (виньетка) ===
+	_post_effects = preload("res://Scripts/post_effects.gd").new()
+	add_child(_post_effects)
+	_post_effects.setup(self)
+
 func _setup_environment():
-	# Ищем существующий WorldEnvironment в сцене
-	var world_env = find_child("WorldEnvironment", false, false)
+	# Ищем существующий WorldEnvironment среди детей
+	var world_env = null
+	for child in get_children():
+		if child is WorldEnvironment:
+			world_env = child
+			break
+
 	if not world_env:
 		world_env = WorldEnvironment.new()
 		world_env.name = "WorldEnvironment"
@@ -38,21 +49,17 @@ func _setup_environment():
 	# Фон — Canvas Items (обязательно для 2D!)
 	env.background_mode = Environment.BG_CANVAS
 
-	# === Tonemap — мягкие переходы свет/тень ===
-	env.tonemap_mode = Environment.TONE_MAP_FILMIC
-	env.tonemap_white = 1.0
-
 	# === Adjustments — сочность картинки ===
-	env.adjustment_enabled = true
-	env.adjustment_brightness = 1.05    # Чуть ярче
-	env.adjustment_contrast = 1.08      # Чуть контрастнее
-	env.adjustment_saturation = 1.12    # Чуть сочнее цвета
+	env.adjustment_enabled = false
+	env.adjustment_brightness = 1.05
+	env.adjustment_contrast = 1.08
+	env.adjustment_saturation = 1.12
 
 	# === Glow (Bloom) — мягкое свечение ===
 	env.glow_enabled = true
-	env.glow_intensity = 0.3           # Лёгкое, не навязчивое
+	env.glow_intensity = 0.3
 	env.glow_strength = 0.8
-	env.glow_bloom = 0.05              # Минимальный bloom
+	env.glow_bloom = 0.05
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 
 	world_env.environment = env
