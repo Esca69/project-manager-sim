@@ -30,7 +30,8 @@ const BUDGET_BONUS_TABLE = [
 	[0, 0],
 ]
 
-signal loyalty_changed(client: ClientData, old_value: int, new_value: int)
+# ИСПРАВЛЕНИЕ: убрана типизация client: ClientData — циклическая ссылка при парсинге
+signal loyalty_changed(client, old_value: int, new_value: int)
 
 func get_budget_bonus_percent() -> int:
 	for entry in BUDGET_BONUS_TABLE:

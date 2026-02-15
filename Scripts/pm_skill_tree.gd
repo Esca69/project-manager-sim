@@ -124,7 +124,7 @@ func _build_ui():
 
 	_update_header()
 
-func _update_header():
+func _update_header(_new_xp = 0, _new_sp = 0):
 	if PMData == null:
 		return
 	if _xp_label:

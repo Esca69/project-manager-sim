@@ -46,10 +46,13 @@ func is_finished_on_time(finish_day: int) -> bool:
 	return finish_day <= soft_deadline_day
 
 # Получить данные клиента
-func get_client() -> ClientData:
+func get_client():
 	if client_id == "":
 		return null
-	return ClientManager.get_client_by_id(client_id)
+	var cm = Engine.get_main_loop().root.get_node_or_null("/root/ClientManager")
+	if cm:
+		return cm.get_client_by_id(client_id)
+	return null
 
 func get_client_display_name() -> String:
 	var client = get_client()
