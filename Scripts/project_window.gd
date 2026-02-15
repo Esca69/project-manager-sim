@@ -74,9 +74,22 @@ func setup(data: ProjectData, selector_node):
 			if stage.get("completed_worker_names", []).size() > 0:
 				stage_readonly = true
 
+		# === ДЕБАГ-ПРИНТЫ ===
+		print("=== DEBUG [stage ", i, "] ===")
+		print("  track_scene = ", track_scene)
+		print("  track_scene.resource_path = ", track_scene.resource_path if track_scene else "NULL")
 		var new_track = track_scene.instantiate()
+		print("  new_track = ", new_track)
+		print("  new_track class = ", new_track.get_class())
+		print("  new_track script = ", new_track.get_script())
+		print("  new_track has method 'setup' = ", new_track.has_method("setup"))
+		if new_track.get_script():
+			print("  script resource_path = ", new_track.get_script().resource_path)
 		tracks_container.add_child(new_track)
+		print("  calling new_track.setup(", i, ", <stage dict>, ", stage_readonly, ")")
 		new_track.setup(i, stage, stage_readonly)
+		# === КОНЕЦ ДЕБАГ-ПРИНТОВ ===
+
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
 		new_track.worker_removed.connect(_on_worker_removed)
 
