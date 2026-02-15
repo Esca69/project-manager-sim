@@ -117,7 +117,7 @@ text = "Закрыть"
 
 [node name="ProjectWindow" parent="." instance=ExtResource("2_fccik")]
 visible = false
-track_scene = null
+track_scene = ExtResource("2_fccik")
 
 [node name="EmployeeSelector" parent="." instance=ExtResource("3_bjfho")]
 visible = false

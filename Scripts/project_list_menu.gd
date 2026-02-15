@@ -172,7 +172,13 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	top_hbox.add_child(left_info)
 
 	var cat_label = "[MICRO]" if proj.category == "micro" else "[SIMPLE]"
-	var title_text = cat_label + " " + proj.title
+	# Добавляем имя клиента (как в project_window.gd)
+	var client_prefix = ""
+	if proj.client_id != "":
+		var client = proj.get_client()
+		if client:
+			client_prefix = client.emoji + " " + client.client_name + "  —  "
+	var title_text = client_prefix + cat_label + " " + proj.title
 	if proj.state == ProjectData.State.FINISHED:
 		title_text = "✅ " + title_text
 	elif proj.state == ProjectData.State.FAILED:

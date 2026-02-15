@@ -84,7 +84,7 @@ func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trai
 	})
 
 # === ЗАПИСЬ ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ===
-func record_loyalty_change(client: ClientData, change: int, reason: String):
+func record_loyalty_change(client, change: int, reason: String):
 	loyalty_changes_today.append({
 		"client_name": client.client_name,
 		"emoji": client.emoji,
@@ -99,15 +99,17 @@ func _ready():
 func _connect_signals():
 	if ProjectManager and not ProjectManager.employee_leveled_up.is_connected(record_levelup):
 		ProjectManager.employee_leveled_up.connect(record_levelup)
-	# Подключаемся к сигналу изменения лояльности
-	if ClientManager and not ClientManager.client_loyalty_changed.is_connected(_on_loyalty_changed):
-		ClientManager.client_loyalty_changed.connect(_on_loyalty_changed)
+	# ClientManager загружается ПОСЛЕ GameState в autoload,
+	# поэтому обращаемся через get_node, а не напрямую по имени
+	var cm = get_node_or_null("/root/ClientManager")
+	if cm and not cm.client_loyalty_changed.is_connected(_on_loyalty_changed):
+		cm.client_loyalty_changed.connect(_on_loyalty_changed)
 
-func _on_loyalty_changed(client: ClientData, old_value: int, new_value: int):
+func _on_loyalty_changed(client, old_value: int, new_value: int):
 	var change = new_value - old_value
 	var reason = ""
 	if change > 0:
-		if change >= ClientData.LOYALTY_ON_TIME:
+		if change >= 3:  # ClientData.LOYALTY_ON_TIME
 			reason = "Проект завершён вовремя"
 		else:
 			reason = "Проект завершён с просрочкой"

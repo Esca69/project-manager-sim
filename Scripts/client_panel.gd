@@ -22,12 +22,18 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	z_index = 90
-	# Растягиваем Control на весь экран (чтобы overlay и center работали)
-	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Принудительно растягиваем на весь экран (CanvasLayer не поддерживает anchors)
+	_force_fullscreen_size()
 	_build_ui()
 
+func _force_fullscreen_size():
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
+
 func open():
+	_force_fullscreen_size()
 	_populate()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -42,16 +48,16 @@ func close():
 
 # === ПОСТРОЕНИЕ КАРКАСА ===
 func _build_ui():
-	# Затемнение фона (как в DaySummary)
+	# Затемнение фона
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0.45)
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_overlay)
 
-	# === ОКНО — точно как в EmployeeRoster.tscn / ProjectSelectionUI.tscn ===
-	# Window: PanelContainer, anchors_preset=8, offset ±750 x ±450
+	# === ОКНО: 1500×900 по центру (как EmployeeRoster/ProjectSelectionUI) ===
 	_window = PanelContainer.new()
+	_window.custom_minimum_size = Vector2(1500, 900)
 	_window.set_anchors_preset(Control.PRESET_CENTER)
 	_window.offset_left = -750
 	_window.offset_top = -450
@@ -91,7 +97,7 @@ func _build_ui():
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	# TitleLabel — anchors_preset=8 (center), horizontal_alignment=1 (center)
+	# TitleLabel — по центру
 	var title_label = Label.new()
 	title_label.text = "🤝 Заказчики"
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
@@ -108,8 +114,7 @@ func _build_ui():
 	if UITheme: UITheme.apply_font(title_label, "bold")
 	header_panel.add_child(title_label)
 
-	# CloseButton — точно как в EmployeeRoster.tscn:
-	# anchors_preset=6 (center-right), белый фон, синий текст "X"
+	# CloseButton — правый край, белый фон, синий "X"
 	_close_btn = Button.new()
 	_close_btn.text = "X"
 	_close_btn.focus_mode = Control.FOCUS_NONE
@@ -135,7 +140,7 @@ func _build_ui():
 	_close_btn.pressed.connect(close)
 	header_panel.add_child(_close_btn)
 
-	# === КОНТЕНТ (как в EmployeeRoster: CardsMargin → ScrollContainer → CardsContainer) ===
+	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
 	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content_margin.add_theme_constant_override("margin_left", 20)
@@ -232,7 +237,7 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	_add_stat_label(stats_hbox, "⚠ Просрочка софт: %d" % client.projects_completed_late, COLOR_ORANGE)
 	_add_stat_label(stats_hbox, "❌ Провал: %d" % client.projects_failed, COLOR_RED)
 
-	# === СТРОКА 4: Бонус + прогресс-бар ===
+	# === СТРОКА 4: Бонус ===
 	var bonus_percent = client.get_budget_bonus_percent()
 	var next_info = client.get_next_bonus_threshold()
 	var next_threshold = next_info[0]
