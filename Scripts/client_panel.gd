@@ -22,6 +22,7 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	z_index = 90
+	# Растягиваем Control на весь экран (чтобы overlay и center работали)
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_ui()
@@ -39,20 +40,26 @@ func close():
 	else:
 		visible = false
 
-# === ПОСТРОЕН��Е КАРКАСА ===
+# === ПОСТРОЕНИЕ КАРКАСА ===
 func _build_ui():
+	# Затемнение фона (как в DaySummary)
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0.45)
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_overlay)
 
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
-
+	# === ОКНО — точно как в EmployeeRoster.tscn / ProjectSelectionUI.tscn ===
+	# Window: PanelContainer, anchors_preset=8, offset ±750 x ±450
 	_window = PanelContainer.new()
-	_window.custom_minimum_size = Vector2(900, 700)
+	_window.set_anchors_preset(Control.PRESET_CENTER)
+	_window.offset_left = -750
+	_window.offset_top = -450
+	_window.offset_right = 750
+	_window.offset_bottom = 450
+	_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_window.grow_vertical = Control.GROW_DIRECTION_BOTH
+
 	var window_style = StyleBoxFlat.new()
 	window_style.bg_color = COLOR_WHITE
 	window_style.border_width_left = 3
@@ -67,15 +74,15 @@ func _build_ui():
 	if UITheme:
 		UITheme.apply_shadow(window_style, false)
 	_window.add_theme_stylebox_override("panel", window_style)
-	center.add_child(_window)
+	add_child(_window)
 
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 0)
 	_window.add_child(main_vbox)
 
-	# === ЗАГОЛОВОК ===
+	# === ЗАГОЛОВОК — точно как в EmployeeRoster.tscn ===
 	var header_panel = Panel.new()
-	header_panel.custom_minimum_size = Vector2(0, 48)
+	header_panel.custom_minimum_size = Vector2(0, 40)
 	var header_style = StyleBoxFlat.new()
 	header_style.bg_color = COLOR_BLUE
 	header_style.border_color = COLOR_WINDOW_BORDER
@@ -84,53 +91,57 @@ func _build_ui():
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	# Заголовок по центру (как в DaySummary)
+	# TitleLabel — anchors_preset=8 (center), horizontal_alignment=1 (center)
 	var title_label = Label.new()
 	title_label.text = "🤝 Заказчики"
+	title_label.set_anchors_preset(Control.PRESET_CENTER)
+	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	title_label.offset_left = -88
+	title_label.offset_top = -11.5
+	title_label.offset_right = 88
+	title_label.offset_bottom = 11.5
+	title_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_label.add_theme_color_override("font_color", COLOR_WHITE)
 	title_label.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(title_label, "bold")
 	header_panel.add_child(title_label)
 
-	# Кнопка закрытия — прижата к правому краю через anchor
+	# CloseButton — точно как в EmployeeRoster.tscn:
+	# anchors_preset=6 (center-right), белый фон, синий текст "X"
 	_close_btn = Button.new()
-	_close_btn.text = "✕"
-	_close_btn.custom_minimum_size = Vector2(40, 36)
+	_close_btn.text = "X"
 	_close_btn.focus_mode = Control.FOCUS_NONE
 	_close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_close_btn.offset_left = -51
+	_close_btn.offset_top = -15
+	_close_btn.offset_right = -24
+	_close_btn.offset_bottom = 16
 	_close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_close_btn.position.x = -50
-	_close_btn.position.y = 0
+	_close_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_close_btn.size_flags_vertical = Control.SIZE_SHRINK_END
 
+	_close_btn.add_theme_color_override("font_color", COLOR_BLUE)
 	var close_style = StyleBoxFlat.new()
-	close_style.bg_color = Color(1, 1, 1, 0.15)
+	close_style.bg_color = COLOR_WHITE
 	close_style.corner_radius_top_left = 10
 	close_style.corner_radius_top_right = 10
 	close_style.corner_radius_bottom_right = 10
 	close_style.corner_radius_bottom_left = 10
 	_close_btn.add_theme_stylebox_override("normal", close_style)
-	var close_hover = close_style.duplicate()
-	close_hover.bg_color = Color(1, 1, 1, 0.3)
-	_close_btn.add_theme_stylebox_override("hover", close_hover)
-	_close_btn.add_theme_stylebox_override("pressed", close_hover)
-	_close_btn.add_theme_color_override("font_color", COLOR_WHITE)
-	_close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-	_close_btn.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(_close_btn, "bold")
+	if UITheme: UITheme.apply_font(_close_btn, "semibold")
 	_close_btn.pressed.connect(close)
 	header_panel.add_child(_close_btn)
 
-	# === КОНТЕНТ ===
+	# === КОНТЕНТ (как в EmployeeRoster: CardsMargin → ScrollContainer → CardsContainer) ===
 	var content_margin = MarginContainer.new()
 	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content_margin.add_theme_constant_override("margin_left", 20)
-	content_margin.add_theme_constant_override("margin_top", 15)
+	content_margin.add_theme_constant_override("margin_top", 20)
 	content_margin.add_theme_constant_override("margin_right", 20)
-	content_margin.add_theme_constant_override("margin_bottom", 15)
+	content_margin.add_theme_constant_override("margin_bottom", 20)
 	main_vbox.add_child(content_margin)
 
 	_scroll = ScrollContainer.new()
@@ -141,7 +152,8 @@ func _build_ui():
 
 	_cards_vbox = VBoxContainer.new()
 	_cards_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_cards_vbox.add_theme_constant_override("separation", 12)
+	_cards_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_cards_vbox.add_theme_constant_override("separation", 15)
 	_scroll.add_child(_cards_vbox)
 
 # === НАПОЛНЕНИЕ ДАННЫМИ ===
