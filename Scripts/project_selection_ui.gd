@@ -126,9 +126,15 @@ func update_ui():
 				card.mouse_entered.connect(_on_card_hover_enter.bind(card))
 				card.mouse_exited.connect(_on_card_hover_exit.bind(card))
 
+			# Клиент + категория
 			var cat_label = "[MICRO]" if data.category == "micro" else "[SIMPLE]"
+			var client_text = ""
+			if data.client_id != "":
+				var client = data.get_client()
+				if client:
+					client_text = client.emoji + " " + client.client_name + "  —  "
 			if name_lbl:
-				name_lbl.text = cat_label + " " + data.title
+				name_lbl.text = client_text + cat_label + " " + data.title
 				if UITheme: UITheme.apply_font(name_lbl, "bold")
 
 			if work_lbl:
@@ -139,7 +145,13 @@ func update_ui():
 				if UITheme: UITheme.apply_font(work_lbl, "regular")
 
 			if budget_lbl:
-				budget_lbl.text = "Бюджет " + PMData.get_blurred_budget(data.budget)
+				var budget_text = "Бюджет " + PMData.get_blurred_budget(data.budget)
+				# Показываем бонус лояльности если есть
+				if data.client_id != "":
+					var client = data.get_client()
+					if client and client.get_budget_bonus_percent() > 0:
+						budget_text += "  (❤+%d%%)" % client.get_budget_bonus_percent()
+				budget_lbl.text = budget_text
 				if UITheme: UITheme.apply_font(budget_lbl, "bold")
 
 			var soft_days = data.soft_deadline_day - GameTime.day

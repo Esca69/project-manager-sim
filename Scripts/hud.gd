@@ -22,6 +22,7 @@ extends CanvasLayer
 @onready var bottom_bar = $BottomBar
 @onready var employee_roster = $EmployeeRoster
 @onready var pm_skill_tree = $PMSkillTree
+@onready var client_panel = $ClientPanel
 
 # --- PM Level UI (создаются в коде) ---
 var _pm_level_label: Label
@@ -41,6 +42,7 @@ func _ready():
 	end_day_button.visible = false
 	project_list_menu.visible = false
 	employee_roster.visible = false
+	client_panel.visible = false
 
 	GameTime.time_tick.connect(update_time_label)
 	GameTime.work_ended.connect(_on_work_ended_show_end_day)
@@ -77,266 +79,38 @@ func _ready():
 
 	# XP за проекты
 	ProjectManager.project_finished.connect(_on_project_finished_xp)
-	ProjectManager.project_failed.connect(_on_project_failed_xp)
-
-	# XP обновление UI
-	PMData.xp_changed.connect(_on_pm_xp_changed)
-
-	# --- Применяем шрифт Inter к TopBar ---
-	call_deferred("_apply_fonts")
-
-	# --- Создаём DaySummary ---
-	_build_day_summary()
-
-func _apply_fonts():
-	if UITheme == null:
-		return
-	# TopBar
-	UITheme.apply_font(time_label, "semibold")
-	UITheme.apply_font(balance_label, "bold")
-	UITheme.apply_font(btn_pause, "semibold")
-	UITheme.apply_font(btn_1x, "semibold")
-	UITheme.apply_font(btn_2x, "semibold")
-	UITheme.apply_font(btn_5x, "semibold")
-	# PM Level
-	if _pm_level_label:
-		UITheme.apply_font(_pm_level_label, "semibold")
-	if _pm_xp_label:
-		UITheme.apply_font(_pm_xp_label, "regular")
-	# Info panel
-	UITheme.apply_font(name_label, "semibold")
-	UITheme.apply_font(role_label, "regular")
-	UITheme.apply_font(salary_label, "regular")
-	# End day button
-	UITheme.apply_font(end_day_button, "semibold")
-
-# --- DAY SUMMARY ---
-func _build_day_summary():
-	var day_summary_script = load("res://Scripts/day_summary.gd")
-	_day_summary = Control.new()
-	_day_summary.set_script(day_summary_script)
-	_day_summary.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_day_summary.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(_day_summary)
-
-# --- PM LEVEL UI ---
-func _build_pm_level_ui():
-	var hbox_container = $TopBar/MarginContainer/HBoxContainer
-
-	var level_vbox = VBoxContainer.new()
-	level_vbox.add_theme_constant_override("separation", 2)
-	level_vbox.custom_minimum_size = Vector2(140, 0)
-
-	_pm_level_label = Label.new()
-	_pm_level_label.text = "PM Ур. 1"
-	_pm_level_label.add_theme_font_size_override("font_size", 13)
-	_pm_level_label.add_theme_color_override("font_color", Color(0.85, 0.85, 1.0, 1))
-	_pm_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	level_vbox.add_child(_pm_level_label)
-
-	_pm_xp_bar = ProgressBar.new()
-	_pm_xp_bar.custom_minimum_size = Vector2(130, 12)
-	_pm_xp_bar.max_value = 100
-	_pm_xp_bar.value = 0
-	_pm_xp_bar.show_percentage = false
-
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.1, 0.2, 0.4, 0.8)
-	bg_style.corner_radius_top_left = 6
-	bg_style.corner_radius_top_right = 6
-	bg_style.corner_radius_bottom_right = 6
-	bg_style.corner_radius_bottom_left = 6
-	_pm_xp_bar.add_theme_stylebox_override("background", bg_style)
-
-	var fill_style = StyleBoxFlat.new()
-	fill_style.bg_color = Color(0.4, 0.75, 1.0, 1)
-	fill_style.corner_radius_top_left = 6
-	fill_style.corner_radius_top_right = 6
-	fill_style.corner_radius_bottom_right = 6
-	fill_style.corner_radius_bottom_left = 6
-	_pm_xp_bar.add_theme_stylebox_override("fill", fill_style)
-
-	level_vbox.add_child(_pm_xp_bar)
-
-	_pm_xp_label = Label.new()
-	_pm_xp_label.text = "0 / 50 XP"
-	_pm_xp_label.add_theme_font_size_override("font_size", 11)
-	_pm_xp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.9, 1))
-	_pm_xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	level_vbox.add_child(_pm_xp_label)
-
-	var spacer_index = -1
-	for i in range(hbox_container.get_child_count()):
-		if hbox_container.get_child(i).name == "Spacer":
-			spacer_index = i
-			break
-
-	if spacer_index >= 0:
-		hbox_container.add_child(level_vbox)
-		hbox_container.move_child(level_vbox, spacer_index)
-	else:
-		hbox_container.add_child(level_vbox)
-
-func _update_pm_level_ui():
-	if PMData == null:
-		return
-	var level = PMData.get_level()
-	_pm_level_label.text = "PM Ур. %d" % level
-
-	var progress = PMData.get_level_progress()
-	var current_in_level = progress[0]
-	var needed_for_level = progress[1]
-
-	# Плавная анимация XP-бара
-	_pm_xp_bar.max_value = needed_for_level
-	var tween = create_tween()
-	tween.tween_property(_pm_xp_bar, "value", current_in_level, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
-
-	_pm_xp_label.text = "%d / %d XP" % [current_in_level, needed_for_level]
-
-func _on_pm_xp_changed(_new_xp, _new_sp):
-	_update_pm_level_ui()
-
-# --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
-func is_any_menu_open() -> bool:
-	if info_panel.visible: return true
-	if selection_ui.visible: return true
-	if project_window.visible: return true
-	if employee_selector.visible: return true
-	if project_list_menu.visible: return true
-	if employee_roster.visible: return true
-	if pm_skill_tree.visible: return true
-
-	if _day_summary and _day_summary.visible: return true
-
-	var hiring_menu = get_node_or_null("HiringMenu")
-	if hiring_menu and hiring_menu.visible: return true
-
-	var assignment_menu = get_node_or_null("AssignmentMenu")
-	if assignment_menu and assignment_menu.visible: return true
-
-	return false
-
-func _on_project_finished_xp(_proj):
-	PMData.add_xp(30)
-	print("🎯 PM +30 XP за завершённый проект")
-
-func _on_project_failed_xp(_proj):
-	PMData.add_xp(10)
-	print("🎯 PM +10 XP за проваленный проект (опыт всё равно)")
-
-# --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
-
-func update_time_label(_hour, _minute):
-	var time_str = "%02d:%02d" % [GameTime.hour, GameTime.minute]
-	var date_str = GameTime.get_date_string()
-
-	time_label.text = date_str + " — " + time_str
-
-	if GameTime.is_weekend():
-		time_label.modulate = Color(1.0, 0.6, 0.6, 1.0)
-	else:
-		time_label.modulate = Color.WHITE
-
-func update_balance_ui(amount):
-	balance_label.text = "$ " + str(amount)
-
-	if amount < 0:
-		balance_label.modulate = Color.RED
-	else:
-		balance_label.modulate = Color.GREEN
-
-# --- ОСТАЛЬНАЯ ЛОГИКА ---
-
-func show_employee_card(data: EmployeeData):
-	name_label.text = "Имя: " + data.employee_name
-	role_label.text = "Должность: " + data.job_title
-	salary_label.text = "Ставка: " + str(data.monthly_salary) + "$/месяц"
-	# Fade in вместо резкого visible = true
-	if UITheme:
-		UITheme.fade_in(info_panel)
-	else:
-		info_panel.visible = true
-
-func _on_close_button_pressed():
-	if UITheme:
-		UITheme.fade_out(info_panel)
-	else:
-		info_panel.visible = false
-
-func open_boss_menu():
-	if not ProjectManager.can_take_more():
-		print("Босс: Слишком много активных проектов! (макс: ", ProjectManager.MAX_PROJECTS, ")")
-		return
-	selection_ui.open_selection()
-
-func open_work_menu():
-	if ProjectManager.active_projects.is_empty():
-		print("Компьютер: Нет активных проектов.")
-		return
-	project_list_menu.open_menu()
-
-func _on_project_taken(proj_data):
-	var today = GameTime.day
-	var old_created = proj_data.created_at_day
-
-	if today != old_created:
-		var shift = today - old_created
-		proj_data.created_at_day = today
-		proj_data.deadline_day += shift
-		proj_data.soft_deadline_day += shift
-
-	ProjectManager.add_project(proj_data)
-
-	# XP за взятие проекта
-	PMData.add_xp(5)
-	print("🎯 PM +5 XP за взятие проекта")
-
-func _on_project_list_opened(proj_data: ProjectData):
-	project_window.setup(proj_data, employee_selector)
-	# Fade in окна проекта
-	if UITheme:
-		UITheme.fade_in(project_window)
-	else:
-		project_window.visible = true
 
 func _on_bottom_tab_pressed(tab_name: String):
 	match tab_name:
 		"employees":
-			if employee_roster.visible:
-				if UITheme:
-					UITheme.fade_out(employee_roster)
-				else:
-					employee_roster.visible = false
-			else:
-				pm_skill_tree.visible = false
-				employee_roster.open()
-				if UITheme and employee_roster.modulate.a < 1.0:
-					employee_roster.modulate.a = 1.0
+			employee_roster.open()
 		"pm_skills":
-			if pm_skill_tree.visible:
-				if UITheme:
-					UITheme.fade_out(pm_skill_tree)
-				else:
-					pm_skill_tree.visible = false
-			else:
-				employee_roster.visible = false
-				pm_skill_tree.open()
-				if UITheme and pm_skill_tree.modulate.a < 1.0:
-					pm_skill_tree.modulate.a = 1.0
+			pm_skill_tree.visible = !pm_skill_tree.visible
+		"clients":
+			client_panel.open()
 
-func _on_end_day_pressed():
-	if GameTime.is_night_skip: return
-	end_day_button.visible = false
+func update_time_label(h, m):
+	var day_str = GameTime.get_date_string()
+	time_label.text = day_str + " | %02d:%02d" % [h, m]
 
-	# --- Платим зарплаты ПЕРЕД показом отчёта ---
-	GameState.pay_daily_salaries()
+func update_balance_ui(amount):
+	balance_label.text = "$%d" % amount
 
-	# --- Открываем итоги дня (ставит паузу внутри) ---
-	if _day_summary:
-		_day_summary.open()
+func _on_project_taken(data: ProjectData):
+	print("📥 Получен проект: ", data.title)
+	ProjectManager.add_project(data)
+	project_window.setup(data, employee_selector)
+	if UITheme:
+		UITheme.fade_in(project_window, 0.2)
 	else:
-		GameTime.start_night_skip()
+		project_window.visible = true
+
+func _on_project_list_opened(proj: ProjectData):
+	project_window.setup(proj, employee_selector)
+	if UITheme:
+		UITheme.fade_in(project_window, 0.2)
+	else:
+		project_window.visible = true
 
 func _on_work_ended_show_end_day():
 	end_day_button.visible = true
@@ -344,11 +118,95 @@ func _on_work_ended_show_end_day():
 func _on_work_started_hide_end_day():
 	end_day_button.visible = false
 
-func _on_new_day(_day_number):
+func _on_end_day_pressed():
+	GameState.pay_daily_salaries()
 	end_day_button.visible = false
+	if _day_summary:
+		_day_summary.open()
+	else:
+		GameTime.start_night_skip()
 
 func _on_night_skip_started():
 	end_day_button.visible = false
 
 func _on_night_skip_finished():
 	end_day_button.visible = false
+
+func _on_new_day(day_number):
+	pass
+
+# === PM LEVEL UI ===
+func _build_pm_level_ui():
+	var topbar_hbox = $TopBar/MarginContainer/HBoxContainer
+
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	topbar_hbox.add_child(spacer)
+
+	var pm_hbox = HBoxContainer.new()
+	pm_hbox.add_theme_constant_override("separation", 8)
+	topbar_hbox.add_child(pm_hbox)
+
+	_pm_level_label = Label.new()
+	_pm_level_label.text = "PM Lv.1"
+	_pm_level_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_pm_level_label.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(_pm_level_label, "bold")
+	pm_hbox.add_child(_pm_level_label)
+
+	_pm_xp_bar = ProgressBar.new()
+	_pm_xp_bar.min_value = 0
+	_pm_xp_bar.max_value = 100
+	_pm_xp_bar.value = 0
+	_pm_xp_bar.show_percentage = false
+	_pm_xp_bar.custom_minimum_size = Vector2(100, 14)
+
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(1, 1, 1, 0.2)
+	bg_style.corner_radius_top_left = 7
+	bg_style.corner_radius_top_right = 7
+	bg_style.corner_radius_bottom_right = 7
+	bg_style.corner_radius_bottom_left = 7
+	_pm_xp_bar.add_theme_stylebox_override("background", bg_style)
+
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.95, 0.85, 0.2, 1)
+	fill_style.corner_radius_top_left = 7
+	fill_style.corner_radius_top_right = 7
+	fill_style.corner_radius_bottom_right = 7
+	fill_style.corner_radius_bottom_left = 7
+	_pm_xp_bar.add_theme_stylebox_override("fill", fill_style)
+
+	pm_hbox.add_child(_pm_xp_bar)
+
+	_pm_xp_label = Label.new()
+	_pm_xp_label.text = "0 / 50"
+	_pm_xp_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
+	_pm_xp_label.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(_pm_xp_label, "regular")
+	pm_hbox.add_child(_pm_xp_label)
+
+	PMData.xp_changed.connect(_on_pm_xp_changed)
+
+func _update_pm_level_ui():
+	var level = PMData.get_level()
+	_pm_level_label.text = "PM Lv.%d" % level
+
+	var progress = PMData.get_level_progress()
+	var current_in_level = progress[0]
+	var needed_for_level = progress[1]
+
+	_pm_xp_bar.max_value = max(needed_for_level, 1)
+	_pm_xp_bar.value = current_in_level
+	_pm_xp_label.text = "%d / %d" % [current_in_level, needed_for_level]
+
+	if PMData.skill_points > 0:
+		_pm_xp_label.text += "  (🔵 %d)" % PMData.skill_points
+
+func _on_pm_xp_changed(new_xp, new_skill_points):
+	_update_pm_level_ui()
+
+func _on_project_finished_xp(proj: ProjectData):
+	var base_xp = 15 if proj.category == "micro" else 30
+	PMData.add_xp(base_xp)
+	print("🎯 PM получил %d XP за завершение проекта '%s'" % [base_xp, proj.title])

@@ -29,8 +29,14 @@ func setup(data: ProjectData, selector_node):
 	project = data
 	selector_ref = selector_node
 
+	# Заголовок: клиент + категория + название
 	var cat_label = "[MICRO]" if project.category == "micro" else "[SIMPLE]"
-	title_label.text = cat_label + " " + project.title
+	var client_prefix = ""
+	if project.client_id != "":
+		var client = project.get_client()
+		if client:
+			client_prefix = client.emoji + " " + client.client_name + "  —  "
+	title_label.text = client_prefix + cat_label + " " + project.title
 
 	budget_label.text = "Бюджет: $%d" % project.budget
 
@@ -42,7 +48,8 @@ func setup(data: ProjectData, selector_node):
 		soft_date, soft_left, project.soft_deadline_penalty_percent, deadline_date, days_left
 	]
 
-	var is_readonly = (project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED)
+	var is_failed = (project.state == ProjectData.State.FAILED)
+	var is_readonly = (project.state == ProjectData.State.FINISHED or is_failed)
 
 	for child in tracks_container.get_children():
 		tracks_container.remove_child(child)
@@ -58,9 +65,17 @@ func setup(data: ProjectData, selector_node):
 			stage["actual_end"] = -1.0
 			stage["is_completed"] = false
 
+		# === БАГФИКС: Для FAILED проектов — незавершённые этапы тоже показываем как readonly ===
+		var stage_readonly = is_readonly or stage.get("is_completed", false)
+
+		# Если проект провален и этап НЕ завершён, но у него есть completed_worker_names
+		# (заполненные _freeze_stage_workers при провале) — показываем их как readonly
+		if is_failed and not stage.get("is_completed", false):
+			if stage.get("completed_worker_names", []).size() > 0:
+				stage_readonly = true
+
 		var new_track = track_scene.instantiate()
 		tracks_container.add_child(new_track)
-		var stage_readonly = is_readonly or stage.get("is_completed", false)
 		new_track.setup(i, stage, stage_readonly)
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
 		new_track.worker_removed.connect(_on_worker_removed)

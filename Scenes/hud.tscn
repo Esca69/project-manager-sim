@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://l6ojv8bflski"]
+[gd_scene load_steps=14 format=3 uid="uid://l6ojv8bflski"]
 
 [ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
 [ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PMSkillTree.tscn" id="2_4f5kr"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://dpu8813cqsnr0" path="res://Scenes/ProjectListMenu.tscn" id="8_43w4t"]
 [ext_resource type="PackedScene" uid="uid://cx2at243shh3h" path="res://Scenes/BottomBar.tscn" id="9_bb"]
 [ext_resource type="PackedScene" uid="uid://cf6wcb3dk1vlr" path="res://Scenes/EmployeeRoster.tscn" id="10_er"]
+[ext_resource type="Script" uid="uid://csg0otorphri4" path="res://Scripts/client_panel.gd" id="12_piegi"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jye8"]
 bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
@@ -116,6 +117,7 @@ text = "Закрыть"
 
 [node name="ProjectWindow" parent="." instance=ExtResource("2_fccik")]
 visible = false
+track_scene = null
 
 [node name="EmployeeSelector" parent="." instance=ExtResource("3_bjfho")]
 visible = false
@@ -153,5 +155,12 @@ visible = false
 [node name="PMSkillTree" parent="." instance=ExtResource("2_4f5kr")]
 
 [node name="BottomBar" parent="." instance=ExtResource("9_bb")]
+
+[node name="ClientPanel" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("12_piegi")
 
 [connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]

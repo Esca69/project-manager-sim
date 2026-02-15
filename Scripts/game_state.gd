@@ -17,6 +17,9 @@ var projects_failed_today: Array = []    # [ProjectData]
 # === ЛЕВЕЛ-АПЫ ЗА ДЕНЬ ===
 var levelups_today: Array = []  # [{name, role, new_level, grade, skill_gain, new_trait}]
 
+# === ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ЗА ДЕНЬ ===
+var loyalty_changes_today: Array = []  # [{client_name, emoji, change, new_loyalty, reason}]
+
 func reset_daily_stats():
 	balance_at_day_start = company_balance
 	daily_income = 0
@@ -25,6 +28,7 @@ func reset_daily_stats():
 	projects_finished_today.clear()
 	projects_failed_today.clear()
 	levelups_today.clear()
+	loyalty_changes_today.clear()
 
 # Функция изменения баланса
 func change_balance(amount: int):
@@ -50,22 +54,18 @@ func pay_daily_salaries():
 	print("\n--- КОНЕЦ ДНЯ. ВЫПЛАТА ЗАРПЛАТ ---")
 	var total_daily_cost = 0
 
-	# 1. Ищем всех, кто находится в группе "npc"
 	var employees = get_tree().get_nodes_in_group("npc")
 
-	# 2. Считаем, сколько кому платить
 	for worker in employees:
 		if "data" in worker and worker.data is EmployeeData:
 			var salary = worker.data.daily_salary
 			total_daily_cost += salary
-			# Запоминаем детализацию
 			daily_salary_details.append({
 				"name": worker.data.employee_name,
 				"amount": salary
 			})
 			print("Сотрудник ", worker.data.employee_name, " получил: ", salary, "$")
 
-	# 3. Вычитаем общую сумму через add_expense (для дневной статистики)
 	if total_daily_cost > 0:
 		add_expense(total_daily_cost)
 		print("Всего выплачено за день: ", total_daily_cost, "$")
@@ -83,10 +83,34 @@ func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trai
 		"new_trait": new_trait,
 	})
 
-func _ready():
-	# Подключаемся к сигналу левел-апа из ProjectManager
-	call_deferred("_connect_levelup_signal")
+# === ЗАПИСЬ ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ===
+func record_loyalty_change(client: ClientData, change: int, reason: String):
+	loyalty_changes_today.append({
+		"client_name": client.client_name,
+		"emoji": client.emoji,
+		"change": change,
+		"new_loyalty": client.loyalty,
+		"reason": reason,
+	})
 
-func _connect_levelup_signal():
+func _ready():
+	call_deferred("_connect_signals")
+
+func _connect_signals():
 	if ProjectManager and not ProjectManager.employee_leveled_up.is_connected(record_levelup):
 		ProjectManager.employee_leveled_up.connect(record_levelup)
+	# Подключаемся к сигналу изменения лояльности
+	if ClientManager and not ClientManager.client_loyalty_changed.is_connected(_on_loyalty_changed):
+		ClientManager.client_loyalty_changed.connect(_on_loyalty_changed)
+
+func _on_loyalty_changed(client: ClientData, old_value: int, new_value: int):
+	var change = new_value - old_value
+	var reason = ""
+	if change > 0:
+		if change >= ClientData.LOYALTY_ON_TIME:
+			reason = "Проект завершён вовремя"
+		else:
+			reason = "Проект завершён с просрочкой"
+	elif change < 0:
+		reason = "Проект провален"
+	record_loyalty_change(client, change, reason)

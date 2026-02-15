@@ -7,6 +7,9 @@ class_name ProjectData
 # "micro" = самый простой (1-2 этапа), "simple" = очень простой (BA→DEV→QA)
 @export var category: String = "simple"
 
+# --- КЛИЕНТ ---
+@export var client_id: String = ""
+
 # --- ВРЕМЯ ---
 @export var created_at_day: int = 1
 @export var deadline_day: int = 0
@@ -37,3 +40,19 @@ func get_final_payout(finish_day: int) -> int:
 		return budget - penalty
 	# Успели в софт — полный бюджет
 	return budget
+
+# Проверка: завершён ли вовремя (до софт-дедлайна)
+func is_finished_on_time(finish_day: int) -> bool:
+	return finish_day <= soft_deadline_day
+
+# Получить данные клиента
+func get_client() -> ClientData:
+	if client_id == "":
+		return null
+	return ClientManager.get_client_by_id(client_id)
+
+func get_client_display_name() -> String:
+	var client = get_client()
+	if client:
+		return client.get_display_name()
+	return "Неизвестный клиент"

@@ -121,16 +121,14 @@ func _award_on_time_bonus(project: ProjectData):
 
 	for stage in project.stages:
 		var worker_names = stage.get("completed_worker_names", [])
-		# Ищем работников по имени среди NPC
 		for npc in get_tree().get_nodes_in_group("npc"):
 			if npc.data and npc.data.employee_name in worker_names:
-				var bonus_xp = int(15 * EmployeeData.ON_TIME_XP_BONUS)  # ~4-5 XP бонус
+				var bonus_xp = int(15 * EmployeeData.ON_TIME_XP_BONUS)
 				var result = npc.data.add_employee_xp(bonus_xp)
 				if result["leveled_up"]:
 					emit_signal("employee_leveled_up", npc.data, result["new_level"], result["skill_gain"], result["new_trait"])
 
 func _freeze_stage_workers(stage: Dictionary):
-	# Сохраняем имена исполнителей для отображения, затем очищаем workers чтобы высвободить
 	var names = []
 	for w in stage.workers:
 		names.append(w.employee_name)
@@ -142,10 +140,16 @@ func _fail_project(project: ProjectData):
 		return
 	print("❌ ПРОЕКТ ПРОВАЛЕН (хард-дедлайн): ", project.title)
 	project.state = ProjectData.State.FAILED
-	# Фиксируем и высвобождаем всех работников на всех этапах
 	for stage in project.stages:
 		_freeze_stage_workers(stage)
 	GameState.projects_failed_today.append(project)
+
+	# === ЛОЯЛЬНОСТЬ: ПРОВАЛ ===
+	var client = project.get_client()
+	if client:
+		client.record_project_failed()
+		print("💔 %s: лояльность %d (провал проекта)" % [client.get_display_name(), client.loyalty])
+
 	emit_signal("project_failed", project)
 
 func _finish_project(project: ProjectData):
@@ -158,12 +162,21 @@ func _finish_project(project: ProjectData):
 	else:
 		print("🎉 ПРОЕКТ ЗАВЕРШЁН ВОВРЕМЯ: ", project.title, " | Выплата: $", payout)
 	project.state = ProjectData.State.FINISHED
-	# Последний этап уже зафиксирован при is_completed, но на всякий случай
 	for stage in project.stages:
 		if stage.get("is_completed", false) and not stage.has("completed_worker_names"):
 			_freeze_stage_workers(stage)
 	GameState.add_income(payout)
 	GameState.projects_finished_today.append({"project": project, "payout": payout})
+
+	# === ЛОЯЛЬНОСТЬ: УСПЕХ ===
+	var client = project.get_client()
+	if client:
+		if project.is_finished_on_time(GameTime.day):
+			client.record_project_on_time()
+			print("💚 %s: лояльность %d (вовремя, +%d)" % [client.get_display_name(), client.loyalty, ClientData.LOYALTY_ON_TIME])
+		else:
+			client.record_project_late()
+			print("💛 %s: лояльность %d (просрочка софт, +%d)" % [client.get_display_name(), client.loyalty, ClientData.LOYALTY_LATE])
 
 	# Бонус XP за вовремя
 	_award_on_time_bonus(project)

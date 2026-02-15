@@ -23,6 +23,7 @@ ProjectManager="*res://Scripts/project_manager.gd"
 PMData="*res://Scripts/pm_data.gd"
 AudioManager="*res://Scripts/audio_manager.gd"
 UITheme="*res://Scripts/ui_theme.gd"
+ClientManager="*res://Scripts/client_manager.gd"
 
 [display]
 
