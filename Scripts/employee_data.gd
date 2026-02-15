@@ -7,6 +7,165 @@ class_name EmployeeData
 
 var current_energy: float = 100.0
 
+# === СИСТЕМА УРОВНЕЙ ===
+@export var employee_level: int = 0
+@export var employee_xp: int = 0
+const MAX_LEVEL = 10
+const MAX_TRAITS = 4
+const TRAIT_ON_LEVELUP_CHANCE = 0.25
+
+# Названия грейдов
+const GRADE_NAMES = {
+	0: "Junior", 1: "Junior", 2: "Junior",
+	3: "Middle", 4: "Middle",
+	5: "Senior", 6: "Senior",
+	7: "Lead", 8: "Lead", 9: "Lead", 10: "Lead",
+}
+
+# Базовые навыки по уровням (без рандома)
+const SKILL_TABLE = [80, 100, 120, 145, 170, 200, 225, 250, 270, 285, 300]
+
+# Прибавка навыка при левел-апе [min, max]
+const SKILL_GAIN_PER_LEVEL = [
+	[17, 23],  # 0 → 1
+	[17, 23],  # 1 → 2
+	[21, 29],  # 2 → 3
+	[21, 29],  # 3 → 4
+	[25, 35],  # 4 → 5
+	[21, 29],  # 5 → 6
+	[21, 29],  # 6 → 7
+	[17, 23],  # 7 → 8
+	[12, 18],  # 8 → 9
+	[12, 18],  # 9 → 10
+]
+
+# XP для перехода на следующий уровень
+const XP_PER_LEVEL = [50, 80, 120, 170, 230, 300, 400, 520, 660, 820]
+
+# XP за завершение этапа по категории проекта [min, max]
+const STAGE_XP_REWARD = {
+	"micro": [15, 25],
+	"simple": [30, 50],
+	"medium": [50, 80],
+}
+
+# Бонус XP за проект без просрочки софт-дедлайна
+const ON_TIME_XP_BONUS = 0.30
+
+signal level_up(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String)
+
+func get_grade_name() -> String:
+	return GRADE_NAMES.get(employee_level, "Junior")
+
+func get_xp_for_next_level() -> int:
+	if employee_level >= MAX_LEVEL:
+		return 0
+	return XP_PER_LEVEL[employee_level]
+
+func get_xp_progress() -> Array:
+	# Возвращает [current_xp_in_level, xp_needed_for_level]
+	if employee_level >= MAX_LEVEL:
+		return [0, 0]
+	return [employee_xp, XP_PER_LEVEL[employee_level]]
+
+func add_employee_xp(amount: int) -> Dictionary:
+	# Возвращает {"leveled_up": bool, "new_level": int, "skill_gain": int, "new_trait": String}
+	var result = {"leveled_up": false, "new_level": employee_level, "skill_gain": 0, "new_trait": ""}
+
+	if employee_level >= MAX_LEVEL:
+		return result
+
+	employee_xp += amount
+
+	while employee_level < MAX_LEVEL and employee_xp >= XP_PER_LEVEL[employee_level]:
+		employee_xp -= XP_PER_LEVEL[employee_level]
+		employee_level += 1
+		result["leveled_up"] = true
+		result["new_level"] = employee_level
+
+		# Прибавка навыка
+		var gain_range = SKILL_GAIN_PER_LEVEL[employee_level - 1]
+		var gain = randi_range(gain_range[0], gain_range[1])
+		result["skill_gain"] += gain
+		_apply_skill_gain(gain)
+
+		# Шанс получить трейт
+		if traits.size() < MAX_TRAITS and randf() < TRAIT_ON_LEVELUP_CHANCE:
+			var new_trait = _roll_random_trait()
+			if new_trait != "":
+				traits.append(new_trait)
+				trait_text = build_trait_text()
+				result["new_trait"] = new_trait
+
+		print("⬆️ %s повысился до ур. %d (%s)! +%d навыка" % [employee_name, employee_level, get_grade_name(), gain])
+
+	if result["leveled_up"]:
+		emit_signal("level_up", self, result["new_level"], result["skill_gain"], result["new_trait"])
+
+	return result
+
+func _apply_skill_gain(amount: int):
+	match job_title:
+		"Business Analyst":
+			skill_business_analysis += amount
+		"Backend Developer":
+			skill_backend += amount
+		"QA Engineer":
+			skill_qa += amount
+
+func _roll_random_trait() -> String:
+	# 50/50 положительный или отрицательный
+	var pool: Array
+	if randf() < 0.5:
+		pool = POSITIVE_TRAITS.duplicate()
+	else:
+		pool = NEGATIVE_TRAITS.duplicate()
+
+	pool.shuffle()
+	for candidate_trait in pool:
+		if candidate_trait in traits:
+			continue
+		var has_conflict = false
+		for pair in CONFLICTING_PAIRS:
+			if candidate_trait == pair[0] and pair[1] in traits:
+				has_conflict = true
+				break
+			if candidate_trait == pair[1] and pair[0] in traits:
+				has_conflict = true
+				break
+		if not has_conflict:
+			return candidate_trait
+
+	# Попробовать другой пул если первый не дал результат
+	if randf() < 0.5:
+		pool = NEGATIVE_TRAITS.duplicate()
+	else:
+		pool = POSITIVE_TRAITS.duplicate()
+
+	pool.shuffle()
+	for candidate_trait in pool:
+		if candidate_trait in traits:
+			continue
+		var has_conflict = false
+		for pair in CONFLICTING_PAIRS:
+			if candidate_trait == pair[0] and pair[1] in traits:
+				has_conflict = true
+				break
+			if candidate_trait == pair[1] and pair[0] in traits:
+				has_conflict = true
+				break
+		if not has_conflict:
+			return candidate_trait
+
+	return ""
+
+func get_primary_skill_value() -> int:
+	match job_title:
+		"Business Analyst": return skill_business_analysis
+		"Backend Developer": return skill_backend
+		"QA Engineer": return skill_qa
+	return 0
+
 # --- СИСТЕМА ТРЕЙТОВ ---
 @export var traits: Array[String] = []
 @export var trait_text: String = ""
@@ -22,7 +181,7 @@ const TRAIT_NAMES = {
 	"toilet_lover": "🚽 Любит покакать",
 	"coffee_lover": "☕ Кофеман",
 	"slowpoke": "🐌 Тормоз",
-	"expensive": "💸 Зазнайка",
+	"expensive": "💸 Зазна��ка",
 }
 
 # Описания для тултипов (что делает трейт)
@@ -32,7 +191,7 @@ const TRAIT_DESCRIPTIONS = {
 	"early_bird": "Приходит на работу на 30-40 минут раньше",
 	"cheap_hire": "Зарплата на 15% ниже",
 	"toilet_lover": "Сидит в туалете в 2 раза дольше",
-	"coffee_lover": "Кофе-брейк длится в 2 раза дольше",
+	"coffee_lover": "Кофе-бре��к длится в 2 раза дольше",
 	"slowpoke": "-20% к скорости работы на этапах проекта",
 	"expensive": "Зарплата на 20% выше",
 }

@@ -6,6 +6,7 @@ const MAX_PROJECTS = 5
 
 signal project_finished(proj: ProjectData)
 signal project_failed(proj: ProjectData)
+signal employee_leveled_up(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String)
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -90,13 +91,46 @@ func _physics_process(delta):
 				active_stage.progress = active_stage.amount
 				active_stage["is_completed"] = true
 				active_stage["actual_end"] = project.elapsed_days
+
+				# === НАЧИСЛЕНИЕ XP СОТРУДНИКАМ ===
+				_award_stage_xp(active_stage, project)
+
 				# Фиксируем имена исполнителей на завершённом этапе
 				_freeze_stage_workers(active_stage)
 		else:
 			_finish_project(project)
 
+# === НАЧИСЛЕНИЕ XP ЗА ЭТАП ===
+func _award_stage_xp(stage: Dictionary, project: ProjectData):
+	var category = project.category
+	var xp_range = EmployeeData.STAGE_XP_REWARD.get(category, [20, 35])
+	var base_xp = randi_range(xp_range[0], xp_range[1])
+
+	for worker_data in stage.workers:
+		if worker_data is EmployeeData:
+			var result = worker_data.add_employee_xp(base_xp)
+			print("📈 %s получил %d XP за этап %s" % [worker_data.employee_name, base_xp, stage.type])
+			if result["leveled_up"]:
+				emit_signal("employee_leveled_up", worker_data, result["new_level"], result["skill_gain"], result["new_trait"])
+
+# === БОНУС XP ЗА ПРОЕКТ ВОВРЕМЯ ===
+func _award_on_time_bonus(project: ProjectData):
+	var is_on_time = GameTime.day < project.soft_deadline_day
+	if not is_on_time:
+		return
+
+	for stage in project.stages:
+		var worker_names = stage.get("completed_worker_names", [])
+		# Ищем работников по имени среди NPC
+		for npc in get_tree().get_nodes_in_group("npc"):
+			if npc.data and npc.data.employee_name in worker_names:
+				var bonus_xp = int(15 * EmployeeData.ON_TIME_XP_BONUS)  # ~4-5 XP бонус
+				var result = npc.data.add_employee_xp(bonus_xp)
+				if result["leveled_up"]:
+					emit_signal("employee_leveled_up", npc.data, result["new_level"], result["skill_gain"], result["new_trait"])
+
 func _freeze_stage_workers(stage: Dictionary):
-	# Сохраняем имена исполнителей ��ля отображения, затем очищаем workers чтобы высвободить
+	# Сохраняем имена исполнителей для отображения, затем очищаем workers чтобы высвободить
 	var names = []
 	for w in stage.workers:
 		names.append(w.employee_name)
@@ -130,6 +164,10 @@ func _finish_project(project: ProjectData):
 			_freeze_stage_workers(stage)
 	GameState.add_income(payout)
 	GameState.projects_finished_today.append({"project": project, "payout": payout})
+
+	# Бонус XP за вовремя
+	_award_on_time_bonus(project)
+
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):

@@ -12,6 +12,7 @@ var generator_script = preload("res://Scripts/candidate_generator.gd").new()
 var candidates = []
 
 var _trait_containers: Array = []
+var _level_containers: Array = []
 
 var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
@@ -90,6 +91,11 @@ func update_ui():
 			tc.queue_free()
 	_trait_containers.clear()
 
+	for lc in _level_containers:
+		if is_instance_valid(lc):
+			lc.queue_free()
+	_level_containers.clear()
+
 	for i in range(3):
 		var card = cards[i]
 		var data = candidates[i]
@@ -144,8 +150,14 @@ func update_ui():
 				traits_lbl.text = ""
 				traits_lbl.visible = false
 
-			# === ТРЕЙТЫ ===
+			# === БЕЙДЖ УРОВНЯ (вставляем перед трейтами) ===
 			var card_vbox = find_node_by_name(card, "CardVBox")
+			if card_vbox:
+				var level_row = _create_level_badge(data)
+				card_vbox.add_child(level_row)
+				_level_containers.append(level_row)
+
+			# === ТРЕЙТЫ ===
 			if card_vbox and not data.traits.is_empty():
 				var visible_count = PMData.get_visible_traits_count()
 
@@ -170,12 +182,67 @@ func update_ui():
 					card_vbox.add_child(flow)
 					_trait_containers.append(flow)
 
-			# MOUSE_FILTER_PASS на все дочерни��
+			# MOUSE_FILTER_PASS на все дочерние
 			call_deferred("_set_children_pass_filter", card)
 
 		else:
 			# Кандидат нанят — прячем карточку
 			card.visible = false
+
+# === БЕЙДЖ УРОВНЯ ===
+func _create_level_badge(data: EmployeeData) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 8)
+
+	# Бейдж грейда
+	var grade_panel = PanelContainer.new()
+	var grade_style = StyleBoxFlat.new()
+	grade_style.corner_radius_top_left = 10
+	grade_style.corner_radius_top_right = 10
+	grade_style.corner_radius_bottom_right = 10
+	grade_style.corner_radius_bottom_left = 10
+
+	var grade = data.get_grade_name()
+	match grade:
+		"Junior":
+			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
+			grade_style.border_color = Color(0.29, 0.69, 0.31, 1)
+		"Middle":
+			grade_style.bg_color = Color(0.93, 0.93, 1.0, 1)
+			grade_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		"Senior":
+			grade_style.bg_color = Color(1.0, 0.95, 0.88, 1)
+			grade_style.border_color = Color(0.85, 0.55, 0.0, 1)
+		"Lead":
+			grade_style.bg_color = Color(0.95, 0.9, 0.98, 1)
+			grade_style.border_color = Color(0.6, 0.3, 0.7, 1)
+
+	grade_style.border_width_left = 2
+	grade_style.border_width_top = 2
+	grade_style.border_width_right = 2
+	grade_style.border_width_bottom = 2
+	grade_panel.add_theme_stylebox_override("panel", grade_style)
+
+	var grade_margin = MarginContainer.new()
+	grade_margin.add_theme_constant_override("margin_left", 8)
+	grade_margin.add_theme_constant_override("margin_top", 2)
+	grade_margin.add_theme_constant_override("margin_right", 8)
+	grade_margin.add_theme_constant_override("margin_bottom", 2)
+	grade_panel.add_child(grade_margin)
+
+	var grade_lbl = Label.new()
+	grade_lbl.text = "%s  Ур. %d" % [grade, data.employee_level]
+	grade_lbl.add_theme_font_size_override("font_size", 12)
+	match grade:
+		"Junior": grade_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
+		"Middle": grade_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		"Senior": grade_lbl.add_theme_color_override("font_color", Color(0.85, 0.55, 0.0, 1))
+		"Lead": grade_lbl.add_theme_color_override("font_color", Color(0.6, 0.3, 0.7, 1))
+	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
+	grade_margin.add_child(grade_lbl)
+
+	hbox.add_child(grade_panel)
+	return hbox
 
 func _on_card_hover_enter(card: PanelContainer):
 	card.add_theme_stylebox_override("panel", _card_style_hover)

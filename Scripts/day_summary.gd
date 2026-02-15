@@ -189,6 +189,9 @@ func _populate():
 	_build_projects_section()
 	_build_separator()
 	_build_employees_section()
+	if GameState.levelups_today.size() > 0:
+		_build_separator()
+		_build_levelups_section()
 
 # === ДАТА ===
 func _build_date_label():
@@ -648,3 +651,59 @@ func _format_progress(progress: float) -> String:
 	if progress >= 1000:
 		return "%dk очков" % int(progress / 1000.0)
 	return "%d очков" % int(progress)
+
+# === СЕКЦИЯ ЛЕВЕЛ-АПОВ ===
+func _build_levelups_section():
+	var section = _create_section_label("🎉 Повышения за день")
+	_content_vbox.add_child(section)
+
+	for entry in GameState.levelups_today:
+		var card = PanelContainer.new()
+		var style: StyleBoxFlat
+		if UITheme:
+			style = UITheme.create_card_style(Color(0.96, 0.98, 1.0, 1), Color(0.17254902, 0.30980393, 0.5686275, 1), 12)
+		else:
+			style = StyleBoxFlat.new()
+			style.bg_color = Color(0.96, 0.98, 1.0, 1)
+			style.border_width_left = 2
+			style.border_width_top = 2
+			style.border_width_right = 2
+			style.border_width_bottom = 2
+			style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+			style.corner_radius_top_left = 12
+			style.corner_radius_top_right = 12
+			style.corner_radius_bottom_right = 12
+			style.corner_radius_bottom_left = 12
+		card.add_theme_stylebox_override("panel", style)
+
+		var card_margin = MarginContainer.new()
+		card_margin.add_theme_constant_override("margin_left", 12)
+		card_margin.add_theme_constant_override("margin_top", 8)
+		card_margin.add_theme_constant_override("margin_right", 12)
+		card_margin.add_theme_constant_override("margin_bottom", 8)
+		card.add_child(card_margin)
+
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 2)
+		card_margin.add_child(vbox)
+
+		var title_text = "🎉 %s получил уровень %d (%s)!" % [entry["name"], entry["new_level"], entry["grade"]]
+		var title_lbl = Label.new()
+		title_lbl.text = title_text
+		title_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		title_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(title_lbl, "bold")
+		vbox.add_child(title_lbl)
+
+		var detail_text = "Навык +%d" % entry["skill_gain"]
+		if entry["new_trait"] != "":
+			var trait_name = EmployeeData.TRAIT_NAMES.get(entry["new_trait"], entry["new_trait"])
+			detail_text += "  |  Новый трейт: %s" % trait_name
+		var detail_lbl = Label.new()
+		detail_lbl.text = detail_text
+		detail_lbl.add_theme_color_override("font_color", COLOR_DARK)
+		detail_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(detail_lbl, "regular")
+		vbox.add_child(detail_lbl)
+
+		_content_vbox.add_child(card)

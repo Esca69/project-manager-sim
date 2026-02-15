@@ -197,6 +197,114 @@ func _create_card(npc_node) -> PanelContainer:
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	info_vbox.add_child(name_lbl)
 
+	# === БЕЙДЖ УРОВНЯ + XP БАР ===
+	var level_hbox = HBoxContainer.new()
+	level_hbox.add_theme_constant_override("separation", 10)
+	info_vbox.add_child(level_hbox)
+
+	var grade = emp.get_grade_name()
+	var grade_panel = PanelContainer.new()
+	var grade_style = StyleBoxFlat.new()
+	grade_style.corner_radius_top_left = 10
+	grade_style.corner_radius_top_right = 10
+	grade_style.corner_radius_bottom_right = 10
+	grade_style.corner_radius_bottom_left = 10
+	grade_style.border_width_left = 2
+	grade_style.border_width_top = 2
+	grade_style.border_width_right = 2
+	grade_style.border_width_bottom = 2
+
+	var grade_color: Color
+	match grade:
+		"Junior":
+			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
+			grade_style.border_color = Color(0.29, 0.69, 0.31, 1)
+			grade_color = Color(0.29, 0.69, 0.31, 1)
+		"Middle":
+			grade_style.bg_color = Color(0.93, 0.93, 1.0, 1)
+			grade_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+			grade_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		"Senior":
+			grade_style.bg_color = Color(1.0, 0.95, 0.88, 1)
+			grade_style.border_color = Color(0.85, 0.55, 0.0, 1)
+			grade_color = Color(0.85, 0.55, 0.0, 1)
+		"Lead":
+			grade_style.bg_color = Color(0.95, 0.9, 0.98, 1)
+			grade_style.border_color = Color(0.6, 0.3, 0.7, 1)
+			grade_color = Color(0.6, 0.3, 0.7, 1)
+		_:
+			grade_style.bg_color = Color(0.93, 0.93, 0.93, 1)
+			grade_style.border_color = Color(0.5, 0.5, 0.5, 1)
+			grade_color = Color(0.5, 0.5, 0.5, 1)
+
+	grade_panel.add_theme_stylebox_override("panel", grade_style)
+
+	var gm = MarginContainer.new()
+	gm.add_theme_constant_override("margin_left", 8)
+	gm.add_theme_constant_override("margin_top", 2)
+	gm.add_theme_constant_override("margin_right", 8)
+	gm.add_theme_constant_override("margin_bottom", 2)
+	grade_panel.add_child(gm)
+
+	var grade_lbl = Label.new()
+	grade_lbl.text = "%s  Ур. %d" % [grade, emp.employee_level]
+	grade_lbl.add_theme_font_size_override("font_size", 12)
+	grade_lbl.add_theme_color_override("font_color", grade_color)
+	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
+	gm.add_child(grade_lbl)
+	level_hbox.add_child(grade_panel)
+
+	# XP прогресс-бар
+	if emp.employee_level < EmployeeData.MAX_LEVEL:
+		var xp_progress = emp.get_xp_progress()
+		var xp_current = xp_progress[0]
+		var xp_needed = xp_progress[1]
+
+		var xp_vbox = VBoxContainer.new()
+		xp_vbox.add_theme_constant_override("separation", 1)
+		xp_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		level_hbox.add_child(xp_vbox)
+
+		var xp_lbl = Label.new()
+		xp_lbl.text = "XP: %d / %d" % [xp_current, xp_needed]
+		xp_lbl.add_theme_font_size_override("font_size", 11)
+		xp_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+		if UITheme: UITheme.apply_font(xp_lbl, "regular")
+		xp_vbox.add_child(xp_lbl)
+
+		var bar_bg = PanelContainer.new()
+		bar_bg.custom_minimum_size = Vector2(120, 6)
+		var bar_bg_style = StyleBoxFlat.new()
+		bar_bg_style.bg_color = Color(0.88, 0.88, 0.88, 1)
+		bar_bg_style.corner_radius_top_left = 3
+		bar_bg_style.corner_radius_top_right = 3
+		bar_bg_style.corner_radius_bottom_right = 3
+		bar_bg_style.corner_radius_bottom_left = 3
+		bar_bg.add_theme_stylebox_override("panel", bar_bg_style)
+		xp_vbox.add_child(bar_bg)
+
+		var fill_pct = float(xp_current) / max(float(xp_needed), 1.0)
+		fill_pct = clampf(fill_pct, 0.0, 1.0)
+		var fill_width = int(120.0 * fill_pct)
+
+		var bar_fill = PanelContainer.new()
+		bar_fill.custom_minimum_size = Vector2(max(fill_width, 0), 6)
+		var bar_fill_style = StyleBoxFlat.new()
+		bar_fill_style.bg_color = grade_color
+		bar_fill_style.corner_radius_top_left = 3
+		bar_fill_style.corner_radius_top_right = 3
+		bar_fill_style.corner_radius_bottom_right = 3
+		bar_fill_style.corner_radius_bottom_left = 3
+		bar_fill.add_theme_stylebox_override("panel", bar_fill_style)
+		bar_bg.add_child(bar_fill)
+	else:
+		var max_lbl = Label.new()
+		max_lbl.text = "✦ MAX"
+		max_lbl.add_theme_font_size_override("font_size", 11)
+		max_lbl.add_theme_color_override("font_color", grade_color)
+		if UITheme: UITheme.apply_font(max_lbl, "semibold")
+		level_hbox.add_child(max_lbl)
+
 	var ba_text = PMData.get_blurred_skill(emp.skill_business_analysis)
 	var dev_text = PMData.get_blurred_skill(emp.skill_backend)
 	var qa_text = PMData.get_blurred_skill(emp.skill_qa)
