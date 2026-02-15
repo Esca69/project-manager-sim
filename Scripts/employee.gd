@@ -58,8 +58,15 @@ var toilet_visits_done := 0
 var _wander_pause_timer := 0.0
 var _wander_origin: Vector2 = Vector2.ZERO
 
-# [FIX] Флаг: сигнал work_ended получен — нужно идти домой
 var _should_go_home: bool = false
+
+# Ссылка на текущий бабл с мыслями
+var current_bubble: Node2D = null
+# Таймер для фоновых мыслей во время работы
+var _work_bubble_cooldown := 0.0
+
+# Уникальный цвет одежды для персонализации
+var personal_color: Color = Color.WHITE
 
 @export var data: EmployeeData
 
@@ -76,7 +83,24 @@ func _ready():
 	nav_agent.path_desired_distance = 20.0
 	nav_agent.target_desired_distance = 20.0
 	
+	# --- НАСТРОЙКА КРАСИВОГО ТЕКСТА (Inter) ---
+	if debug_label:
+		var label_settings = LabelSettings.new()
+		label_settings.font = load("res://Fonts/Inter-VariableFont_opsz,wght.ttf")
+		label_settings.font_size = 18
+		label_settings.outline_size = 4
+		label_settings.outline_color = Color(0.1, 0.1, 0.1, 1.0)
+		label_settings.line_spacing = -2.0 
+		
+		debug_label.label_settings = label_settings
+		debug_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		# Идеальное центрирование над головой
+		debug_label.position = Vector2(-20, -210)
+		debug_label.custom_minimum_size = Vector2(200, 50)
+		debug_label.modulate.a = 0.0 
+	
 	if data:
+		_assign_random_color()
 		update_visuals()
 		data.current_energy = 100.0
 		_setup_early_bird()
@@ -89,6 +113,10 @@ func _ready():
 	
 	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
 		_go_to_sleep_instant()
+
+func _assign_random_color():
+	# Генерируем приятные пастельные цвета (через HSV)
+	personal_color = Color.from_hsv(randf(), randf_range(0.3, 0.55), randf_range(0.85, 1.0))
 
 func _setup_early_bird():
 	if not data or not data.has_trait("early_bird"):
@@ -139,11 +167,28 @@ func _arrive_early_bird():
 	else:
 		_start_wandering()
 
+# --- ЛОГИКА КАМЕРЫ И ПЛАВНОГО ПОЯВЛЕНИЯ ТЕКСТА ---
+func _process(delta):
+	var cam = get_viewport().get_camera_2d()
+	if cam and debug_label:
+		var z = cam.zoom.x
+		var target_alpha = 0.0
+		
+		# Текст плавно появляется, когда зум от 1.25 до 1.45 (камера близко)
+		if z >= 0.8:
+			target_alpha = 1.0
+		elif z > 1.05:
+			target_alpha = inverse_lerp(1.25, 1.45, z)
+		else:
+			target_alpha = 0.0
+		
+		var current_color = debug_label.modulate
+		current_color.a = lerp(current_color.a, target_alpha, 8.0 * delta)
+		debug_label.modulate = current_color
+
 func _physics_process(delta):
-	update_debug_label()
+	update_status_label()
 	
-	# [FIX] Если получен сигнал "пора домой" — принудительн�� уходим,
-	# независимо от текущего состояния
 	if _should_go_home:
 		_should_go_home = false
 		_force_go_home()
@@ -159,9 +204,7 @@ func _physics_process(delta):
 			_apply_lean(Vector2.ZERO, delta)
 			
 		State.WORKING:
-			# [FIX] Если рабочее время закончилось — уходим домой
 			if not _is_work_time():
-				print("🏠 ", data.employee_name, " — рабочее время кончилось, встаю из-за стола.")
 				_force_go_home()
 				return
 			
@@ -172,7 +215,6 @@ func _physics_process(delta):
 				data.current_energy = 0
 			
 			if not _is_my_stage_active():
-				print("📋 ", data.employee_name, " — мой этап закончился/ещё не начался. Встаю из-за стола.")
 				_leave_desk_to_wander()
 				return
 			
@@ -180,8 +222,14 @@ func _physics_process(delta):
 			_try_start_coffee_break()
 			_apply_lean(Vector2.ZERO, delta)
 			
+			# --- СИСТЕМА ФОНОВЫХ "РАБОЧИХ" МЫСЛЕЙ ---
+			_work_bubble_cooldown -= delta
+			if _work_bubble_cooldown <= 0.0:
+				_show_random_work_thought()
+				# Следующая мысль появится через 15-25 реальных секунд
+				_work_bubble_cooldown = randf_range(15.0, 25.0)
+			
 		State.MOVING, State.GOING_COFFEE, State.GOING_TOILET:
-			# [FIX] Если рабочее время кончилось пока шли — домой
 			if not _is_work_time():
 				_force_go_home()
 				return
@@ -218,7 +266,6 @@ func _physics_process(delta):
 				return
 			
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
-				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
 				move_to_desk(my_desk_position)
 				return
 			
@@ -236,7 +283,6 @@ func _physics_process(delta):
 				return
 			
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
-				print("📋 ", data.employee_name, " — мой этап начался! Иду к столу.")
 				move_to_desk(my_desk_position)
 				return
 			
@@ -252,7 +298,6 @@ func _is_my_stage_active() -> bool:
 		return false
 	return ProjectManager.is_employee_on_active_stage(data)
 
-# [FIX] Принудительный уход домой — очищает ВСЁ и идёт к выходу
 func _force_go_home():
 	coffee_cup_holder.visible = false
 	
@@ -266,7 +311,6 @@ func _force_go_home():
 	if current_state == State.HOME or current_state == State.GOING_HOME:
 		return
 	
-	# [FIX] Настраиваем early_bird на ЗАВТРА прям�� сейчас
 	if data and data.has_trait("early_bird"):
 		_early_bird_arrived = false
 		_setup_early_bird()
@@ -278,7 +322,6 @@ func _force_go_home():
 	if entrance:
 		nav_agent.target_position = entrance.global_position
 		current_state = State.GOING_HOME
-		print("🏠 ", data.employee_name, " — принудительно идёт домой")
 	else:
 		_on_arrived_home()
 
@@ -361,11 +404,6 @@ func _pick_next_wander_target():
 	current_state = State.WANDERING
 	z_index = 0
 
-func _on_wander_arrived():
-	velocity = Vector2.ZERO
-	current_state = State.WANDER_PAUSE
-	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
-
 # --- КОФЕ ---
 func _try_start_coffee_break():
 	if data.current_energy > COFFEE_THRESHOLD:
@@ -377,26 +415,25 @@ func _try_start_coffee_break():
 		current_state = State.GOING_COFFEE
 		nav_agent.target_position = machine.get_spot_position()
 		z_index = 0
+		
+		# Перебиваем любую рабочую мысль важным перерывом
+		show_thought_bubble("☕")
 
 func _start_coffee_break():
 	current_state = State.COFFEE_BREAK
 	velocity = Vector2.ZERO
-	
 	coffee_cup_holder.visible = true
 	
 	var min_minutes = COFFEE_MIN_MINUTES
 	var max_minutes = COFFEE_MAX_MINUTES
-	
 	if data and data.has_trait("coffee_lover"):
 		min_minutes *= COFFEE_LOVER_DURATION_MULT
 		max_minutes *= COFFEE_LOVER_DURATION_MULT
-		print("��� ", data.employee_name, " КОФЕМАН! Перерыв удлинён: ", min_minutes, "-", max_minutes, " мин.")
 	
 	coffee_break_minutes_left = randf_range(min_minutes, max_minutes)
 
 func _finish_coffee_break():
 	coffee_cup_holder.visible = false
-	
 	if coffee_machine_ref:
 		coffee_machine_ref.release(self)
 		coffee_machine_ref = null
@@ -440,6 +477,9 @@ func _try_start_toilet_break():
 		current_state = State.GOING_TOILET
 		nav_agent.target_position = toilet.get_spot_position()
 		z_index = 0
+		
+		# Перебиваем рабочую мысль походом в туалет
+		show_thought_bubble("🚽")
 
 func _start_toilet_break():
 	current_state = State.TOILET_BREAK
@@ -448,7 +488,6 @@ func _start_toilet_break():
 	var duration = TOILET_BREAK_MINUTES
 	if data and data.has_trait("toilet_lover"):
 		duration *= TOILET_LOVER_DURATION_MULT
-		print("🚽 ", data.employee_name, " ЛЮБИТ ПОКАКАТЬ! Визит удлинён: ", duration, " мин.")
 	
 	toilet_break_minutes_left = duration
 
@@ -466,6 +505,11 @@ func _finish_toilet_break():
 	else:
 		_force_go_home()
 
+func _on_wander_arrived():
+	velocity = Vector2.ZERO
+	current_state = State.WANDER_PAUSE
+	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
+
 # --- ФУНКЦИИ УПРАВЛЕНИЯ ---
 func move_to_desk(target_point: Vector2):
 	my_desk_position = target_point
@@ -475,7 +519,6 @@ func move_to_desk(target_point: Vector2):
 		return
 	
 	if not _is_my_stage_active():
-		print("📋 ", data.employee_name, " — назначен на стол, но мой этап ещё не пришёл. Слоняюсь.")
 		if _is_work_time():
 			_start_wandering()
 		else:
@@ -489,8 +532,6 @@ func move_to_desk(target_point: Vector2):
 	$CollisionShape2D.disabled = false
 
 func release_from_desk():
-	print("🚶 ", data.employee_name, " встаёт из-за стола")
-	
 	my_desk_position = Vector2.ZERO
 	
 	coffee_cup_holder.visible = false
@@ -515,30 +556,27 @@ func _on_navigation_finished():
 		_start_toilet_break()
 		return
 	
-	# [FIX] Если рабочее время закончилось — не садимся за стол, идём домой
 	if not _is_work_time():
-		print("🏠 ", data.employee_name, " — дошёл до стола, но рабочий день кончился. Иду домой.")
 		_force_go_home()
 		return
 	
 	if not _is_my_stage_active():
-		print("📋 ", data.employee_name, " — дошёл до стола, но мой этап не активен. Слоняюсь.")
 		_start_wandering()
 		return
 	
 	global_position = nav_agent.target_position
 	current_state = State.WORKING
 	velocity = Vector2.ZERO
+	
+	# Как только сел за работу - сбрасываем таймер, чтобы вскоре появилась рабочая мысль
+	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
 # --- ЛОГИКА ДЕНЬ/НОЧЬ ---
-
 func _on_work_started():
-	# [FIX] Early bird: в 9:00 он уже должен быть на работе (пришёл в ~8:20)
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		if current_state != State.HOME:
 			return
 	
-	# [FIX] Early bird: если он ещё дома — просто обновляем данные
 	if data and data.has_trait("early_bird"):
 		data.current_energy = 100.0
 		_setup_toilet_schedule()
@@ -575,10 +613,8 @@ func _on_work_started():
 		current_state = State.MOVING
 		nav_agent.target_position = my_desk_position
 	else:
-		print("📋 ", data.employee_name, " — пришёл на работу, но мой этап ещё не начался. Слоняюсь.")
 		_start_wandering()
 
-# [FIX] _on_work_ended теперь ставит флаг вместо прямого изменения state
 func _on_work_ended():
 	if current_state == State.HOME or current_state == State.GOING_HOME:
 		return
@@ -592,7 +628,6 @@ func _on_arrived_home():
 
 func _go_to_sleep_instant():
 	coffee_cup_holder.visible = false
-	
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
@@ -602,7 +637,7 @@ func _go_to_sleep_instant():
 	current_state = State.HOME
 	velocity = Vector2.ZERO
 
-# --- ВИЗУАЛ ---
+# --- ВИЗУАЛ И ИНТЕРФЕЙС ---
 func start_breathing_animation():
 	if not body_sprite: return
 	var tween = create_tween()
@@ -614,42 +649,117 @@ func start_breathing_animation():
 func setup_employee(new_data: EmployeeData):
 	data = new_data
 	data.current_energy = 100.0
+	_assign_random_color()
 	update_visuals()
 	_setup_early_bird()
 
 func update_visuals():
 	if not body_sprite: return
-	if data.job_title == "Backend Developer":
-		body_sprite.self_modulate = Color(0.4, 0.4, 1.0)
-	elif data.job_title == "Business Analyst":
-		body_sprite.self_modulate = Color(1.0, 0.4, 0.4)
-	elif data.job_title == "QA Engineer":
-		body_sprite.self_modulate = Color(0.4, 1.0, 0.4)
-	else:
-		body_sprite.self_modulate = Color.WHITE
+	body_sprite.self_modulate = personal_color
 
 func interact():
 	var hud = get_tree().get_first_node_in_group("ui")
 	if hud and data:
 		hud.show_employee_card(data)
 
-func update_debug_label():
+# --- ПЕРЕВОД СОСТОЯНИЙ В ЧЕЛОВЕЧЕСКИЙ ТЕКСТ ---
+func get_human_state_name() -> String:
+	match current_state:
+		State.IDLE: return "ждёт задачу"
+		State.MOVING: return "идёт к столу"
+		State.WORKING:
+			if data.employee_name == "Лера": return "отвечает тикеты..."
+			elif data.job_title == "Backend Developer": return "пишет код..."
+			elif data.job_title == "Business Analyst": return "составляет ТЗ..."
+			elif data.job_title == "QA Engineer": return "ищет баги..."
+			return "работает..."
+		State.GOING_HOME: return "идёт домой"
+		State.HOME: return "дома"
+		State.GOING_COFFEE: return "идёт за кофе"
+		State.COFFEE_BREAK: return "пьёт кофе"
+		State.GOING_TOILET: return "идёт в туалет"
+		State.TOILET_BREAK: return "в туалете"
+		State.WANDERING: return "слоняется без дела"
+		State.WANDER_PAUSE: return "задумался..."
+	return "..."
+
+func update_status_label():
 	if debug_label and data:
-		var state_name = State.keys()[current_state]
-		var energy_str = "%d%%" % int(data.current_energy)
-		var eff_str = "x%.1f" % data.get_efficiency_multiplier()
-		
-		debug_label.text = "%s\nEn: %s (%s)" % [state_name, energy_str, eff_str]
-		
-		match current_state:
-			State.IDLE: debug_label.modulate = Color.WHITE
-			State.MOVING: debug_label.modulate = Color.YELLOW
-			State.WORKING: debug_label.modulate = Color.GREEN
-			State.GOING_HOME: debug_label.modulate = Color.ORANGE
-			State.HOME: debug_label.modulate = Color.GRAY
-			State.GOING_COFFEE: debug_label.modulate = Color.AQUA
-			State.COFFEE_BREAK: debug_label.modulate = Color.SKY_BLUE
-			State.GOING_TOILET: debug_label.modulate = Color.DEEP_PINK
-			State.TOILET_BREAK: debug_label.modulate = Color.MEDIUM_PURPLE
-			State.WANDERING: debug_label.modulate = Color.SANDY_BROWN
-			State.WANDER_PAUSE: debug_label.modulate = Color.TAN
+		var action_text = get_human_state_name()
+		debug_label.text = data.employee_name + "\n" + action_text
+
+# --- СИСТЕМА МЫСЛЕЙ (THOUGHT BUBBLES: EMOJI) ---
+func _show_random_work_thought():
+	var emoji = "💼"
+	if data:
+		if data.employee_name == "Лера": emoji = "☎️"
+		elif data.job_title == "Backend Developer": emoji = "💻" 
+		elif data.job_title == "Business Analyst": emoji = "📝" 
+		elif data.job_title == "QA Engineer": emoji = "🐞" 
+	
+	# Вызываем рабочую мысль на короткое время (3 секунды)
+	show_thought_bubble(emoji, 3.0)
+
+# Теперь функция принимает строку с эмодзи и опциональное время жизни (по умолчанию 9 сек)
+# Теперь функция принимает строку с эмодзи и опциональное время жизни (по умолчанию 9 сек)
+func show_thought_bubble(emoji_text: String, duration: float = 9.0):
+	if is_instance_valid(current_bubble):
+		current_bubble.queue_free()
+
+	current_bubble = Node2D.new()
+	add_child(current_bubble)
+
+	current_bubble.position = Vector2(0, -210)
+	current_bubble.z_index = 100 
+
+	var panel = Panel.new()
+	current_bubble.add_child(panel)
+	
+	# ЖЕСТКО фиксируем размер, чтобы панель была идеальным квадратом
+	panel.custom_minimum_size = Vector2(72, 72)
+	panel.size = Vector2(72, 72)
+	# Центрируем панель относительно Node2D (-36 это ровно половина от 72)
+	panel.position = Vector2(-36, -36) 
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 1.0, 1.0, 1.0) 
+	style.border_width_bottom = 2
+	style.border_width_top = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_color = Color(0.2, 0.2, 0.2, 1.0) 
+	style.corner_radius_bottom_left = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.shadow_color = Color(0, 0, 0, 0.1) 
+	style.shadow_size = 4
+	panel.add_theme_stylebox_override("panel", style)
+
+	# Создаем Label
+	var label = Label.new()
+	panel.add_child(label)
+	
+	# ЖЕСТКО привязываем размеры Label к размерам панели
+	label.custom_minimum_size = Vector2(72, 72)
+	label.size = Vector2(72, 72)
+	label.position = Vector2.ZERO # Начинаем отрисовку ровно в левом верхнем углу панели
+	
+	label.text = emoji_text
+	
+	# Настройки центрирования самого текста внутри Label
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	var label_settings = LabelSettings.new()
+	label_settings.font_size = 42
+	label.label_settings = label_settings
+
+	current_bubble.scale = Vector2.ZERO
+	var tween = create_tween()
+	
+	tween.tween_property(current_bubble, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(duration)
+	tween.tween_property(current_bubble, "modulate:a", 0.0, 0.5)
+	tween.parallel().tween_property(current_bubble, "position:y", current_bubble.position.y - 30, 0.5)
+	tween.tween_callback(current_bubble.queue_free)
