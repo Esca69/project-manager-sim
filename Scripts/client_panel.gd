@@ -22,6 +22,8 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	z_index = 90
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_ui()
 
 func open():
@@ -37,7 +39,7 @@ func close():
 	else:
 		visible = false
 
-# === ПОСТРОЕНИЕ КАРКАСА ===
+# === ПОСТРОЕН��Е КАРКАСА ===
 func _build_ui():
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0.45)
@@ -50,7 +52,7 @@ func _build_ui():
 	add_child(center)
 
 	_window = PanelContainer.new()
-	_window.custom_minimum_size = Vector2(750, 600)
+	_window.custom_minimum_size = Vector2(900, 700)
 	var window_style = StyleBoxFlat.new()
 	window_style.bg_color = COLOR_WHITE
 	window_style.border_width_left = 3
@@ -82,28 +84,28 @@ func _build_ui():
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	var header_margin = MarginContainer.new()
-	header_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	header_margin.add_theme_constant_override("margin_left", 20)
-	header_margin.add_theme_constant_override("margin_right", 10)
-	header_panel.add_child(header_margin)
-
-	var header_hbox = HBoxContainer.new()
-	header_margin.add_child(header_hbox)
-
+	# Заголовок по центру (как в DaySummary)
 	var title_label = Label.new()
 	title_label.text = "🤝 Заказчики"
-	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_label.add_theme_color_override("font_color", COLOR_WHITE)
-	title_label.add_theme_font_size_override("font_size", 17)
+	title_label.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(title_label, "bold")
-	header_hbox.add_child(title_label)
+	header_panel.add_child(title_label)
 
+	# Кнопка закрытия — прижата к правому краю через anchor
 	_close_btn = Button.new()
 	_close_btn.text = "✕"
 	_close_btn.custom_minimum_size = Vector2(40, 36)
 	_close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_close_btn.position.x = -50
+	_close_btn.position.y = 0
+
 	var close_style = StyleBoxFlat.new()
 	close_style.bg_color = Color(1, 1, 1, 0.15)
 	close_style.corner_radius_top_left = 10
@@ -120,7 +122,7 @@ func _build_ui():
 	_close_btn.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(_close_btn, "bold")
 	_close_btn.pressed.connect(close)
-	header_hbox.add_child(_close_btn)
+	header_panel.add_child(_close_btn)
 
 	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
@@ -249,7 +251,6 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 		pbar.custom_minimum_size = Vector2(300, 18)
 		pbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-		# Стиль фона
 		var bg_style = StyleBoxFlat.new()
 		bg_style.bg_color = Color(0.92, 0.92, 0.92, 1)
 		bg_style.corner_radius_top_left = 9
@@ -258,7 +259,6 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 		bg_style.corner_radius_bottom_left = 9
 		pbar.add_theme_stylebox_override("background", bg_style)
 
-		# Стиль заполнения
 		var fill_style = StyleBoxFlat.new()
 		fill_style.bg_color = COLOR_LOYALTY
 		fill_style.corner_radius_top_left = 9

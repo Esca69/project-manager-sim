@@ -80,6 +80,11 @@ func _ready():
 	# XP за проекты
 	ProjectManager.project_finished.connect(_on_project_finished_xp)
 
+# === FIX 1: Метод open_boss_menu, который вызывается из boss_desk.gd ===
+func open_boss_menu():
+	selection_ui.open_selection()
+	project_list_menu.open_menu()
+
 func _on_bottom_tab_pressed(tab_name: String):
 	match tab_name:
 		"employees":
@@ -136,16 +141,24 @@ func _on_new_day(day_number):
 	pass
 
 # === PM LEVEL UI ===
+# FIX 2: Вставляем PM-UI ПЕРЕД SpeedControls, а не после (в конец),
+# чтобы порядок был: TimeLabel | BalanceLabel | PM Lv | ... | SpeedControls
 func _build_pm_level_ui():
 	var topbar_hbox = $TopBar/MarginContainer/HBoxContainer
+	var speed_controls = $TopBar/MarginContainer/HBoxContainer/SpeedControls
 
+	# Спейсер — толкает PM-блок и SpeedControls вправо
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	topbar_hbox.add_child(spacer)
+	# Перемещаем спейсер ПЕРЕД SpeedControls
+	topbar_hbox.move_child(spacer, speed_controls.get_index())
 
 	var pm_hbox = HBoxContainer.new()
 	pm_hbox.add_theme_constant_override("separation", 8)
 	topbar_hbox.add_child(pm_hbox)
+	# Перемещаем PM-блок ПЕРЕД SpeedControls (SpeedControls сдвигается на +1)
+	topbar_hbox.move_child(pm_hbox, speed_controls.get_index())
 
 	_pm_level_label = Label.new()
 	_pm_level_label.text = "PM Lv.1"

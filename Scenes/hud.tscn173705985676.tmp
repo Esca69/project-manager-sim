@@ -1,0 +1,166 @@
+[gd_scene load_steps=14 format=3 uid="uid://l6ojv8bflski"]
+
+[ext_resource type="Script" uid="uid://ds4gl2e7xqwwc" path="res://Scripts/hud.gd" id="1_e0onf"]
+[ext_resource type="PackedScene" uid="uid://cmx8w5rc3w3uv" path="res://Scenes/PMSkillTree.tscn" id="2_4f5kr"]
+[ext_resource type="Script" uid="uid://dkjxe22ou16fk" path="res://Scripts/speed_controls.gd" id="2_8jye8"]
+[ext_resource type="PackedScene" uid="uid://ciautqikan3tu" path="res://Scenes/project_window.tscn" id="2_fccik"]
+[ext_resource type="PackedScene" uid="uid://cm0p2pu0821ay" path="res://Scenes/HiringMenu.tscn" id="2_t1xeu"]
+[ext_resource type="PackedScene" uid="uid://ydl7ldgl5qyc" path="res://Scenes/employee_selector.tscn" id="3_bjfho"]
+[ext_resource type="PackedScene" uid="uid://dum7oe0xx61nt" path="res://Scenes/ProjectSelectionUI.tscn" id="4_6fbih"]
+[ext_resource type="PackedScene" uid="uid://c7cwh26kidn2f" path="res://Scenes/AssignmentMenu.tscn" id="6_36asn"]
+[ext_resource type="PackedScene" uid="uid://dpu8813cqsnr0" path="res://Scenes/ProjectListMenu.tscn" id="8_43w4t"]
+[ext_resource type="PackedScene" uid="uid://cx2at243shh3h" path="res://Scenes/BottomBar.tscn" id="9_bb"]
+[ext_resource type="PackedScene" uid="uid://cf6wcb3dk1vlr" path="res://Scenes/EmployeeRoster.tscn" id="10_er"]
+[ext_resource type="Script" uid="uid://csg0otorphri4" path="res://Scripts/client_panel.gd" id="12_piegi"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jye8"]
+bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+
+[node name="HUD" type="CanvasLayer" groups=["ui"]]
+script = ExtResource("1_e0onf")
+
+[node name="TopBar" type="PanelContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8jye8")
+
+[node name="MarginContainer" type="MarginContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TopBar/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TimeLabel" type="Label" parent="TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "День 1, 08:00"
+
+[node name="BalanceLabel" type="Label" parent="TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "10000 $"
+
+[node name="Spacer" type="Control" parent="TopBar/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="SpeedControls" type="HBoxContainer" parent="TopBar/MarginContainer/HBoxContainer"]
+process_mode = 3
+layout_mode = 2
+script = ExtResource("2_8jye8")
+
+[node name="PauseBtn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "0х"
+
+[node name="Speed1Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "1х"
+
+[node name="Speed2Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "2х"
+
+[node name="Speed5Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "5х"
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -144.5
+offset_top = -228.5
+offset_right = 144.5
+offset_bottom = 228.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NameLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Имя: "
+
+[node name="RoleLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Роль:"
+
+[node name="SalaryLabel" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Зарплата:"
+
+[node name="Button" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+text = "Закрыть"
+
+[node name="ProjectWindow" parent="." instance=ExtResource("2_fccik")]
+visible = false
+track_scene = null
+
+[node name="EmployeeSelector" parent="." instance=ExtResource("3_bjfho")]
+visible = false
+
+[node name="ProjectSelectionUI" parent="." instance=ExtResource("4_6fbih")]
+visible = false
+
+[node name="HiringMenu" parent="." instance=ExtResource("2_t1xeu")]
+visible = false
+
+[node name="AssignmentMenu" parent="." instance=ExtResource("6_36asn")]
+visible = false
+
+[node name="EndDayButton" type="Button" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -69.5
+offset_top = -81.0
+offset_right = 69.5
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 8
+text = "Закончить день"
+
+[node name="ProjectListMenu" parent="." instance=ExtResource("8_43w4t")]
+
+[node name="EmployeeRoster" parent="." instance=ExtResource("10_er")]
+visible = false
+
+[node name="PMSkillTree" parent="." instance=ExtResource("2_4f5kr")]
+
+[node name="BottomBar" parent="." instance=ExtResource("9_bb")]
+
+[node name="ClientPanel" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("12_piegi")
+
+[connection signal="pressed" from="Panel/VBoxContainer/Button" to="." method="_on_close_button_pressed"]
