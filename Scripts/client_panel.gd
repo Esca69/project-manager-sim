@@ -11,6 +11,8 @@ const COLOR_WHITE = Color(1, 1, 1, 1)
 const COLOR_BORDER = Color(0.8784314, 0.8784314, 0.8784314, 1)
 const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 const COLOR_LOYALTY = Color(0.85, 0.2, 0.45, 1)
+const COLOR_GOLD = Color(0.85, 0.65, 0.13, 1)
+const COLOR_UNLOCK = Color(0.2, 0.5, 0.85, 1)
 
 var _overlay: ColorRect
 var _window: PanelContainer
@@ -212,8 +214,9 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	top_hbox.add_child(name_lbl)
 
+	var loyalty_level = client.get_loyalty_level()
 	var loyalty_lbl = Label.new()
-	loyalty_lbl.text = "❤ %d очков" % client.loyalty
+	loyalty_lbl.text = "❤ %d очков  (ур. %d)" % [client.loyalty, loyalty_level]
 	loyalty_lbl.add_theme_color_override("font_color", COLOR_LOYALTY)
 	loyalty_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(loyalty_lbl, "bold")
@@ -237,64 +240,104 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	_add_stat_label(stats_hbox, "⚠ Просрочка софт: %d" % client.projects_completed_late, COLOR_ORANGE)
 	_add_stat_label(stats_hbox, "❌ Провал: %d" % client.projects_failed, COLOR_RED)
 
-	# === СТРОКА 4: Бонус ===
+	# === СТРОКА 4: Текущие бонусы ===
 	var bonus_percent = client.get_budget_bonus_percent()
-	var next_info = client.get_next_bonus_threshold()
-	var next_threshold = next_info[0]
-	var next_bonus = next_info[1]
+	var unlocked_types = client.get_unlocked_project_types()
 
 	var bonus_hbox = HBoxContainer.new()
-	bonus_hbox.add_theme_constant_override("separation", 12)
+	bonus_hbox.add_theme_constant_override("separation", 20)
 	card_vbox.add_child(bonus_hbox)
 
 	var bonus_lbl = Label.new()
-	bonus_lbl.text = "💰 Бонус к бюджету: +%d%%" % bonus_percent
+	bonus_lbl.text = "💰 Бюджет: +%d%%" % bonus_percent
 	bonus_lbl.add_theme_color_override("font_color", COLOR_GREEN if bonus_percent > 0 else COLOR_DARK)
 	bonus_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(bonus_lbl, "semibold")
 	bonus_hbox.add_child(bonus_lbl)
 
-	# === СТРОКА 5: Прогресс до следующего порога ===
-	if next_threshold > 0:
-		var progress_hbox = HBoxContainer.new()
-		progress_hbox.add_theme_constant_override("separation", 8)
-		card_vbox.add_child(progress_hbox)
+	var types_lbl = Label.new()
+	var types_text = "📋 Проекты: " + ", ".join(unlocked_types).to_upper()
+	types_lbl.text = types_text
+	types_lbl.add_theme_color_override("font_color", COLOR_UNLOCK)
+	types_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(types_lbl, "semibold")
+	bonus_hbox.add_child(types_lbl)
 
+	# === СТРОКА 5: Прогресс-бар на ВСЮ шкалу с метками уровней ===
+	var next_info = client.get_next_level_info()
+
+	if not next_info.is_empty():
+		# Есть следующий уровень — показываем полную шкалу
+		var progress_vbox = VBoxContainer.new()
+		progress_vbox.add_theme_constant_override("separation", 4)
+		card_vbox.add_child(progress_vbox)
+
+		# Прогресс-бар от 0 до MAX_LOYALTY
 		var pbar = ProgressBar.new()
 		pbar.min_value = 0
-		pbar.max_value = next_threshold
+		pbar.max_value = ClientData.MAX_LOYALTY
 		pbar.value = client.loyalty
 		pbar.show_percentage = false
-		pbar.custom_minimum_size = Vector2(300, 18)
+		pbar.custom_minimum_size = Vector2(300, 20)
 		pbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var bg_style = StyleBoxFlat.new()
 		bg_style.bg_color = Color(0.92, 0.92, 0.92, 1)
-		bg_style.corner_radius_top_left = 9
-		bg_style.corner_radius_top_right = 9
-		bg_style.corner_radius_bottom_right = 9
-		bg_style.corner_radius_bottom_left = 9
+		bg_style.corner_radius_top_left = 10
+		bg_style.corner_radius_top_right = 10
+		bg_style.corner_radius_bottom_right = 10
+		bg_style.corner_radius_bottom_left = 10
 		pbar.add_theme_stylebox_override("background", bg_style)
 
 		var fill_style = StyleBoxFlat.new()
 		fill_style.bg_color = COLOR_LOYALTY
-		fill_style.corner_radius_top_left = 9
-		fill_style.corner_radius_top_right = 9
-		fill_style.corner_radius_bottom_right = 9
-		fill_style.corner_radius_bottom_left = 9
+		fill_style.corner_radius_top_left = 10
+		fill_style.corner_radius_top_right = 10
+		fill_style.corner_radius_bottom_right = 10
+		fill_style.corner_radius_bottom_left = 10
 		pbar.add_theme_stylebox_override("fill", fill_style)
 
-		progress_hbox.add_child(pbar)
+		progress_vbox.add_child(pbar)
 
-		var progress_text = Label.new()
-		progress_text.text = "%d / %d  до +%d%%" % [client.loyalty, next_threshold, next_bonus]
-		progress_text.add_theme_color_override("font_color", COLOR_GRAY)
-		progress_text.add_theme_font_size_override("font_size", 12)
-		if UITheme: UITheme.apply_font(progress_text, "regular")
-		progress_hbox.add_child(progress_text)
+		# Метки уровней под прогресс-баром
+		var marks_hbox = HBoxContainer.new()
+		marks_hbox.add_theme_constant_override("separation", 8)
+		progress_vbox.add_child(marks_hbox)
+
+		for i in range(ClientData.LOYALTY_LEVELS.size()):
+			var level = ClientData.LOYALTY_LEVELS[i]
+			var threshold = level["threshold"]
+			if threshold == 0:
+				continue  # Пропускаем нулевой уровень
+
+			var mark_lbl = Label.new()
+			var is_reached = client.loyalty >= threshold
+			var icon = "✅" if is_reached else "⬜"
+			mark_lbl.text = "%s %d: %s" % [icon, threshold, level["label"]]
+			mark_lbl.add_theme_font_size_override("font_size", 11)
+
+			if is_reached:
+				mark_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+			else:
+				mark_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+
+			if UITheme: UITheme.apply_font(mark_lbl, "regular")
+			marks_hbox.add_child(mark_lbl)
+
+		# Текст: сколько до следующего уровня
+		var next_threshold = next_info["threshold"]
+		var remaining = next_threshold - client.loyalty
+		var next_text_lbl = Label.new()
+		next_text_lbl.text = "⏭ До следующего: %d / %d  (%s)" % [client.loyalty, next_threshold, next_info["label"]]
+		next_text_lbl.add_theme_color_override("font_color", COLOR_DARK)
+		next_text_lbl.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(next_text_lbl, "semibold")
+		progress_vbox.add_child(next_text_lbl)
+
 	else:
+		# Максимальный уровень
 		var max_lbl = Label.new()
-		max_lbl.text = "🏆 Максимальный уровень бонуса!"
+		max_lbl.text = "🏆 Максимальный уровень лояльности!"
 		max_lbl.add_theme_color_override("font_color", COLOR_GREEN)
 		max_lbl.add_theme_font_size_override("font_size", 13)
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")

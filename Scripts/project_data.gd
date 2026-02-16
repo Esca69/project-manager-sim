@@ -4,7 +4,7 @@ class_name ProjectData
 @export var title: String = "Проект"
 
 # --- КАТЕГОРИЯ ---
-# "micro" = самый простой (1-2 этапа), "simple" = очень простой (BA→DEV→QA)
+# "micro" = 1 этап, "simple" = 2 этапа, "easy" = 3 этапа (BA→DEV→QA)
 @export var category: String = "simple"
 
 # --- КЛИЕНТ ---
@@ -45,7 +45,7 @@ func get_final_payout(finish_day: int) -> int:
 func is_finished_on_time(finish_day: int) -> bool:
 	return finish_day <= soft_deadline_day
 
-# Получить данные клиента
+# Получить ��анные клиента
 func get_client():
 	if client_id == "":
 		return null
@@ -59,3 +59,11 @@ func get_client_display_name() -> String:
 	if client:
 		return client.get_display_name()
 	return "Неизвестный клиент"
+
+# Метка категории для UI
+func get_category_label() -> String:
+	match category:
+		"micro": return "[MICRO]"
+		"simple": return "[SIMPLE]"
+		"easy": return "[EASY]"
+	return "[???]"

@@ -2,19 +2,22 @@ extends Control
 
 signal project_selected(data: ProjectData)
 
-@onready var card1 = %Card1
-@onready var card2 = %Card2
-@onready var card3 = %Card3
-
 @onready var close_btn = find_child("CloseButton", true, false)
 
-@onready var cards = [card1, card2, card3]
+# Контейнер из сцены — мы заменим его содержимое
+@onready var cards_margin = $Window/MainVBox/CardsMargin
 
 var current_options = []
 var _generated_for_week: int = -1
 
 var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
+var _btn_style: StyleBoxFlat
+var _btn_style_hover: StyleBoxFlat
+
+# Динамические элементы
+var _scroll: ScrollContainer
+var _cards_container: VBoxContainer
 
 func _ready():
 	visible = false
@@ -22,22 +25,61 @@ func _ready():
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)
 
+	_btn_style = StyleBoxFlat.new()
+	_btn_style.bg_color = Color(1, 1, 1, 1)
+	_btn_style.border_width_left = 2
+	_btn_style.border_width_top = 2
+	_btn_style.border_width_right = 2
+	_btn_style.border_width_bottom = 2
+	_btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	_btn_style.corner_radius_top_left = 20
+	_btn_style.corner_radius_top_right = 20
+	_btn_style.corner_radius_bottom_right = 20
+	_btn_style.corner_radius_bottom_left = 20
+
+	_btn_style_hover = StyleBoxFlat.new()
+	_btn_style_hover.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	_btn_style_hover.border_width_left = 2
+	_btn_style_hover.border_width_top = 2
+	_btn_style_hover.border_width_right = 2
+	_btn_style_hover.border_width_bottom = 2
+	_btn_style_hover.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	_btn_style_hover.corner_radius_top_left = 20
+	_btn_style_hover.corner_radius_top_right = 20
+	_btn_style_hover.corner_radius_bottom_right = 20
+	_btn_style_hover.corner_radius_bottom_left = 20
+
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
-	else:
-		print("ОШИБКА: Не найдена кнопка CloseButton!")
 
-	for i in range(cards.size()):
-		var card = cards[i]
-		var btn = find_node_by_name(card, "SelectButton")
+	# Заменяем старый CardsContainer (с Card1/2/3) на ScrollContainer
+	call_deferred("_setup_scroll_container")
 
-		if btn:
-			if not btn.is_connected("pressed", _on_select_pressed):
-				btn.pressed.connect(_on_select_pressed.bind(i))
-			if UITheme: UITheme.apply_font(btn, "semibold")
-		else:
-			print("ОШИБКА: Не найдена SelectButton в карточке ", i)
+func _setup_scroll_container():
+	if cards_margin == null:
+		print("ОШИБКА: cards_margin не найден!")
+		return
+
+	# Удаляем ВСЕ дочерние ноды CardsMargin (старый CardsContainer с Card1/2/3)
+	for child in cards_margin.get_children():
+		cards_margin.remove_child(child)
+		child.queue_free()
+
+	# Создаём ScrollContainer (как в employee_roster)
+	_scroll = ScrollContainer.new()
+	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.clip_contents = true
+	cards_margin.add_child(_scroll)
+
+	# Внутри — VBoxContainer для карточек
+	_cards_container = VBoxContainer.new()
+	_cards_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_cards_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_cards_container.add_theme_constant_override("separation", 15)
+	_scroll.add_child(_cards_container)
 
 func _make_card_style(hover: bool) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
@@ -71,7 +113,7 @@ func open_selection():
 		generate_new_projects()
 		_generated_for_week = current_week
 
-	update_ui()
+	_rebuild_cards()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
@@ -86,110 +128,182 @@ func _on_close_pressed():
 func _get_current_week() -> int:
 	return ((GameTime.day - 1) / GameTime.DAYS_IN_WEEK) + 1
 
+func _get_project_count() -> int:
+	# Безопасно проверяем, есть ли метод get_weekly_project_count в ClientManager
+	if ClientManager.has_method("get_weekly_project_count"):
+		return ClientManager.get_weekly_project_count()
+	# Fallback: базовое количество 4
+	return 4
+
 func generate_new_projects():
 	current_options.clear()
-	for i in range(3):
+	var count = _get_project_count()
+	for i in range(count):
 		var proj = ProjectGenerator.generate_random_project(GameTime.day)
 		current_options.append(proj)
 
-func _on_card_hover_enter(card: PanelContainer):
-	card.add_theme_stylebox_override("panel", _card_style_hover)
+# === ПОЛНАЯ ПЕРЕСТРОЙКА КАРТОЧЕК ===
+func _rebuild_cards():
+	if _cards_container == null:
+		print("ОШИБКА: _cards_container ещё не создан!")
+		return
 
-func _on_card_hover_exit(card: PanelContainer):
+	# Очищаем старые карточки
+	for child in _cards_container.get_children():
+		_cards_container.remove_child(child)
+		child.queue_free()
+
+	# Создаём карточку для каждого не-null проекта
+	var has_any = false
+	for i in range(current_options.size()):
+		if current_options[i] == null:
+			continue
+		has_any = true
+		var card = _create_card(current_options[i], i)
+		_cards_container.add_child(card)
+
+	if not has_any:
+		var empty_lbl = Label.new()
+		empty_lbl.text = "Все проекты на этой неделе выбраны!"
+		empty_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		if UITheme: UITheme.apply_font(empty_lbl, "semibold")
+		_cards_container.add_child(empty_lbl)
+
+	# Скролл наверх
+	if _scroll:
+		_scroll.scroll_vertical = 0
+
+# === СОЗДАНИЕ ОДНОЙ КАРТОЧКИ ===
+func _create_card(data: ProjectData, index: int) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_theme_stylebox_override("panel", _card_style_normal)
 
-func update_ui():
-	for i in range(3):
-		var card = cards[i]
-		var data = current_options[i]
+	# Hover
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.mouse_entered.connect(func():
+		card.add_theme_stylebox_override("panel", _card_style_hover)
+	)
+	card.mouse_exited.connect(func():
+		card.add_theme_stylebox_override("panel", _card_style_normal)
+	)
 
-		var name_lbl = find_node_by_name(card, "NameLabel")
-		var work_lbl = find_node_by_name(card, "WorkLabel")
-		var budget_lbl = find_node_by_name(card, "BudgetLabel")
-		var soft_lbl = find_node_by_name(card, "SoftDeadlineLabel")
-		var hard_lbl = find_node_by_name(card, "HardDeadlineLabel")
-		var btn = find_node_by_name(card, "SelectButton")
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_top", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_bottom", 15)
+	card.add_child(margin)
 
-		if data != null:
-			card.visible = true
-			card.modulate = Color.WHITE
-			if btn: btn.disabled = false
+	var card_vbox = VBoxContainer.new()
+	card_vbox.add_theme_constant_override("separation", 5)
+	margin.add_child(card_vbox)
 
-			# Hover
-			if card is PanelContainer:
-				card.add_theme_stylebox_override("panel", _card_style_normal)
-				card.mouse_filter = Control.MOUSE_FILTER_STOP
-				if card.mouse_entered.is_connected(_on_card_hover_enter):
-					card.mouse_entered.disconnect(_on_card_hover_enter)
-				if card.mouse_exited.is_connected(_on_card_hover_exit):
-					card.mouse_exited.disconnect(_on_card_hover_exit)
-				card.mouse_entered.connect(_on_card_hover_enter.bind(card))
-				card.mouse_exited.connect(_on_card_hover_exit.bind(card))
+	var top_hbox = HBoxContainer.new()
+	card_vbox.add_child(top_hbox)
 
-			# Клиент + категория
-			var cat_label = "[MICRO]" if data.category == "micro" else "[SIMPLE]"
-			var client_text = ""
-			if data.client_id != "":
-				var client = data.get_client()
-				if client:
-					client_text = client.emoji + " " + client.client_name + "  —  "
-			if name_lbl:
-				name_lbl.text = client_text + cat_label + " " + data.title
-				if UITheme: UITheme.apply_font(name_lbl, "bold")
+	var left_info = VBoxContainer.new()
+	top_hbox.add_child(left_info)
 
-			if work_lbl:
-				var parts = []
-				for stage in data.stages:
-					parts.append(stage.type + " " + PMData.get_blurred_work(stage.amount))
-				work_lbl.text = "Работы:  " + "    ".join(parts)
-				if UITheme: UITheme.apply_font(work_lbl, "regular")
+	# Клиент + категория + название
+	var cat_label = "[MICRO]" if data.category == "micro" else "[SIMPLE]"
+	if data.has_method("get_category_label"):
+		cat_label = data.get_category_label()
 
-			if budget_lbl:
-				var budget_text = "Бюджет " + PMData.get_blurred_budget(data.budget)
-				# Показываем бонус лояльности если есть
-				if data.client_id != "":
-					var client = data.get_client()
-					if client and client.get_budget_bonus_percent() > 0:
-						budget_text += "  (❤+%d%%)" % client.get_budget_bonus_percent()
-				budget_lbl.text = budget_text
-				if UITheme: UITheme.apply_font(budget_lbl, "bold")
+	var client_text = ""
+	if data.client_id != "":
+		var client = data.get_client()
+		if client:
+			client_text = client.emoji + " " + client.client_name + "  —  "
 
-			var soft_days = data.soft_deadline_day - GameTime.day
-			var hard_days = data.deadline_day - GameTime.day
+	var name_lbl = Label.new()
+	name_lbl.text = client_text + cat_label + " " + data.title
+	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	if UITheme: UITheme.apply_font(name_lbl, "bold")
+	left_info.add_child(name_lbl)
 
-			if soft_lbl:
-				soft_lbl.text = "Софт: %d дн. (штраф -%d%%)" % [soft_days, data.soft_deadline_penalty_percent]
-				if UITheme: UITheme.apply_font(soft_lbl, "regular")
-			if hard_lbl:
-				hard_lbl.text = "Хард: %d дн. (провал = $0)" % hard_days
-				if UITheme: UITheme.apply_font(hard_lbl, "semibold")
+	# Работы
+	var work_lbl = Label.new()
+	var parts = []
+	for stage in data.stages:
+		parts.append(stage.type + " " + PMData.get_blurred_work(stage.amount))
+	work_lbl.text = "Работы:  " + "    ".join(parts)
+	work_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	if UITheme: UITheme.apply_font(work_lbl, "regular")
+	left_info.add_child(work_lbl)
 
-			call_deferred("_set_children_pass_filter", card)
+	# Spacer
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_hbox.add_child(spacer)
 
-		else:
-			card.visible = false
+	# Правая часть: бюджет + кнопка
+	var right_info = VBoxContainer.new()
+	top_hbox.add_child(right_info)
 
-func _on_select_pressed(index):
+	var budget_lbl = Label.new()
+	var budget_text = "Бюджет " + PMData.get_blurred_budget(data.budget)
+	if data.client_id != "":
+		var client = data.get_client()
+		if client and client.get_budget_bonus_percent() > 0:
+			budget_text += "  (❤+%d%%)" % client.get_budget_bonus_percent()
+	budget_lbl.text = budget_text
+	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
+	budget_lbl.add_theme_font_size_override("font_size", 20)
+	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if UITheme: UITheme.apply_font(budget_lbl, "bold")
+	right_info.add_child(budget_lbl)
+
+	var select_btn = Button.new()
+	select_btn.text = "Выбрать"
+	select_btn.custom_minimum_size = Vector2(180, 40)
+	select_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	select_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	select_btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
+	select_btn.add_theme_stylebox_override("normal", _btn_style)
+	select_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+	select_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+	if UITheme: UITheme.apply_font(select_btn, "semibold")
+	select_btn.pressed.connect(_on_select_pressed.bind(index))
+	right_info.add_child(select_btn)
+
+	# Дедлайны
+	var deadlines_hbox = HBoxContainer.new()
+	deadlines_hbox.add_theme_constant_override("separation", 40)
+	card_vbox.add_child(deadlines_hbox)
+
+	var soft_days = data.soft_deadline_day - GameTime.day
+	var hard_days = data.deadline_day - GameTime.day
+
+	var soft_lbl = Label.new()
+	soft_lbl.text = "Софт: %d дн. (штраф -%d%%)" % [soft_days, data.soft_deadline_penalty_percent]
+	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
+	if UITheme: UITheme.apply_font(soft_lbl, "regular")
+	deadlines_hbox.add_child(soft_lbl)
+
+	var hard_lbl = Label.new()
+	hard_lbl.text = "Хард: %d дн. (провал = $0)" % hard_days
+	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
+	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
+	deadlines_hbox.add_child(hard_lbl)
+
+	call_deferred("_set_children_pass_filter", card)
+
+	return card
+
+func _on_select_pressed(index: int):
+	if index < 0 or index >= current_options.size():
+		return
 	var selected = current_options[index]
-	if selected == null: return
+	if selected == null:
+		return
 
 	print("Выбран проект: ", selected.title)
 	emit_signal("project_selected", selected)
 
+	# Убираем проект из списка
 	current_options[index] = null
 
-	# Анимация исчезновения карточки
-	var card = cards[index]
-	var tw = card.create_tween()
-	tw.tween_property(card, "modulate:a", 0.0, 0.25).set_ease(Tween.EASE_IN)
-	tw.tween_callback(func():
-		card.visible = false
-		card.modulate.a = 1.0
-	)
-
-func find_node_by_name(root, target_name):
-	if root.name == target_name: return root
-	for child in root.get_children():
-		var found = find_node_by_name(child, target_name)
-		if found: return found
-	return null
+	# Перестраиваем карточки (выбранная исчезнет)
+	_rebuild_cards()

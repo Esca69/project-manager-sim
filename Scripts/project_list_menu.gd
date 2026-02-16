@@ -170,7 +170,8 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
 
-	var cat_label = "[MICRO]" if proj.category == "micro" else "[SIMPLE]"
+	# === ИЗМЕНЕНИЕ: используем get_category_label() вместо хардкода ===
+	var cat_label = proj.get_category_label()
 	var client_prefix = ""
 	if proj.client_id != "":
 		var client = proj.get_client()

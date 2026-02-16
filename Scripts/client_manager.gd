@@ -47,3 +47,24 @@ func get_budget_bonus_for_client(client_id: String) -> float:
 	if client == null:
 		return 0.0
 	return float(client.get_budget_bonus_percent()) / 100.0
+
+# === СУММАРНАЯ ЛОЯЛЬНОСТЬ ВСЕХ КЛИЕНТОВ ===
+func get_total_loyalty() -> int:
+	var total = 0
+	for c in clients:
+		total += c.loyalty
+	return total
+
+# === ДИНАМИЧЕСКОЕ КОЛИЧЕСТВО ПРОЕКТОВ НА НЕДЕЛЮ ===
+func get_weekly_project_count() -> int:
+	var total = get_total_loyalty()
+	if total >= 50:
+		return 8
+	elif total >= 30:
+		return 7
+	elif total >= 15:
+		return 6
+	elif total >= 5:
+		return 5
+	else:
+		return 4

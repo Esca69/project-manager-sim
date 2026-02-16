@@ -13,28 +13,36 @@ const MARGIN_MULTIPLIER = 1.4
 
 # === ШАБЛОНЫ ПРОЕКТОВ ===
 
+# MICRO — 1 вид работ
 const MICRO_TEMPLATES = [
-	{ "name": "Фикс бага на сайте",            "stages": ["DEV"],        "difficulty": 1 },
-	{ "name": "Протестировать форму",           "stages": ["QA"],         "difficulty": 1 },
-	{ "name": "Составить ТЗ на лендинг",        "stages": ["BA"],         "difficulty": 1 },
-	{ "name": "Описать и сделать FAQ",          "stages": ["BA", "DEV"],  "difficulty": 1 },
-	{ "name": "Написать и протестить API",       "stages": ["DEV", "QA"],  "difficulty": 1 },
-	{ "name": "Поправить вёрстку письма",        "stages": ["DEV"],        "difficulty": 1 },
-	{ "name": "Тестирование авторизации",        "stages": ["QA"],         "difficulty": 1 },
-	{ "name": "Анализ конкурентов",              "stages": ["BA"],         "difficulty": 1 },
-	{ "name": "Описание + правка формы",         "stages": ["BA", "DEV"],  "difficulty": 1 },
-	{ "name": "Доработка + тест фильтров",       "stages": ["DEV", "QA"],  "difficulty": 1 },
+	{ "name": "Фикс бага на сайте",            "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "Протестировать форму",           "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "Составить ТЗ на лендинг",        "stages": ["BA"],   "difficulty": 1 },
+	{ "name": "Поправить вёрстку письма",        "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "Тестирование авторизации",        "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "Анализ конкурентов",              "stages": ["BA"],   "difficulty": 1 },
 ]
 
+# SIMPLE — 2 вида работ
 const SIMPLE_TEMPLATES = [
-	{ "name": "Лендинг пекарни",     "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "Сайт-визитка",        "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "CRM для такси",       "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "Модуль авторизации",   "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "Интернет-магазин",     "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "Портал заказов",       "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "Чат поддержки",        "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
-	{ "name": "Дашборд статистики",   "stages": ["BA", "DEV", "QA"], "difficulty": 2 },
+	{ "name": "Описать и сделать FAQ",          "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "Написать и протестить API",       "stages": ["DEV", "QA"], "difficulty": 2 },
+	{ "name": "Описание + правка формы",         "stages": ["BA", "DEV"], "difficulty": 2 },
+	{ "name": "Доработка + тест фильтров",       "stages": ["DEV", "QA"], "difficulty": 2 },
+	{ "name": "ТЗ + тестирование модуля",        "stages": ["BA", "QA"],  "difficulty": 2 },
+	{ "name": "Аналитика + разработка отчёта",   "stages": ["BA", "DEV"], "difficulty": 2 },
+]
+
+# EASY — 3 вида работ (полный цикл BA→DEV→QA)
+const EASY_TEMPLATES = [
+	{ "name": "Лендинг пекарни",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "Сайт-визитка",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "CRM для такси",       "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "Модуль авторизации",   "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "Интернет-магазин",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "Портал заказов",       "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "Чат поддержки",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "Дашборд статистики",   "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
 ]
 
 const WORK_UNITS = {
@@ -44,6 +52,11 @@ const WORK_UNITS = {
 		"QA":  [300, 700],
 	},
 	"simple": {
+		"BA":  [600, 1200],
+		"DEV": [1000, 2000],
+		"QA":  [500, 1000],
+	},
+	"easy": {
 		"BA":  [1000, 2000],
 		"DEV": [2000, 4000],
 		"QA":  [800, 1600],
@@ -56,33 +69,54 @@ const SOFT_PENALTIES = [10, 20, 30]
 const MIN_HARD_DEADLINE_DAYS = {
 	"micro": 3,
 	"simple": 5,
+	"easy": 8,
 }
 
-static func generate_random_project(current_game_day: int) -> ProjectData:
+# === ВЕСА ГЕНЕРАЦИИ ТИПОВ ПО ДОСТУПНЫМ КАТЕГОРИЯМ ===
+# Ключ = какие типы доступны (отсортированные через join), значение = {тип: вес}
+const TYPE_WEIGHTS = {
+	"micro": {"micro": 1.0},
+	"micro_simple": {"micro": 0.40, "simple": 0.60},
+	"simple_easy": {"simple": 0.55, "easy": 0.45},
+}
+
+static func generate_random_project(current_game_day: int, client: ClientData = null) -> ProjectData:
 	var new_proj = ProjectData.new()
 	new_proj.created_at_day = current_game_day
 	new_proj.state = new_proj.State.DRAFTING
 
-	# 0. Выбираем клиента
-	var client = ClientManager.get_random_client()
+	# 0. Клиент (может быть передан извне или выбран случайно)
+	if client == null:
+		client = ClientManager.get_random_client()
 	if client:
 		new_proj.client_id = client.client_id
 
-	# 1. Выбираем категорию (60% micro, 40% simple)
-	var category: String
+	# 1. Определяем доступ��ые типы проектов по лояльности клиента
+	var available_types: Array[String] = ["micro"]
+	if client:
+		available_types = client.get_unlocked_project_types()
+	if available_types.is_empty():
+		available_types = ["micro"]
+
+	# 2. Выбираем категорию по весам
+	var category = _pick_category_by_weights(available_types)
 	var template: Dictionary
 
-	if randf() < 0.60:
-		category = "micro"
-		template = MICRO_TEMPLATES.pick_random()
-	else:
-		category = "simple"
-		template = SIMPLE_TEMPLATES.pick_random()
+	match category:
+		"micro":
+			template = MICRO_TEMPLATES.pick_random()
+		"simple":
+			template = SIMPLE_TEMPLATES.pick_random()
+		"easy":
+			template = EASY_TEMPLATES.pick_random()
+		_:
+			category = "micro"
+			template = MICRO_TEMPLATES.pick_random()
 
 	new_proj.category = category
 	new_proj.title = template["name"]
 
-	# 2. Генерируем этапы
+	# 3. Генерируем этапы
 	var stage_types: Array = template["stages"]
 	new_proj.stages = []
 
@@ -109,11 +143,11 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 		total_ideal_hours += ideal_hours
 		total_estimated_cost += ideal_hours * HOURLY_RATE[stage_type]
 
-	# 3. Бюджет (базовый)
+	# 4. Бюджет (базовый)
 	var budget_raw = total_estimated_cost * MARGIN_MULTIPLIER
 	budget_raw *= randf_range(0.9, 1.1)
 
-	# 4. Применяем бонус лояльности клиента
+	# 5. Применяем бонус лояльности клиента
 	if client:
 		var bonus = client.get_budget_bonus_percent()
 		if bonus > 0:
@@ -121,10 +155,10 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 
 	new_proj.budget = int(round(budget_raw / 50.0)) * 50
 
-	# 5. Штраф за софт-дедлайн
+	# 6. Штраф за софт-дедлайн
 	new_proj.soft_deadline_penalty_percent = SOFT_PENALTIES.pick_random()
 
-	# 6. Хард-дедлайн
+	# 7. Хард-дедлайн
 	var ideal_days = total_ideal_hours / WORK_HOURS_PER_DAY
 	var buffer_coef = randf_range(1.3, 1.7)
 	var days_given = ceil(ideal_days * buffer_coef)
@@ -136,7 +170,7 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 
 	new_proj.deadline_day = current_game_day + int(days_given)
 
-	# 7. Софт-дедлайн
+	# 8. Софт-дедлайн
 	var soft_coef = randf_range(0.60, 0.75)
 	var soft_days = ceil(days_given * soft_coef)
 
@@ -149,3 +183,29 @@ static func generate_random_project(current_game_day: int) -> ProjectData:
 	new_proj.soft_deadline_day = current_game_day + int(soft_days)
 
 	return new_proj
+
+# === ВЫБОР КАТЕГОРИИ ПО ВЕСАМ ===
+static func _pick_category_by_weights(available_types: Array[String]) -> String:
+	# Определяем ключ весов
+	var key: String
+	if available_types.has("easy"):
+		# Уровень 4+: simple + easy (micro боль��е не выдаётся)
+		key = "simple_easy"
+	elif available_types.has("simple"):
+		# Уровень 2-3: micro + simple
+		key = "micro_simple"
+	else:
+		# Уровень 0-1: только micro
+		key = "micro"
+
+	var weights = TYPE_WEIGHTS[key]
+	var roll = randf()
+	var cumulative = 0.0
+
+	for type_name in weights:
+		cumulative += weights[type_name]
+		if roll <= cumulative:
+			return type_name
+
+	# Fallback
+	return weights.keys()[weights.size() - 1]
