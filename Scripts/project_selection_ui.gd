@@ -3,8 +3,6 @@ extends Control
 signal project_selected(data: ProjectData)
 
 @onready var close_btn = find_child("CloseButton", true, false)
-
-# Контейнер из сцены — мы заменим его содержимое
 @onready var cards_margin = $Window/MainVBox/CardsMargin
 
 var current_options = []
@@ -15,9 +13,9 @@ var _card_style_hover: StyleBoxFlat
 var _btn_style: StyleBoxFlat
 var _btn_style_hover: StyleBoxFlat
 
-# Динамические элементы
 var _scroll: ScrollContainer
 var _cards_container: VBoxContainer
+var _scroll_ready: bool = false
 
 func _ready():
 	visible = false
@@ -53,20 +51,24 @@ func _ready():
 		close_btn.pressed.connect(_on_close_pressed)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
-	# Заменяем старый CardsContainer (с Card1/2/3) на ScrollContainer
-	call_deferred("_setup_scroll_container")
+	_setup_scroll_container()
 
 func _setup_scroll_container():
 	if cards_margin == null:
-		print("ОШИБКА: cards_margin не найден!")
+		push_error("project_selection_ui: cards_margin is null!")
 		return
 
-	# Удаляем ВСЕ дочерние ноды CardsMargin (старый CardsContainer с Card1/2/3)
+	# КРИТИЧНО: MarginContainer ��олжен растягиваться на всю высоту
+	cards_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	# Удаляем старый CardsContainer (с Card1/Card2/Card3)
 	for child in cards_margin.get_children():
-		cards_margin.remove_child(child)
 		child.queue_free()
 
-	# Создаём ScrollContainer (как в employee_roster)
+	# Ждём один кадр чтобы queue_free завершился, потом создаём новые ноды
+	await get_tree().process_frame
+
+	# ScrollContainer (как в employee_roster)
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -74,12 +76,15 @@ func _setup_scroll_container():
 	_scroll.clip_contents = true
 	cards_margin.add_child(_scroll)
 
-	# Внутри — VBoxContainer для карточек
+	# VBoxContainer для карточек
 	_cards_container = VBoxContainer.new()
 	_cards_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_cards_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_cards_container.add_theme_constant_override("separation", 15)
 	_scroll.add_child(_cards_container)
+
+	_scroll_ready = true
+	print("✅ ProjectSelectionUI: scroll готов")
 
 func _make_card_style(hover: bool) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
@@ -107,6 +112,14 @@ func _set_children_pass_filter(node: Node):
 		_set_children_pass_filter(child)
 
 func open_selection():
+	# Если scroll ещё не готов — ждём
+	if not _scroll_ready:
+		await get_tree().process_frame
+		await get_tree().process_frame
+		if not _scroll_ready:
+			push_error("project_selection_ui: scroll всё ещё не готов!")
+			return
+
 	var current_week = _get_current_week()
 
 	if current_week != _generated_for_week:
@@ -128,32 +141,28 @@ func _on_close_pressed():
 func _get_current_week() -> int:
 	return ((GameTime.day - 1) / GameTime.DAYS_IN_WEEK) + 1
 
-func _get_project_count() -> int:
-	# Безопасно проверяем, есть ли метод get_weekly_project_count в ClientManager
-	if ClientManager.has_method("get_weekly_project_count"):
-		return ClientManager.get_weekly_project_count()
-	# Fallback: базовое количество 4
-	return 4
-
 func generate_new_projects():
 	current_options.clear()
-	var count = _get_project_count()
+	var count = 4
+	if ClientManager.has_method("get_weekly_project_count"):
+		count = ClientManager.get_weekly_project_count()
+	print("📋 Генерация %d проектов на неделю..." % count)
 	for i in range(count):
 		var proj = ProjectGenerator.generate_random_project(GameTime.day)
 		current_options.append(proj)
+		print("  → Проект %d: %s [%s]" % [i, proj.title, proj.category])
+	print("📋 Итого: %d проектов в current_options" % current_options.size())
 
-# === ПОЛНАЯ ПЕРЕСТРОЙКА КАРТОЧЕК ===
 func _rebuild_cards():
 	if _cards_container == null:
-		print("ОШИБКА: _cards_container ещё не создан!")
+		push_error("project_selection_ui: _cards_container is null в _rebuild_cards!")
 		return
 
-	# Очищаем старые карточки
+	# Очищаем
 	for child in _cards_container.get_children():
 		_cards_container.remove_child(child)
 		child.queue_free()
 
-	# Создаём карточку для каждого не-null проекта
 	var has_any = false
 	for i in range(current_options.size()):
 		if current_options[i] == null:
@@ -170,17 +179,16 @@ func _rebuild_cards():
 		if UITheme: UITheme.apply_font(empty_lbl, "semibold")
 		_cards_container.add_child(empty_lbl)
 
-	# Скролл наверх
+	print("🔄 _rebuild_cards: показано %d карточек" % _cards_container.get_child_count())
+
 	if _scroll:
 		_scroll.scroll_vertical = 0
 
-# === СОЗДАНИЕ ОДНОЙ КАРТОЧКИ ===
 func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_theme_stylebox_override("panel", _card_style_normal)
 
-	# Hover
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_entered.connect(func():
 		card.add_theme_stylebox_override("panel", _card_style_hover)
@@ -206,10 +214,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
 
-	# Клиент + категория + название
-	var cat_label = "[MICRO]" if data.category == "micro" else "[SIMPLE]"
-	if data.has_method("get_category_label"):
-		cat_label = data.get_category_label()
+	var cat_label = data.get_category_label()
 
 	var client_text = ""
 	if data.client_id != "":
@@ -223,7 +228,6 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
 
-	# Работы
 	var work_lbl = Label.new()
 	var parts = []
 	for stage in data.stages:
@@ -233,12 +237,10 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
 
-	# Spacer
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
 
-	# Правая часть: бюджет + кнопка
 	var right_info = VBoxContainer.new()
 	top_hbox.add_child(right_info)
 
@@ -268,7 +270,6 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	select_btn.pressed.connect(_on_select_pressed.bind(index))
 	right_info.add_child(select_btn)
 
-	# Дедлайны
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	card_vbox.add_child(deadlines_hbox)
@@ -302,8 +303,6 @@ func _on_select_pressed(index: int):
 	print("Выбран проект: ", selected.title)
 	emit_signal("project_selected", selected)
 
-	# Убираем проект из списка
 	current_options[index] = null
 
-	# Перестраиваем карточки (выбранная исчезнет)
 	_rebuild_cards()
