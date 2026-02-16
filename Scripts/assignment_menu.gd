@@ -4,9 +4,52 @@ extends Panel
 var target_desk = null
 
 @onready var item_list = $MainVBox/ContentMargin/VBoxContainer/ItemList
+@onready var close_btn = find_child("CloseButton", true, false)
+
+var color_main = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _ready():
 	visible = false
+	
+	# === УМНОЕ УДАЛЕНИЕ КНОПОК ===
+	# Находим все кнопки, и если это НЕ крестик из хедера — удаляем их
+	var all_buttons = find_children("*", "Button", true, false)
+	for btn in all_buttons:
+		if close_btn and btn != close_btn:
+			btn.queue_free()
+			
+	if close_btn:
+		if not close_btn.pressed.is_connected(_on_close_pressed):
+			close_btn.pressed.connect(_on_close_pressed)
+
+	# Применяем шрифт к списку и заголовку (цвет заголовка больше не трогаем!)
+	if UITheme:
+		UITheme.apply_font(item_list, "regular")
+		var title_label = find_child("TitleLabel", true, false)
+		if title_label:
+			UITheme.apply_font(title_label, "bold")
+			title_label.text = "Выберите сотрудника"
+			
+	# Слегка облагораживаем сам ItemList (убираем дефолтную рамку)
+	var list_style = StyleBoxFlat.new()
+	list_style.bg_color = Color(1, 1, 1, 1)
+	list_style.border_width_left = 2
+	list_style.border_width_top = 2
+	list_style.border_width_right = 2
+	list_style.border_width_bottom = 2
+	list_style.border_color = Color(0.85, 0.85, 0.85, 1)
+	list_style.corner_radius_top_left = 10
+	list_style.corner_radius_top_right = 10
+	list_style.corner_radius_bottom_right = 10
+	list_style.corner_radius_bottom_left = 10
+	item_list.add_theme_stylebox_override("panel", list_style)
+	
+	# Красивый синий цвет при наведении/выборе строки в списке
+	var selected_style = StyleBoxFlat.new()
+	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1)
+	item_list.add_theme_stylebox_override("selected", selected_style)
+	item_list.add_theme_stylebox_override("selected_focus", selected_style)
+	item_list.add_theme_color_override("font_selected_color", color_main)
 
 # --- Вызывает Стол, когда хочет посадить/заменить сотрудника ---
 func open_assignment_list(desk_node):
@@ -45,17 +88,14 @@ func _refresh_list():
 func _find_desk_with_npc(npc_node):
 	var all_desks = get_tree().get_nodes_in_group("desk")
 	for desk in all_desks:
-		# Проверяем, что у стола ЕСТЬ свойство assigned_npc_node
-		# (computer_desk и другие столы его не имеют)
 		if "assigned_npc_node" in desk and desk.assigned_npc_node == npc_node:
 			return desk
 	return null
 
-# --- Ког��а дважды кликнули по сотруднику в списке ---
+# --- Когда дважды кликнули по сотруднику в списке ---
 func _on_item_list_item_activated(index):
 	var npc_node = item_list.get_item_metadata(index)
 	
-	# Защита: если metadata пуст
 	if npc_node == null:
 		return
 	

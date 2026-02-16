@@ -44,6 +44,46 @@ func _ready():
 	employee_roster.visible = false
 	client_panel.visible = false
 
+	# === ИСПРАВЛЕНИЕ БАГА: Красивый дизайн для кнопки "Закончить день" ===
+	var color_green = Color(0.29803923, 0.6862745, 0.3137255, 1)
+
+	var btn_style_normal = StyleBoxFlat.new()
+	btn_style_normal.bg_color = Color(1, 1, 1, 1)
+	btn_style_normal.border_width_left = 2
+	btn_style_normal.border_width_top = 2
+	btn_style_normal.border_width_right = 2
+	btn_style_normal.border_width_bottom = 2
+	btn_style_normal.border_color = color_green
+	btn_style_normal.corner_radius_top_left = 20
+	btn_style_normal.corner_radius_top_right = 20
+	btn_style_normal.corner_radius_bottom_right = 20
+	btn_style_normal.corner_radius_bottom_left = 20
+
+	var btn_style_hover = StyleBoxFlat.new()
+	btn_style_hover.bg_color = color_green
+	btn_style_hover.border_width_left = 2
+	btn_style_hover.border_width_top = 2
+	btn_style_hover.border_width_right = 2
+	btn_style_hover.border_width_bottom = 2
+	btn_style_hover.border_color = color_green
+	btn_style_hover.corner_radius_top_left = 20
+	btn_style_hover.corner_radius_top_right = 20
+	btn_style_hover.corner_radius_bottom_right = 20
+	btn_style_hover.corner_radius_bottom_left = 20
+
+	end_day_button.add_theme_stylebox_override("normal", btn_style_normal)
+	end_day_button.add_theme_stylebox_override("hover", btn_style_hover)
+	end_day_button.add_theme_stylebox_override("pressed", btn_style_hover)
+
+	end_day_button.add_theme_color_override("font_color", color_green)
+	end_day_button.add_theme_color_override("font_hover_color", Color.WHITE)
+	end_day_button.add_theme_color_override("font_pressed_color", Color.WHITE)
+
+	# Отлепляем от нижнего края (сдвигаем вверх на 70 пикселей)
+	end_day_button.offset_bottom -= 70
+	end_day_button.offset_top -= 70
+	# ====================================================================
+
 	GameTime.time_tick.connect(update_time_label)
 	GameTime.work_ended.connect(_on_work_ended_show_end_day)
 	GameTime.work_started.connect(_on_work_started_hide_end_day)
