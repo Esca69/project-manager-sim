@@ -24,13 +24,19 @@ extends CanvasLayer
 @onready var pm_skill_tree = $PMSkillTree
 @onready var client_panel = $ClientPanel
 
-# --- PM Level UI (создаются в коде) ---
+# --- PM Level UI ---
 var _pm_level_label: Label
 var _pm_xp_bar: ProgressBar
 var _pm_xp_label: Label
 
-# --- Day Summary (создаётся в коде) ---
+# --- Day Summary ---
 var _day_summary: Control
+
+# === ОБСУЖДЕНИЕ С БОССОМ ===
+var _is_discussing: bool = false
+var _discuss_project: ProjectData = null
+var _discuss_minutes_remaining: float = 0.0
+var _discuss_total_minutes: float = 0.0
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -44,7 +50,7 @@ func _ready():
 	employee_roster.visible = false
 	client_panel.visible = false
 
-	# === ИСПРАВЛЕНИЕ БАГА: Красивый дизайн для кнопки "Закончить день" ===
+	# === Красивый дизайн для кнопки "Закончить день" ===
 	var color_green = Color(0.29803923, 0.6862745, 0.3137255, 1)
 
 	var btn_style_normal = StyleBoxFlat.new()
@@ -79,10 +85,8 @@ func _ready():
 	end_day_button.add_theme_color_override("font_hover_color", Color.WHITE)
 	end_day_button.add_theme_color_override("font_pressed_color", Color.WHITE)
 
-	# Отлепляем от нижнего края (сдвигаем вверх на 70 пикселей)
 	end_day_button.offset_bottom -= 70
 	end_day_button.offset_top -= 70
-	# ====================================================================
 
 	GameTime.time_tick.connect(update_time_label)
 	GameTime.work_ended.connect(_on_work_ended_show_end_day)
@@ -113,43 +117,37 @@ func _ready():
 
 	pm_skill_tree.visible = false
 
-	# --- Создаём UI уровня PM в TopBar ---
 	_build_pm_level_ui()
 	_update_pm_level_ui()
 
-	# XP за проекты
 	ProjectManager.project_finished.connect(_on_project_finished_xp)
 	ProjectManager.project_failed.connect(_on_project_failed_xp)
 
-	# XP обновление UI
 	PMData.xp_changed.connect(_on_pm_xp_changed)
 
-	# --- Применяем шрифт Inter к TopBar ---
 	call_deferred("_apply_fonts")
 
-	# --- Создаём DaySummary ---
 	_build_day_summary()
+
+	# Тик времени для обсуждения
+	GameTime.time_tick.connect(_on_discuss_time_tick)
 
 func _apply_fonts():
 	if UITheme == null:
 		return
-	# TopBar
 	UITheme.apply_font(time_label, "semibold")
 	UITheme.apply_font(balance_label, "bold")
 	UITheme.apply_font(btn_pause, "semibold")
 	UITheme.apply_font(btn_1x, "semibold")
 	UITheme.apply_font(btn_2x, "semibold")
 	UITheme.apply_font(btn_5x, "semibold")
-	# PM Level
 	if _pm_level_label:
 		UITheme.apply_font(_pm_level_label, "semibold")
 	if _pm_xp_label:
 		UITheme.apply_font(_pm_xp_label, "regular")
-	# Info panel
 	UITheme.apply_font(name_label, "semibold")
 	UITheme.apply_font(role_label, "regular")
 	UITheme.apply_font(salary_label, "regular")
-	# End day button
 	UITheme.apply_font(end_day_button, "semibold")
 
 # --- DAY SUMMARY ---
@@ -229,7 +227,6 @@ func _update_pm_level_ui():
 	var current_in_level = progress[0]
 	var needed_for_level = progress[1]
 
-	# Плавная анимация XP-бара
 	_pm_xp_bar.max_value = needed_for_level
 	var tween = create_tween()
 	tween.tween_property(_pm_xp_bar, "value", current_in_level, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
@@ -239,8 +236,71 @@ func _update_pm_level_ui():
 func _on_pm_xp_changed(_new_xp, _new_sp):
 	_update_pm_level_ui()
 
+# === ПОЛУЧИТЬ PLAYER ===
+func _get_player():
+	return get_tree().get_first_node_in_group("player")
+
+# === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ ===
+func _start_discussion(proj_data: ProjectData):
+	_is_discussing = true
+	_discuss_project = proj_data
+	_discuss_total_minutes = selection_ui.BOSS_MEETING_HOURS * 60.0
+	_discuss_minutes_remaining = _discuss_total_minutes
+
+	var player = _get_player()
+	if player and player.has_method("show_discuss_bar"):
+		player.show_discuss_bar(_discuss_total_minutes)
+
+	print("🤝 Обсуждение начато: %s (%d мин.)" % [proj_data.title, int(_discuss_total_minutes)])
+
+func _on_discuss_time_tick(_h, _m):
+	if not _is_discussing:
+		return
+
+	_discuss_minutes_remaining -= 1.0
+	var elapsed = _discuss_total_minutes - _discuss_minutes_remaining
+
+	var player = _get_player()
+	if player and player.has_method("update_discuss_bar"):
+		player.update_discuss_bar(elapsed, _discuss_minutes_remaining)
+
+	if _discuss_minutes_remaining <= 0:
+		_finish_discussion()
+
+func _finish_discussion():
+	_is_discussing = false
+
+	var player = _get_player()
+	if player and player.has_method("hide_discuss_bar"):
+		player.hide_discuss_bar()
+
+	if _discuss_project == null:
+		return
+
+	print("✅ Обсуждение завершено: ", _discuss_project.title)
+
+	var today = GameTime.day
+	var old_created = _discuss_project.created_at_day
+	if today != old_created:
+		var shift = today - old_created
+		_discuss_project.created_at_day = today
+		_discuss_project.deadline_day += shift
+		_discuss_project.soft_deadline_day += shift
+
+	ProjectManager.add_project(_discuss_project)
+
+	PMData.add_xp(5)
+	print("🎯 PM +5 XP за взятие проекта")
+
+	_discuss_project = null
+
+# === ПРОВЕРКА: PM ЗАНЯТ ОБСУЖДЕНИЕМ ===
+func is_pm_busy() -> bool:
+	return _is_discussing
+
 # --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
 func is_any_menu_open() -> bool:
+	if _is_discussing: return true
 	if info_panel.visible: return true
 	if selection_ui.visible: return true
 	if project_window.visible: return true
@@ -307,32 +367,25 @@ func _on_close_button_pressed():
 		info_panel.visible = false
 
 func open_boss_menu():
+	if _is_discussing:
+		print("Босс: PM ещё обсуждает предыдущий проект!")
+		return
 	if not ProjectManager.can_take_more():
 		print("Босс: Слишком много активных проектов! (макс: ", ProjectManager.MAX_PROJECTS, ")")
 		return
 	selection_ui.open_selection()
 
 func open_work_menu():
+	if _is_discussing:
+		print("Компьютер: PM занят обсуждением с боссом.")
+		return
 	if ProjectManager.active_projects.is_empty():
 		print("Компьютер: Нет активных проектов.")
 		return
 	project_list_menu.open_menu()
 
 func _on_project_taken(proj_data):
-	var today = GameTime.day
-	var old_created = proj_data.created_at_day
-
-	if today != old_created:
-		var shift = today - old_created
-		proj_data.created_at_day = today
-		proj_data.deadline_day += shift
-		proj_data.soft_deadline_day += shift
-
-	ProjectManager.add_project(proj_data)
-
-	# XP за взятие проекта
-	PMData.add_xp(5)
-	print("🎯 PM +5 XP за взятие проекта")
+	_start_discussion(proj_data)
 
 func _on_project_list_opened(proj_data: ProjectData):
 	project_window.setup(proj_data, employee_selector)
@@ -380,12 +433,13 @@ func _on_bottom_tab_pressed(tab_name: String):
 
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
+	if _is_discussing:
+		print("Нельзя закончить день: PM обсуждает проект!")
+		return
 	end_day_button.visible = false
 
-	# --- Платим зарплаты ПЕРЕД показом отчёта ---
 	GameState.pay_daily_salaries()
 
-	# --- Открываем итоги дня (ставит паузу внутри) ---
 	if _day_summary:
 		_day_summary.open()
 	else:

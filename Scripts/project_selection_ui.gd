@@ -12,10 +12,15 @@ var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
 var _btn_style: StyleBoxFlat
 var _btn_style_hover: StyleBoxFlat
+var _btn_style_disabled: StyleBoxFlat
 
 var _scroll: ScrollContainer
 var _cards_container: VBoxContainer
 var _scroll_ready: bool = false
+
+# === КОНСТАНТЫ ОБСУЖДЕНИЯ ===
+const BOSS_MEETING_HOURS: int = 4        # Сколько игровых часов занимает обсуждение
+const BOSS_CUTOFF_HOUR: int = 14         # Последний час, когда можно начать обсуждение
 
 func _ready():
 	visible = false
@@ -47,6 +52,19 @@ func _ready():
 	_btn_style_hover.corner_radius_bottom_right = 20
 	_btn_style_hover.corner_radius_bottom_left = 20
 
+	# Стиль для заблокированной кнопки (серая)
+	_btn_style_disabled = StyleBoxFlat.new()
+	_btn_style_disabled.bg_color = Color(0.85, 0.85, 0.85, 1)
+	_btn_style_disabled.border_width_left = 2
+	_btn_style_disabled.border_width_top = 2
+	_btn_style_disabled.border_width_right = 2
+	_btn_style_disabled.border_width_bottom = 2
+	_btn_style_disabled.border_color = Color(0.7, 0.7, 0.7, 1)
+	_btn_style_disabled.corner_radius_top_left = 20
+	_btn_style_disabled.corner_radius_top_right = 20
+	_btn_style_disabled.corner_radius_bottom_right = 20
+	_btn_style_disabled.corner_radius_bottom_left = 20
+
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
@@ -58,17 +76,13 @@ func _setup_scroll_container():
 		push_error("project_selection_ui: cards_margin is null!")
 		return
 
-	# КРИТИЧНО: MarginContainer ��олжен растягиваться на всю высоту
 	cards_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
-	# Удаляем старый CardsContainer (с Card1/Card2/Card3)
 	for child in cards_margin.get_children():
 		child.queue_free()
 
-	# Ждём один кадр чтобы queue_free завершился, потом создаём новые ноды
 	await get_tree().process_frame
 
-	# ScrollContainer (как в employee_roster)
 	_scroll = ScrollContainer.new()
 	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -76,7 +90,6 @@ func _setup_scroll_container():
 	_scroll.clip_contents = true
 	cards_margin.add_child(_scroll)
 
-	# VBoxContainer для карточек
 	_cards_container = VBoxContainer.new()
 	_cards_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_cards_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -84,7 +97,6 @@ func _setup_scroll_container():
 	_scroll.add_child(_cards_container)
 
 	_scroll_ready = true
-	print("✅ ProjectSelectionUI: scroll готов")
 
 func _make_card_style(hover: bool) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
@@ -112,7 +124,6 @@ func _set_children_pass_filter(node: Node):
 		_set_children_pass_filter(child)
 
 func open_selection():
-	# Если scroll ещё не готов — ждём
 	if not _scroll_ready:
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -146,22 +157,45 @@ func generate_new_projects():
 	var count = 4
 	if ClientManager.has_method("get_weekly_project_count"):
 		count = ClientManager.get_weekly_project_count()
-	print("📋 Генерация %d проектов на неделю..." % count)
 	for i in range(count):
 		var proj = ProjectGenerator.generate_random_project(GameTime.day)
 		current_options.append(proj)
-		print("  → Проект %d: %s [%s]" % [i, proj.title, proj.category])
-	print("📋 Итого: %d проектов в current_options" % current_options.size())
 
+# === ПРОВЕРКИ ОГРАНИЧЕНИЙ ===
+
+func _is_project_limit_reached() -> bool:
+	return not ProjectManager.can_take_more()
+
+func _is_too_late_for_boss() -> bool:
+	return GameTime.hour >= BOSS_CUTOFF_HOUR
+
+# === ПЕРЕСТРОЙКА КАРТОЧЕК ===
 func _rebuild_cards():
 	if _cards_container == null:
 		push_error("project_selection_ui: _cards_container is null в _rebuild_cards!")
 		return
 
-	# Очищаем
 	for child in _cards_container.get_children():
 		_cards_container.remove_child(child)
 		child.queue_free()
+
+	# --- Плашка лимита проектов ---
+	if _is_project_limit_reached():
+		var limit_bar = _create_warning_bar(
+			"⚠ Достигнут лимит активных проектов (%d из %d)" % [ProjectManager.count_active_projects(), ProjectManager.MAX_PROJECTS],
+			"Завершите текущие проекты или прокачайте навык PM для увеличения лимита.",
+			Color(0.9, 0.5, 0.1, 1)
+		)
+		_cards_container.add_child(limit_bar)
+
+	# --- Плашка "босс ушёл" ---
+	if _is_too_late_for_boss():
+		var time_bar = _create_warning_bar(
+			"🕐 Босс уже ушёл! Выбирать проекты можно до %d:00" % BOSS_CUTOFF_HOUR,
+			"Приходите завтра ут��ом.",
+			Color(0.7, 0.2, 0.2, 1)
+		)
+		_cards_container.add_child(time_bar)
 
 	var has_any = false
 	for i in range(current_options.size()):
@@ -179,11 +213,53 @@ func _rebuild_cards():
 		if UITheme: UITheme.apply_font(empty_lbl, "semibold")
 		_cards_container.add_child(empty_lbl)
 
-	print("🔄 _rebuild_cards: показано %d карточек" % _cards_container.get_child_count())
-
 	if _scroll:
 		_scroll.scroll_vertical = 0
 
+# === ПЛАШКА ПРЕДУПРЕЖДЕНИЯ ===
+func _create_warning_bar(title_text: String, hint_text: String, color: Color) -> PanelContainer:
+	var bar = PanelContainer.new()
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var bar_style = StyleBoxFlat.new()
+	bar_style.bg_color = Color(color.r, color.g, color.b, 0.12)
+	bar_style.border_width_left = 2
+	bar_style.border_width_top = 2
+	bar_style.border_width_right = 2
+	bar_style.border_width_bottom = 2
+	bar_style.border_color = color
+	bar_style.corner_radius_top_left = 12
+	bar_style.corner_radius_top_right = 12
+	bar_style.corner_radius_bottom_right = 12
+	bar_style.corner_radius_bottom_left = 12
+	bar.add_theme_stylebox_override("panel", bar_style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	bar.add_child(margin)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 3)
+	margin.add_child(vbox)
+
+	var title_lbl = Label.new()
+	title_lbl.text = title_text
+	title_lbl.add_theme_color_override("font_color", color)
+	if UITheme: UITheme.apply_font(title_lbl, "bold")
+	vbox.add_child(title_lbl)
+
+	var hint_lbl = Label.new()
+	hint_lbl.text = hint_text
+	hint_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	hint_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(hint_lbl, "regular")
+	vbox.add_child(hint_lbl)
+
+	return bar
+
+# === СОЗДАНИЕ КАРТОЧКИ ===
 func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -237,6 +313,14 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
 
+	# Метка "Обсуждение занимает 4 часа"
+	var time_lbl = Label.new()
+	time_lbl.text = "⏱ Обсуждение с боссом: %d ч." % BOSS_MEETING_HOURS
+	time_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55, 1))
+	time_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(time_lbl, "regular")
+	left_info.add_child(time_lbl)
+
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
@@ -257,19 +341,31 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(budget_lbl, "bold")
 	right_info.add_child(budget_lbl)
 
+	# Кнопка "Выбрать" — блокируется если лимит или поздно
+	var btn_blocked = _is_project_limit_reached() or _is_too_late_for_boss()
+
 	var select_btn = Button.new()
-	select_btn.text = "Выбрать"
+	select_btn.text = "Выбр��ть" if not btn_blocked else "Недоступно"
 	select_btn.custom_minimum_size = Vector2(180, 40)
-	select_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	select_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
-	select_btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
-	select_btn.add_theme_stylebox_override("normal", _btn_style)
-	select_btn.add_theme_stylebox_override("hover", _btn_style_hover)
-	select_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+	select_btn.disabled = btn_blocked
+
+	if btn_blocked:
+		select_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+		select_btn.add_theme_stylebox_override("normal", _btn_style_disabled)
+		select_btn.add_theme_stylebox_override("disabled", _btn_style_disabled)
+	else:
+		select_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		select_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+		select_btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
+		select_btn.add_theme_stylebox_override("normal", _btn_style)
+		select_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+		select_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+		select_btn.pressed.connect(_on_select_pressed.bind(index))
+
 	if UITheme: UITheme.apply_font(select_btn, "semibold")
-	select_btn.pressed.connect(_on_select_pressed.bind(index))
 	right_info.add_child(select_btn)
 
+	# Дедлайны
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	card_vbox.add_child(deadlines_hbox)
@@ -300,9 +396,17 @@ func _on_select_pressed(index: int):
 	if selected == null:
 		return
 
-	print("Выбран проект: ", selected.title)
-	emit_signal("project_selected", selected)
+	# Финальные проверки
+	if _is_project_limit_reached():
+		return
+	if _is_too_late_for_boss():
+		return
 
+	print("⏱ Начинаем обсуждение проекта: ", selected.title)
+
+	# У��ираем проект из списка и закрываем UI
 	current_options[index] = null
+	_on_close_pressed()
 
-	_rebuild_cards()
+	# Эмитим сигнал — hud.gd начнёт процесс обсуждения
+	emit_signal("project_selected", selected)

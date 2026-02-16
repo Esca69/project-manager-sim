@@ -33,7 +33,7 @@ const SIMPLE_TEMPLATES = [
 	{ "name": "Аналитика + разработка отчёта",   "stages": ["BA", "DEV"], "difficulty": 2 },
 ]
 
-# EASY — 3 вида работ (полный цикл BA→DEV→QA)
+# EASY — 3 вида работ (полный цикл BA���DEV→QA)
 const EASY_TEMPLATES = [
 	{ "name": "Лендинг пекарни",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
 	{ "name": "Сайт-визитка",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
@@ -45,11 +45,12 @@ const EASY_TEMPLATES = [
 	{ "name": "Дашборд статистики",   "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
 ]
 
+# WORK_UNITS: micro увеличены x1.5
 const WORK_UNITS = {
 	"micro": {
-		"BA":  [400, 800],
-		"DEV": [600, 1200],
-		"QA":  [300, 700],
+		"BA":  [600, 1200],
+		"DEV": [900, 1800],
+		"QA":  [450, 1050],
 	},
 	"simple": {
 		"BA":  [600, 1200],
@@ -67,13 +68,12 @@ const SOFT_PENALTIES = [10, 20, 30]
 
 # === МИНИМАЛЬНЫЕ ДЕДЛАЙНЫ ===
 const MIN_HARD_DEADLINE_DAYS = {
-	"micro": 3,
+	"micro": 4,
 	"simple": 5,
 	"easy": 8,
 }
 
 # === ВЕСА ГЕНЕРАЦИИ ТИПОВ ПО ДОСТУПНЫМ КАТЕГОРИЯМ ===
-# Ключ = какие типы доступны (отсортированные через join), значение = {тип: вес}
 const TYPE_WEIGHTS = {
 	"micro": {"micro": 1.0},
 	"micro_simple": {"micro": 0.40, "simple": 0.60},
@@ -85,20 +85,17 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 	new_proj.created_at_day = current_game_day
 	new_proj.state = new_proj.State.DRAFTING
 
-	# 0. Клиент (может быть передан извне или выбран случайно)
 	if client == null:
 		client = ClientManager.get_random_client()
 	if client:
 		new_proj.client_id = client.client_id
 
-	# 1. Определяем доступ��ые типы проектов по лояльности клиента
 	var available_types: Array[String] = ["micro"]
 	if client:
 		available_types = client.get_unlocked_project_types()
 	if available_types.is_empty():
 		available_types = ["micro"]
 
-	# 2. Выбираем категорию по весам
 	var category = _pick_category_by_weights(available_types)
 	var template: Dictionary
 
@@ -116,7 +113,6 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 	new_proj.category = category
 	new_proj.title = template["name"]
 
-	# 3. Генерируем этапы
 	var stage_types: Array = template["stages"]
 	new_proj.stages = []
 
@@ -143,11 +139,9 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 		total_ideal_hours += ideal_hours
 		total_estimated_cost += ideal_hours * HOURLY_RATE[stage_type]
 
-	# 4. Бюджет (базовый)
 	var budget_raw = total_estimated_cost * MARGIN_MULTIPLIER
 	budget_raw *= randf_range(0.9, 1.1)
 
-	# 5. Применяем бонус лояльности клиента
 	if client:
 		var bonus = client.get_budget_bonus_percent()
 		if bonus > 0:
@@ -155,26 +149,21 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 
 	new_proj.budget = int(round(budget_raw / 50.0)) * 50
 
-	# 6. Штраф за софт-дедлайн
 	new_proj.soft_deadline_penalty_percent = SOFT_PENALTIES.pick_random()
 
-	# 7. Хард-дедлайн
 	var ideal_days = total_ideal_hours / WORK_HOURS_PER_DAY
 	var buffer_coef = randf_range(1.3, 1.7)
 	var days_given = ceil(ideal_days * buffer_coef)
 
-	# Минимальный дедлайн по категории
 	var min_days = MIN_HARD_DEADLINE_DAYS[category]
 	if days_given < min_days:
 		days_given = min_days
 
 	new_proj.deadline_day = current_game_day + int(days_given)
 
-	# 8. Софт-дедлайн
 	var soft_coef = randf_range(0.60, 0.75)
 	var soft_days = ceil(days_given * soft_coef)
 
-	# Софт ВСЕГДА минимум на 1 день раньше хард
 	if soft_days >= days_given:
 		soft_days = days_given - 1
 	if soft_days < 1:
@@ -184,18 +173,13 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 
 	return new_proj
 
-# === ВЫБОР КАТЕГОРИИ ПО ВЕСАМ ===
 static func _pick_category_by_weights(available_types: Array[String]) -> String:
-	# Определяем ключ весов
 	var key: String
 	if available_types.has("easy"):
-		# Уровень 4+: simple + easy (micro боль��е не выдаётся)
 		key = "simple_easy"
 	elif available_types.has("simple"):
-		# Уровень 2-3: micro + simple
 		key = "micro_simple"
 	else:
-		# Уровень 0-1: только micro
 		key = "micro"
 
 	var weights = TYPE_WEIGHTS[key]
@@ -207,5 +191,4 @@ static func _pick_category_by_weights(available_types: Array[String]) -> String:
 		if roll <= cumulative:
 			return type_name
 
-	# Fallback
 	return weights.keys()[weights.size() - 1]

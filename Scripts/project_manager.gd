@@ -2,7 +2,8 @@ extends Node
 
 var active_projects: Array = []
 
-const MAX_PROJECTS = 5
+# Начальный лимит — 2. Увеличивается навыками PM.
+var MAX_PROJECTS: int = 2
 
 signal project_finished(proj: ProjectData)
 signal project_failed(proj: ProjectData)
