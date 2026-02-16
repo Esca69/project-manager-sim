@@ -17,7 +17,9 @@ func _ready():
 
 	var scroll = cards_container.get_parent()
 	if scroll and scroll is ScrollContainer:
-		scroll.clip_contents = false
+		# === ИСПРАВЛЕНИЕ БАГА СО СКРОЛЛОМ ===
+		# Теперь карточки не будут вылезать за рамки
+		scroll.clip_contents = true
 
 	btn_style = StyleBoxFlat.new()
 	btn_style.bg_color = Color(1, 1, 1, 1)
@@ -127,11 +129,9 @@ func _make_card_style_hover(proj: ProjectData) -> StyleBoxFlat:
 			style.bg_color = Color(0.96, 0.97, 1.0, 1)
 	return style
 
-# === Рекурсивно ставим MOUSE_FILTER_PASS на все дочерние Control, кроме Button ===
 func _set_children_pass_filter(node: Node):
 	for child in node.get_children():
 		if child is Button:
-			# Кнопки остаются кликабельными — но PASS чтобы hover карточки не ломался
 			child.mouse_filter = Control.MOUSE_FILTER_PASS
 		elif child is Control:
 			child.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -145,7 +145,6 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var style_hover = _make_card_style_hover(proj)
 	card.add_theme_stylebox_override("panel", style_normal)
 
-	# Карточка ловит все события мыши
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_entered.connect(func():
 		card.add_theme_stylebox_override("panel", style_hover)
@@ -172,7 +171,6 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	top_hbox.add_child(left_info)
 
 	var cat_label = "[MICRO]" if proj.category == "micro" else "[SIMPLE]"
-	# Добавляем имя клиента (как в project_window.gd)
 	var client_prefix = ""
 	if proj.client_id != "":
 		var client = proj.get_client()
@@ -224,14 +222,47 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	top_hbox.add_child(right_info)
 
 	var budget_lbl = Label.new()
-	budget_lbl.text = "Бюджет $" + str(proj.budget)
-	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
+	
+	# === ИСПРАВЛЕНИЕ: Динамический расчет бюджета (штрафы за софт-дедлайн) ===
+	var current_payout = proj.budget
+	var is_penalty = false
+	var is_failed = false
+
+	if proj.state == ProjectData.State.FAILED:
+		current_payout = 0
+		is_failed = true
+	elif proj.state == ProjectData.State.FINISHED:
+		var finish_day = proj.created_at_day
+		if proj.start_global_time > 0:
+			var last_end = 0.0
+			for s in proj.stages:
+				if s.get("actual_end", -1.0) > last_end:
+					last_end = s["actual_end"]
+			finish_day = int(proj.start_global_time + last_end)
+		current_payout = proj.get_final_payout(finish_day)
+		if current_payout < proj.budget:
+			is_penalty = true
+	else:
+		current_payout = proj.get_final_payout(GameTime.day)
+		if current_payout < proj.budget:
+			is_penalty = true
+
+	# Применение цветов в зависимости от статуса (Красный, Желтый, Зеленый)
+	if is_failed:
+		budget_lbl.text = "Бюджет: $0 (Провал)"
+		budget_lbl.add_theme_color_override("font_color", Color(0.85, 0.21, 0.21)) 
+	elif is_penalty:
+		budget_lbl.text = "Бюджет: $" + str(current_payout)
+		budget_lbl.add_theme_color_override("font_color", Color(0.9, 0.72, 0.04)) 
+	else:
+		budget_lbl.text = "Бюджет: $" + str(proj.budget)
+		budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
+
 	budget_lbl.add_theme_font_size_override("font_size", 20)
 	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if UITheme: UITheme.apply_font(budget_lbl, "bold")
 	right_info.add_child(budget_lbl)
 
-	# Кнопка "Открыть" — остаётся кликабельной
 	var open_btn = Button.new()
 	open_btn.text = "Открыть"
 	open_btn.custom_minimum_size = Vector2(180, 40)
@@ -266,12 +297,6 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	deadlines_hbox.add_child(hard_lbl)
 
-	# === КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ===
-	# После сборки всех детей — ставим MOUSE_FILTER_PASS на всё содержимое карточки,
-	# чтобы mouse_entered / mouse_exited срабатывали на ВСЕЙ площади карточки,
-	# а не только на пустых местах между Label'ами.
-	# Кнопка "Открыть" тоже получает PASS — но она всё равно кликабельна,
-	# потому что PASS означает "обработай событие И передай родителю".
 	call_deferred("_set_children_pass_filter", card)
 
 	return card

@@ -162,7 +162,6 @@ func _create_card(npc_node) -> PanelContainer:
 	card.add_theme_stylebox_override("panel", card_style_normal)
 	card.set_meta("emp_data", emp)
 
-	# Hover
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_entered.connect(func():
 		card.add_theme_stylebox_override("panel", card_style_hover)
@@ -182,7 +181,8 @@ func _create_card(npc_node) -> PanelContainer:
 	main_hbox.add_theme_constant_override("separation", 15)
 	margin.add_child(main_hbox)
 
-	var sprite_container = _create_employee_sprite(emp)
+	# --- ТЕПЕРЬ МЫ ПЕРЕДАЕМ САМ УЗЕЛ NPC, ЧТОБЫ ВЗЯТЬ ЕГО ЦВЕТ ---
+	var sprite_container = _create_employee_sprite(npc_node)
 	main_hbox.add_child(sprite_container)
 
 	var info_vbox = VBoxContainer.new()
@@ -197,7 +197,6 @@ func _create_card(npc_node) -> PanelContainer:
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	info_vbox.add_child(name_lbl)
 
-	# === БЕЙДЖ УРОВНЯ + XP БАР ===
 	var level_hbox = HBoxContainer.new()
 	level_hbox.add_theme_constant_override("separation", 10)
 	info_vbox.add_child(level_hbox)
@@ -254,7 +253,6 @@ func _create_card(npc_node) -> PanelContainer:
 	gm.add_child(grade_lbl)
 	level_hbox.add_child(grade_panel)
 
-	# XP прогресс-бар
 	if emp.employee_level < EmployeeData.MAX_LEVEL:
 		var xp_progress = emp.get_xp_progress()
 		var xp_current = xp_progress[0]
@@ -323,7 +321,6 @@ func _create_card(npc_node) -> PanelContainer:
 	if UITheme: UITheme.apply_font(salary_lbl, "bold")
 	info_vbox.add_child(salary_lbl)
 
-	# === ТРЕЙТЫ ===
 	if not emp.traits.is_empty():
 		var visible_count = PMData.get_visible_traits_count()
 
@@ -346,7 +343,6 @@ func _create_card(npc_node) -> PanelContainer:
 
 			info_vbox.add_child(flow)
 
-	# === ПРАВАЯ ЧАСТЬ ===
 	var right_vbox = VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 5)
 	right_vbox.custom_minimum_size = Vector2(250, 0)
@@ -386,7 +382,6 @@ func _create_card(npc_node) -> PanelContainer:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_vbox.add_child(spacer)
 
-	# Кнопка "Уволить" — КРАСНАЯ
 	var fire_btn = Button.new()
 	fire_btn.text = "Уволить"
 	fire_btn.custom_minimum_size = Vector2(180, 40)
@@ -401,7 +396,6 @@ func _create_card(npc_node) -> PanelContainer:
 	fire_btn.pressed.connect(_on_fire_pressed.bind(emp, npc_node))
 	right_vbox.add_child(fire_btn)
 
-	# MOUSE_FILTER_PASS на все дочерние
 	call_deferred("_set_children_pass_filter", card)
 
 	return card
@@ -518,35 +512,39 @@ func _create_hidden_trait() -> HBoxContainer:
 	hbox.add_child(help_btn)
 	return hbox
 
-func _create_employee_sprite(emp: EmployeeData) -> CenterContainer:
+# === ИСПРАВЛЕНИЕ: Вытягиваем цвет из узла и чиним размер текстуры ===
+func _create_employee_sprite(npc_node) -> CenterContainer:
 	var center = CenterContainer.new()
 	center.custom_minimum_size = Vector2(55, 70)
 
 	var inner = Control.new()
-	inner.custom_minimum_size = Vector2(40, 60)
+	# Делаем контейнер под текстуры чуть меньше и аккуратнее
+	inner.custom_minimum_size = Vector2(36, 54)
 	center.add_child(inner)
 
+	# Вытаскиваем реальный цвет из физического NPC
 	var body_color = Color.WHITE
-	match emp.job_title:
-		"Backend Developer": body_color = Color(0.4, 0.4, 1.0)
-		"Business Analyst": body_color = Color(1.0, 0.4, 0.4)
-		"QA Engineer": body_color = Color(0.4, 1.0, 0.4)
+	if npc_node and "personal_color" in npc_node:
+		body_color = npc_node.personal_color
 
 	var body_tex = TextureRect.new()
 	body_tex.texture = _body_texture
+	body_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # <--- ФИКС РАЗМЕРА
 	body_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	body_tex.custom_minimum_size = Vector2(40, 40)
-	body_tex.size = Vector2(40, 40)
-	body_tex.position = Vector2(0, 20)
+	body_tex.custom_minimum_size = Vector2(36, 45)
+	body_tex.size = Vector2(36, 45)
+	body_tex.position = Vector2(0, 18)
 	body_tex.self_modulate = body_color
 	inner.add_child(body_tex)
 
 	var head_tex = TextureRect.new()
 	head_tex.texture = _head_texture
+	head_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # <--- ФИКС РАЗМЕРА
 	head_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	head_tex.custom_minimum_size = Vector2(28, 28)
-	head_tex.size = Vector2(28, 28)
-	head_tex.position = Vector2(6, -2)
+	head_tex.custom_minimum_size = Vector2(24, 24)
+	head_tex.size = Vector2(24, 24)
+	# Голова отцентрирована относительно тела (X = 6)
+	head_tex.position = Vector2(6, 0) 
 	inner.add_child(head_tex)
 
 	return center

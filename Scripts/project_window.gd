@@ -7,7 +7,6 @@ extends Control
 @onready var timeline_header = $MainLayout/ContentWrapper/Body/TableHeader/TimelineHeader
 @onready var tracks_container = $MainLayout/ContentWrapper/Body/TracksContainer
 @onready var start_btn = $MainLayout/ContentWrapper/Body/Footer/StartButton
-@onready var cancel_btn = $MainLayout/ContentWrapper/Body/Footer/CancelButton
 
 @export var track_scene: PackedScene
 
@@ -22,6 +21,9 @@ var current_time_line: ColorRect
 var soft_deadline_line: ColorRect
 var hard_deadline_line: ColorRect
 
+# Красивый зелёный цвет для кнопки СТАРТ
+var color_green_main = Color(0.29803923, 0.6862745, 0.3137255, 1)
+
 func _get_origin_time() -> float:
 	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
 
@@ -29,7 +31,6 @@ func setup(data: ProjectData, selector_node):
 	project = data
 	selector_ref = selector_node
 
-	# Заголовок: клиент + категория + название
 	var cat_label = "[MICRO]" if project.category == "micro" else "[SIMPLE]"
 	var client_prefix = ""
 	if project.client_id != "":
@@ -37,8 +38,6 @@ func setup(data: ProjectData, selector_node):
 		if client:
 			client_prefix = client.emoji + " " + client.client_name + "  —  "
 	title_label.text = client_prefix + cat_label + " " + project.title
-
-	budget_label.text = "Бюджет: $%d" % project.budget
 
 	var deadline_date = GameTime.get_date_short(project.deadline_day)
 	var days_left = project.deadline_day - GameTime.day
@@ -65,30 +64,17 @@ func setup(data: ProjectData, selector_node):
 			stage["actual_end"] = -1.0
 			stage["is_completed"] = false
 
-		# === БАГФИКС: Для FAILED проектов — незавершённые этапы тоже показываем как readonly ===
 		var stage_readonly = is_readonly or stage.get("is_completed", false)
 
-		# Если проект провален и этап НЕ завершён, но у него есть completed_worker_names
-		# (заполненные _freeze_stage_workers при провале) — показываем их как readonly
 		if is_failed and not stage.get("is_completed", false):
-			if stage.get("completed_worker_names", []).size() > 0:
-				stage_readonly = true
+			stage_readonly = true
+			stage["is_completed"] = true
+			if stage.get("actual_start", -1.0) != -1.0 and stage.get("actual_end", -1.0) == -1.0:
+				stage["actual_end"] = project.elapsed_days
 
-		# === ДЕБАГ-ПРИНТЫ ===
-		print("=== DEBUG [stage ", i, "] ===")
-		print("  track_scene = ", track_scene)
-		print("  track_scene.resource_path = ", track_scene.resource_path if track_scene else "NULL")
 		var new_track = track_scene.instantiate()
-		print("  new_track = ", new_track)
-		print("  new_track class = ", new_track.get_class())
-		print("  new_track script = ", new_track.get_script())
-		print("  new_track has method 'setup' = ", new_track.has_method("setup"))
-		if new_track.get_script():
-			print("  script resource_path = ", new_track.get_script().resource_path)
 		tracks_container.add_child(new_track)
-		print("  calling new_track.setup(", i, ", <stage dict>, ", stage_readonly, ")")
 		new_track.setup(i, stage, stage_readonly)
-		# === КОНЕЦ ДЕБАГ-ПРИНТОВ ===
 
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
 		new_track.worker_removed.connect(_on_worker_removed)
@@ -99,11 +85,17 @@ func setup(data: ProjectData, selector_node):
 	update_buttons_visibility()
 	create_time_line_if_needed()
 	call_deferred("recalculate_schedule_preview")
+	
+	_update_budget_display()
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
-	cancel_btn.pressed.connect(_on_cancel_pressed)
+	
+	var cancel_node = $MainLayout/ContentWrapper/Body/Footer/CancelButton
+	if cancel_node:
+		cancel_node.queue_free()
+
 	start_btn.pressed.connect(_on_start_pressed)
 	close_window_btn.pressed.connect(func():
 		if UITheme:
@@ -112,14 +104,95 @@ func _ready():
 			visible = false
 	)
 
-	# Применяем шрифт
+	# === ИСПРАВЛЕНИЕ: Активный зелёный дизайн кнопки "Начать проект" ===
+	var start_style_normal = StyleBoxFlat.new()
+	start_style_normal.bg_color = Color(1, 1, 1, 1)
+	start_style_normal.border_width_left = 2
+	start_style_normal.border_width_top = 2
+	start_style_normal.border_width_right = 2
+	start_style_normal.border_width_bottom = 2
+	start_style_normal.border_color = color_green_main
+	start_style_normal.corner_radius_top_left = 20
+	start_style_normal.corner_radius_top_right = 20
+	start_style_normal.corner_radius_bottom_right = 20
+	start_style_normal.corner_radius_bottom_left = 20
+
+	var start_style_hover = StyleBoxFlat.new()
+	start_style_hover.bg_color = color_green_main
+	start_style_hover.border_width_left = 2
+	start_style_hover.border_width_top = 2
+	start_style_hover.border_width_right = 2
+	start_style_hover.border_width_bottom = 2
+	start_style_hover.border_color = color_green_main
+	start_style_hover.corner_radius_top_left = 20
+	start_style_hover.corner_radius_top_right = 20
+	start_style_hover.corner_radius_bottom_right = 20
+	start_style_hover.corner_radius_bottom_left = 20
+
+	start_btn.add_theme_stylebox_override("normal", start_style_normal)
+	start_btn.add_theme_stylebox_override("hover", start_style_hover)
+	start_btn.add_theme_stylebox_override("pressed", start_style_hover)
+	
+	start_btn.add_theme_color_override("font_color", color_green_main)
+	start_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	start_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+
+	# Красивый стиль для неактивной (серой) кнопки "Начать проект"
+	var disabled_style = StyleBoxFlat.new()
+	disabled_style.bg_color = Color(0.93, 0.93, 0.93, 1) 
+	disabled_style.border_width_left = 2
+	disabled_style.border_width_top = 2
+	disabled_style.border_width_right = 2
+	disabled_style.border_width_bottom = 2
+	disabled_style.border_color = Color(0.8, 0.8, 0.8, 1)
+	disabled_style.corner_radius_top_left = 20
+	disabled_style.corner_radius_top_right = 20
+	disabled_style.corner_radius_bottom_right = 20
+	disabled_style.corner_radius_bottom_left = 20
+	start_btn.add_theme_stylebox_override("disabled", disabled_style)
+	start_btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
+
 	if UITheme:
 		UITheme.apply_font(title_label, "bold")
 		UITheme.apply_font(deadline_label, "regular")
 		UITheme.apply_font(budget_label, "bold")
 		UITheme.apply_font(start_btn, "semibold")
-		UITheme.apply_font(cancel_btn, "semibold")
 		UITheme.apply_font(close_window_btn, "semibold")
+
+func _update_budget_display():
+	if not project: return
+	var current_payout = project.budget
+	var is_penalty = false
+	var is_failed = false
+
+	if project.state == ProjectData.State.FAILED:
+		current_payout = 0
+		is_failed = true
+	elif project.state == ProjectData.State.FINISHED:
+		var finish_day = project.created_at_day
+		if project.start_global_time > 0:
+			var last_end = 0.0
+			for s in project.stages:
+				if s.get("actual_end", -1.0) > last_end:
+					last_end = s["actual_end"]
+			finish_day = int(project.start_global_time + last_end)
+		current_payout = project.get_final_payout(finish_day)
+		if current_payout < project.budget:
+			is_penalty = true
+	else:
+		current_payout = project.get_final_payout(GameTime.day)
+		if current_payout < project.budget:
+			is_penalty = true
+
+	if is_failed:
+		budget_label.text = "Бюджет: $0 (Провал)"
+		budget_label.add_theme_color_override("font_color", Color(0.85, 0.21, 0.21))
+	elif is_penalty:
+		budget_label.text = "Бюджет: $%d" % current_payout
+		budget_label.add_theme_color_override("font_color", Color(0.9, 0.72, 0.04))
+	else:
+		budget_label.text = "Бюджет: $%d" % project.budget
+		budget_label.add_theme_color_override("font_color", Color(0.3, 0.69, 0.31))
 
 func _migrate_stage(stage: Dictionary):
 	if stage.has("worker"):
@@ -134,10 +207,8 @@ func _migrate_stage(stage: Dictionary):
 func update_buttons_visibility():
 	if project.state == ProjectData.State.IN_PROGRESS or project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
 		start_btn.visible = false
-		cancel_btn.visible = false
 	else:
 		start_btn.visible = true
-		cancel_btn.visible = true
 
 func get_current_global_time() -> float:
 	var day_part = float(GameTime.hour) / 24.0
@@ -152,15 +223,11 @@ func _on_start_pressed():
 	print("КНОПКА СТАРТ: Записано время старта: ", project.start_global_time)
 	update_buttons_visibility()
 
-func _on_cancel_pressed():
-	if UITheme:
-		UITheme.fade_out(self, 0.15)
-	else:
-		visible = false
-
 func _process(delta):
 	if not project: return
 	if not visible: return
+	
+	_update_budget_display()
 
 	var origin_day = project.created_at_day
 	var origin_time = _get_origin_time()

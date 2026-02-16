@@ -20,11 +20,11 @@ var stage_data: Dictionary = {}
 var is_readonly: bool = false
 var is_stage_completed: bool = false
 
-var _btn_style: StyleBox = null
-var _btn_font_color: Color = Color.WHITE
-var _btn_min_size: Vector2 = Vector2(180, 40)
-
 var _buttons_container: VBoxContainer = null
+
+# Цвета для нового дизайна
+var color_main_text = Color(0.17254902, 0.30980393, 0.5686275, 1) # Тот самый темно-синий
+var color_hover_bg = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func setup(index: int, data: Dictionary, readonly: bool = false):
 	stage_index = index
@@ -38,7 +38,11 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 		UITheme.apply_font(role_label, "semibold")
 		UITheme.apply_font(progress_label, "semibold")
 
-	_capture_original_style()
+	# Убираем старую дефолтную кнопку навсегда
+	if original_btn:
+		original_btn.visible = false
+		original_btn.queue_free()
+
 	rebuild_worker_buttons()
 
 	visual_bar.visible = false
@@ -47,45 +51,88 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 func _ready():
 	pass
 
-func _capture_original_style():
-	if original_btn:
-		var style = original_btn.get_theme_stylebox("normal")
-		if style:
-			_btn_style = style.duplicate()
-		_btn_font_color = original_btn.get_theme_color("font_color")
-		_btn_min_size = original_btn.custom_minimum_size
-		original_btn.visible = false
-
+# === ИСПРАВЛЕНИЕ: Кнопка "Назначить" с нужными скруглениями и ховером ===
 func _create_styled_button(text: String) -> Button:
 	var btn = Button.new()
 	btn.text = text
-	btn.custom_minimum_size = _btn_min_size
-	if _btn_style:
-		btn.add_theme_stylebox_override("normal", _btn_style.duplicate())
-	btn.add_theme_color_override("font_color", _btn_font_color)
+	btn.custom_minimum_size = Vector2(180, 40)
+	
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(1, 1, 1, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_bottom = 2
+	style_normal.border_color = color_main_text
+	style_normal.corner_radius_top_left = 20
+	style_normal.corner_radius_top_right = 20
+	style_normal.corner_radius_bottom_right = 20
+	style_normal.corner_radius_bottom_left = 20
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = color_hover_bg
+	style_hover.border_width_left = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_bottom = 2
+	style_hover.border_color = color_hover_bg
+	style_hover.corner_radius_top_left = 20
+	style_hover.corner_radius_top_right = 20
+	style_hover.corner_radius_bottom_right = 20
+	style_hover.corner_radius_bottom_left = 20
+
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_hover)
+	
+	btn.add_theme_color_override("font_color", color_main_text)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	
 	if UITheme: UITheme.apply_font(btn, "semibold")
+	
 	return btn
 
+# === ИСПРАВЛЕНИЕ: Кнопка "Удалить" (минус) в том же стиле ===
 func _create_remove_button() -> Button:
 	var btn = Button.new()
 	btn.text = "−"
 	btn.custom_minimum_size = Vector2(30, 30)
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(1, 1, 1, 1)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	btn.add_theme_stylebox_override("normal", style)
-	btn.add_theme_stylebox_override("hover", style.duplicate())
-	btn.add_theme_stylebox_override("pressed", style.duplicate())
-	btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(1, 1, 1, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_bottom = 2
+	style_normal.border_color = color_main_text
+	style_normal.corner_radius_top_left = 10
+	style_normal.corner_radius_top_right = 10
+	style_normal.corner_radius_bottom_right = 10
+	style_normal.corner_radius_bottom_left = 10
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = color_hover_bg
+	style_hover.border_width_left = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_bottom = 2
+	style_hover.border_color = color_hover_bg
+	style_hover.corner_radius_top_left = 10
+	style_hover.corner_radius_top_right = 10
+	style_hover.corner_radius_bottom_right = 10
+	style_hover.corner_radius_bottom_left = 10
+
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_hover)
+	
+	btn.add_theme_color_override("font_color", color_main_text)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	
 	if UITheme: UITheme.apply_font(btn, "bold")
+	
 	return btn
 
 func rebuild_worker_buttons():
@@ -141,7 +188,7 @@ func rebuild_worker_buttons():
 
 		var name_label = Label.new()
 		name_label.text = "👤 " + worker.employee_name
-		name_label.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		name_label.add_theme_color_override("font_color", color_main_text)
 		name_label.custom_minimum_size = Vector2(140, 30)
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -152,7 +199,6 @@ func rebuild_worker_buttons():
 
 	if not is_readonly:
 		var add_btn = _create_styled_button("+ Назначить")
-		add_btn.modulate = Color.WHITE
 		add_btn.pressed.connect(func(): emit_signal("assignment_requested", stage_index))
 		_buttons_container.add_child(add_btn)
 
