@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://g6438sydtkj"]
+
+[ext_resource type="Script" uid="uid://bsj6qpam2th61" path="res://Scripts/boss_desk.gd" id="1_rgqsi"]
+[ext_resource type="Texture2D" uid="uid://cphov4wpd03ef" path="res://Sprites/Office/boss.png" id="2_smvyy"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_me6e5"]
+size = Vector2(82, 164)
+
+[node name="Boss" type="StaticBody2D"]
+script = ExtResource("1_rgqsi")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_smvyy")
+offset = Vector2(0, -90)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1, -78)
+shape = SubResource("RectangleShape2D_me6e5")

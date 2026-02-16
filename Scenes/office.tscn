@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://fvk50dhrrui7" path="res://Sprites/Office/full_office5.png" id="2_oaeid"]
 [ext_resource type="PackedScene" uid="uid://cebrvtrf38laf" path="res://Scenes/player.tscn" id="2_vggx3"]
-[ext_resource type="Texture2D" uid="uid://cphov4wpd03ef" path="res://Sprites/Office/boss.png" id="5_q644x"]
 [ext_resource type="PackedScene" uid="uid://l6ojv8bflski" path="res://Scenes/hud.tscn" id="6_7xo7e"]
 [ext_resource type="PackedScene" uid="uid://cmjsjpufedl22" path="res://Scenes/ComputerDesk.tscn" id="7_eqlnk"]
 [ext_resource type="PackedScene" uid="uid://800ken273kfj" path="res://Scenes/EmployeeDesk.tscn" id="8_2vylc"]
@@ -20,6 +19,7 @@
 [ext_resource type="PackedScene" uid="uid://dbkt45r0pwr26" path="res://Scenes/Mebel/tumbochka.tscn" id="16_ari0y"]
 [ext_resource type="PackedScene" uid="uid://ss2qipw67vmd" path="res://Scenes/Mebel/sofa.tscn" id="17_oqaoe"]
 [ext_resource type="Texture2D" uid="uid://dpvwemp6qprgh" path="res://Sprites/Office/panel.png" id="18_ari0y"]
+[ext_resource type="PackedScene" uid="uid://g6438sydtkj" path="res://Scenes/Boss.tscn" id="19_2uc8b"]
 [ext_resource type="PackedScene" uid="uid://dguf0rohhwl1p" path="res://Scenes/Mebel/lamp.tscn" id="21_2uc8b"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_o84nh"]
@@ -153,12 +153,8 @@ position = Vector2(-183, 51)
 [node name="ComputerDesk" parent="WorldObjects" instance=ExtResource("7_eqlnk")]
 position = Vector2(-171, -157)
 
-[node name="Boss" type="Sprite2D" parent="WorldObjects"]
-position = Vector2(1657, -848)
-texture = ExtResource("5_q644x")
-
 [node name="BossDesk" parent="WorldObjects" instance=ExtResource("8_o84nh")]
-position = Vector2(1634, -768)
+position = Vector2(1632, -852)
 
 [node name="HrDesk" parent="WorldObjects" instance=ExtResource("10_4luf0")]
 position = Vector2(2384, -684)
@@ -182,6 +178,10 @@ position = Vector2(862, -120)
 position = Vector2(425, -332)
 texture = ExtResource("9_rs1ao")
 
+[node name="Board" type="Sprite2D" parent="WorldObjects/Board"]
+position = Vector2(1219, -771)
+texture = ExtResource("9_rs1ao")
+
 [node name="Plant2" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(-329, -142)
 scale = Vector2(0.47151896, 0.47151905)
@@ -202,6 +202,9 @@ texture = ExtResource("9_rs1ao")
 
 [node name="Flipchart" parent="WorldObjects" instance=ExtResource("12_s31ab")]
 position = Vector2(700, -124)
+
+[node name="Flipchart" parent="WorldObjects/Flipchart" instance=ExtResource("12_s31ab")]
+position = Vector2(473, -788)
 
 [node name="Toilet" parent="WorldObjects" instance=ExtResource("13_kn5q7")]
 position = Vector2(2720, -544)
@@ -225,6 +228,9 @@ position = Vector2(1567, 718)
 
 [node name="Lampa" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_2uc8b")]
 position = Vector2(1381, 728)
+
+[node name="Boss2" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2uc8b")]
+position = Vector2(1380, -763)
 
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
 
