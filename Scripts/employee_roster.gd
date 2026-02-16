@@ -513,6 +513,7 @@ func _create_hidden_trait() -> HBoxContainer:
 	return hbox
 
 # === ИСПРАВЛЕНИЕ: Вытягиваем цвет из узла и чиним размер текстуры ===
+# === ИСПРАВЛЕНИЕ: Вытягиваем цвет из узла и чиним размер текстуры ===
 func _create_employee_sprite(npc_node) -> CenterContainer:
 	var center = CenterContainer.new()
 	center.custom_minimum_size = Vector2(55, 70)
@@ -522,14 +523,23 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 	inner.custom_minimum_size = Vector2(36, 54)
 	center.add_child(inner)
 
-	# Вытаскиваем реальный цвет из физического NPC
+	# Вытаскиваем реальные цвета из физического NPC
 	var body_color = Color.WHITE
-	if npc_node and "personal_color" in npc_node:
-		body_color = npc_node.personal_color
+	var head_color = Color.WHITE # <-- Дефолтный цвет головы
+	
+	if npc_node:
+		if "personal_color" in npc_node:
+			body_color = npc_node.personal_color
+			
+		# Проверяем, как у тебя называется переменная цвета головы в NPC
+		if "head_color" in npc_node:
+			head_color = npc_node.head_color
+		elif "skin_color" in npc_node: # На случай, если ты назвал её skin_color
+			head_color = npc_node.skin_color
 
 	var body_tex = TextureRect.new()
 	body_tex.texture = _body_texture
-	body_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # <--- ФИКС РАЗМЕРА
+	body_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE 
 	body_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	body_tex.custom_minimum_size = Vector2(36, 45)
 	body_tex.size = Vector2(36, 45)
@@ -539,12 +549,13 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 
 	var head_tex = TextureRect.new()
 	head_tex.texture = _head_texture
-	head_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # <--- ФИКС РАЗМЕРА
+	head_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE 
 	head_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	head_tex.custom_minimum_size = Vector2(24, 24)
 	head_tex.size = Vector2(24, 24)
 	# Голова отцентрирована относительно тела (X = 6)
 	head_tex.position = Vector2(6, 0) 
+	head_tex.self_modulate = head_color # <-- КРАСИМ ГОЛОВУ ТУТ
 	inner.add_child(head_tex)
 
 	return center

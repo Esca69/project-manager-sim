@@ -65,8 +65,53 @@ var current_bubble: Node2D = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
 
-# Уникальный цвет одежды для персонализации
+# Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
+var skin_color: Color = Color.WHITE
+
+# Палитра из 20 уникальных, красивых и разнообразных цветов
+const CLOTHING_PALETTE: Array[Color] = [
+	Color("#FFADAD"), # Светло-красный
+	Color("#FFD6A5"), # Персиковый
+	Color("#FDFFB6"), # Светло-желтый
+	Color("#CAFFBF"), # Мятный
+	Color("#9BF6FF"), # Светло-голубой
+	Color("#A0C4FF"), # Небесно-синий
+	Color("#BDB2FF"), # Сиреневый
+	Color("#FFC6FF"), # Светло-розовый
+	Color("#F15BB5"), # Ярко-розовый
+	Color("#FEE440"), # Насыщенный желтый
+	Color("#00BBF9"), # Голубой
+	Color("#00F5D4"), # Аквамарин
+	Color("#8A2BE2"), # Фиолетовый
+	Color("#FF9F1C"), # Оранжевый
+	Color("#2EC4B6"), # Морская волна
+	Color("#E71D36"), # Карминно-красный
+	Color("#9C89B8"), # Приглушенный фиолетовый
+	Color("#F0A6CA"), # Пыльная роза
+	Color("#B8BEDD"), # Серо-голубой
+	Color("#99E2B4")  # Светло-зеленый
+]
+
+# --- ПАЛИТРЫ КОЖИ ПО КАТЕГОРИЯМ ВЕРОЯТНОСТИ ---
+const SKIN_LIGHT: Array[Color] = [
+	Color("#FFE0BD"), # Очень светлый
+	Color("#FFCD94"), # Светлый
+	Color("#fff0e1") # Как у ПМа
+]
+
+const SKIN_MEDIUM: Array[Color] = [
+	Color("#FFAD60"), # Золотистый
+	Color("#CB8E63"), # Загорелый
+	Color("#C68642"), # Смуглый
+	Color("#8D5524")  # Темно-смуглый
+]
+
+const SKIN_DARK: Array[Color] = [
+	Color("#61412A"), # Темный
+	Color("#4A2E1B"), # Очень темный
+	Color("#311A0E")  # Глубокий темный
+]
 
 @export var data: EmployeeData
 
@@ -94,10 +139,14 @@ func _ready():
 		
 		debug_label.label_settings = label_settings
 		debug_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		# Идеальное центрирование над головой
-		debug_label.position = Vector2(-20, -210)
-		debug_label.custom_minimum_size = Vector2(200, 50)
+		# Приподняли текст повыше, чтобы поместилась третья строка
+		debug_label.position = Vector2(-20, -230)
+		debug_label.custom_minimum_size = Vector2(200, 75)
 		debug_label.modulate.a = 0.0 
+		
+		# Делаем надписи всегда поверх столов и туалетов
+		debug_label.z_index = 50
+		debug_label.z_as_relative = false
 	
 	if data:
 		_assign_random_color()
@@ -110,13 +159,40 @@ func _ready():
 	GameTime.work_started.connect(_on_work_started)
 	GameTime.work_ended.connect(_on_work_ended)
 	GameTime.time_tick.connect(_on_time_tick)
+	GameTime.day_started.connect(_on_day_started)
 	
 	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
 		_go_to_sleep_instant()
 
 func _assign_random_color():
-	# Генерируем приятные пастельные цвета (через HSV)
-	personal_color = Color.from_hsv(randf(), randf_range(0.3, 0.55), randf_range(0.85, 1.0))
+	var available_colors = CLOTHING_PALETTE.duplicate()
+	
+	var tree = get_tree()
+	if tree == null:
+		tree = Engine.get_main_loop()
+	
+	if tree and tree.has_method("get_nodes_in_group"):
+		var npcs = tree.get_nodes_in_group("npc")
+		for npc in npcs:
+			if npc != self and "personal_color" in npc:
+				var idx = available_colors.find(npc.personal_color)
+				if idx != -1:
+					available_colors.remove_at(idx)
+	
+	if available_colors.is_empty():
+		personal_color = CLOTHING_PALETTE.pick_random()
+	else:
+		personal_color = available_colors.pick_random()
+
+	# --- ЖЕЛЕЗОБЕТОННАЯ ГЕНЕРАЦИЯ ЦВЕТА КОЖИ ---
+	var skin_roll = randi_range(1, 100) # Бросаем 100-гранный кубик
+	
+	if skin_roll <= 75: # Выпало от 1 до 60 (Шанс 60%)
+		skin_color = SKIN_LIGHT.pick_random()
+	elif skin_roll <= 90: # Выпало от 61 до 90 (Шанс 30%)
+		skin_color = SKIN_MEDIUM.pick_random()
+	else: # Выпало от 91 до 100 (Шанс 10%)
+		skin_color = SKIN_DARK.pick_random()
 
 func _setup_early_bird():
 	if not data or not data.has_trait("early_bird"):
@@ -129,8 +205,9 @@ func _setup_early_bird():
 	_early_bird_start_hour = start_total_minutes / 60
 	_early_bird_start_minute = start_total_minutes % 60
 
-func _reset_early_bird_for_new_day():
+func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
+	_setup_early_bird()
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
@@ -139,6 +216,8 @@ func _on_time_tick(_hour, _minute):
 	if _early_bird_arrived: return
 	if GameTime.is_weekend(): return
 	if current_state != State.HOME: return
+	
+	if GameTime.hour >= GameTime.END_HOUR: return
 	
 	var current_total = GameTime.hour * 60 + GameTime.minute
 	var early_total = _early_bird_start_hour * 60 + _early_bird_start_minute
@@ -167,14 +246,12 @@ func _arrive_early_bird():
 	else:
 		_start_wandering()
 
-# --- ЛОГИКА КАМЕРЫ И ПЛАВНОГО ПОЯВЛЕНИЯ ТЕКСТА ---
 func _process(delta):
 	var cam = get_viewport().get_camera_2d()
 	if cam and debug_label:
 		var z = cam.zoom.x
 		var target_alpha = 0.0
 		
-		# Текст плавно появляется, когда зум от 1.25 до 1.45 (камера близко)
 		if z >= 0.8:
 			target_alpha = 1.0
 		elif z > 1.05:
@@ -222,11 +299,9 @@ func _physics_process(delta):
 			_try_start_coffee_break()
 			_apply_lean(Vector2.ZERO, delta)
 			
-			# --- СИСТЕМА ФОНОВЫХ "РАБОЧИХ" МЫСЛЕЙ ---
 			_work_bubble_cooldown -= delta
 			if _work_bubble_cooldown <= 0.0:
 				_show_random_work_thought()
-				# Следующая мысль появится через 15-25 реальных секунд
 				_work_bubble_cooldown = randf_range(15.0, 25.0)
 			
 		State.MOVING, State.GOING_COFFEE, State.GOING_TOILET:
@@ -311,10 +386,6 @@ func _force_go_home():
 	if current_state == State.HOME or current_state == State.GOING_HOME:
 		return
 	
-	if data and data.has_trait("early_bird"):
-		_early_bird_arrived = false
-		_setup_early_bird()
-	
 	velocity = Vector2.ZERO
 	z_index = 0
 	
@@ -367,7 +438,6 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 	body_sprite.rotation = lerp(body_sprite.rotation, target_lean, LEAN_SPEED * delta)
 	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
 
-# --- СЛОНЯНИЕ ---
 func _is_work_time() -> bool:
 	if GameTime.is_weekend():
 		return false
@@ -404,7 +474,6 @@ func _pick_next_wander_target():
 	current_state = State.WANDERING
 	z_index = 0
 
-# --- КОФЕ ---
 func _try_start_coffee_break():
 	if data.current_energy > COFFEE_THRESHOLD:
 		return
@@ -415,8 +484,6 @@ func _try_start_coffee_break():
 		current_state = State.GOING_COFFEE
 		nav_agent.target_position = machine.get_spot_position()
 		z_index = 0
-		
-		# Перебиваем любую рабочую мысль важным перерывом
 		show_thought_bubble("☕")
 
 func _start_coffee_break():
@@ -447,7 +514,6 @@ func _finish_coffee_break():
 	else:
 		_force_go_home()
 
-# --- ТУАЛЕТ ---
 func _setup_toilet_schedule():
 	toilet_visit_times.clear()
 	toilet_visits_done = 0
@@ -477,8 +543,6 @@ func _try_start_toilet_break():
 		current_state = State.GOING_TOILET
 		nav_agent.target_position = toilet.get_spot_position()
 		z_index = 0
-		
-		# Перебиваем рабочую мысль походом в туалет
 		show_thought_bubble("🚽")
 
 func _start_toilet_break():
@@ -510,7 +574,6 @@ func _on_wander_arrived():
 	current_state = State.WANDER_PAUSE
 	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
 
-# --- ФУНКЦИИ УПРАВЛЕНИЯ ---
 func move_to_desk(target_point: Vector2):
 	my_desk_position = target_point
 	
@@ -568,10 +631,8 @@ func _on_navigation_finished():
 	current_state = State.WORKING
 	velocity = Vector2.ZERO
 	
-	# Как только сел за работу - сбрасываем таймер, чтобы вскоре появилась рабочая мысль
 	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
-# --- ЛОГИКА ДЕНЬ/НОЧЬ ---
 func _on_work_started():
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		if current_state != State.HOME:
@@ -637,7 +698,6 @@ func _go_to_sleep_instant():
 	current_state = State.HOME
 	velocity = Vector2.ZERO
 
-# --- ВИЗУАЛ И ИНТЕРФЕЙС ---
 func start_breathing_animation():
 	if not body_sprite: return
 	var tween = create_tween()
@@ -654,15 +714,16 @@ func setup_employee(new_data: EmployeeData):
 	_setup_early_bird()
 
 func update_visuals():
-	if not body_sprite: return
-	body_sprite.self_modulate = personal_color
+	if body_sprite:
+		body_sprite.self_modulate = personal_color
+	if head_sprite:
+		head_sprite.self_modulate = skin_color
 
 func interact():
 	var hud = get_tree().get_first_node_in_group("ui")
 	if hud and data:
 		hud.show_employee_card(data)
 
-# --- ПЕРЕВОД СОСТОЯНИЙ В ЧЕЛОВЕЧЕСКИЙ ТЕКСТ ---
 func get_human_state_name() -> String:
 	match current_state:
 		State.IDLE: return "ждёт задачу"
@@ -686,9 +747,21 @@ func get_human_state_name() -> String:
 func update_status_label():
 	if debug_label and data:
 		var action_text = get_human_state_name()
-		debug_label.text = data.employee_name + "\n" + action_text
+		
+		# Определяем аббревиатуру роли
+		var short_role = ""
+		if data.job_title == "Backend Developer":
+			short_role = "DEV"
+		elif data.job_title == "Business Analyst":
+			short_role = "BA"
+		elif data.job_title == "QA Engineer":
+			short_role = "QA"
+		else:
+			short_role = data.job_title # Если попалась другая роль, выводим её как есть
+		
+		# Добавляем роль верхней строкой
+		debug_label.text = short_role + "\n" + data.employee_name + "\n" + action_text
 
-# --- СИСТЕМА МЫСЛЕЙ (THOUGHT BUBBLES: EMOJI) ---
 func _show_random_work_thought():
 	var emoji = "💼"
 	if data:
@@ -697,11 +770,8 @@ func _show_random_work_thought():
 		elif data.job_title == "Business Analyst": emoji = "📝" 
 		elif data.job_title == "QA Engineer": emoji = "🐞" 
 	
-	# Вызываем рабочую мысль на короткое время (3 секунды)
 	show_thought_bubble(emoji, 3.0)
 
-# Теперь функция принимает строку с эмодзи и опциональное время жизни (по умолчанию 9 сек)
-# Теперь функция принимает строку с эмодзи и опциональное время жизни (по умолчанию 9 сек)
 func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	if is_instance_valid(current_bubble):
 		current_bubble.queue_free()
@@ -715,10 +785,8 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	var panel = Panel.new()
 	current_bubble.add_child(panel)
 	
-	# ЖЕСТКО фиксируем размер, чтобы панель была идеальным квадратом
 	panel.custom_minimum_size = Vector2(72, 72)
 	panel.size = Vector2(72, 72)
-	# Центрируем панель относительно Node2D (-36 это ровно половина от 72)
 	panel.position = Vector2(-36, -36) 
 
 	var style = StyleBoxFlat.new()
@@ -736,18 +804,15 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	style.shadow_size = 4
 	panel.add_theme_stylebox_override("panel", style)
 
-	# Создаем Label
 	var label = Label.new()
 	panel.add_child(label)
 	
-	# ЖЕСТКО привязываем размеры Label к размерам панели
 	label.custom_minimum_size = Vector2(72, 72)
 	label.size = Vector2(72, 72)
-	label.position = Vector2.ZERO # Начинаем отрисовку ровно в левом верхнем углу панели
+	label.position = Vector2.ZERO
 	
 	label.text = emoji_text
 	
-	# Настройки центрирования самого текста внутри Label
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 

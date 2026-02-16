@@ -25,6 +25,13 @@ var _current_hint_target = null
 func _ready():
 	target_zoom = camera.zoom
 	_create_interact_hint()
+	
+	# --- НАСТРОЙКА ЦВЕТА ИГРОКА ---
+	# Светло-синий (офисная рубашка). Используем self_modulate, чтобы не покрасить голову!
+	body_sprite.self_modulate = Color("#a2c5ea") 
+	
+	# Самый светлый оттенок кожи (light skin) для головы
+	head_sprite.self_modulate = Color("#fff0e1")
 
 func _create_interact_hint():
 	_interact_hint = PanelContainer.new()

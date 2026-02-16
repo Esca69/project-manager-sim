@@ -29,8 +29,10 @@ func _ready():
 	_build_ui()
 
 func open():
-	_was_paused_before = get_tree().paused
-	get_tree().paused = true
+	# --- ИСПРАВЛЕНИЕ: Читаем состояние из GameTime и ставим паузу через него ---
+	_was_paused_before = GameTime.is_game_paused
+	GameTime.set_paused(true)
+	
 	_populate()
 	# Анимация появления
 	if UITheme:
@@ -41,13 +43,18 @@ func open():
 func _close():
 	if UITheme:
 		UITheme.fade_out(self, 0.2)
-		# Ждём окончания анимации
-		await get_tree().create_timer(0.2).timeout
+		# --- ИСПРАВЛЕНИЕ: Ждём окончания анимации. 
+		# Флаги (true, false, true) заставляют таймер работать даже если игра на паузе или time_scale = 0 ---
+		await get_tree().create_timer(0.2, true, false, true).timeout
 	else:
 		visible = false
+	
 	visible = false
+	
+	# --- ИСПРАВЛЕНИЕ: Снимаем паузу только если её не было до открытия отчёта ---
 	if not _was_paused_before:
-		get_tree().paused = false
+		GameTime.set_paused(false)
+		
 	GameTime.start_night_skip()
 
 # === ПОСТРОЕНИЕ КАРКАСА UI ===
@@ -267,7 +274,7 @@ func _build_finance_section():
 		var salary_details = GameState.daily_salary_details
 		if salary_details.size() > 0:
 			var details_lbl = Label.new()
-			details_lbl.text = "    Зарплаты:"
+			details_lbl.text = "    Зарплаты:"
 			details_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 			details_lbl.add_theme_font_size_override("font_size", 12)
 			if UITheme: UITheme.apply_font(details_lbl, "regular")
@@ -276,7 +283,7 @@ func _build_finance_section():
 				var emp_name: String = entry["name"]
 				var amount: int = entry["amount"]
 				var det_lbl = Label.new()
-				det_lbl.text = "        • %s — $%d" % [emp_name, amount]
+				det_lbl.text = "        • %s — $%d" % [emp_name, amount]
 				det_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 				det_lbl.add_theme_font_size_override("font_size", 12)
 				if UITheme: UITheme.apply_font(det_lbl, "regular")
@@ -456,7 +463,7 @@ func _build_employees_section():
 			idle_list.append(npc.data)
 
 	var summary_lbl = Label.new()
-	summary_lbl.text = "👥 Всего: %d  |  🔧 Работали: %d  |  💤 Простаивали: %d" % [total_count, worked_list.size(), idle_list.size()]
+	summary_lbl.text = "👥 Всего: %d  |  🔧 Работали: %d  |  💤 Простаивали: %d" % [total_count, worked_list.size(), idle_list.size()]
 	summary_lbl.add_theme_color_override("font_color", COLOR_DARK)
 	summary_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(summary_lbl, "semibold")
@@ -529,7 +536,7 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	margin.add_child(hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -586,7 +593,7 @@ func _create_employee_card_idle(emp: EmployeeData) -> PanelContainer:
 	margin.add_child(hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
 	name_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -698,7 +705,7 @@ func _build_levelups_section():
 		var detail_text = "Навык +%d" % entry["skill_gain"]
 		if entry["new_trait"] != "":
 			var trait_name = EmployeeData.TRAIT_NAMES.get(entry["new_trait"], entry["new_trait"])
-			detail_text += "  |  Новый трейт: %s" % trait_name
+			detail_text += "  |  Новый трейт: %s" % trait_name
 		var detail_lbl = Label.new()
 		detail_lbl.text = detail_text
 		detail_lbl.add_theme_color_override("font_color", COLOR_DARK)
