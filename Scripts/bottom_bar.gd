@@ -37,6 +37,7 @@ func _ready():
 	_add_tab_button("👥 Сотрудники", "employees")
 	_add_tab_button("🤝 Заказчики", "clients")
 	_add_tab_button("🧠 Навыки PM", "pm_skills")
+	_add_tab_button("🏢 Босс", "boss")
 
 func _add_tab_button(label_text: String, tab_name: String):
 	var btn = Button.new()

@@ -24,6 +24,7 @@ PMData="*res://Scripts/pm_data.gd"
 AudioManager="*res://Scripts/audio_manager.gd"
 UITheme="*res://Scripts/ui_theme.gd"
 ClientManager="*res://Scripts/client_manager.gd"
+BossManager="*res://Scripts/boss_manager.gd"
 
 [display]
 

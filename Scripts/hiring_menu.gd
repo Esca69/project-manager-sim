@@ -382,6 +382,11 @@ func _on_hire_pressed(index):
 	PMData.add_xp(5)
 	print("🎯 PM +5 XP за найм сотрудника")
 
+	# === Трекинг найма для BossManager ===
+	var bm = get_node_or_null("/root/BossManager")
+	if bm:
+		bm.track_hire()
+
 	candidates[index] = null
 
 	# Анимация исчезновения карточки

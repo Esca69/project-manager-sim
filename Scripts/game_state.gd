@@ -43,11 +43,19 @@ func change_balance(amount: int):
 func add_income(amount: int):
 	daily_income += amount
 	change_balance(amount)
+	# === Трекинг для BossManager ===
+	var bm = get_node_or_null("/root/BossManager")
+	if bm:
+		bm.track_income(amount)
 
 # Списание расхода (зарплаты и т.д.)
 func add_expense(amount: int):
 	daily_expenses += amount
 	change_balance(-amount)
+	# === Трекинг для BossManager ===
+	var bm = get_node_or_null("/root/BossManager")
+	if bm:
+		bm.track_expense(amount)
 
 # --- ФУНКЦИЯ ВЫПЛАТЫ ЗАРПЛАТ ---
 func pay_daily_salaries():

@@ -32,6 +32,11 @@ var _pm_xp_label: Label
 # --- Day Summary ---
 var _day_summary: Control
 
+# --- Boss UI ---
+var _boss_panel: Control
+var _boss_quest_screen: Control
+var _boss_report_screen: Control
+
 # === ОБСУЖДЕНИЕ С БОССОМ ===
 var _is_discussing: bool = false
 var _discuss_project: ProjectData = null
@@ -128,6 +133,7 @@ func _ready():
 	call_deferred("_apply_fonts")
 
 	_build_day_summary()
+	_build_boss_ui()
 
 	# Тик времени для обсуждения
 	GameTime.time_tick.connect(_on_discuss_time_tick)
@@ -158,6 +164,42 @@ func _build_day_summary():
 	_day_summary.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_day_summary.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_day_summary)
+
+# --- BOSS UI ---
+func _build_boss_ui():
+	# Панель "Босс" (вкладка)
+	var boss_panel_script = load("res://Scripts/boss_panel.gd")
+	_boss_panel = Control.new()
+	_boss_panel.set_script(boss_panel_script)
+	_boss_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_boss_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_boss_panel)
+
+	# Экран выдачи квеста
+	var quest_screen_script = load("res://Scripts/boss_quest_screen.gd")
+	_boss_quest_screen = Control.new()
+	_boss_quest_screen.set_script(quest_screen_script)
+	_boss_quest_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_boss_quest_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_boss_quest_screen)
+
+	# Экран отчёта
+	var report_screen_script = load("res://Scripts/boss_report_screen.gd")
+	_boss_report_screen = Control.new()
+	_boss_report_screen.set_script(report_screen_script)
+	_boss_report_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_boss_report_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_boss_report_screen)
+
+# === ОТКРЫТЬ ЭКРАН КВЕСТА БОССА ===
+func open_boss_quest(quest: Dictionary):
+	if _boss_quest_screen:
+		_boss_quest_screen.open(quest)
+
+# === ОТКРЫТЬ ЭКРАН ОТЧЁТА БОССА ===
+func open_boss_report(report: Dictionary):
+	if _boss_report_screen:
+		_boss_report_screen.open(report)
 
 # --- PM LEVEL UI ---
 func _build_pm_level_ui():
@@ -311,6 +353,9 @@ func is_any_menu_open() -> bool:
 	if client_panel.visible: return true
 
 	if _day_summary and _day_summary.visible: return true
+	if _boss_panel and _boss_panel.visible: return true
+	if _boss_quest_screen and _boss_quest_screen.visible: return true
+	if _boss_report_screen and _boss_report_screen.visible: return true
 
 	var hiring_menu = get_node_or_null("HiringMenu")
 	if hiring_menu and hiring_menu.visible: return true
@@ -405,6 +450,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 			else:
 				pm_skill_tree.visible = false
 				client_panel.visible = false
+				if _boss_panel: _boss_panel.visible = false
 				employee_roster.open()
 				if UITheme and employee_roster.modulate.a < 1.0:
 					employee_roster.modulate.a = 1.0
@@ -417,6 +463,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 			else:
 				employee_roster.visible = false
 				client_panel.visible = false
+				if _boss_panel: _boss_panel.visible = false
 				pm_skill_tree.open()
 				if UITheme and pm_skill_tree.modulate.a < 1.0:
 					pm_skill_tree.modulate.a = 1.0
@@ -429,12 +476,24 @@ func _on_bottom_tab_pressed(tab_name: String):
 			else:
 				employee_roster.visible = false
 				pm_skill_tree.visible = false
+				if _boss_panel: _boss_panel.visible = false
 				client_panel.open()
+		"boss":
+			if _boss_panel and _boss_panel.visible:
+				if UITheme:
+					UITheme.fade_out(_boss_panel)
+				else:
+					_boss_panel.visible = false
+			elif _boss_panel:
+				employee_roster.visible = false
+				pm_skill_tree.visible = false
+				client_panel.visible = false
+				_boss_panel.open()
 
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
 	if _is_discussing:
-		print("Нельзя закончить день: PM обсуждает проект!")
+		print("Нельзя закончить день: PM обс��ждает проект!")
 		return
 	end_day_button.visible = false
 
