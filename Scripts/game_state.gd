@@ -76,6 +76,8 @@ func pay_daily_salaries():
 
 	if total_daily_cost > 0:
 		add_expense(total_daily_cost)
+		# === ТРЕКИНГ ДЛЯ БОССА ===
+		BossManager.track_expense(total_daily_cost)
 		print("Всего выплачено за день: ", total_daily_cost, "$")
 	else:
 		print("Некому платить зарплату. Бюджет цел.")

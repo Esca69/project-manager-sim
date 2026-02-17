@@ -1,54 +1,104 @@
 extends Control
 
 # === UI экран: Отчёт по результатам прошлого месяца ===
+# Переделан в стиль client_panel: синий хедер, overlay, Inter шрифт
 
+const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
+const COLOR_WHITE = Color(1, 1, 1, 1)
+const COLOR_DARK = Color(0.2, 0.2, 0.2, 1)
+const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
+const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_RED = Color(0.8980392, 0.22352941, 0.20784314, 1)
+const COLOR_ORANGE = Color(0.85, 0.55, 0.0, 1)
+const COLOR_TRUST = Color(0.85, 0.55, 0.0, 1)
+const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
+
+var _overlay: ColorRect
+var _window: PanelContainer
 var _content_vbox: VBoxContainer
 
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	z_index = 95
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
 
 func _build_ui():
-	var bg = ColorRect.new()
-	bg.color = Color(0, 0, 0, 0.6)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(bg)
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.5)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
 
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	_window = PanelContainer.new()
+	_window.custom_minimum_size = Vector2(750, 0)
+	_window.set_anchors_preset(Control.PRESET_CENTER)
+	_window.offset_left = -375
+	_window.offset_top = -300
+	_window.offset_right = 375
+	_window.offset_bottom = 300
+	_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_window.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(700, 0)
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(1, 1, 1, 1)
-	style.corner_radius_top_left = 20
-	style.corner_radius_top_right = 20
-	style.corner_radius_bottom_right = 20
-	style.corner_radius_bottom_left = 20
-	style.border_width_left = 3
-	style.border_width_top = 3
-	style.border_width_right = 3
-	style.border_width_bottom = 3
-	style.border_color = Color(0.17, 0.31, 0.57, 1)
-	if UITheme: UITheme.apply_shadow(style)
-	panel.add_theme_stylebox_override("panel", style)
-	center.add_child(panel)
+	var window_style = StyleBoxFlat.new()
+	window_style.bg_color = COLOR_WHITE
+	window_style.border_width_left = 3
+	window_style.border_width_top = 3
+	window_style.border_width_right = 3
+	window_style.border_width_bottom = 3
+	window_style.border_color = COLOR_WINDOW_BORDER
+	window_style.corner_radius_top_left = 22
+	window_style.corner_radius_top_right = 22
+	window_style.corner_radius_bottom_right = 20
+	window_style.corner_radius_bottom_left = 20
+	if UITheme: UITheme.apply_shadow(window_style, false)
+	_window.add_theme_stylebox_override("panel", window_style)
+	add_child(_window)
 
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 30)
-	margin.add_theme_constant_override("margin_top", 25)
-	margin.add_theme_constant_override("margin_right", 30)
-	margin.add_theme_constant_override("margin_bottom", 25)
-	panel.add_child(margin)
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 0)
+	_window.add_child(main_vbox)
+
+	# === СИНИЙ ХЕДЕР ===
+	var header_panel = Panel.new()
+	header_panel.custom_minimum_size = Vector2(0, 40)
+	var header_style = StyleBoxFlat.new()
+	header_style.bg_color = COLOR_BLUE
+	header_style.border_color = COLOR_WINDOW_BORDER
+	header_style.corner_radius_top_left = 20
+	header_style.corner_radius_top_right = 20
+	header_panel.add_theme_stylebox_override("panel", header_style)
+	main_vbox.add_child(header_panel)
+
+	var title_label = Label.new()
+	title_label.text = "📊 Итоги месяца"
+	title_label.set_anchors_preset(Control.PRESET_CENTER)
+	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	title_label.offset_left = -120
+	title_label.offset_top = -11.5
+	title_label.offset_right = 120
+	title_label.offset_bottom = 11.5
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(title_label, "bold")
+	header_panel.add_child(title_label)
+
+	# === КОНТЕНТ ===
+	var content_margin = MarginContainer.new()
+	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_margin.add_theme_constant_override("margin_left", 30)
+	content_margin.add_theme_constant_override("margin_top", 20)
+	content_margin.add_theme_constant_override("margin_right", 30)
+	content_margin.add_theme_constant_override("margin_bottom", 25)
+	main_vbox.add_child(content_margin)
 
 	_content_vbox = VBoxContainer.new()
-	_content_vbox.add_theme_constant_override("separation", 14)
-	margin.add_child(_content_vbox)
+	_content_vbox.add_theme_constant_override("separation", 12)
+	content_margin.add_child(_content_vbox)
 
 func open(report: Dictionary):
 	for child in _content_vbox.get_children():
@@ -59,20 +109,11 @@ func open(report: Dictionary):
 	var total_trust = report.get("total_trust", 0)
 	var was_impossible = report.get("was_impossible", false)
 
-	# Заголовок
-	var title = Label.new()
-	title.text = "📊 Итоги месяца %d" % month
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if UITheme: UITheme.apply_font(title, "bold")
-	_content_vbox.add_child(title)
-
 	if was_impossible:
 		var warn = Label.new()
 		warn.text = "(Это был месяц с повышенными требованиями)"
 		warn.add_theme_font_size_override("font_size", 12)
-		warn.add_theme_color_override("font_color", Color(0.85, 0.55, 0.0, 1))
+		warn.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(warn, "regular")
 		_content_vbox.add_child(warn)
@@ -80,14 +121,33 @@ func open(report: Dictionary):
 	var sep = HSeparator.new()
 	_content_vbox.add_child(sep)
 
-	# Результаты по каждой цели
+	# Результаты по каждой цели — строки как в boss_panel
 	for r in results:
 		var obj = r["objective"]
 		var achieved = r["achieved"]
 		var trust = r["trust_gained"]
 
+		var row_panel = PanelContainer.new()
+		row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var row_style = StyleBoxFlat.new()
+		row_style.bg_color = Color(0.93, 0.98, 0.93, 1) if achieved else Color(0.98, 0.93, 0.93, 1)
+		row_style.corner_radius_top_left = 8
+		row_style.corner_radius_top_right = 8
+		row_style.corner_radius_bottom_right = 8
+		row_style.corner_radius_bottom_left = 8
+		row_panel.add_theme_stylebox_override("panel", row_style)
+		_content_vbox.add_child(row_panel)
+
+		var row_margin = MarginContainer.new()
+		row_margin.add_theme_constant_override("margin_left", 12)
+		row_margin.add_theme_constant_override("margin_top", 6)
+		row_margin.add_theme_constant_override("margin_right", 12)
+		row_margin.add_theme_constant_override("margin_bottom", 6)
+		row_panel.add_child(row_margin)
+
 		var row = HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
+		row_margin.add_child(row)
 
 		var icon = Label.new()
 		icon.text = "✅" if achieved else "❌"
@@ -98,25 +158,20 @@ func open(report: Dictionary):
 		lbl.text = obj["label"]
 		lbl.add_theme_font_size_override("font_size", 15)
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		if achieved:
-			lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
-		else:
-			lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+		lbl.add_theme_color_override("font_color", COLOR_DARK if achieved else COLOR_GRAY)
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		row.add_child(lbl)
 
 		var reward = Label.new()
 		if achieved:
 			reward.text = "+%d 🤝" % trust
-			reward.add_theme_color_override("font_color", Color(0.3, 0.7, 0.3, 1))
+			reward.add_theme_color_override("font_color", COLOR_GREEN)
 		else:
 			reward.text = "+0 🤝"
-			reward.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+			reward.add_theme_color_override("font_color", COLOR_GRAY)
 		reward.add_theme_font_size_override("font_size", 14)
 		if UITheme: UITheme.apply_font(reward, "semibold")
 		row.add_child(reward)
-
-		_content_vbox.add_child(row)
 
 	var sep2 = HSeparator.new()
 	_content_vbox.add_child(sep2)
@@ -136,11 +191,11 @@ func open(report: Dictionary):
 	total_val.text = "%+d 🤝" % total_trust
 	total_val.add_theme_font_size_override("font_size", 18)
 	if total_trust > 0:
-		total_val.add_theme_color_override("font_color", Color(0.3, 0.7, 0.3, 1))
+		total_val.add_theme_color_override("font_color", COLOR_GREEN)
 	elif total_trust < 0:
-		total_val.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2, 1))
+		total_val.add_theme_color_override("font_color", COLOR_RED)
 	else:
-		total_val.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+		total_val.add_theme_color_override("font_color", COLOR_GRAY)
 	if UITheme: UITheme.apply_font(total_val, "bold")
 	total_row.add_child(total_val)
 
@@ -165,7 +220,7 @@ func open(report: Dictionary):
 	if UITheme: UITheme.apply_font(reaction, "regular")
 	_content_vbox.add_child(reaction)
 
-	# Кнопка закрыть
+	# Кнопка — синяя
 	var close_btn = Button.new()
 	close_btn.text = "Понятно"
 	close_btn.custom_minimum_size = Vector2(200, 40)
@@ -173,11 +228,11 @@ func open(report: Dictionary):
 	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(0.17, 0.31, 0.57, 1)
-	btn_style.corner_radius_top_left = 12
-	btn_style.corner_radius_top_right = 12
-	btn_style.corner_radius_bottom_right = 12
-	btn_style.corner_radius_bottom_left = 12
+	btn_style.bg_color = COLOR_BLUE
+	btn_style.corner_radius_top_left = 14
+	btn_style.corner_radius_top_right = 14
+	btn_style.corner_radius_bottom_right = 14
+	btn_style.corner_radius_bottom_left = 14
 	close_btn.add_theme_stylebox_override("normal", btn_style)
 	var btn_hover = btn_style.duplicate()
 	btn_hover.bg_color = Color(0.22, 0.38, 0.65, 1)
@@ -185,6 +240,7 @@ func open(report: Dictionary):
 	close_btn.add_theme_stylebox_override("pressed", btn_hover)
 	close_btn.add_theme_color_override("font_color", Color.WHITE)
 	close_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	close_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
 	close_btn.add_theme_font_size_override("font_size", 15)
 	if UITheme: UITheme.apply_font(close_btn, "bold")
 

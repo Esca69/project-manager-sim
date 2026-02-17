@@ -1,72 +1,109 @@
 extends Control
 
 # === UI экран: Босс даёт задание на месяц ===
+# Переделан в стиль client_panel: синий хедер, overlay, Inter шрифт
 
-var _panel: PanelContainer
+const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
+const COLOR_WHITE = Color(1, 1, 1, 1)
+const COLOR_DARK = Color(0.2, 0.2, 0.2, 1)
+const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
+const COLOR_ORANGE = Color(0.85, 0.55, 0.0, 1)
+const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_TRUST = Color(0.85, 0.55, 0.0, 1)
+const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
+const COLOR_BORDER = Color(0.8784314, 0.8784314, 0.8784314, 1)
+
+var _overlay: ColorRect
+var _window: PanelContainer
 var _content_vbox: VBoxContainer
-var _accept_btn: Button
+var _close_btn: Button
 
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	z_index = 95
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
 
 func _build_ui():
-	# Затемнение фона
-	var bg = ColorRect.new()
-	bg.color = Color(0, 0, 0, 0.6)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(bg)
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.5)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
 
-	# Центральная панель
-	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
+	_window = PanelContainer.new()
+	_window.custom_minimum_size = Vector2(750, 0)
+	_window.set_anchors_preset(Control.PRESET_CENTER)
+	_window.offset_left = -375
+	_window.offset_top = -300
+	_window.offset_right = 375
+	_window.offset_bottom = 300
+	_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_window.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	_panel = PanelContainer.new()
-	_panel.custom_minimum_size = Vector2(700, 0)
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(1, 1, 1, 1)
-	panel_style.corner_radius_top_left = 20
-	panel_style.corner_radius_top_right = 20
-	panel_style.corner_radius_bottom_right = 20
-	panel_style.corner_radius_bottom_left = 20
-	panel_style.border_width_left = 3
-	panel_style.border_width_top = 3
-	panel_style.border_width_right = 3
-	panel_style.border_width_bottom = 3
-	panel_style.border_color = Color(0.17, 0.31, 0.57, 1)
-	if UITheme: UITheme.apply_shadow(panel_style)
-	_panel.add_theme_stylebox_override("panel", panel_style)
-	center.add_child(_panel)
+	var window_style = StyleBoxFlat.new()
+	window_style.bg_color = COLOR_WHITE
+	window_style.border_width_left = 3
+	window_style.border_width_top = 3
+	window_style.border_width_right = 3
+	window_style.border_width_bottom = 3
+	window_style.border_color = COLOR_WINDOW_BORDER
+	window_style.corner_radius_top_left = 22
+	window_style.corner_radius_top_right = 22
+	window_style.corner_radius_bottom_right = 20
+	window_style.corner_radius_bottom_left = 20
+	if UITheme: UITheme.apply_shadow(window_style, false)
+	_window.add_theme_stylebox_override("panel", window_style)
+	add_child(_window)
 
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 30)
-	margin.add_theme_constant_override("margin_top", 25)
-	margin.add_theme_constant_override("margin_right", 30)
-	margin.add_theme_constant_override("margin_bottom", 25)
-	_panel.add_child(margin)
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 0)
+	_window.add_child(main_vbox)
+
+	# === СИНИЙ ХЕДЕР ===
+	var header_panel = Panel.new()
+	header_panel.custom_minimum_size = Vector2(0, 40)
+	var header_style = StyleBoxFlat.new()
+	header_style.bg_color = COLOR_BLUE
+	header_style.border_color = COLOR_WINDOW_BORDER
+	header_style.corner_radius_top_left = 20
+	header_style.corner_radius_top_right = 20
+	header_panel.add_theme_stylebox_override("panel", header_style)
+	main_vbox.add_child(header_panel)
+
+	var title_label = Label.new()
+	title_label.text = "🏢 Новое задание от босса"
+	title_label.set_anchors_preset(Control.PRESET_CENTER)
+	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	title_label.offset_left = -150
+	title_label.offset_top = -11.5
+	title_label.offset_right = 150
+	title_label.offset_bottom = 11.5
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(title_label, "bold")
+	header_panel.add_child(title_label)
+
+	# === КОНТЕНТ ===
+	var content_margin = MarginContainer.new()
+	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_margin.add_theme_constant_override("margin_left", 30)
+	content_margin.add_theme_constant_override("margin_top", 20)
+	content_margin.add_theme_constant_override("margin_right", 30)
+	content_margin.add_theme_constant_override("margin_bottom", 25)
+	main_vbox.add_child(content_margin)
 
 	_content_vbox = VBoxContainer.new()
-	_content_vbox.add_theme_constant_override("separation", 16)
-	margin.add_child(_content_vbox)
+	_content_vbox.add_theme_constant_override("separation", 14)
+	content_margin.add_child(_content_vbox)
 
 func open(quest: Dictionary):
-	# Очищаем контент
 	for child in _content_vbox.get_children():
 		child.queue_free()
-
-	# Заголовок
-	var title_lbl = Label.new()
-	title_lbl.text = "🏢 Задание на месяц %d" % quest["month"]
-	title_lbl.add_theme_font_size_override("font_size", 22)
-	title_lbl.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
-	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if UITheme: UITheme.apply_font(title_lbl, "bold")
-	_content_vbox.add_child(title_lbl)
 
 	# Доверие
 	var trust_lbl = Label.new()
@@ -77,17 +114,16 @@ func open(quest: Dictionary):
 	if UITheme: UITheme.apply_font(trust_lbl, "semibold")
 	_content_vbox.add_child(trust_lbl)
 
-	# Предупреждение о невозможном задании
+	# Предупреждение
 	if quest.get("is_impossible", false):
 		var warn_lbl = Label.new()
 		warn_lbl.text = "⚠️ Босс в этом месяце особенно требователен..."
 		warn_lbl.add_theme_font_size_override("font_size", 13)
-		warn_lbl.add_theme_color_override("font_color", Color(0.85, 0.55, 0.0, 1))
+		warn_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(warn_lbl, "semibold")
 		_content_vbox.add_child(warn_lbl)
 
-	# Разделитель
 	var sep = HSeparator.new()
 	_content_vbox.add_child(sep)
 
@@ -100,74 +136,90 @@ func open(quest: Dictionary):
 	if UITheme: UITheme.apply_font(speech_lbl, "regular")
 	_content_vbox.add_child(speech_lbl)
 
-	# Цели
+	# Цели — заголовок
 	var goals_title = Label.new()
-	goals_title.text = "📋 Цели на этот месяц:"
+	goals_title.text = "📋 Цели на месяц %d:" % quest["month"]
 	goals_title.add_theme_font_size_override("font_size", 16)
-	goals_title.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
+	goals_title.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(goals_title, "bold")
 	_content_vbox.add_child(goals_title)
 
+	# Каждая цель — строка
 	for obj in quest["objectives"]:
+		var row_panel = PanelContainer.new()
+		row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var row_style = StyleBoxFlat.new()
+		row_style.bg_color = Color(0.96, 0.96, 0.96, 1)
+		row_style.corner_radius_top_left = 8
+		row_style.corner_radius_top_right = 8
+		row_style.corner_radius_bottom_right = 8
+		row_style.corner_radius_bottom_left = 8
+		row_panel.add_theme_stylebox_override("panel", row_style)
+		_content_vbox.add_child(row_panel)
+
+		var row_margin = MarginContainer.new()
+		row_margin.add_theme_constant_override("margin_left", 12)
+		row_margin.add_theme_constant_override("margin_top", 6)
+		row_margin.add_theme_constant_override("margin_right", 12)
+		row_margin.add_theme_constant_override("margin_bottom", 6)
+		row_panel.add_child(row_margin)
+
 		var obj_hbox = HBoxContainer.new()
 		obj_hbox.add_theme_constant_override("separation", 10)
+		row_margin.add_child(obj_hbox)
 
 		var bullet = Label.new()
 		bullet.text = "▸"
 		bullet.add_theme_font_size_override("font_size", 15)
-		bullet.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
+		bullet.add_theme_color_override("font_color", COLOR_BLUE)
 		obj_hbox.add_child(bullet)
 
 		var obj_lbl = Label.new()
 		obj_lbl.text = obj["label"]
+		obj_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		obj_lbl.add_theme_font_size_override("font_size", 15)
-		obj_lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+		obj_lbl.add_theme_color_override("font_color", COLOR_DARK)
 		if UITheme: UITheme.apply_font(obj_lbl, "regular")
 		obj_hbox.add_child(obj_lbl)
 
 		var reward_lbl = Label.new()
 		reward_lbl.text = "+%d 🤝" % obj["trust_reward"]
 		reward_lbl.add_theme_font_size_override("font_size", 13)
-		reward_lbl.add_theme_color_override("font_color", Color(0.3, 0.7, 0.3, 1))
-		reward_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		reward_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		reward_lbl.add_theme_color_override("font_color", COLOR_TRUST)
 		if UITheme: UITheme.apply_font(reward_lbl, "semibold")
 		obj_hbox.add_child(reward_lbl)
 
-		_content_vbox.add_child(obj_hbox)
-
-	# Разделитель
 	var sep2 = HSeparator.new()
 	_content_vbox.add_child(sep2)
 
-	# Кнопка "Принять"
-	_accept_btn = Button.new()
-	_accept_btn.text = "✅ Понял, босс!"
-	_accept_btn.custom_minimum_size = Vector2(250, 44)
-	_accept_btn.focus_mode = Control.FOCUS_NONE
-	_accept_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	# Кнопка "Принять" — синяя, как везде
+	var accept_btn = Button.new()
+	accept_btn.text = "✅ Понял, босс!"
+	accept_btn.custom_minimum_size = Vector2(250, 44)
+	accept_btn.focus_mode = Control.FOCUS_NONE
+	accept_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(0.17, 0.31, 0.57, 1)
+	btn_style.bg_color = COLOR_BLUE
 	btn_style.corner_radius_top_left = 14
 	btn_style.corner_radius_top_right = 14
 	btn_style.corner_radius_bottom_right = 14
 	btn_style.corner_radius_bottom_left = 14
-	_accept_btn.add_theme_stylebox_override("normal", btn_style)
+	accept_btn.add_theme_stylebox_override("normal", btn_style)
 
 	var btn_hover = btn_style.duplicate()
 	btn_hover.bg_color = Color(0.22, 0.38, 0.65, 1)
-	_accept_btn.add_theme_stylebox_override("hover", btn_hover)
-	_accept_btn.add_theme_stylebox_override("pressed", btn_hover)
+	accept_btn.add_theme_stylebox_override("hover", btn_hover)
+	accept_btn.add_theme_stylebox_override("pressed", btn_hover)
 
-	_accept_btn.add_theme_color_override("font_color", Color.WHITE)
-	_accept_btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	_accept_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
-	_accept_btn.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(_accept_btn, "bold")
+	accept_btn.add_theme_color_override("font_color", Color.WHITE)
+	accept_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	accept_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	accept_btn.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(accept_btn, "bold")
 
-	_accept_btn.pressed.connect(_on_accept.bind(quest))
-	_content_vbox.add_child(_accept_btn)
+	accept_btn.pressed.connect(_on_accept.bind(quest))
+	_content_vbox.add_child(accept_btn)
 
 	if UITheme:
 		UITheme.fade_in(self, 0.25)
@@ -191,7 +243,7 @@ func _get_boss_speech(quest: Dictionary) -> String:
 	var speeches_impossible = [
 		"Этот месяц будет непростым. Руководство поставило амбициозные цели...",
 		"Не буду врать, задача серьёзная. Но я верю в тебя.",
-		"Сверху при��ли... интересные ожидания. Сделай что сможешь.",
+		"Сверху пришли... интересные ожидания. Сделай что сможешь.",
 	]
 
 	if quest.get("is_impossible", false):
