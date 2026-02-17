@@ -37,6 +37,10 @@ func get_current_global_time() -> float:
 	return float(GameTime.day) + day_part + min_part
 
 func _physics_process(delta):
+	# Прерываем вычисления прогресса и времени проекта, если игра на паузе
+	if GameTime.is_game_paused:
+		return
+		
 	for project in active_projects:
 		if project.state != ProjectData.State.IN_PROGRESS:
 			continue

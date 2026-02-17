@@ -44,12 +44,28 @@ func _ready():
 	list_style.corner_radius_bottom_left = 10
 	item_list.add_theme_stylebox_override("panel", list_style)
 	
-	# Красивый синий цвет при наведении/выборе строки в списке
+	# === ИСПРАВЛЕНИЕ БАГА С ФОКУСОМ И ВЫДЕЛЕНИЕМ ===
+	# 1. Убираем системную рамку (фокус), чтобы не выделялся весь контейнер ItemList
+	item_list.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	
+	# 2. Возвращаем синеватую подсветку строки, как было задумано
 	var selected_style = StyleBoxFlat.new()
-	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1)
+	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1) # Тот самый светло-синий фон
+	# Чтобы выделение смотрелось мягко внутри списка, добавим легкие скругления
+	selected_style.corner_radius_top_left = 4
+	selected_style.corner_radius_top_right = 4
+	selected_style.corner_radius_bottom_right = 4
+	selected_style.corner_radius_bottom_left = 4
+	
+	# Применяем этот синеватый фон для клика (selected) и клика с фокусом
 	item_list.add_theme_stylebox_override("selected", selected_style)
 	item_list.add_theme_stylebox_override("selected_focus", selected_style)
-	item_list.add_theme_color_override("font_selected_color", color_main)
+	
+	# А также добавляем его для состояния наведения мыши (hovered)
+	item_list.add_theme_stylebox_override("hovered", selected_style)
+	
+	# 3. Мы больше не переопределяем цвет шрифта ("font_selected_color"),
+	# поэтому он не будет казаться чёрным, а останется стандартным.
 
 # --- Вызывает Стол, когда хочет посадить/заменить сотрудника ---
 func open_assignment_list(desk_node):
