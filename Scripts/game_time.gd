@@ -44,6 +44,10 @@ func _ready():
 	is_night_skip = false
 
 func _process(delta):
+	# Прерываем выполнение логики времени, если игра на паузе
+	if is_game_paused:
+		return
+
 	time_accumulator += delta * MINUTES_PER_REAL_SECOND
 	
 	while time_accumulator >= 1.0:
