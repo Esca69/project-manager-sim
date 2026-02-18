@@ -238,10 +238,11 @@ func open_hr_search():
 		_hr_role_screen.open()
 
 # === HR: ПОИСК НАЧАТ (сигнал из hr_role_screen) ===
+# === HR: ПОИСК НАЧАТ (сигнал из hr_role_screen) ===
 func _on_hr_search_started(role: String):
 	_is_searching = true
 	_search_role = role
-	_search_total_minutes = HR_SEARCH_HOURS * 60.0
+	_search_total_minutes = float(PMData.get_hr_search_minutes())
 	_search_minutes_remaining = _search_total_minutes
 
 	var player = _get_player()
@@ -256,7 +257,6 @@ func _on_hr_search_started(role: String):
 		player._discuss_timer_label.text = "🔍 %d:%02d" % [hours, mins]
 
 	print("🔍 Поиск кандидатов начат: %s (%d мин.)" % [role, int(_search_total_minutes)])
-
 func _on_search_time_tick(_h, _m):
 	if not _is_searching:
 		return
