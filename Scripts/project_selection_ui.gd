@@ -396,22 +396,19 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(select_btn, "semibold")
 	right_info.add_child(select_btn)
 
-	# Дедлайны
+	# Дедлайны — показываем БЮДЖЕТ ДНЕЙ (фиксированные, не тикают)
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	card_vbox.add_child(deadlines_hbox)
 
-	var soft_days = data.soft_deadline_day - GameTime.day
-	var hard_days = data.deadline_day - GameTime.day
-
 	var soft_lbl = Label.new()
-	soft_lbl.text = "Софт: %d дн. (штраф -%d%%)" % [soft_days, data.soft_deadline_penalty_percent]
+	soft_lbl.text = "Софт: %d дн. (штраф -%d%%)" % [data.soft_days_budget, data.soft_deadline_penalty_percent]
 	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
 	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	deadlines_hbox.add_child(soft_lbl)
 
 	var hard_lbl = Label.new()
-	hard_lbl.text = "Хард: %d дн. (провал = $0)" % hard_days
+	hard_lbl.text = "Хард: %d дн. (провал = $0)" % data.hard_days_budget
 	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	deadlines_hbox.add_child(hard_lbl)

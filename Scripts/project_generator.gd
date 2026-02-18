@@ -33,7 +33,7 @@ const SIMPLE_TEMPLATES = [
 	{ "name": "Аналитика + разработка отчёта",   "stages": ["BA", "DEV"], "difficulty": 2 },
 ]
 
-# EASY — 3 вида работ (полный цикл BA���DEV→QA)
+# EASY — 3 вида работ (полный цикл BA→DEV→QA)
 const EASY_TEMPLATES = [
 	{ "name": "Лендинг пекарни",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
 	{ "name": "Сайт-визитка",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
@@ -151,6 +151,7 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 
 	new_proj.soft_deadline_penalty_percent = SOFT_PENALTIES.pick_random()
 
+	# === РАССЧИТЫВАЕМ БЮДЖЕТ ДНЕЙ (относительные, без привязки к дате) ===
 	var ideal_days = total_ideal_hours / WORK_HOURS_PER_DAY
 	var buffer_coef = randf_range(1.3, 1.7)
 	var days_given = ceil(ideal_days * buffer_coef)
@@ -159,7 +160,7 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 	if days_given < min_days:
 		days_given = min_days
 
-	new_proj.deadline_day = current_game_day + int(days_given)
+	new_proj.hard_days_budget = int(days_given)
 
 	var soft_coef = randf_range(0.60, 0.75)
 	var soft_days = ceil(days_given * soft_coef)
@@ -169,7 +170,11 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 	if soft_days < 1:
 		soft_days = 1
 
-	new_proj.soft_deadline_day = current_game_day + int(soft_days)
+	new_proj.soft_days_budget = int(soft_days)
+
+	# Абсолютные дедлайны НЕ выставляем — они будут вычислены при взятии проекта
+	new_proj.deadline_day = 0
+	new_proj.soft_deadline_day = 0
 
 	return new_proj
 

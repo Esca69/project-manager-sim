@@ -17,6 +17,10 @@ class_name ProjectData
 @export var start_global_time: float = 0.0
 var elapsed_days: float = 0.0
 
+# --- БЮДЖЕТ ДНЕЙ (сколько дней даётся на проект, без привязки к дате) ---
+@export var hard_days_budget: int = 0
+@export var soft_days_budget: int = 0
+
 # --- СТРУКТУРА ЭТАПОВ ---
 @export var stages: Array = []
 
@@ -45,7 +49,7 @@ func get_final_payout(finish_day: int) -> int:
 func is_finished_on_time(finish_day: int) -> bool:
 	return finish_day <= soft_deadline_day
 
-# Получить ��анные клиента
+# Получить данные клиента
 func get_client():
 	if client_id == "":
 		return null

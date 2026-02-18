@@ -399,6 +399,17 @@ func _on_discuss_time_tick(_h, _m):
 	if _discuss_minutes_remaining <= 0:
 		_finish_discussion()
 
+# === ХЕЛПЕР: прибавить N рабочих дней (пропуская выходные) ===
+func _add_working_days(from_day: int, work_days: int) -> int:
+	var result = from_day
+	var added = 0
+	while added < work_days:
+		result += 1
+		if not GameTime.is_weekend(result):
+			added += 1
+	return result
+
+# === ЗАВЕРШЕНИЕ ОБСУЖДЕНИЯ ===
 func _finish_discussion():
 	_is_discussing = false
 
@@ -411,13 +422,13 @@ func _finish_discussion():
 
 	print("✅ Обсуждение завершено: ", _discuss_project.title)
 
+	# === Вычисляем абсолютные дедлайны от ТЕКУЩЕГО дня, пропуская выходные ===
 	var today = GameTime.day
-	var old_created = _discuss_project.created_at_day
-	if today != old_created:
-		var shift = today - old_created
-		_discuss_project.created_at_day = today
-		_discuss_project.deadline_day += shift
-		_discuss_project.soft_deadline_day += shift
+	_discuss_project.created_at_day = today
+	_discuss_project.soft_deadline_day = _add_working_days(today, _discuss_project.soft_days_budget)
+	_discuss_project.deadline_day = _add_working_days(today, _discuss_project.hard_days_budget)
+
+	print("📅 Дедлайны: софт = день %d, хард = день %d" % [_discuss_project.soft_deadline_day, _discuss_project.deadline_day])
 
 	ProjectManager.add_project(_discuss_project)
 
@@ -425,7 +436,6 @@ func _finish_discussion():
 	print("🎯 PM +5 XP за взятие проекта")
 
 	_discuss_project = null
-
 # === ПРОВЕРКА: PM ЗАНЯТ ===
 func is_pm_busy() -> bool:
 	return _is_discussing or _is_searching
