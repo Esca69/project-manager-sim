@@ -485,16 +485,14 @@ func _activate_no_toilet():
 			continue
 		if not npc.data:
 			continue
-		var dist = global_position.distance_to(npc.global_position)
-		if dist <= NO_TOILET_RADIUS:
-			npc.apply_toilet_ban(NO_TOILET_DURATION_MINUTES)
-			affected_count += 1
+		npc.apply_toilet_ban(NO_TOILET_DURATION_MINUTES)
+		affected_count += 1
 
 	_no_toilet_cooldown_left = NO_TOILET_COOLDOWN_MINUTES
 	_update_no_toilet_btn()
 
 	_show_no_toilet_wave()
-	_show_radius_circle(NO_TOILET_RADIUS, Color(0.6, 0.2, 0.2, 0.6))
+	
 
 	if affected_count > 0:
 		print("🚽 Запрет туалета активирован! Затронуто: %d сотрудников" % affected_count)
