@@ -18,12 +18,27 @@ var _scroll: ScrollContainer
 var _cards_container: VBoxContainer
 var _scroll_ready: bool = false
 
+var _overlay: ColorRect
+
 # === КОНСТАНТЫ ОБСУЖДЕНИЯ ===
 const BOSS_MEETING_HOURS: int = 4        # Сколько игровых часов занимает обсуждение
 const BOSS_CUTOFF_HOUR: int = 14         # Последний час, когда можно начать обсуждение
 
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	z_index = 90 # Поверх остальных элементов
+	mouse_filter = Control.MOUSE_FILTER_IGNORE # Пропускаем клики до оверлея
+
+	_force_fullscreen_size()
+
+	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (OVERLAY) ===
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
+	move_child(_overlay, 0) # Помещаем на самый задний план, позади $Window
 
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)
@@ -70,6 +85,12 @@ func _ready():
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
 	_setup_scroll_container()
+
+func _force_fullscreen_size():
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
 
 func _setup_scroll_container():
 	if cards_margin == null:
@@ -124,6 +145,12 @@ func _set_children_pass_filter(node: Node):
 		_set_children_pass_filter(child)
 
 func open_selection():
+	# ИСПРАВЛЕНИЕ: Перемещаем окно в самый конец дерева (поверх всех остальных UI, включая BottomBar)
+	if get_parent():
+		get_parent().move_child(self, -1)
+
+	_force_fullscreen_size()
+	
 	if not _scroll_ready:
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -345,7 +372,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	var btn_blocked = _is_project_limit_reached() or _is_too_late_for_boss()
 
 	var select_btn = Button.new()
-	select_btn.text = "Выбр��ть" if not btn_blocked else "Недоступно"
+	select_btn.text = "Выбрать" if not btn_blocked else "Недоступно"
 	select_btn.custom_minimum_size = Vector2(180, 40)
 	select_btn.disabled = btn_blocked
 
@@ -404,7 +431,7 @@ func _on_select_pressed(index: int):
 
 	print("⏱ Начинаем обсуждение проекта: ", selected.title)
 
-	# У��ираем проект из списка и закрываем UI
+	# Убираем проект из списка и закрываем UI
 	current_options[index] = null
 	_on_close_pressed()
 

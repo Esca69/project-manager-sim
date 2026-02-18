@@ -69,7 +69,8 @@ func _create_interact_hint():
 
 	_interact_hint.visible = false
 	_interact_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_interact_hint.z_index = 100
+	# ИСПРАВЛЕНИЕ: Понизили z_index, чтобы окна меню (90) перекрывали подсказку
+	_interact_hint.z_index = 80 
 
 	call_deferred("_attach_hint_to_hud")
 
@@ -78,7 +79,8 @@ func _create_discuss_bar():
 	_discuss_bar_container = PanelContainer.new()
 	_discuss_bar_container.visible = false
 	_discuss_bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_discuss_bar_container.z_index = 95
+	# ИСПРАВЛЕНИЕ: Понизили z_index, чтобы окна меню (90) перекрывали плашку обсуждения
+	_discuss_bar_container.z_index = 80 
 	_discuss_bar_container.custom_minimum_size = Vector2(110, 0)
 
 	var panel_style = StyleBoxFlat.new()
@@ -212,7 +214,10 @@ func _process(delta):
 func _unhandled_input(event):
 	if GameTime.is_night_skip:
 		return
-	# Zoom работает ВСЕГДА (даже во время обсуждения), кроме ночной промотки
+
+	if _is_ui_blocking():
+		return
+
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_set_zoom(ZOOM_STEP)
@@ -220,9 +225,6 @@ func _unhandled_input(event):
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_set_zoom(-ZOOM_STEP)
 			return
-	# Остальной ввод блокируем если UI открыт
-	if _is_ui_blocking():
-		return
 
 func _set_zoom(delta):
 	var new_zoom = target_zoom + Vector2(delta, delta)
@@ -252,7 +254,7 @@ func _update_interact_hint():
 	var hint_size = _interact_hint.size
 	_interact_hint.global_position = Vector2(
 		screen_pos.x - hint_size.x / 2.0,
-		screen_pos.y - hint_size.y
+		screen_pos.y - hint_size.y - 100
 	)
 
 func _hide_interact_hint():

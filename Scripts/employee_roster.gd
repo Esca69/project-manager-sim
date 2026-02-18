@@ -19,9 +19,23 @@ var _pending_fire_node = null
 var _body_texture: Texture2D
 var _head_texture: Texture2D
 
+var _overlay: ColorRect
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	z_index = 90 # Поверх остальных элементов
+	mouse_filter = Control.MOUSE_FILTER_IGNORE # Пропускаем клики до оверлея
+
+	_force_fullscreen_size()
+
+	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (OVERLAY) ===
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
+	move_child(_overlay, 0) # Помещаем на самый задний план, позади $Window
 
 	_body_texture = load("res://Sprites/body2.png")
 	_head_texture = load("res://Sprites/head2.png")
@@ -82,6 +96,11 @@ func _ready():
 
 	_build_confirm_dialog()
 
+func _force_fullscreen_size():
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
+
 func _set_children_pass_filter(node: Node):
 	for child in node.get_children():
 		if child is Control:
@@ -89,6 +108,7 @@ func _set_children_pass_filter(node: Node):
 		_set_children_pass_filter(child)
 
 func open():
+	_force_fullscreen_size()
 	_rebuild_cards()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -181,7 +201,6 @@ func _create_card(npc_node) -> PanelContainer:
 	main_hbox.add_theme_constant_override("separation", 15)
 	margin.add_child(main_hbox)
 
-	# --- ТЕПЕРЬ МЫ ПЕРЕДАЕМ САМ УЗЕЛ NPC, ЧТОБЫ ВЗЯТЬ ЕГО ЦВЕТ ---
 	var sprite_container = _create_employee_sprite(npc_node)
 	main_hbox.add_child(sprite_container)
 
@@ -259,7 +278,7 @@ func _create_card(npc_node) -> PanelContainer:
 		var xp_needed = xp_progress[1]
 
 		var xp_vbox = VBoxContainer.new()
-		xp_vbox.add_theme_constant_override("separation", 1)
+		xp_vbox.add_theme_constant_override("separation", 2)
 		xp_vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		level_hbox.add_child(xp_vbox)
 
@@ -270,31 +289,31 @@ func _create_card(npc_node) -> PanelContainer:
 		if UITheme: UITheme.apply_font(xp_lbl, "regular")
 		xp_vbox.add_child(xp_lbl)
 
-		var bar_bg = PanelContainer.new()
-		bar_bg.custom_minimum_size = Vector2(120, 6)
-		var bar_bg_style = StyleBoxFlat.new()
-		bar_bg_style.bg_color = Color(0.88, 0.88, 0.88, 1)
-		bar_bg_style.corner_radius_top_left = 3
-		bar_bg_style.corner_radius_top_right = 3
-		bar_bg_style.corner_radius_bottom_right = 3
-		bar_bg_style.corner_radius_bottom_left = 3
-		bar_bg.add_theme_stylebox_override("panel", bar_bg_style)
-		xp_vbox.add_child(bar_bg)
+		# === ИСПРАВЛЕННЫЙ ПРОГРЕСС-БАР НА ОСНОВЕ УЗЛА PROGRESS BAR ===
+		var pbar = ProgressBar.new()
+		pbar.custom_minimum_size = Vector2(120, 8)
+		pbar.min_value = 0
+		pbar.max_value = max(1, xp_needed)
+		pbar.value = xp_current
+		pbar.show_percentage = false
 
-		var fill_pct = float(xp_current) / max(float(xp_needed), 1.0)
-		fill_pct = clampf(fill_pct, 0.0, 1.0)
-		var fill_width = int(120.0 * fill_pct)
+		var bg_style = StyleBoxFlat.new()
+		bg_style.bg_color = Color(0.88, 0.88, 0.88, 1)
+		bg_style.corner_radius_top_left = 4
+		bg_style.corner_radius_top_right = 4
+		bg_style.corner_radius_bottom_right = 4
+		bg_style.corner_radius_bottom_left = 4
+		pbar.add_theme_stylebox_override("background", bg_style)
 
-		var bar_fill = PanelContainer.new()
-		bar_fill.custom_minimum_size = Vector2(max(fill_width, 0), 6)
-		var bar_fill_style = StyleBoxFlat.new()
-		bar_fill_style.bg_color = grade_color
-		bar_fill_style.corner_radius_top_left = 3
-		bar_fill_style.corner_radius_top_right = 3
-		bar_fill_style.corner_radius_bottom_right = 3
-		bar_fill_style.corner_radius_bottom_left = 3
-		bar_fill.add_theme_stylebox_override("panel", bar_fill_style)
-		bar_bg.add_child(bar_fill)
+		var fill_style = StyleBoxFlat.new()
+		fill_style.bg_color = grade_color
+		fill_style.corner_radius_top_left = 4
+		fill_style.corner_radius_top_right = 4
+		fill_style.corner_radius_bottom_right = 4
+		fill_style.corner_radius_bottom_left = 4
+		pbar.add_theme_stylebox_override("fill", fill_style)
+
+		xp_vbox.add_child(pbar)
 	else:
 		var max_lbl = Label.new()
 		max_lbl.text = "✦ MAX"
@@ -303,12 +322,17 @@ func _create_card(npc_node) -> PanelContainer:
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")
 		level_hbox.add_child(max_lbl)
 
-	var ba_text = PMData.get_blurred_skill(emp.skill_business_analysis)
-	var dev_text = PMData.get_blurred_skill(emp.skill_backend)
-	var qa_text = PMData.get_blurred_skill(emp.skill_qa)
+	# === ИСПРАВЛЕНИЕ: ТОЛЬКО 1 ПРОФИЛЬНЫЙ НАВЫК ===
+	var skill_text = ""
+	if emp.skill_business_analysis > 0:
+		skill_text = "BA: " + PMData.get_blurred_skill(emp.skill_business_analysis)
+	elif emp.skill_backend > 0:
+		skill_text = "Backend: " + PMData.get_blurred_skill(emp.skill_backend)
+	elif emp.skill_qa > 0:
+		skill_text = "QA: " + PMData.get_blurred_skill(emp.skill_qa)
 
 	var skills_lbl = Label.new()
-	skills_lbl.text = "Навыки:  BA %s  |  DEV %s  |  QA %s" % [ba_text, dev_text, qa_text]
+	skills_lbl.text = "Навык:  " + skill_text
 	skills_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	skills_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(skills_lbl, "semibold")
@@ -512,29 +536,24 @@ func _create_hidden_trait() -> HBoxContainer:
 	hbox.add_child(help_btn)
 	return hbox
 
-# === ИСПРАВЛЕНИЕ: Вытягиваем цвет из узла и чиним размер текстуры ===
-# === ИСПРАВЛЕНИЕ: Вытягиваем цвет из узла и чиним размер текстуры ===
 func _create_employee_sprite(npc_node) -> CenterContainer:
 	var center = CenterContainer.new()
 	center.custom_minimum_size = Vector2(55, 70)
 
 	var inner = Control.new()
-	# Делаем контейнер под текстуры чуть меньше и аккуратнее
 	inner.custom_minimum_size = Vector2(36, 54)
 	center.add_child(inner)
 
-	# Вытаскиваем реальные цвета из физического NPC
 	var body_color = Color.WHITE
-	var head_color = Color.WHITE # <-- Дефолтный цвет головы
+	var head_color = Color.WHITE
 	
 	if npc_node:
 		if "personal_color" in npc_node:
 			body_color = npc_node.personal_color
 			
-		# Проверяем, как у тебя называется переменная цвета головы в NPC
 		if "head_color" in npc_node:
 			head_color = npc_node.head_color
-		elif "skin_color" in npc_node: # На случай, если ты назвал её skin_color
+		elif "skin_color" in npc_node:
 			head_color = npc_node.skin_color
 
 	var body_tex = TextureRect.new()
@@ -553,9 +572,8 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 	head_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	head_tex.custom_minimum_size = Vector2(24, 24)
 	head_tex.size = Vector2(24, 24)
-	# Голова отцентрирована относительно тела (X = 6)
 	head_tex.position = Vector2(6, 0) 
-	head_tex.self_modulate = head_color # <-- КРАСИМ ГОЛОВУ ТУТ
+	head_tex.self_modulate = head_color
 	inner.add_child(head_tex)
 
 	return center

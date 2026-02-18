@@ -344,7 +344,7 @@ func _physics_process(delta):
 				move_to_desk(my_desk_position)
 				return
 			
-			_try_start_toilet_break()
+			
 			
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
@@ -361,7 +361,7 @@ func _physics_process(delta):
 				move_to_desk(my_desk_position)
 				return
 			
-			_try_start_toilet_break()
+			
 			
 			_wander_pause_timer -= delta
 			_apply_lean(Vector2.ZERO, delta)
