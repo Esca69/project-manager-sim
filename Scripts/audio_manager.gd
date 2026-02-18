@@ -22,8 +22,8 @@ const SFX_LIBRARY = {
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
 # Эти значения можно менять в рантайме и сохранять в настройки
 var master_volume: float = 1.0
-var music_volume: float = 0.3      # Музыка тише, чтобы не давила
-var sfx_volume: float = 0.7        # Эффекты громче
+var music_volume: float = 0.2      # Музыка тише, чтобы не давила
+var sfx_volume: float = 0.8        # Эффекты громче
 
 # --- ВНУТРЕННИЕ НОДЫ ---
 var _music_player: AudioStreamPlayer = null
