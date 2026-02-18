@@ -69,12 +69,12 @@ func _ready():
 
 	# Стиль для заблокированной кнопки (серая)
 	_btn_style_disabled = StyleBoxFlat.new()
-	_btn_style_disabled.bg_color = Color(0.85, 0.85, 0.85, 1)
+	_btn_style_disabled.bg_color = Color(0.95, 0.95, 0.95, 1)
 	_btn_style_disabled.border_width_left = 2
 	_btn_style_disabled.border_width_top = 2
 	_btn_style_disabled.border_width_right = 2
 	_btn_style_disabled.border_width_bottom = 2
-	_btn_style_disabled.border_color = Color(0.7, 0.7, 0.7, 1)
+	_btn_style_disabled.border_color = Color(0.8, 0.8, 0.8, 1)
 	_btn_style_disabled.corner_radius_top_left = 20
 	_btn_style_disabled.corner_radius_top_right = 20
 	_btn_style_disabled.corner_radius_bottom_right = 20
@@ -369,10 +369,18 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	right_info.add_child(budget_lbl)
 
 	# Кнопка "Выбрать" — блокируется если лимит или поздно
-	var btn_blocked = _is_project_limit_reached() or _is_too_late_for_boss()
+	var is_limit = _is_project_limit_reached()
+	var is_late = _is_too_late_for_boss()
+	var btn_blocked = is_limit or is_late
 
 	var select_btn = Button.new()
-	select_btn.text = "Выбрать" if not btn_blocked else "Недоступно"
+	if is_limit:
+		select_btn.text = "Лимит"
+	elif is_late:
+		select_btn.text = "Поздно"
+	else:
+		select_btn.text = "Выбрать"
+		
 	select_btn.custom_minimum_size = Vector2(180, 40)
 	select_btn.disabled = btn_blocked
 

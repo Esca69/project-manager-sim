@@ -66,6 +66,13 @@ func _rebuild_cards():
 		child.queue_free()
 
 	if ProjectManager.active_projects.is_empty():
+		# === ИСПРАВЛЕНИЕ: Красивое сообщение при отсутствии проектов ===
+		empty_label.text = "Нет активных проектов.\nВозьмите проект у босса."
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		# Серый цвет, как принято для empty-state
+		empty_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+		if UITheme: UITheme.apply_font(empty_label, "semibold")
+		
 		empty_label.visible = true
 		return
 

@@ -415,18 +415,16 @@ func open_boss_menu():
 	if _is_discussing:
 		print("Босс: PM ещё обсуждает предыдущий проект!")
 		return
-	if not ProjectManager.can_take_more():
-		print("Босс: Слишком много активных проектов! (макс: ", ProjectManager.MAX_PROJECTS, ")")
-		return
+	# ИСПРАВЛЕНИЕ: Блокирующая проверка can_take_more() убрана,
+	# чтобы меню открывалось, а плашка с предупреждением показывалась внутри UI
 	selection_ui.open_selection()
 
 func open_work_menu():
 	if _is_discussing:
 		print("Компьютер: PM занят обсуждением с боссом.")
 		return
-	if ProjectManager.active_projects.is_empty():
-		print("Компьютер: Нет активных проектов.")
-		return
+	# ИСПРАВЛЕНИЕ: Блокировка при отсутствии проектов убрана.
+	# Меню откроется, но покажет EmptyLabel (как в EmployeeRoster)
 	project_list_menu.open_menu()
 
 func _on_project_taken(proj_data):
@@ -493,7 +491,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
 	if _is_discussing:
-		print("Нельзя закончить день: PM обс��ждает проект!")
+		print("Нельзя закончить день: PM обсуждает проект!")
 		return
 	end_day_button.visible = false
 

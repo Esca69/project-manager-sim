@@ -13,12 +13,18 @@ const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 const COLOR_LOYALTY = Color(0.85, 0.2, 0.45, 1)
 const COLOR_GOLD = Color(0.85, 0.65, 0.13, 1)
 const COLOR_UNLOCK = Color(0.2, 0.5, 0.85, 1)
+# Новый цвет для фона сводки (очень светло-серый/голубой)
+const COLOR_SUMMARY_BG = Color(0.96, 0.97, 0.99, 1)
 
 var _overlay: ColorRect
 var _window: PanelContainer
 var _scroll: ScrollContainer
 var _cards_vbox: VBoxContainer
 var _close_btn: Button
+
+# Новые переменные для лейблов сводки
+var _summary_loyalty_lbl: Label
+var _summary_projects_lbl: Label
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -142,6 +148,47 @@ func _build_ui():
 	_close_btn.pressed.connect(close)
 	header_panel.add_child(_close_btn)
 
+	# ===============================================
+	# === НОВОЕ: ПАНЕЛЬ СВОДНОЙ СТАТИСТИКИ ===
+	# ===============================================
+	var summary_panel = PanelContainer.new()
+	summary_panel.custom_minimum_size = Vector2(0, 50)
+	summary_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	var summary_style = StyleBoxFlat.new()
+	summary_style.bg_color = COLOR_SUMMARY_BG
+	summary_style.border_width_bottom = 2
+	summary_style.border_color = COLOR_BORDER
+	# Убираем скругление сверху, так как стыкуется с хедером, но оставляем снизу 0 (прямой стык со списком)
+	summary_panel.add_theme_stylebox_override("panel", summary_style)
+	main_vbox.add_child(summary_panel)
+
+	var summary_hbox = HBoxContainer.new()
+	summary_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	summary_hbox.add_theme_constant_override("separation", 60) # Расстояние между статами
+	summary_panel.add_child(summary_hbox)
+	
+	# Лейбл 1: Общая лояльность
+	_summary_loyalty_lbl = Label.new()
+	_summary_loyalty_lbl.text = "..." # Заполнится в _populate()
+	_summary_loyalty_lbl.add_theme_color_override("font_color", COLOR_LOYALTY)
+	_summary_loyalty_lbl.add_theme_font_size_override("font_size", 18)
+	if UITheme: UITheme.apply_font(_summary_loyalty_lbl, "bold")
+	summary_hbox.add_child(_summary_loyalty_lbl)
+	
+	# Разделитель (визуальный)
+	var sep = VSeparator.new()
+	summary_hbox.add_child(sep)
+	
+	# Лейбл 2: Проектов в неделю
+	_summary_projects_lbl = Label.new()
+	_summary_projects_lbl.text = "..." # Заполнится в _populate()
+	_summary_projects_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	_summary_projects_lbl.add_theme_font_size_override("font_size", 18)
+	if UITheme: UITheme.apply_font(_summary_projects_lbl, "bold")
+	summary_hbox.add_child(_summary_projects_lbl)
+	# ===============================================
+
 	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
 	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -165,6 +212,17 @@ func _build_ui():
 
 # === НАПОЛНЕНИЕ ДАННЫМИ ===
 func _populate():
+	# --- ОБНОВЛЕНИЕ СВОДКИ ---
+	var total_loyalty = ClientManager.get_total_loyalty()
+	var weekly_projects = ClientManager.get_weekly_project_count()
+	
+	if _summary_loyalty_lbl:
+		_summary_loyalty_lbl.text = "❤ Общая лояльность: %d" % total_loyalty
+		
+	if _summary_projects_lbl:
+		_summary_projects_lbl.text = "📅 Предложений от босса в неделю: %d" % weekly_projects
+	# -------------------------
+
 	for child in _cards_vbox.get_children():
 		child.queue_free()
 
