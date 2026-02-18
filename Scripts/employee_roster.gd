@@ -147,7 +147,13 @@ func _update_live_data():
 				energy_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
 
 		if eff_lbl:
-			eff_lbl.text = "Эффект.: x%.1f" % emp_data.get_efficiency_multiplier()
+			var eff_val = emp_data.get_efficiency_multiplier()
+			if emp_data.motivation_bonus > 0:
+				eff_lbl.text = "🔥 Эффект.: x%.1f" % eff_val
+				eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
+			else:
+				eff_lbl.text = "Эффект.: x%.1f" % eff_val
+				eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 
 		if status_lbl:
 			var npc_node = _find_npc_node(emp_data)
@@ -395,8 +401,13 @@ func _create_card(npc_node) -> PanelContainer:
 	card.set_meta("energy_label", energy_lbl)
 
 	var eff_lbl = Label.new()
-	eff_lbl.text = "Эффект.: x%.1f" % emp.get_efficiency_multiplier()
-	eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	var eff_val = emp.get_efficiency_multiplier()
+	if emp.motivation_bonus > 0:
+		eff_lbl.text = "🔥 Эффект.: x%.1f" % eff_val
+		eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
+	else:
+		eff_lbl.text = "Эффект.: x%.1f" % eff_val
+		eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	eff_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(eff_lbl, "regular")
 	right_vbox.add_child(eff_lbl)

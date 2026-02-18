@@ -3,11 +3,11 @@ extends Node
 # ============================
 # AUDIO MANAGER — Глобальный менеджер звука
 # ============================
-# Autoload-синглтон. Управляет музыко�� и звуковыми эффектами.
+# Autoload-синглтон. Управляет музыкой и звуковыми эффектами.
 # Вызов из любого скрипта: AudioManager.play_sfx("interact")
 #
 # Чтобы добавить новый звук:
-# 1. Положи файл в res://Assets/Sounds/
+# 1. Положи файл в res://Sound/
 # 2. Добавь запись в SFX_LIBRARY
 # Готово!
 
@@ -15,12 +15,7 @@ extends Node
 # Ключ → путь к файлу. Добавляй сюда новые звуки.
 const SFX_LIBRARY = {
 	"interact": "res://Sound/popsnd.mp3",
-	# Примеры для будущего:
-	# "hire": "res://Assets/Sounds/hire.mp3",
-	# "project_complete": "res://Assets/Sounds/complete.mp3",
-	# "project_fail": "res://Assets/Sounds/fail.mp3",
-	# "click": "res://Assets/Sounds/click.mp3",
-	# "money": "res://Assets/Sounds/money.mp3",
+	"bark": "res://Sound/bark.mp3",
 }
 
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
@@ -44,13 +39,13 @@ func _ready():
 	
 	# --- Создаём плеер для музыки ---
 	_music_player = AudioStreamPlayer.new()
-	_music_player.bus = "Master"  # Можно потом сделать отдельный bus "Music"
+	_music_player.bus = "Master"
 	add_child(_music_player)
 	
 	# --- Создаём пул плееров для SFX ---
 	for i in range(SFX_POOL_SIZE):
 		var player = AudioStreamPlayer.new()
-		player.bus = "Master"  # Можно потом сделать отдельный bus "SFX"
+		player.bus = "Master"
 		add_child(player)
 		_sfx_players.append(player)
 	
@@ -70,12 +65,10 @@ func _start_music(path: String):
 	_music_player.stream = stream
 	_music_player.volume_db = _volume_to_db(music_volume * master_volume)
 	
-	# Зацикливаем (для mp3 нужно установить loop в import, но на всякий случай)
 	_music_player.finished.connect(_on_music_finished)
 	_music_player.play()
 
 func _on_music_finished():
-	# Перезапускаем музыку (loop)
 	_music_player.play()
 
 ## Установить громкость музыки (0.0 - 1.0)
@@ -110,14 +103,13 @@ func play_sfx(sfx_name: String):
 	# Ищем свободный плеер в пуле
 	var player = _get_free_sfx_player()
 	if not player:
-		# Все заняты — пропускаем (можно расширить пул если надо)
 		return
 	
 	player.stream = stream
 	player.volume_db = _volume_to_db(sfx_volume * master_volume)
 	player.play()
 
-## Ус��ановить громкость SFX (0.0 - 1.0)
+## Установить громкость SFX (0.0 - 1.0)
 func set_sfx_volume(vol: float):
 	sfx_volume = clampf(vol, 0.0, 1.0)
 
@@ -140,10 +132,10 @@ func _get_free_sfx_player() -> AudioStreamPlayer:
 	for player in _sfx_players:
 		if not player.playing:
 			return player
-	return null  # Все заняты
+	return null
 
 ## Конвертация линейной громкости (0.0-1.0) в децибелы
 func _volume_to_db(linear: float) -> float:
 	if linear <= 0.001:
-		return -80.0  # Тишина
+		return -80.0
 	return 20.0 * log(linear) / log(10.0)

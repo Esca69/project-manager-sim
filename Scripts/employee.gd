@@ -60,13 +60,16 @@ var _wander_origin: Vector2 = Vector2.ZERO
 
 var _should_go_home: bool = false
 
-# Ссылка на текущий бабл с мыслями
+# Ссылка на текущий бабл �� мыслями
 var current_bubble: Node2D = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
 
 # === МОТИВАЦИЯ ОТ PM ===
 var _motivation_minutes_left: float = 0.0
+
+# Анимация мотивации — защита от повторного запуска
+var _motivation_anim_tween: Tween = null
 
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
@@ -174,12 +177,56 @@ func apply_motivation(bonus: float, duration_minutes: float):
 	data.motivation_bonus = bonus
 	_motivation_minutes_left = duration_minutes
 	show_thought_bubble("🔥", 5.0)
+	_play_motivation_reaction()
 	print("🔥 %s замотивирован! +%d%% на %d мин." % [data.employee_name, int(bonus * 100), int(duration_minutes)])
 
 func remove_motivation():
 	if data:
 		data.motivation_bonus = 0.0
 	_motivation_minutes_left = 0.0
+
+# === АНИМАЦИЯ РЕАКЦИИ НА МОТИВАЦИЮ ===
+# Подпрыг тела (голова двигается вместе, т.к. дочерний элемент Body)
+# + тряска головы отдельно
+func _play_motivation_reaction():
+	if not body_sprite or not head_sprite:
+		return
+
+	# Убиваем предыдущую анимацию мотивации, если она ещё играет
+	if _motivation_anim_tween and _motivation_anim_tween.is_valid():
+		_motivation_anim_tween.kill()
+
+	# Запоминаем исходные позиции
+	var body_origin_y = body_sprite.position.y
+	var head_origin_rot = head_sprite.rotation
+
+	_motivation_anim_tween = create_tween()
+
+	# --- Фаза 1: ПОДПРЫГ (Body прыгает вверх и обратно) ---
+	# Вверх
+	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y - 30.0, 0.12) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Вниз (приземление с лёгким «пружинением»)
+	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y + 5.0, 0.08) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	# Возврат в исходную
+	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y, 0.06) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+	# --- Фаза 2: ТРЯСКА ГОЛОВЫ (быстрые повороты влево-вправо) ---
+	var shake_angle = 0.25  # ~14 градусов
+	var shake_step = 0.07   # секунд на один поворот
+
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", shake_angle, shake_step)
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", -shake_angle, shake_step)
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", shake_angle * 0.7, shake_step)
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", -shake_angle * 0.7, shake_step)
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", shake_angle * 0.3, shake_step)
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", -shake_angle * 0.3, shake_step)
+
+	# --- Возврат в нейтральное положение ---
+	_motivation_anim_tween.tween_property(head_sprite, "rotation", head_origin_rot, 0.1) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 func _assign_random_color():
 	var available_colors = CLOTHING_PALETTE.duplicate()

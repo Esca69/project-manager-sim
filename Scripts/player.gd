@@ -11,10 +11,10 @@ const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
 
 # === МОТИВАЦИЯ ===
-const MOTIVATE_RADIUS = 600.0         # Радиус действия в пикселях
+const MOTIVATE_RADIUS = 350.0         # Радиус действия в пикселях
 const MOTIVATE_BONUS = 0.20           # +20% к скорости
 const MOTIVATE_DURATION_MINUTES = 120  # 2 игровых часа
-const MOTIVATE_COOLDOWN_MINUTES = 240  # 4 игровых часа перезарядки
+const MOTIVATE_COOLDOWN_MINUTES = 480  # 4 игровых часа перезарядки
 var _motivate_cooldown_left: float = 0.0
 
 @onready var interaction_zone = $InteractionZone
@@ -39,6 +39,7 @@ var _discuss_bar_attached: bool = false
 # --- КНОПКА МОТИВАЦИИ НА HUD ---
 var _motivate_btn: Button = null
 var _motivate_cooldown_label: Label = null
+var _motivate_container: VBoxContainer = null
 
 func _ready():
 	add_to_group("player")
@@ -52,7 +53,13 @@ func _ready():
 	# Подключаем тик времени для кулдауна мотивации
 	GameTime.time_tick.connect(_on_motivate_time_tick)
 
+	# Подписываемся на прокачку навыков — чтобы кнопка появлялась сразу
+	PMData.skill_unlocked.connect(_on_pm_skill_unlocked)
+
 	call_deferred("_create_motivate_button")
+
+func _on_pm_skill_unlocked(_skill_id: String):
+	_update_motivate_btn()
 
 func _create_interact_hint():
 	_interact_hint = PanelContainer.new()
@@ -362,6 +369,11 @@ func _activate_motivate():
 		print("🔥 PM занят, нельзя мотивировать!")
 		return
 
+	# === АКТИВИРУЕМ ВСЕГДА (даже без людей рядом) ===
+
+	# Звук
+	AudioManager.play_sfx("bark")
+
 	# Находим всех NPC в радиусе
 	var affected_count = 0
 	for npc in get_tree().get_nodes_in_group("npc"):
@@ -374,17 +386,18 @@ func _activate_motivate():
 			npc.apply_motivation(MOTIVATE_BONUS, MOTIVATE_DURATION_MINUTES)
 			affected_count += 1
 
+	# Запускаем кулдаун ВСЕГДА
+	_motivate_cooldown_left = MOTIVATE_COOLDOWN_MINUTES
+	_update_motivate_btn()
+
+	# Визуальный эффект — 🔥 над головой + круг радиуса
+	_show_motivate_wave()
+	_show_radius_circle()
+
 	if affected_count > 0:
-		# Запускаем кулдаун
-		_motivate_cooldown_left = MOTIVATE_COOLDOWN_MINUTES
-		_update_motivate_btn()
-
-		# Визуальный эффект — волна от PM
-		_show_motivate_wave()
-
 		print("🔥 Мотивация активирована! Затронуто: %d сотрудников" % affected_count)
 	else:
-		print("🔥 Нет сотрудников рядом для мотивации!")
+		print("🔥 Мотивация активирована! Никого рядом не оказалось.")
 
 func _on_motivate_time_tick(_h, _m):
 	if _motivate_cooldown_left > 0:
@@ -396,18 +409,7 @@ func _on_motivate_time_tick(_h, _m):
 			print("🔥 Мотивация снова доступна!")
 
 func _show_motivate_wave():
-	# Круг-волна, расширяющийся от PM
-	var wave = Node2D.new()
-	add_child(wave)
-	wave.z_index = 50
-
-	var circle = Sprite2D.new()
-	# Рисуем круг программно через draw
-	var canvas = Node2D.new()
-	canvas.set_script(null)
-	wave.add_child(canvas)
-
-	# Простой визуал: используем Label с эмодзи 🔥 над головой
+	# 🔥 бабл над головой PM
 	var bubble = Node2D.new()
 	add_child(bubble)
 	bubble.position = Vector2(0, -210)
@@ -453,8 +455,31 @@ func _show_motivate_wave():
 	tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
 	tween.tween_callback(bubble.queue_free)
 
-	# Убираем вспомогательный wave (он пустой)
-	wave.queue_free()
+# === АНИМАЦИЯ КРУ��А РАДИУСА ===
+func _show_radius_circle():
+	var ring = _MotivateRing.new()
+	ring.radius = MOTIVATE_RADIUS
+	ring.ring_color = Color(0.9, 0.4, 0.1, 0.6)
+	ring.ring_width = 3.0
+	ring.z_index = 40
+	add_child(ring)
+
+	# Анимация: появляется из 0 → полный размер, держится, затухает
+	ring.scale = Vector2.ZERO
+	var tween = create_tween()
+	tween.tween_property(ring, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(2.0)
+	tween.tween_property(ring, "modulate:a", 0.0, 0.7)
+	tween.tween_callback(ring.queue_free)
+
+# Вспомогательный класс для рисования кольца через _draw
+class _MotivateRing extends Node2D:
+	var radius: float = 600.0
+	var ring_color: Color = Color(0.9, 0.4, 0.1, 0.6)
+	var ring_width: float = 3.0
+
+	func _draw():
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 128, ring_color, ring_width, true)
 
 # === КНОПКА МОТИВАЦИИ НА HUD ===
 func _create_motivate_button():
@@ -462,11 +487,11 @@ func _create_motivate_button():
 	if not hud:
 		return
 
-	var container = VBoxContainer.new()
-	container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	container.position = Vector2(20, -160)
-	container.add_theme_constant_override("separation", 2)
-	hud.add_child(container)
+	_motivate_container = VBoxContainer.new()
+	_motivate_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_motivate_container.position = Vector2(20, -160)
+	_motivate_container.add_theme_constant_override("separation", 2)
+	hud.add_child(_motivate_container)
 
 	_motivate_btn = Button.new()
 	_motivate_btn.text = "🔥 Мотивировать [Q]"
@@ -499,7 +524,7 @@ func _create_motivate_button():
 	_motivate_btn.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(_motivate_btn, "semibold")
 
-	container.add_child(_motivate_btn)
+	_motivate_container.add_child(_motivate_btn)
 
 	_motivate_cooldown_label = Label.new()
 	_motivate_cooldown_label.text = ""
@@ -507,7 +532,7 @@ func _create_motivate_button():
 	_motivate_cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 	_motivate_cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if UITheme: UITheme.apply_font(_motivate_cooldown_label, "regular")
-	container.add_child(_motivate_cooldown_label)
+	_motivate_container.add_child(_motivate_cooldown_label)
 
 	_update_motivate_btn()
 
@@ -517,9 +542,9 @@ func _update_motivate_btn():
 
 	# Скрываем кнопку, если навык не изучен
 	if not PMData.has_skill("motivate"):
-		_motivate_btn.get_parent().visible = false
+		_motivate_container.visible = false
 		return
-	_motivate_btn.get_parent().visible = true
+	_motivate_container.visible = true
 
 	if _motivate_cooldown_left > 0:
 		_motivate_btn.disabled = true

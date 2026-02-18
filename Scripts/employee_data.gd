@@ -139,7 +139,7 @@ func _roll_random_trait() -> String:
 		if not has_conflict:
 			return candidate_trait
 
-	# Попр��бовать другой пул если первый не дал результат
+	# Попробовать другой пул если первый не дал результат
 	if randf() < 0.5:
 		pool = NEGATIVE_TRAITS.duplicate()
 	else:
@@ -187,7 +187,7 @@ const TRAIT_NAMES = {
 	"expensive": "💸 Зазнайка",
 }
 
-# Описания для тултипов (что делает трейт)
+# Описания для тултипов (что де��ает трейт)
 const TRAIT_DESCRIPTIONS = {
 	"fast_learner": "+20% к скорости работы на этапах проекта",
 	"energizer": "Энергия тратится на 30% медленнее",
@@ -245,7 +245,7 @@ func get_work_speed_multiplier() -> float:
 	mult += motivation_bonus
 	return mult
 
-# --- Модификат��р расхода энергии (учитывает energizer) ---
+# --- Модификатор расхода энергии (учитывает energizer) ---
 func get_energy_drain_multiplier() -> float:
 	if has_trait("energizer"):
 		return 0.7  # На 30% медленнее
@@ -266,12 +266,17 @@ var hourly_rate: int:
 
 @export var avatar: Texture2D
 
+# --- Эффективность: энергия + мотивация (для отображения в ростере) ---
 func get_efficiency_multiplier() -> float:
+	var base: float
 	if current_energy >= 70.0:
-		return 1.0
+		base = 1.0
 	elif current_energy >= 50.0:
-		return 0.8
+		base = 0.8
 	elif current_energy >= 30.0:
-		return 0.5
+		base = 0.5
 	else:
-		return 0.2
+		base = 0.2
+	
+	# Добавляем бонус мотивации
+	return base + motivation_bonus
