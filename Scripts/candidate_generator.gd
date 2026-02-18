@@ -37,11 +37,15 @@ const GRADE_DISTRIBUTION = {
 }
 
 func generate_random_candidate() -> EmployeeData:
+	var role = roles.pick_random()
+	return generate_candidate_for_role(role)
+
+# === НОВЫЙ МЕТОД: генерация кандидата конкретной роли ===
+func generate_candidate_for_role(role: String) -> EmployeeData:
 	var new_emp = EmployeeData.new()
 
 	# 1. Имя и Роль
 	new_emp.employee_name = first_names.pick_random() + " " + last_names.pick_random()
-	var role = roles.pick_random()
 	new_emp.job_title = role
 
 	# 2. Определяем уровень на основе дня игры

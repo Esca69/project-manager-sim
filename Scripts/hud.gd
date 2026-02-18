@@ -43,6 +43,17 @@ var _discuss_project: ProjectData = null
 var _discuss_minutes_remaining: float = 0.0
 var _discuss_total_minutes: float = 0.0
 
+# === ПОИСК КАНДИДАТОВ (HR) ===
+var _is_searching: bool = false
+var _search_role: String = ""
+var _search_minutes_remaining: float = 0.0
+var _search_total_minutes: float = 0.0
+const HR_SEARCH_HOURS: int = 2
+const HR_CUTOFF_HOUR: int = 16
+
+# === ЭКРАН ВЫБОРА РОЛИ (HR) ===
+var _hr_role_screen: Control
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -134,9 +145,11 @@ func _ready():
 
 	_build_day_summary()
 	_build_boss_ui()
+	_build_hr_role_screen()
 
-	# Тик времени для обсуждения
+	# Тик времени для обсуждения и поиска
 	GameTime.time_tick.connect(_on_discuss_time_tick)
+	GameTime.time_tick.connect(_on_search_time_tick)
 
 func _apply_fonts():
 	if UITheme == null:
@@ -200,6 +213,82 @@ func open_boss_quest(quest: Dictionary):
 func open_boss_report(report: Dictionary):
 	if _boss_report_screen:
 		_boss_report_screen.open(report)
+
+# === ПОСТРОЕНИЕ ЭКРАНА ВЫБОРА РОЛИ (HR) ===
+func _build_hr_role_screen():
+	var script = load("res://Scripts/hr_role_screen.gd")
+	_hr_role_screen = Control.new()
+	_hr_role_screen.set_script(script)
+	_hr_role_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hr_role_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_hr_role_screen)
+
+	if not _hr_role_screen.search_started.is_connected(_on_hr_search_started):
+		_hr_role_screen.search_started.connect(_on_hr_search_started)
+
+# === ОТКРЫТЬ HR (вызывается из hr_desk.gd) ===
+func open_hr_search():
+	if _is_discussing:
+		print("HR: PM занят обсуждением с боссом.")
+		return
+	if _is_searching:
+		print("HR: PM уже ищет кандидатов.")
+		return
+	if _hr_role_screen:
+		_hr_role_screen.open()
+
+# === HR: ПОИСК НАЧАТ (сигнал из hr_role_screen) ===
+func _on_hr_search_started(role: String):
+	_is_searching = true
+	_search_role = role
+	_search_total_minutes = HR_SEARCH_HOURS * 60.0
+	_search_minutes_remaining = _search_total_minutes
+
+	var player = _get_player()
+	if player and player.has_method("show_discuss_bar"):
+		player.show_discuss_bar(_search_total_minutes)
+	# Меняем текст на плашке
+	if player and player._discuss_label:
+		player._discuss_label.text = "Поиск кандидатов"
+	if player and player._discuss_timer_label:
+		var hours = int(_search_total_minutes) / 60
+		var mins = int(_search_total_minutes) % 60
+		player._discuss_timer_label.text = "🔍 %d:%02d" % [hours, mins]
+
+	print("🔍 Поиск кандидатов начат: %s (%d мин.)" % [role, int(_search_total_minutes)])
+
+func _on_search_time_tick(_h, _m):
+	if not _is_searching:
+		return
+
+	_search_minutes_remaining -= 1.0
+	var elapsed = _search_total_minutes - _search_minutes_remaining
+
+	var player = _get_player()
+	if player and player.has_method("update_discuss_bar"):
+		player._discuss_progress_bar.value = elapsed
+		var hours_left = int(_search_minutes_remaining) / 60
+		var mins_left = int(_search_minutes_remaining) % 60
+		player._discuss_timer_label.text = "🔍 %d:%02d" % [hours_left, mins_left]
+
+	if _search_minutes_remaining <= 0:
+		_finish_search()
+
+func _finish_search():
+	_is_searching = false
+
+	var player = _get_player()
+	if player and player.has_method("hide_discuss_bar"):
+		player.hide_discuss_bar()
+
+	print("✅ Поиск завершён! Роль: ", _search_role)
+
+	# Открываем HiringMenu с результатами
+	var hiring_menu = get_node_or_null("HiringMenu")
+	if hiring_menu:
+		hiring_menu.open_hiring_menu_for_role(_search_role)
+
+	_search_role = ""
 
 # --- PM LEVEL UI ---
 func _build_pm_level_ui():
@@ -336,13 +425,14 @@ func _finish_discussion():
 
 	_discuss_project = null
 
-# === ПРОВЕРКА: PM ЗАНЯТ ОБСУЖДЕНИЕМ ===
+# === ПРОВЕРКА: PM ЗАНЯТ ===
 func is_pm_busy() -> bool:
-	return _is_discussing
+	return _is_discussing or _is_searching
 
 # --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
 func is_any_menu_open() -> bool:
 	if _is_discussing: return true
+	if _is_searching: return true
 	if info_panel.visible: return true
 	if selection_ui.visible: return true
 	if project_window.visible: return true
@@ -356,6 +446,7 @@ func is_any_menu_open() -> bool:
 	if _boss_panel and _boss_panel.visible: return true
 	if _boss_quest_screen and _boss_quest_screen.visible: return true
 	if _boss_report_screen and _boss_report_screen.visible: return true
+	if _hr_role_screen and _hr_role_screen.visible: return true
 
 	var hiring_menu = get_node_or_null("HiringMenu")
 	if hiring_menu and hiring_menu.visible: return true
@@ -415,6 +506,9 @@ func open_boss_menu():
 	if _is_discussing:
 		print("Босс: PM ещё обсуждает предыдущий проект!")
 		return
+	if _is_searching:
+		print("Босс: PM занят поиском кандидатов.")
+		return
 	# ИСПРАВЛЕНИЕ: Блокирующая проверка can_take_more() убрана,
 	# чтобы меню открывалось, а плашка с предупреждением показывалась внутри UI
 	selection_ui.open_selection()
@@ -422,6 +516,9 @@ func open_boss_menu():
 func open_work_menu():
 	if _is_discussing:
 		print("Компьютер: PM занят обсуждением с боссом.")
+		return
+	if _is_searching:
+		print("Компьютер: PM занят поиском кандидатов.")
 		return
 	# ИСПРАВЛЕНИЕ: Блокировка при отсутствии проектов убрана.
 	# Меню откроется, но покажет EmptyLabel (как в EmployeeRoster)
@@ -492,6 +589,9 @@ func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
 	if _is_discussing:
 		print("Нельзя закончить день: PM обсуждает проект!")
+		return
+	if _is_searching:
+		print("Нельзя закончить день: PM ищет кандидатов!")
 		return
 	end_day_button.visible = false
 

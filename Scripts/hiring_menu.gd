@@ -65,8 +65,9 @@ func _set_children_pass_filter(node: Node):
 			child.mouse_filter = Control.MOUSE_FILTER_PASS
 		_set_children_pass_filter(child)
 
-func open_hiring_menu():
-	generate_new_candidates()
+# === НОВЫЙ МЕТОД: открытие с конкретной ролью (2 кандидата) ===
+func open_hiring_menu_for_role(role: String):
+	generate_candidates_for_role(role)
 	update_ui()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -79,10 +80,11 @@ func _on_close_pressed():
 	else:
 		visible = false
 
-func generate_new_candidates():
+# === ГЕНЕРАЦИЯ 2 КАНДИДАТОВ КОНКРЕТНОЙ РОЛИ ===
+func generate_candidates_for_role(role: String):
 	candidates.clear()
-	for i in range(3):
-		var new_human = generator_script.generate_random_candidate()
+	for i in range(2):
+		var new_human = generator_script.generate_candidate_for_role(role)
 		candidates.append(new_human)
 
 func update_ui():
@@ -96,21 +98,28 @@ func update_ui():
 			lc.queue_free()
 	_level_containers.clear()
 
-	for i in range(3):
+	# Показываем только 2 карточки, третью прячем
+	for i in range(cards.size()):
 		var card = cards[i]
-		var data = candidates[i]
 
-		var name_lbl = find_node_by_name(card, "NameLabel")
-		var role_lbl = find_node_by_name(card, "RoleLabel")
-		var salary_lbl = find_node_by_name(card, "SalaryLabel")
-		var skill_lbl = find_node_by_name(card, "SkillLabel")
-		var traits_lbl = find_node_by_name(card, "TraitsLabel")
-		var btn = find_node_by_name(card, "HireButton")
+		if i >= candidates.size():
+			# Третья карточка — прячем
+			card.visible = false
+			continue
+
+		var data = candidates[i]
 
 		if data != null:
 			card.visible = true
 			card.modulate = Color.WHITE
+			var btn = find_node_by_name(card, "HireButton")
 			if btn: btn.disabled = false
+
+			var name_lbl = find_node_by_name(card, "NameLabel")
+			var role_lbl = find_node_by_name(card, "RoleLabel")
+			var salary_lbl = find_node_by_name(card, "SalaryLabel")
+			var skill_lbl = find_node_by_name(card, "SkillLabel")
+			var traits_lbl = find_node_by_name(card, "TraitsLabel")
 
 			# Hover на карточке
 			if card is PanelContainer:
@@ -362,6 +371,8 @@ func _create_hidden_trait(parent: Control) -> HBoxContainer:
 	return hbox
 
 func _on_hire_pressed(index):
+	if index >= candidates.size():
+		return
 	var human_to_hire = candidates[index]
 	if human_to_hire == null: return
 
