@@ -10,6 +10,13 @@ const ZOOM_SMOOTH_SPEED = 8.0
 const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
 
+# === МОТИВАЦИЯ ===
+const MOTIVATE_RADIUS = 600.0         # Радиус действия в пикселях
+const MOTIVATE_BONUS = 0.20           # +20% к скорости
+const MOTIVATE_DURATION_MINUTES = 120  # 2 игровых часа
+const MOTIVATE_COOLDOWN_MINUTES = 240  # 4 игровых часа перезарядки
+var _motivate_cooldown_left: float = 0.0
+
 @onready var interaction_zone = $InteractionZone
 @onready var camera = $Camera2D
 @onready var body_sprite = $Sprite2D
@@ -29,6 +36,10 @@ var _discuss_label: Label = null
 var _discuss_timer_label: Label = null
 var _discuss_bar_attached: bool = false
 
+# --- КНОПКА МОТИВАЦИИ НА HUD ---
+var _motivate_btn: Button = null
+var _motivate_cooldown_label: Label = null
+
 func _ready():
 	add_to_group("player")
 	target_zoom = camera.zoom
@@ -37,6 +48,11 @@ func _ready():
 
 	body_sprite.self_modulate = Color("#a2c5ea")
 	head_sprite.self_modulate = Color("#fff0e1")
+
+	# Подключаем тик времени для кулдауна мотивации
+	GameTime.time_tick.connect(_on_motivate_time_tick)
+
+	call_deferred("_create_motivate_button")
 
 func _create_interact_hint():
 	_interact_hint = PanelContainer.new()
@@ -69,8 +85,7 @@ func _create_interact_hint():
 
 	_interact_hint.visible = false
 	_interact_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# ИСПРАВЛЕНИЕ: Понизили z_index, чтобы окна меню (90) перекрывали подсказку
-	_interact_hint.z_index = 80 
+	_interact_hint.z_index = 80
 
 	call_deferred("_attach_hint_to_hud")
 
@@ -79,8 +94,7 @@ func _create_discuss_bar():
 	_discuss_bar_container = PanelContainer.new()
 	_discuss_bar_container.visible = false
 	_discuss_bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# ИСПРАВЛЕНИЕ: Понизили z_index, чтобы окна меню (90) перекрывали плашку обсуждения
-	_discuss_bar_container.z_index = 80 
+	_discuss_bar_container.z_index = 80
 	_discuss_bar_container.custom_minimum_size = Vector2(110, 0)
 
 	var panel_style = StyleBoxFlat.new()
@@ -207,6 +221,10 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("interact"):
 		interact()
 
+	# === АКТИВАЦИЯ МОТИВАЦИИ ПО Q ===
+	if Input.is_action_just_pressed("motivate"):
+		_activate_motivate()
+
 func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 	_update_discuss_bar_position()
@@ -323,3 +341,191 @@ func _update_discuss_bar_position():
 		screen_pos.x - bar_size.x / 2.0,
 		screen_pos.y - bar_size.y
 	)
+
+# ============================
+# === МОТИВАЦИЯ: ЛОГИКА ===
+# ============================
+
+func _activate_motivate():
+	# Проверяем: навык изучен?
+	if not PMData.has_skill("motivate"):
+		return
+
+	# Проверяем: не на кулдауне?
+	if _motivate_cooldown_left > 0:
+		print("🔥 Мотивация на перезарядке! Осталось %d мин." % int(_motivate_cooldown_left))
+		return
+
+	# PM занят?
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_pm_busy") and hud.is_pm_busy():
+		print("🔥 PM занят, нельзя мотивировать!")
+		return
+
+	# Находим всех NPC в радиусе
+	var affected_count = 0
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if not npc.visible:
+			continue
+		if not npc.data:
+			continue
+		var dist = global_position.distance_to(npc.global_position)
+		if dist <= MOTIVATE_RADIUS:
+			npc.apply_motivation(MOTIVATE_BONUS, MOTIVATE_DURATION_MINUTES)
+			affected_count += 1
+
+	if affected_count > 0:
+		# Запускаем кулдаун
+		_motivate_cooldown_left = MOTIVATE_COOLDOWN_MINUTES
+		_update_motivate_btn()
+
+		# Визуальный эффект — волна от PM
+		_show_motivate_wave()
+
+		print("🔥 Мотивация активирована! Затронуто: %d сотрудников" % affected_count)
+	else:
+		print("🔥 Нет сотрудников рядом для мотивации!")
+
+func _on_motivate_time_tick(_h, _m):
+	if _motivate_cooldown_left > 0:
+		_motivate_cooldown_left -= 1.0
+		_update_motivate_btn()
+		if _motivate_cooldown_left <= 0:
+			_motivate_cooldown_left = 0
+			_update_motivate_btn()
+			print("🔥 Мотивация снова доступна!")
+
+func _show_motivate_wave():
+	# Круг-волна, расширяющийся от PM
+	var wave = Node2D.new()
+	add_child(wave)
+	wave.z_index = 50
+
+	var circle = Sprite2D.new()
+	# Рисуем круг программно через draw
+	var canvas = Node2D.new()
+	canvas.set_script(null)
+	wave.add_child(canvas)
+
+	# Простой визуал: используем Label с эмодзи 🔥 над головой
+	var bubble = Node2D.new()
+	add_child(bubble)
+	bubble.position = Vector2(0, -210)
+	bubble.z_index = 100
+
+	var panel = Panel.new()
+	bubble.add_child(panel)
+	panel.custom_minimum_size = Vector2(72, 72)
+	panel.size = Vector2(72, 72)
+	panel.position = Vector2(-36, -36)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 0.95, 0.9, 1.0)
+	style.border_width_bottom = 2
+	style.border_width_top = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_color = Color(0.9, 0.4, 0.1, 1.0)
+	style.corner_radius_bottom_left = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	panel.add_child(label)
+	label.custom_minimum_size = Vector2(72, 72)
+	label.size = Vector2(72, 72)
+	label.position = Vector2.ZERO
+	label.text = "🔥"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var label_settings = LabelSettings.new()
+	label_settings.font_size = 42
+	label.label_settings = label_settings
+
+	bubble.scale = Vector2.ZERO
+	var tween = create_tween()
+	tween.tween_property(bubble, "scale", Vector2(1.3, 1.3), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(bubble, "scale", Vector2.ONE, 0.2)
+	tween.tween_interval(2.0)
+	tween.tween_property(bubble, "modulate:a", 0.0, 0.5)
+	tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
+	tween.tween_callback(bubble.queue_free)
+
+	# Убираем вспомогательный wave (он пустой)
+	wave.queue_free()
+
+# === КНОПКА МОТИВАЦИИ НА HUD ===
+func _create_motivate_button():
+	var hud = get_tree().get_first_node_in_group("ui")
+	if not hud:
+		return
+
+	var container = VBoxContainer.new()
+	container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	container.position = Vector2(20, -160)
+	container.add_theme_constant_override("separation", 2)
+	hud.add_child(container)
+
+	_motivate_btn = Button.new()
+	_motivate_btn.text = "🔥 Мотивировать [Q]"
+	_motivate_btn.custom_minimum_size = Vector2(180, 40)
+	_motivate_btn.pressed.connect(_activate_motivate)
+
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.9, 0.4, 0.1, 1)
+	btn_style.corner_radius_top_left = 10
+	btn_style.corner_radius_top_right = 10
+	btn_style.corner_radius_bottom_right = 10
+	btn_style.corner_radius_bottom_left = 10
+	btn_style.content_margin_left = 12
+	btn_style.content_margin_right = 12
+	btn_style.content_margin_top = 6
+	btn_style.content_margin_bottom = 6
+	_motivate_btn.add_theme_stylebox_override("normal", btn_style)
+
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = Color(1.0, 0.5, 0.15, 1)
+	_motivate_btn.add_theme_stylebox_override("hover", btn_hover)
+
+	var btn_disabled = btn_style.duplicate()
+	btn_disabled.bg_color = Color(0.5, 0.5, 0.5, 0.6)
+	_motivate_btn.add_theme_stylebox_override("disabled", btn_disabled)
+
+	_motivate_btn.add_theme_color_override("font_color", Color.WHITE)
+	_motivate_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	_motivate_btn.add_theme_color_override("font_disabled_color", Color(0.8, 0.8, 0.8, 0.6))
+	_motivate_btn.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(_motivate_btn, "semibold")
+
+	container.add_child(_motivate_btn)
+
+	_motivate_cooldown_label = Label.new()
+	_motivate_cooldown_label.text = ""
+	_motivate_cooldown_label.add_theme_font_size_override("font_size", 11)
+	_motivate_cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+	_motivate_cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_motivate_cooldown_label, "regular")
+	container.add_child(_motivate_cooldown_label)
+
+	_update_motivate_btn()
+
+func _update_motivate_btn():
+	if _motivate_btn == null:
+		return
+
+	# Скрываем кнопку, если навык не изучен
+	if not PMData.has_skill("motivate"):
+		_motivate_btn.get_parent().visible = false
+		return
+	_motivate_btn.get_parent().visible = true
+
+	if _motivate_cooldown_left > 0:
+		_motivate_btn.disabled = true
+		var hours = int(_motivate_cooldown_left) / 60
+		var mins = int(_motivate_cooldown_left) % 60
+		_motivate_cooldown_label.text = "⏳ Перезарядка: %d:%02d" % [hours, mins]
+	else:
+		_motivate_btn.disabled = false
+		_motivate_cooldown_label.text = "Готово!"

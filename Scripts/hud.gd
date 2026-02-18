@@ -372,10 +372,11 @@ func _get_player():
 	return get_tree().get_first_node_in_group("player")
 
 # === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ ===
+# === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ ===
 func _start_discussion(proj_data: ProjectData):
 	_is_discussing = true
 	_discuss_project = proj_data
-	_discuss_total_minutes = selection_ui.BOSS_MEETING_HOURS * 60.0
+	_discuss_total_minutes = PMData.get_boss_meeting_hours() * 60.0
 	_discuss_minutes_remaining = _discuss_total_minutes
 
 	var player = _get_player()

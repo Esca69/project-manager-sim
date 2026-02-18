@@ -7,6 +7,9 @@ class_name EmployeeData
 
 var current_energy: float = 100.0
 
+# === БОНУС МОТИВАЦИИ ОТ PM ===
+var motivation_bonus: float = 0.0
+
 # === СИСТЕМА УРОВНЕЙ ===
 @export var employee_level: int = 0
 @export var employee_xp: int = 0
@@ -136,7 +139,7 @@ func _roll_random_trait() -> String:
 		if not has_conflict:
 			return candidate_trait
 
-	# Попробовать другой пул если первый не дал результат
+	# Попр��бовать другой пул если первый не дал результат
 	if randf() < 0.5:
 		pool = NEGATIVE_TRAITS.duplicate()
 	else:
@@ -190,7 +193,7 @@ const TRAIT_DESCRIPTIONS = {
 	"energizer": "Энергия тратится на 30% медленнее",
 	"early_bird": "Приходит на работу на 30-40 минут раньше",
 	"cheap_hire": "Зарплата на 15% ниже",
-	"toilet_lover": "��идит в туалете в 2 раза дольше",
+	"toilet_lover": "Сидит в туалете в 2 раза дольше",
 	"coffee_lover": "Кофе-брейк длится в 2 раза дольше",
 	"slowpoke": "-20% к скорости работы на этапах проекта",
 	"expensive": "Зарплата на 20% выше",
@@ -231,16 +234,18 @@ func get_trait_description(trait_id: String) -> String:
 		return TRAIT_DESCRIPTIONS[trait_id]
 	return ""
 
-# --- Модификатор скорости работы (учитывает fast_learner и slowpoke) ---
+# --- Модификатор скорости работы (учитывает fast_learner, slowpoke И мотивацию) ---
 func get_work_speed_multiplier() -> float:
 	var mult = 1.0
 	if has_trait("fast_learner"):
 		mult += 0.2
 	if has_trait("slowpoke"):
 		mult -= 0.2
+	# === БОНУС МОТИВАЦИИ ===
+	mult += motivation_bonus
 	return mult
 
-# --- Модификатор расхода энергии (учитывает energizer) ---
+# --- Модификат��р расхода энергии (учитывает energizer) ---
 func get_energy_drain_multiplier() -> float:
 	if has_trait("energizer"):
 		return 0.7  # На 30% медленнее

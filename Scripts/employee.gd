@@ -65,6 +65,9 @@ var current_bubble: Node2D = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
 
+# === МОТИВАЦИЯ ОТ PM ===
+var _motivation_minutes_left: float = 0.0
+
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
 var skin_color: Color = Color.WHITE
@@ -164,6 +167,20 @@ func _ready():
 	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
 		_go_to_sleep_instant()
 
+# === МОТИВАЦИЯ: ПРИМЕНИТЬ БОНУС ===
+func apply_motivation(bonus: float, duration_minutes: float):
+	if not data:
+		return
+	data.motivation_bonus = bonus
+	_motivation_minutes_left = duration_minutes
+	show_thought_bubble("🔥", 5.0)
+	print("🔥 %s замотивирован! +%d%% на %d мин." % [data.employee_name, int(bonus * 100), int(duration_minutes)])
+
+func remove_motivation():
+	if data:
+		data.motivation_bonus = 0.0
+	_motivation_minutes_left = 0.0
+
 func _assign_random_color():
 	var available_colors = CLOTHING_PALETTE.duplicate()
 	
@@ -211,6 +228,15 @@ func _on_day_started(_day_number: int):
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
+
+	# === МОТИВАЦИЯ: ТАЙМЕР ===
+	if _motivation_minutes_left > 0:
+		_motivation_minutes_left -= 1.0
+		if _motivation_minutes_left <= 0:
+			remove_motivation()
+			print("⏰ Мотивация закончилась у %s" % data.employee_name)
+
+	# --- Early bird логика ---
 	if not data.has_trait("early_bird"): return
 	if _early_bird_start_hour < 0: return
 	if _early_bird_arrived: return
@@ -344,8 +370,6 @@ func _physics_process(delta):
 				move_to_desk(my_desk_position)
 				return
 			
-			
-			
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_wander_arrived()
@@ -360,8 +384,6 @@ func _physics_process(delta):
 			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 				move_to_desk(my_desk_position)
 				return
-			
-			
 			
 			_wander_pause_timer -= delta
 			_apply_lean(Vector2.ZERO, delta)

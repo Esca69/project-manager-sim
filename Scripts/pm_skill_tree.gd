@@ -40,7 +40,7 @@ const CATEGORIES = [
 		"id": "people",
 		"label": "👥 ЛЮДИ",
 		"color": COLOR_BLUE,
-		"branches": ["read_traits", "read_skills", "candidate_count", "hr_search_speed"],
+		"branches": ["read_traits", "read_skills", "candidate_count", "hr_search_speed", "motivate"],
 	},
 	{
 		"id": "analytics",
