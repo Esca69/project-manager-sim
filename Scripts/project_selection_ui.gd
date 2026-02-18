@@ -20,15 +20,11 @@ var _scroll_ready: bool = false
 
 var _overlay: ColorRect
 
-# === КОНСТАНТЫ ОБСУЖДЕНИЯ ===
-const BOSS_MEETING_HOURS: int = 4        # Сколько игровых часов занимает обсуждение
-const BOSS_CUTOFF_HOUR: int = 14         # Последний час, когда можно начать обсуждение
-
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	z_index = 90 # Поверх остальных элементов
-	mouse_filter = Control.MOUSE_FILTER_IGNORE # Пропускаем клики до оверлея
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_force_fullscreen_size()
 
@@ -38,7 +34,7 @@ func _ready():
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_overlay)
-	move_child(_overlay, 0) # Помещаем на самый задний план, позади $Window
+	move_child(_overlay, 0)
 
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)
@@ -67,7 +63,6 @@ func _ready():
 	_btn_style_hover.corner_radius_bottom_right = 20
 	_btn_style_hover.corner_radius_bottom_left = 20
 
-	# Стиль для заблокированной кнопки (серая)
 	_btn_style_disabled = StyleBoxFlat.new()
 	_btn_style_disabled.bg_color = Color(0.95, 0.95, 0.95, 1)
 	_btn_style_disabled.border_width_left = 2
@@ -145,7 +140,6 @@ func _set_children_pass_filter(node: Node):
 		_set_children_pass_filter(child)
 
 func open_selection():
-	# ИСПРАВЛЕНИЕ: Перемещаем окно в самый конец дерева (поверх всех остальных UI, включая BottomBar)
 	if get_parent():
 		get_parent().move_child(self, -1)
 
@@ -194,7 +188,7 @@ func _is_project_limit_reached() -> bool:
 	return not ProjectManager.can_take_more()
 
 func _is_too_late_for_boss() -> bool:
-	return GameTime.hour >= BOSS_CUTOFF_HOUR
+	return GameTime.hour >= PMData.get_boss_cutoff_hour()
 
 # === ПЕРЕСТРОЙКА КАРТОЧЕК ===
 func _rebuild_cards():
@@ -209,7 +203,7 @@ func _rebuild_cards():
 	# --- Плашка лимита проектов ---
 	if _is_project_limit_reached():
 		var limit_bar = _create_warning_bar(
-			"⚠ Достигнут лимит активных проектов (%d из %d)" % [ProjectManager.count_active_projects(), ProjectManager.MAX_PROJECTS],
+			"⚠ Достигнут лимит активных проектов (%d из %d)" % [ProjectManager.count_active_projects(), PMData.get_max_projects()],
 			"Завершите текущие проекты или прокачайте навык PM для увеличения лимита.",
 			Color(0.9, 0.5, 0.1, 1)
 		)
@@ -217,8 +211,9 @@ func _rebuild_cards():
 
 	# --- Плашка "босс ушёл" ---
 	if _is_too_late_for_boss():
+		var cutoff = PMData.get_boss_cutoff_hour()
 		var time_bar = _create_warning_bar(
-			"🕐 Босс не хочет обсуждать проекты после %d:00" % BOSS_CUTOFF_HOUR,
+			"🕐 Босс не хочет обсуждать проекты после %d:00" % cutoff,
 			"Приходите завтра утром.",
 			Color(0.7, 0.2, 0.2, 1)
 		)
@@ -340,9 +335,10 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
 
-	# Метка "Обсуждение занимает 4 часа"
+	# Метка "Обсуждение занимает N часов" — динамически из PMData
+	var boss_hours = PMData.get_boss_meeting_hours()
 	var time_lbl = Label.new()
-	time_lbl.text = "⏱ Обсуждение с боссом: %d ч." % BOSS_MEETING_HOURS
+	time_lbl.text = "⏱ Обсуждение с боссом: %d ч." % boss_hours
 	time_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55, 1))
 	time_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(time_lbl, "regular")

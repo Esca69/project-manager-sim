@@ -12,9 +12,6 @@ const COLOR_BORDER = Color(0.8784314, 0.8784314, 0.8784314, 1)
 const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 const COLOR_RED = Color(0.8980392, 0.22352941, 0.20784314, 1)
 
-const HR_SEARCH_HOURS: int = 2
-const HR_CUTOFF_HOUR: int = 16
-
 var _overlay: ColorRect
 var _window: PanelContainer
 var _close_btn: Button
@@ -22,6 +19,7 @@ var _search_btn: Button
 var _selected_role: String = ""
 var _role_buttons: Array = []
 var _time_warning_lbl: Label
+var _time_info_lbl: Label
 
 # Стили для кнопок ролей
 var _role_style_normal: StyleBoxFlat
@@ -53,6 +51,7 @@ func open():
 	_update_role_buttons_visual()
 	_update_search_button()
 	_update_time_warning()
+	_update_time_info()
 
 	if get_parent():
 		get_parent().move_child(self, -1)
@@ -69,7 +68,7 @@ func close():
 		visible = false
 
 func _is_too_late() -> bool:
-	return GameTime.hour >= HR_CUTOFF_HOUR
+	return GameTime.hour >= PMData.get_hr_cutoff_hour()
 
 # === СТИЛИ ===
 func _build_styles():
@@ -299,14 +298,14 @@ func _build_ui():
 		roles_vbox.add_child(btn)
 		_role_buttons.append({ "button": btn, "role": rd["role"] })
 
-	# Время поиска
-	var time_lbl = Label.new()
-	time_lbl.text = "⏱ Поиск кандидатов занимает %d ч." % HR_SEARCH_HOURS
-	time_lbl.add_theme_color_override("font_color", COLOR_GRAY)
-	time_lbl.add_theme_font_size_override("font_size", 13)
-	time_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if UITheme: UITheme.apply_font(time_lbl, "regular")
-	content_vbox.add_child(time_lbl)
+	# Время поиска (динамическое)
+	_time_info_lbl = Label.new()
+	_time_info_lbl.text = ""
+	_time_info_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	_time_info_lbl.add_theme_font_size_override("font_size", 13)
+	_time_info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_time_info_lbl, "regular")
+	content_vbox.add_child(_time_info_lbl)
 
 	# Предупреждение о времени
 	_time_warning_lbl = Label.new()
@@ -344,6 +343,16 @@ func _build_ui():
 	_search_btn.pressed.connect(_on_search_pressed)
 	btn_center.add_child(_search_btn)
 
+# === ОБНОВЛЕНИЕ ТЕКСТА ВРЕМЕНИ ПОИСКА ===
+func _update_time_info():
+	if _time_info_lbl:
+		var search_minutes = PMData.get_hr_search_minutes()
+		if search_minutes >= 60:
+			var hours = search_minutes / 60
+			_time_info_lbl.text = "⏱ Поиск кандидатов занимает %d ч." % hours
+		else:
+			_time_info_lbl.text = "⏱ Поиск кандидатов занимает %d мин." % search_minutes
+
 # === ВЫБОР РОЛИ ===
 func _on_role_selected(role: String):
 	_selected_role = role
@@ -377,7 +386,8 @@ func _update_search_button():
 
 func _update_time_warning():
 	if _is_too_late():
-		_time_warning_lbl.text = "🕐 Поиск нельзя начать после %d:00 — не хватит времени до конца рабочего дня." % HR_CUTOFF_HOUR
+		var cutoff = PMData.get_hr_cutoff_hour()
+		_time_warning_lbl.text = "🕐 Поиск нельзя начать после %d:00 — не хватит времени до конца рабочего дня." % cutoff
 		_time_warning_lbl.visible = true
 	else:
 		_time_warning_lbl.visible = false

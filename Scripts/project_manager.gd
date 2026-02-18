@@ -2,9 +2,6 @@ extends Node
 
 var active_projects: Array = []
 
-# Начальный лимит — 2. Увеличивается навыками PM.
-var MAX_PROJECTS: int = 2
-
 signal project_finished(proj: ProjectData)
 signal project_failed(proj: ProjectData)
 signal employee_leveled_up(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String)
@@ -13,15 +10,15 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func add_project(proj: ProjectData):
-	if count_active_projects() >= MAX_PROJECTS:
-		print("⚠ Максимум активных проектов достигнут! (", MAX_PROJECTS, ")")
+	if count_active_projects() >= PMData.get_max_projects():
+		print("⚠ Максимум активных проектов достигнут! (", PMData.get_max_projects(), ")")
 		return false
 	active_projects.append(proj)
 	print("📋 Проект добавлен: ", proj.title, " (всего: ", active_projects.size(), ")")
 	return true
 
 func can_take_more() -> bool:
-	return count_active_projects() < MAX_PROJECTS
+	return count_active_projects() < PMData.get_max_projects()
 
 # Считаем только DRAFTING и IN_PROGRESS — завершённые и проваленные не в счёт
 func count_active_projects() -> int:

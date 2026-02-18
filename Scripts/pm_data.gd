@@ -17,141 +17,219 @@ var _last_threshold_index: int = -1
 
 # === ОПРЕДЕЛЕНИЕ НАВЫКОВ ===
 const SKILL_TREE = {
-	# === ВЛЕВО: ПРОЕКТЫ ===
+	# ===========================
+	# === КАТЕГОРИЯ: ПРОЕКТЫ ===
+	# ===========================
+
+	# --- Оценка объёма (2 навыка) ---
 	"estimate_work_1": {
-		"name": "Оценка объёма I",
-		"description": "Объём работ по проекту показан как вилка ±25% вместо ±40%",
+		"name": "📐 Оценка объёма I",
+		"description": "Объём работ по проекту показан как вилка ±20% вместо ±40%",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "projects_left",
+		"category": "projects",
 		"branch": "estimate_work",
 		"branch_order": 0,
 	},
 	"estimate_work_2": {
-		"name": "Оценка объёма II",
-		"description": "Объём работ по проекту показан как вилка ±10%",
-		"cost": 1,
+		"name": "📐 Оценка объёма II",
+		"description": "Вы видите точный объём работ по каждому этапу",
+		"cost": 2,
 		"prerequisite": "estimate_work_1",
-		"direction": "projects_left",
+		"category": "projects",
 		"branch": "estimate_work",
 		"branch_order": 1,
 	},
-	"estimate_work_3": {
-		"name": "Оценка объёма III",
-		"description": "Вы видите точный объём работ по каждому этапу",
-		"cost": 2,
-		"prerequisite": "estimate_work_2",
-		"direction": "projects_left",
-		"branch": "estimate_work",
-		"branch_order": 2,
-	},
+
+	# --- Оценка бюджета (2 навыка) ---
 	"estimate_budget_1": {
-		"name": "Оценка бюджета I",
-		"description": "Бюджет проекта показан как вилка ±20% вместо ±35%",
+		"name": "💰 Оценка бюджета I",
+		"description": "Бюджет проекта показан как вилка ±15% вместо ±35%",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "projects_left",
+		"category": "projects",
 		"branch": "estimate_budget",
 		"branch_order": 0,
 	},
 	"estimate_budget_2": {
-		"name": "Оценка бюджета II",
-		"description": "Бюджет проекта показан как вилка ±8%",
-		"cost": 1,
+		"name": "💰 Оценка бюджета II",
+		"description": "Вы видите точный бюджет проекта",
+		"cost": 2,
 		"prerequisite": "estimate_budget_1",
-		"direction": "projects_left",
+		"category": "projects",
 		"branch": "estimate_budget",
 		"branch_order": 1,
 	},
-	"estimate_budget_3": {
-		"name": "Оценка бюджета III",
-		"description": "Вы видите точный бюджет проекта",
-		"cost": 2,
-		"prerequisite": "estimate_budget_2",
-		"direction": "projects_left",
-		"branch": "estimate_budget",
-		"branch_order": 2,
+
+	# --- Лимит проектов (2 навыка) ---
+	"project_limit_1": {
+		"name": "📁 Лимит проектов I",
+		"description": "Максимум активных проектов увеличен до 3 (было 2)",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "projects",
+		"branch": "project_limit",
+		"branch_order": 0,
 	},
-	# === ВПРАВО: ЛЮДИ ===
+	"project_limit_2": {
+		"name": "📁 Лимит проектов II",
+		"description": "Максимум активных проектов увеличен до 5",
+		"cost": 2,
+		"prerequisite": "project_limit_1",
+		"category": "projects",
+		"branch": "project_limit",
+		"branch_order": 1,
+	},
+
+	# --- Скорость обсуждения (2 навыка) ---
+	"boss_meeting_speed_1": {
+		"name": "⏱ Скорость обсуждения I",
+		"description": "Обсуждение проекта с боссом занимает 3 часа вместо 4",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "projects",
+		"branch": "boss_meeting_speed",
+		"branch_order": 0,
+	},
+	"boss_meeting_speed_2": {
+		"name": "⏱ Скорость обсуждения II",
+		"description": "Обсуждение проекта с боссом занимает 2 часа",
+		"cost": 2,
+		"prerequisite": "boss_meeting_speed_1",
+		"category": "projects",
+		"branch": "boss_meeting_speed",
+		"branch_order": 1,
+	},
+
+	# ========================
+	# === КАТЕГОРИЯ: ЛЮДИ ===
+	# ========================
+
+	# --- Чтение людей (3 навыка) ---
 	"read_traits_1": {
-		"name": "Чтение людей I",
+		"name": "👁 Чтение людей I",
 		"description": "При найме вы видите 1 трейт кандидата",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "people_right",
+		"category": "people",
 		"branch": "read_traits",
 		"branch_order": 0,
 	},
 	"read_traits_2": {
-		"name": "Чтение людей II",
+		"name": "👁 Чтение людей II",
 		"description": "При найме вы видите 2 трейта кандидата",
 		"cost": 1,
 		"prerequisite": "read_traits_1",
-		"direction": "people_right",
+		"category": "people",
 		"branch": "read_traits",
 		"branch_order": 1,
 	},
 	"read_traits_3": {
-		"name": "Чтение людей III",
+		"name": "👁 Чтение людей III",
 		"description": "Вы видите все трейты кандидата при найме",
 		"cost": 2,
 		"prerequisite": "read_traits_2",
-		"direction": "people_right",
+		"category": "people",
 		"branch": "read_traits",
 		"branch_order": 2,
 	},
+
+	# --- Оценка кадров (3 навыка) ---
 	"read_skills_1": {
-		"name": "Оценка кадров I",
+		"name": "📊 Оценка кадров I",
 		"description": "Навыки кандидата показаны как «Низкий / Средний / Высокий»\nвместо полного скрытия",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "people_right",
+		"category": "people",
 		"branch": "read_skills",
 		"branch_order": 0,
 	},
 	"read_skills_2": {
-		"name": "Оценка кадров II",
+		"name": "📊 Оценка кадров II",
 		"description": "Навыки кандидата показаны как диапазон (100–150)",
 		"cost": 1,
 		"prerequisite": "read_skills_1",
-		"direction": "people_right",
+		"category": "people",
 		"branch": "read_skills",
 		"branch_order": 1,
 	},
 	"read_skills_3": {
-		"name": "Оценка кадров III",
+		"name": "📊 Оценка кадров III",
 		"description": "Вы видите точные значения навыков кандидата",
 		"cost": 2,
 		"prerequisite": "read_skills_2",
-		"direction": "people_right",
+		"category": "people",
 		"branch": "read_skills",
 		"branch_order": 2,
 	},
-	# === ВНИЗ: АНАЛИТИКА ===
+
+	# --- Кандидаты на вакансию (2 навыка) ---
+	"candidate_count_1": {
+		"name": "👤 Кандидаты I",
+		"description": "При поиске HR выдаёт 3 кандидата вместо 2",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "people",
+		"branch": "candidate_count",
+		"branch_order": 0,
+	},
+	"candidate_count_2": {
+		"name": "👤 Кандидаты II",
+		"description": "При поиске HR выдаёт 5 кандидатов",
+		"cost": 2,
+		"prerequisite": "candidate_count_1",
+		"category": "people",
+		"branch": "candidate_count",
+		"branch_order": 1,
+	},
+
+	# --- Скорость поиска (2 навыка) ---
+	"hr_search_speed_1": {
+		"name": "🔍 Скорость поиска I",
+		"description": "Поиск кандидатов занимает 1.5 часа вместо 2",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "people",
+		"branch": "hr_search_speed",
+		"branch_order": 0,
+	},
+	"hr_search_speed_2": {
+		"name": "🔍 Скорость поиска II",
+		"description": "Поиск кандидатов занимает 1 час",
+		"cost": 2,
+		"prerequisite": "hr_search_speed_1",
+		"category": "people",
+		"branch": "hr_search_speed",
+		"branch_order": 1,
+	},
+
+	# =============================
+	# === КАТЕГОРИЯ: АНАЛИТИКА ===
+	# =============================
 	"report_expenses": {
-		"name": "Учёт расходов",
+		"name": "📋 Учёт расходов",
 		"description": "В дневном отчёте видна детализация затрат:\nкому выплачена зарплата и сколько",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "analytics_down",
+		"category": "analytics",
 		"branch": "report_expenses",
 		"branch_order": 0,
 	},
 	"report_projects": {
-		"name": "Аналитика проектов",
+		"name": "📋 Аналитика проектов",
 		"description": "В дневном отчёте видны этапы проектов,\nпроцент прогресса и дни до дедлайнов",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "analytics_down",
+		"category": "analytics",
 		"branch": "report_projects",
 		"branch_order": 0,
 	},
 	"report_productivity": {
-		"name": "Оценка продуктивности",
+		"name": "📋 Оценка продуктивности",
 		"description": "В дневном отчёте видно кто из сотрудников\nсколько часов работал и сколько очков принёс",
 		"cost": 1,
 		"prerequisite": "",
-		"direction": "analytics_down",
+		"category": "analytics",
 		"branch": "report_productivity",
 		"branch_order": 0,
 	},
@@ -224,29 +302,66 @@ func has_skill(skill_id: String) -> bool:
 	return skill_id in unlocked_skills
 
 # === ПОМОЩНИКИ ДЛЯ UI ===
+
+# --- Оценка объёма (0=база, 1=лучше, 2=точно) ---
 func get_work_estimate_level() -> int:
-	if has_skill("estimate_work_3"): return 3
 	if has_skill("estimate_work_2"): return 2
 	if has_skill("estimate_work_1"): return 1
 	return 0
 
+# --- Оценка бюджета (0=база, 1=лучше, 2=точно) ---
 func get_budget_estimate_level() -> int:
-	if has_skill("estimate_budget_3"): return 3
 	if has_skill("estimate_budget_2"): return 2
 	if has_skill("estimate_budget_1"): return 1
 	return 0
 
+# --- Трейты ---
 func get_visible_traits_count() -> int:
 	if has_skill("read_traits_3"): return 999
 	if has_skill("read_traits_2"): return 2
 	if has_skill("read_traits_1"): return 1
 	return 0
 
+# --- Навыки кандидатов ---
 func get_skill_read_level() -> int:
 	if has_skill("read_skills_3"): return 3
 	if has_skill("read_skills_2"): return 2
 	if has_skill("read_skills_1"): return 1
 	return 0
+
+# === НОВЫЕ ХЕЛПЕРЫ ===
+
+# --- Максимум активных проектов (2 → 3 → 5) ---
+func get_max_projects() -> int:
+	if has_skill("project_limit_2"): return 5
+	if has_skill("project_limit_1"): return 3
+	return 2
+
+# --- Количество кандидатов при поиске (2 → 3 → 5) ---
+func get_candidate_count() -> int:
+	if has_skill("candidate_count_2"): return 5
+	if has_skill("candidate_count_1"): return 3
+	return 2
+
+# --- Время обсуждения с боссом в часах (4 → 3 → 2) ---
+func get_boss_meeting_hours() -> int:
+	if has_skill("boss_meeting_speed_2"): return 2
+	if has_skill("boss_meeting_speed_1"): return 3
+	return 4
+
+# --- Время поиска HR в минутах (120 → 90 → 60) ---
+func get_hr_search_minutes() -> int:
+	if has_skill("hr_search_speed_2"): return 60
+	if has_skill("hr_search_speed_1"): return 90
+	return 120
+
+# --- Cutoff hour для босса (18 - часы обсуждения) ---
+func get_boss_cutoff_hour() -> int:
+	return 18 - get_boss_meeting_hours()
+
+# --- Cutoff hour для HR (18 - ceil(минуты / 60)) ---
+func get_hr_cutoff_hour() -> int:
+	return 18 - ceili(float(get_hr_search_minutes()) / 60.0)
 
 # === АНАЛИТИКА (для дневного отчёта) ===
 func can_see_expense_details() -> bool:
@@ -270,17 +385,15 @@ func blur_value(real_value: int, spread_percent: float) -> String:
 func get_blurred_work(real_value: int) -> String:
 	match get_work_estimate_level():
 		0: return blur_value(real_value, 0.40)
-		1: return blur_value(real_value, 0.25)
-		2: return blur_value(real_value, 0.10)
-		3: return str(real_value)
+		1: return blur_value(real_value, 0.20)
+		2: return str(real_value)
 	return blur_value(real_value, 0.40)
 
 func get_blurred_budget(real_value: int) -> String:
 	match get_budget_estimate_level():
 		0: return blur_value(real_value, 0.35)
-		1: return blur_value(real_value, 0.20)
-		2: return blur_value(real_value, 0.08)
-		3: return "$" + str(real_value)
+		1: return blur_value(real_value, 0.15)
+		2: return "$" + str(real_value)
 	return blur_value(real_value, 0.35)
 
 func get_blurred_skill(real_value: int) -> String:

@@ -11,9 +11,11 @@ const COLOR_TEAL = Color(0.0, 0.6, 0.65, 1)
 
 # === РАЗМЕРЫ ===
 const NODE_SIZE = Vector2(180, 80)
-const NODE_SPACING_X = 220
-const NODE_SPACING_Y = 130
-const CENTER_NODE_SIZE = Vector2(100, 100)
+const NODE_H_GAP = 30         # Горизонтальный отступ между нодами в цепочке
+const ROW_V_GAP = 20          # Вертикальный отступ между рядами (цепочками)
+const CATEGORY_GAP = 30       # Отступ между категориями
+const LEFT_MARGIN = 40        # Отступ слева
+const TOP_MARGIN = 20         # Отступ сверху
 
 # === НОДЫ ===
 @onready var close_btn = find_child("CloseButton", true, false)
@@ -25,6 +27,28 @@ var _sp_label: Label
 var _tooltip_panel: PanelContainer = null
 var _skill_nodes: Dictionary = {}
 var _initialized: bool = false
+
+# === ОПРЕДЕЛЕНИЕ КАТЕГОРИЙ И ИХ ПОРЯДКА ===
+const CATEGORIES = [
+	{
+		"id": "projects",
+		"label": "📋 ПРОЕКТЫ",
+		"color": COLOR_BLUE,
+		"branches": ["estimate_work", "estimate_budget", "project_limit", "boss_meeting_speed"],
+	},
+	{
+		"id": "people",
+		"label": "👥 ЛЮДИ",
+		"color": COLOR_BLUE,
+		"branches": ["read_traits", "read_skills", "candidate_count", "hr_search_speed"],
+	},
+	{
+		"id": "analytics",
+		"label": "📊 АНАЛИТИКА",
+		"color": COLOR_TEAL,
+		"branches": ["report_expenses", "report_projects", "report_productivity"],
+	},
+]
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -115,11 +139,12 @@ func _build_ui():
 						break
 
 	if _scroll:
+		_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 		for child in _scroll.get_children():
 			child.queue_free()
 
 		_canvas = Control.new()
-		_canvas.custom_minimum_size = Vector2(1600, 850)
+		_canvas.custom_minimum_size = Vector2(800, 600)
 		_scroll.add_child(_canvas)
 
 	_update_header()
@@ -158,106 +183,98 @@ func _rebuild_tree():
 
 	_update_header()
 
-	var center = Vector2(_canvas.custom_minimum_size.x / 2.0, 240)
+	var cursor_y = TOP_MARGIN
 
-	var center_node = _create_center_node()
-	center_node.position = center - CENTER_NODE_SIZE / 2.0
-	_canvas.add_child(center_node)
+	for cat_data in CATEGORIES:
+		var cat_id = cat_data["id"]
+		var cat_label = cat_data["label"]
+		var cat_color = cat_data["color"]
+		var cat_branches = cat_data["branches"]
 
-	_place_branch("estimate_work", center, -1, 0)
-	_place_branch("estimate_budget", center, -1, 1)
-	_place_branch("read_traits", center, 1, 0)
-	_place_branch("read_skills", center, 1, 1)
+		# --- Заголовок категории ---
+		var cat_lbl = Label.new()
+		cat_lbl.text = cat_label
+		cat_lbl.add_theme_font_size_override("font_size", 18)
+		cat_lbl.add_theme_color_override("font_color", Color(cat_color, 0.6))
+		if UITheme: UITheme.apply_font(cat_lbl, "bold")
+		cat_lbl.position = Vector2(LEFT_MARGIN, cursor_y)
+		_canvas.add_child(cat_lbl)
+		cursor_y += 32
 
-	_place_analytics_branch(center)
-	_draw_connections(center)
+		# --- Ряды навыков внутри категории ---
+		var is_analytics = (cat_id == "analytics")
 
-	_add_zone_label("📋 ПРОЕКТЫ", center + Vector2(-NODE_SPACING_X * 2, -NODE_SPACING_Y - 50))
-	_add_zone_label("👥 ЛЮДИ", center + Vector2(NODE_SPACING_X * 2, -NODE_SPACING_Y - 50))
-	_add_zone_label("📊 АНАЛИТИКА", center + Vector2(0, NODE_SPACING_Y + 120), COLOR_TEAL)
+		if is_analytics:
+			# Аналитика: все 3 навыка в одну горизонтальную линию без стрелок
+			var x = LEFT_MARGIN
+			for branch_id in cat_branches:
+				var branch_skills = _get_branch_skills(branch_id)
+				for skill_entry in branch_skills:
+					var skill_id = skill_entry["id"]
+					var node = _create_skill_node(skill_id, COLOR_TEAL)
+					node.position = Vector2(x, cursor_y)
+					_canvas.add_child(node)
+					_skill_nodes[skill_id] = node
+					x += NODE_SIZE.x + NODE_H_GAP
+			cursor_y += NODE_SIZE.y + ROW_V_GAP
+		else:
+			# Обычные ветки: каждая ветка — горизонтальный ряд со стрелками
+			for branch_id in cat_branches:
+				var branch_skills = _get_branch_skills(branch_id)
+				if branch_skills.is_empty():
+					continue
 
-	_add_branch_label("Оценка объёма", center, -1, 0)
-	_add_branch_label("Оценка бюджета", center, -1, 1)
-	_add_branch_label("Чтение людей", center, 1, 0)
-	_add_branch_label("Оценка кадров", center, 1, 1)
+				var x = LEFT_MARGIN
+				var prev_skill_id = ""
 
-func _place_branch(branch_id: String, center: Vector2, dir_x: int, branch_index: int):
-	var y_offset = -NODE_SPACING_Y / 2.0 + branch_index * NODE_SPACING_Y
+				for skill_entry in branch_skills:
+					var skill_id = skill_entry["id"]
+					var node = _create_skill_node(skill_id, cat_color)
+					node.position = Vector2(x, cursor_y)
+					_canvas.add_child(node)
+					_skill_nodes[skill_id] = node
 
-	var branch_skills = []
+					# Стрелка от предыдущего навыка
+					if prev_skill_id != "":
+						var prev_node = _skill_nodes[prev_skill_id]
+						var from_pos = prev_node.position + Vector2(NODE_SIZE.x, NODE_SIZE.y / 2.0)
+						var to_pos = node.position + Vector2(0, NODE_SIZE.y / 2.0)
+						var is_unlocked = PMData.has_skill(skill_id)
+						var prereq_ok = PMData.has_skill(prev_skill_id)
+						var line_color: Color
+						if is_unlocked:
+							line_color = COLOR_GREEN
+						elif prereq_ok:
+							line_color = cat_color
+						else:
+							line_color = COLOR_GRAY
+						var is_locked = not is_unlocked and not prereq_ok
+						_draw_arrow_line(from_pos, to_pos, line_color, is_locked)
+
+					prev_skill_id = skill_id
+					x += NODE_SIZE.x + NODE_H_GAP
+
+				cursor_y += NODE_SIZE.y + ROW_V_GAP
+
+		# --- Разделитель между категориями ---
+		cursor_y += CATEGORY_GAP
+		var sep = ColorRect.new()
+		sep.color = Color(0.85, 0.85, 0.85, 0.5)
+		sep.position = Vector2(LEFT_MARGIN, cursor_y - CATEGORY_GAP / 2.0)
+		sep.size = Vector2(700, 1)
+		_canvas.add_child(sep)
+
+	# Обновляем размер канваса
+	_canvas.custom_minimum_size = Vector2(800, cursor_y + 40)
+
+func _get_branch_skills(branch_id: String) -> Array:
+	var result = []
 	for skill_id in PMData.SKILL_TREE:
 		var skill = PMData.SKILL_TREE[skill_id]
 		if skill["branch"] == branch_id:
-			branch_skills.append({"id": skill_id, "order": skill["branch_order"]})
-	branch_skills.sort_custom(func(a, b): return a["order"] < b["order"])
-
-	for i in range(branch_skills.size()):
-		var skill_id = branch_skills[i]["id"]
-		var x = center.x + dir_x * NODE_SPACING_X * (i + 1) - NODE_SIZE.x / 2.0
-		var y = center.y + y_offset - NODE_SIZE.y / 2.0
-
-		var node = _create_skill_node(skill_id)
-		node.position = Vector2(x, y)
-		_canvas.add_child(node)
-		_skill_nodes[skill_id] = node
-
-func _place_analytics_branch(center: Vector2):
-	var analytics_ids = ["report_expenses", "report_projects", "report_productivity"]
-	var fan_x_offsets = [-NODE_SPACING_X, 0, NODE_SPACING_X]
-	var y_pos = center.y + NODE_SPACING_Y * 1.3
-
-	for i in range(analytics_ids.size()):
-		var skill_id = analytics_ids[i]
-		var x = center.x + fan_x_offsets[i] - NODE_SIZE.x / 2.0
-		var y = y_pos - NODE_SIZE.y / 2.0
-
-		var node = _create_skill_node(skill_id, COLOR_TEAL)
-		node.position = Vector2(x, y)
-		_canvas.add_child(node)
-		_skill_nodes[skill_id] = node
-
-func _add_branch_label(text: String, center: Vector2, dir_x: int, branch_index: int):
-	var y_offset = -NODE_SPACING_Y / 2.0 + branch_index * NODE_SPACING_Y
-	var x = center.x + dir_x * NODE_SPACING_X * 0.5
-	var y = center.y + y_offset - NODE_SIZE.y / 2.0 - 18
-
-	var lbl = Label.new()
-	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 11)
-	lbl.add_theme_color_override("font_color", Color(COLOR_BLUE, 0.5))
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.position = Vector2(x - 50, y)
-	if UITheme: UITheme.apply_font(lbl, "regular")
-	_canvas.add_child(lbl)
-
-func _create_center_node() -> PanelContainer:
-	var panel = PanelContainer.new()
-	panel.custom_minimum_size = CENTER_NODE_SIZE
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = COLOR_BLUE
-	style.corner_radius_top_left = 50
-	style.corner_radius_top_right = 50
-	style.corner_radius_bottom_right = 50
-	style.corner_radius_bottom_left = 50
-	style.border_width_left = 3
-	style.border_width_top = 3
-	style.border_width_right = 3
-	style.border_width_bottom = 3
-	style.border_color = Color(0, 0, 0, 0.3)
-	if UITheme: UITheme.apply_shadow(style, false)
-	panel.add_theme_stylebox_override("panel", style)
-
-	var lbl = Label.new()
-	lbl.text = "🧑‍💼\nPM"
-	lbl.add_theme_color_override("font_color", COLOR_WHITE)
-	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	if UITheme: UITheme.apply_font(lbl, "bold")
-	panel.add_child(lbl)
-
-	return panel
+			result.append({"id": skill_id, "order": skill["branch_order"]})
+	result.sort_custom(func(a, b): return a["order"] < b["order"])
+	return result
 
 func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> PanelContainer:
 	var skill = PMData.SKILL_TREE[skill_id]
@@ -377,49 +394,7 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 
 	return panel
 
-func _add_zone_label(text: String, pos: Vector2, color: Color = COLOR_BLUE):
-	var lbl = Label.new()
-	lbl.text = text
-	lbl.add_theme_font_size_override("font_size", 18)
-	lbl.add_theme_color_override("font_color", Color(color, 0.4))
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.position = pos - Vector2(80, 0)
-	if UITheme: UITheme.apply_font(lbl, "bold")
-	_canvas.add_child(lbl)
-
-# === ЛИНИИ СВЯЗЕЙ С СТРЕЛКАМИ ===
-func _draw_connections(center: Vector2):
-	for skill_id in _skill_nodes:
-		var skill = PMData.SKILL_TREE[skill_id]
-		var node_ctrl = _skill_nodes[skill_id]
-		var node_center = node_ctrl.position + NODE_SIZE / 2.0
-
-		var from_pos: Vector2
-		if skill["prerequisite"] == "":
-			from_pos = center
-		else:
-			var prereq_ctrl = _skill_nodes.get(skill["prerequisite"])
-			if prereq_ctrl:
-				from_pos = prereq_ctrl.position + NODE_SIZE / 2.0
-			else:
-				from_pos = center
-
-		var is_unlocked = PMData.has_skill(skill_id)
-		var prereq_ok = skill["prerequisite"] == "" or PMData.has_skill(skill["prerequisite"])
-		var is_analytics = skill["direction"] == "analytics_down"
-
-		var line_color: Color
-		if is_unlocked:
-			line_color = COLOR_GREEN
-		elif prereq_ok:
-			line_color = COLOR_TEAL if is_analytics else COLOR_BLUE
-		else:
-			line_color = COLOR_GRAY
-
-		var is_locked = not is_unlocked and not prereq_ok
-
-		_draw_arrow_line(from_pos, node_center, line_color, is_locked)
-
+# === СТРЕЛКИ ===
 func _draw_arrow_line(from: Vector2, to: Vector2, color: Color, dashed: bool = false):
 	var direction = (to - from).normalized()
 	var length = from.distance_to(to)
@@ -451,7 +426,7 @@ func _draw_arrow_line(from: Vector2, to: Vector2, color: Color, dashed: bool = f
 
 	# Стрелка на конце
 	var arrow_size = 10.0
-	var arrow_tip = to - direction * 20
+	var arrow_tip = to - direction * 5
 	var perp = Vector2(-direction.y, direction.x)
 
 	var p1 = arrow_tip
