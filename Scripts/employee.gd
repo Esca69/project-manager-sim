@@ -60,7 +60,7 @@ var _wander_origin: Vector2 = Vector2.ZERO
 
 var _should_go_home: bool = false
 
-# Ссылка на текущий бабл �� мыслями
+# Ссылка на текущий бабл с мыслями
 var current_bubble: Node2D = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
@@ -70,6 +70,9 @@ var _motivation_minutes_left: float = 0.0
 
 # Анимация мотивации — защита от повторного запуска
 var _motivation_anim_tween: Tween = null
+
+# === ЗАПРЕТ ТУАЛЕТА ОТ PM ===
+var _toilet_ban_minutes_left: float = 0.0
 
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
@@ -185,9 +188,38 @@ func remove_motivation():
 		data.motivation_bonus = 0.0
 	_motivation_minutes_left = 0.0
 
+# === ЗАПРЕТ ТУАЛЕТА: ПРИМЕНИТЬ БАН ===
+func apply_toilet_ban(duration_minutes: float):
+	_toilet_ban_minutes_left = duration_minutes
+	show_thought_bubble("🚫", 5.0)
+	_play_motivation_reaction()
+	
+	# Если NPC сейчас идёт в туалет или в туалете — принудительно вернуть к работе
+	if current_state == State.GOING_TOILET:
+		if toilet_ref:
+			toilet_ref.release(self)
+			toilet_ref = null
+		if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+			move_to_desk(my_desk_position)
+		elif _is_work_time():
+			_start_wandering()
+	elif current_state == State.TOILET_BREAK:
+		if toilet_ref:
+			toilet_ref.release(self)
+			toilet_ref = null
+		toilet_visits_done += 1
+		if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+			move_to_desk(my_desk_position)
+		elif _is_work_time():
+			_start_wandering()
+	
+	if data:
+		print("🚫 %s: туалет запрещён на %d мин." % [data.employee_name, int(duration_minutes)])
+
+func remove_toilet_ban():
+	_toilet_ban_minutes_left = 0.0
+
 # === АНИМАЦИЯ РЕАКЦИИ НА МОТИВАЦИЮ ===
-# Подпрыг тела (голова двигается вместе, т.к. дочерний элемент Body)
-# + тряска головы отдельно
 func _play_motivation_reaction():
 	if not body_sprite or not head_sprite:
 		return
@@ -203,19 +235,16 @@ func _play_motivation_reaction():
 	_motivation_anim_tween = create_tween()
 
 	# --- Фаза 1: ПОДПРЫГ (Body прыгает вверх и обратно) ---
-	# Вверх
 	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y - 30.0, 0.12) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# Вниз (приземление с лёгким «пружинением»)
 	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y + 5.0, 0.08) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	# Возврат в исходную
 	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y, 0.06) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
-	# --- Фаза 2: ТРЯСКА ГОЛОВЫ (быстрые повороты влево-вправо) ---
-	var shake_angle = 0.25  # ~14 градусов
-	var shake_step = 0.07   # секунд на один поворот
+	# --- Фаза 2: ТРЯСКА ГОЛОВЫ ---
+	var shake_angle = 0.25
+	var shake_step = 0.07
 
 	_motivation_anim_tween.tween_property(head_sprite, "rotation", shake_angle, shake_step)
 	_motivation_anim_tween.tween_property(head_sprite, "rotation", -shake_angle, shake_step)
@@ -249,13 +278,13 @@ func _assign_random_color():
 		personal_color = available_colors.pick_random()
 
 	# --- ЖЕЛЕЗОБЕТОННАЯ ГЕНЕРАЦИЯ ЦВЕТА КОЖИ ---
-	var skin_roll = randi_range(1, 100) # Бросаем 100-гранный кубик
+	var skin_roll = randi_range(1, 100)
 	
-	if skin_roll <= 75: # Выпало от 1 до 60 (Шанс 60%)
+	if skin_roll <= 75:
 		skin_color = SKIN_LIGHT.pick_random()
-	elif skin_roll <= 90: # Выпало от 61 до 90 (Шанс 30%)
+	elif skin_roll <= 90:
 		skin_color = SKIN_MEDIUM.pick_random()
-	else: # Выпало от 91 до 100 (Шанс 10%)
+	else:
 		skin_color = SKIN_DARK.pick_random()
 
 func _setup_early_bird():
@@ -282,6 +311,13 @@ func _on_time_tick(_hour, _minute):
 		if _motivation_minutes_left <= 0:
 			remove_motivation()
 			print("⏰ Мотивация закончилась у %s" % data.employee_name)
+
+	# === ЗАПРЕТ ТУАЛЕТА: ТАЙМЕР ===
+	if _toilet_ban_minutes_left > 0:
+		_toilet_ban_minutes_left -= 1.0
+		if _toilet_ban_minutes_left <= 0:
+			remove_toilet_ban()
+			print("🚽 Запрет туалета закончился у %s" % data.employee_name)
 
 	# --- Early bird логика ---
 	if not data.has_trait("early_bird"): return
@@ -595,6 +631,10 @@ func _setup_toilet_schedule():
 	toilet_visit_times.sort()
 
 func _try_start_toilet_break():
+	# === ЗАПРЕТ ТУАЛЕТА: если бан активен — даже не пытаемся ===
+	if _toilet_ban_minutes_left > 0:
+		return
+	
 	if toilet_visits_done >= TOILET_VISITS_PER_DAY:
 		return
 	if GameTime.hour < GameTime.START_HOUR or GameTime.hour >= GameTime.END_HOUR:
@@ -826,7 +866,7 @@ func update_status_label():
 		elif data.job_title == "QA Engineer":
 			short_role = "QA"
 		else:
-			short_role = data.job_title # Если попалась другая роль, выводим её как есть
+			short_role = data.job_title
 		
 		# Добавляем роль верхней строкой
 		debug_label.text = short_role + "\n" + data.employee_name + "\n" + action_text

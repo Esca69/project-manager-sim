@@ -16,6 +16,7 @@ extends Node
 const SFX_LIBRARY = {
 	"interact": "res://Sound/popsnd.mp3",
 	"bark": "res://Sound/bark.mp3",
+	"closedoor": "res://Sound/closedoor.mp3",
 }
 
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
@@ -134,7 +135,7 @@ func _get_free_sfx_player() -> AudioStreamPlayer:
 			return player
 	return null
 
-## Конвертация линейной громкости (0.0-1.0) в децибелы
+## Конвертация линейной ��ромкости (0.0-1.0) в децибелы
 func _volume_to_db(linear: float) -> float:
 	if linear <= 0.001:
 		return -80.0

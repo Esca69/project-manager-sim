@@ -8,6 +8,7 @@ const COLOR_LOCKED = Color(0.85, 0.85, 0.85, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
 const COLOR_DARK = Color(0.2, 0.2, 0.2, 1)
 const COLOR_TEAL = Color(0.0, 0.6, 0.65, 1)
+const COLOR_ORANGE = Color(0.9, 0.4, 0.1, 1)
 
 # === РАЗМЕРЫ ===
 const NODE_SIZE = Vector2(180, 80)
@@ -40,13 +41,19 @@ const CATEGORIES = [
 		"id": "people",
 		"label": "👥 ЛЮДИ",
 		"color": COLOR_BLUE,
-		"branches": ["read_traits", "read_skills", "candidate_count", "hr_search_speed", "motivate"],
+		"branches": ["read_traits", "read_skills", "candidate_count", "hr_search_speed"],
 	},
 	{
 		"id": "analytics",
 		"label": "📊 АНАЛИТИКА",
 		"color": COLOR_TEAL,
 		"branches": ["report_expenses", "report_projects", "report_productivity"],
+	},
+	{
+		"id": "active",
+		"label": "⚡ АКТИВНЫЕ",
+		"color": COLOR_ORANGE,
+		"branches": ["motivate", "no_toilet"],
 	},
 ]
 
@@ -202,16 +209,16 @@ func _rebuild_tree():
 		cursor_y += 32
 
 		# --- Ряды навыков внутри категории ---
-		var is_analytics = (cat_id == "analytics")
+		var is_inline = (cat_id == "analytics" or cat_id == "active")
 
-		if is_analytics:
-			# Аналитика: все 3 навыка в одну горизонтальную линию без стрелок
+		if is_inline:
+			# Все навыки в одну горизонтальную линию без стрелок
 			var x = LEFT_MARGIN
 			for branch_id in cat_branches:
 				var branch_skills = _get_branch_skills(branch_id)
 				for skill_entry in branch_skills:
 					var skill_id = skill_entry["id"]
-					var node = _create_skill_node(skill_id, COLOR_TEAL)
+					var node = _create_skill_node(skill_id, cat_color)
 					node.position = Vector2(x, cursor_y)
 					_canvas.add_child(node)
 					_skill_nodes[skill_id] = node

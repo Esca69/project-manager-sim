@@ -11,11 +11,17 @@ const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
 
 # === МОТИВАЦИЯ ===
-const MOTIVATE_RADIUS = 350.0         # Радиус действия в пикселях
-const MOTIVATE_BONUS = 0.20           # +20% к скорости
-const MOTIVATE_DURATION_MINUTES = 120  # 2 игровых часа
-const MOTIVATE_COOLDOWN_MINUTES = 480  # 4 игровых часа перезарядки
+const MOTIVATE_RADIUS = 350.0
+const MOTIVATE_BONUS = 0.20
+const MOTIVATE_DURATION_MINUTES = 120
+const MOTIVATE_COOLDOWN_MINUTES = 480
 var _motivate_cooldown_left: float = 0.0
+
+# === ЗАПРЕТ ТУАЛЕТА ===
+const NO_TOILET_RADIUS = 350.0
+const NO_TOILET_DURATION_MINUTES = 240   # 4 игровых часа
+const NO_TOILET_COOLDOWN_MINUTES = 480   # 8 игровых часов перезарядки
+var _no_toilet_cooldown_left: float = 0.0
 
 @onready var interaction_zone = $InteractionZone
 @onready var camera = $Camera2D
@@ -29,7 +35,7 @@ var _interact_hint: PanelContainer = null
 var _interact_hint_label: Label = null
 var _current_hint_target = null
 
-# --- ПРОГРЕСС-БАР ОБСУЖДЕНИЯ (живёт в HUD, как и [E] подсказка) ---
+# --- ПРОГРЕСС-БАР ОБСУЖДЕНИЯ ---
 var _discuss_bar_container: PanelContainer = null
 var _discuss_progress_bar: ProgressBar = null
 var _discuss_label: Label = null
@@ -41,6 +47,11 @@ var _motivate_btn: Button = null
 var _motivate_cooldown_label: Label = null
 var _motivate_container: VBoxContainer = null
 
+# --- КНОПКА ЗАПРЕТА ТУАЛЕТА НА HUD ---
+var _no_toilet_btn: Button = null
+var _no_toilet_cooldown_label: Label = null
+var _no_toilet_container: VBoxContainer = null
+
 func _ready():
 	add_to_group("player")
 	target_zoom = camera.zoom
@@ -50,16 +61,19 @@ func _ready():
 	body_sprite.self_modulate = Color("#a2c5ea")
 	head_sprite.self_modulate = Color("#fff0e1")
 
-	# Подключаем тик времени для кулдауна мотивации
+	# Подключаем тики времени для кулдаунов
 	GameTime.time_tick.connect(_on_motivate_time_tick)
+	GameTime.time_tick.connect(_on_no_toilet_time_tick)
 
-	# Подписываемся на прокачку навыков — чтобы кнопка появлялась сразу
+	# Подписываемся на прокачку навыков — чтобы кнопки появлялись сразу
 	PMData.skill_unlocked.connect(_on_pm_skill_unlocked)
 
 	call_deferred("_create_motivate_button")
+	call_deferred("_create_no_toilet_button")
 
 func _on_pm_skill_unlocked(_skill_id: String):
 	_update_motivate_btn()
+	_update_no_toilet_btn()
 
 func _create_interact_hint():
 	_interact_hint = PanelContainer.new()
@@ -127,7 +141,6 @@ func _create_discuss_bar():
 	vbox.add_theme_constant_override("separation", 2)
 	_discuss_bar_container.add_child(vbox)
 
-	# Верхняя строка — всегда "Обсуждение"
 	_discuss_label = Label.new()
 	_discuss_label.text = "Обсуждение"
 	_discuss_label.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
@@ -136,7 +149,6 @@ func _create_discuss_bar():
 	if UITheme: UITheme.apply_font(_discuss_label, "semibold")
 	vbox.add_child(_discuss_label)
 
-	# Нижняя строка — 🤝 таймер
 	_discuss_timer_label = Label.new()
 	_discuss_timer_label.text = "🤝 4:00"
 	_discuss_timer_label.add_theme_color_override("font_color", Color(0.4, 0.4, 0.5, 1))
@@ -145,7 +157,6 @@ func _create_discuss_bar():
 	if UITheme: UITheme.apply_font(_discuss_timer_label, "regular")
 	vbox.add_child(_discuss_timer_label)
 
-	# Прогресс-бар
 	_discuss_progress_bar = ProgressBar.new()
 	_discuss_progress_bar.custom_minimum_size = Vector2(90, 8)
 	_discuss_progress_bar.max_value = 100
@@ -232,6 +243,10 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("motivate"):
 		_activate_motivate()
 
+	# === АКТИВАЦИЯ ЗАПРЕТА ТУАЛЕТА ПО R ===
+	if Input.is_action_just_pressed("no_toilet"):
+		_activate_no_toilet()
+
 func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 	_update_discuss_bar_position()
@@ -313,7 +328,7 @@ func interact():
 			body.interact()
 			return
 
-# === ПРОГРЕСС-БАР ОБСУЖДЕНИЯ: ПУБЛИЧНЫЙ API ДЛЯ HUD ===
+# === ПРОГРЕСС-БА�� ОБСУЖДЕНИЯ: ПУБЛИЧНЫЙ API ДЛЯ HUD ===
 
 func show_discuss_bar(total_minutes: float):
 	_discuss_progress_bar.max_value = total_minutes
@@ -354,27 +369,20 @@ func _update_discuss_bar_position():
 # ============================
 
 func _activate_motivate():
-	# Проверяем: навык изучен?
 	if not PMData.has_skill("motivate"):
 		return
 
-	# Проверяем: не на кулдауне?
 	if _motivate_cooldown_left > 0:
 		print("🔥 Мотивация на перезарядке! Осталось %d мин." % int(_motivate_cooldown_left))
 		return
 
-	# PM занят?
 	var hud = get_tree().get_first_node_in_group("ui")
 	if hud and hud.has_method("is_pm_busy") and hud.is_pm_busy():
 		print("🔥 PM занят, нельзя мотивировать!")
 		return
 
-	# === АКТИВИРУЕМ ВСЕГДА (даже без людей рядом) ===
-
-	# Звук
 	AudioManager.play_sfx("bark")
 
-	# Находим всех NPC в радиусе
 	var affected_count = 0
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if not npc.visible:
@@ -386,13 +394,11 @@ func _activate_motivate():
 			npc.apply_motivation(MOTIVATE_BONUS, MOTIVATE_DURATION_MINUTES)
 			affected_count += 1
 
-	# Запускаем кулдаун ВСЕГДА
 	_motivate_cooldown_left = MOTIVATE_COOLDOWN_MINUTES
 	_update_motivate_btn()
 
-	# Визуальный эффект — 🔥 над головой + круг радиуса
 	_show_motivate_wave()
-	_show_radius_circle()
+	_show_radius_circle(MOTIVATE_RADIUS, Color(0.9, 0.4, 0.1, 0.6))
 
 	if affected_count > 0:
 		print("🔥 Мотивация активирована! Затронуто: %d сотрудников" % affected_count)
@@ -409,7 +415,6 @@ func _on_motivate_time_tick(_h, _m):
 			print("🔥 Мотивация снова доступна!")
 
 func _show_motivate_wave():
-	# 🔥 бабл над головой PM
 	var bubble = Node2D.new()
 	add_child(bubble)
 	bubble.position = Vector2(0, -210)
@@ -455,16 +460,111 @@ func _show_motivate_wave():
 	tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
 	tween.tween_callback(bubble.queue_free)
 
-# === АНИМАЦИЯ КРУ��А РАДИУСА ===
-func _show_radius_circle():
+# ====================================
+# === ЗАПРЕТ ТУАЛЕТА: ЛОГИКА ===
+# ====================================
+
+func _activate_no_toilet():
+	if not PMData.has_skill("no_toilet"):
+		return
+
+	if _no_toilet_cooldown_left > 0:
+		print("🚽 Запрет туалета на перезарядке! Осталось %d мин." % int(_no_toilet_cooldown_left))
+		return
+
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_pm_busy") and hud.is_pm_busy():
+		print("🚽 PM за��ят, нельзя запретить туалет!")
+		return
+
+	AudioManager.play_sfx("closedoor")
+
+	var affected_count = 0
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if not npc.visible:
+			continue
+		if not npc.data:
+			continue
+		var dist = global_position.distance_to(npc.global_position)
+		if dist <= NO_TOILET_RADIUS:
+			npc.apply_toilet_ban(NO_TOILET_DURATION_MINUTES)
+			affected_count += 1
+
+	_no_toilet_cooldown_left = NO_TOILET_COOLDOWN_MINUTES
+	_update_no_toilet_btn()
+
+	_show_no_toilet_wave()
+	_show_radius_circle(NO_TOILET_RADIUS, Color(0.6, 0.2, 0.2, 0.6))
+
+	if affected_count > 0:
+		print("🚽 Запрет туалета активирован! Затронуто: %d сотрудников" % affected_count)
+	else:
+		print("🚽 Запрет туалета активирован! Никого рядом не оказалось.")
+
+func _on_no_toilet_time_tick(_h, _m):
+	if _no_toilet_cooldown_left > 0:
+		_no_toilet_cooldown_left -= 1.0
+		_update_no_toilet_btn()
+		if _no_toilet_cooldown_left <= 0:
+			_no_toilet_cooldown_left = 0
+			_update_no_toilet_btn()
+			print("🚽 Запрет туалета снова доступен!")
+
+func _show_no_toilet_wave():
+	var bubble = Node2D.new()
+	add_child(bubble)
+	bubble.position = Vector2(0, -210)
+	bubble.z_index = 100
+
+	var panel = Panel.new()
+	bubble.add_child(panel)
+	panel.custom_minimum_size = Vector2(72, 72)
+	panel.size = Vector2(72, 72)
+	panel.position = Vector2(-36, -36)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 0.92, 0.92, 1.0)
+	style.border_width_bottom = 2
+	style.border_width_top = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_color = Color(0.6, 0.2, 0.2, 1.0)
+	style.corner_radius_bottom_left = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	panel.add_child(label)
+	label.custom_minimum_size = Vector2(72, 72)
+	label.size = Vector2(72, 72)
+	label.position = Vector2.ZERO
+	label.text = "🚫"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var label_settings = LabelSettings.new()
+	label_settings.font_size = 42
+	label.label_settings = label_settings
+
+	bubble.scale = Vector2.ZERO
+	var tween = create_tween()
+	tween.tween_property(bubble, "scale", Vector2(1.3, 1.3), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(bubble, "scale", Vector2.ONE, 0.2)
+	tween.tween_interval(2.0)
+	tween.tween_property(bubble, "modulate:a", 0.0, 0.5)
+	tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
+	tween.tween_callback(bubble.queue_free)
+
+# === ОБЩАЯ АНИМАЦИЯ КРУГА РАДИУСА ===
+func _show_radius_circle(radius: float, color: Color):
 	var ring = _MotivateRing.new()
-	ring.radius = MOTIVATE_RADIUS
-	ring.ring_color = Color(0.9, 0.4, 0.1, 0.6)
+	ring.radius = radius
+	ring.ring_color = color
 	ring.ring_width = 3.0
 	ring.z_index = 40
 	add_child(ring)
 
-	# Анимация: появляется из 0 → полный размер, держится, затухает
 	ring.scale = Vector2.ZERO
 	var tween = create_tween()
 	tween.tween_property(ring, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -489,13 +589,13 @@ func _create_motivate_button():
 
 	_motivate_container = VBoxContainer.new()
 	_motivate_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_motivate_container.position = Vector2(20, -160)
+	_motivate_container.position = Vector2(20, -220)
 	_motivate_container.add_theme_constant_override("separation", 2)
 	hud.add_child(_motivate_container)
 
 	_motivate_btn = Button.new()
 	_motivate_btn.text = "🔥 Мотивировать [Q]"
-	_motivate_btn.custom_minimum_size = Vector2(180, 40)
+	_motivate_btn.custom_minimum_size = Vector2(200, 40)
 	_motivate_btn.pressed.connect(_activate_motivate)
 
 	var btn_style = StyleBoxFlat.new()
@@ -540,7 +640,6 @@ func _update_motivate_btn():
 	if _motivate_btn == null:
 		return
 
-	# Скрываем кнопку, если навык не изучен
 	if not PMData.has_skill("motivate"):
 		_motivate_container.visible = false
 		return
@@ -554,3 +653,76 @@ func _update_motivate_btn():
 	else:
 		_motivate_btn.disabled = false
 		_motivate_cooldown_label.text = "Готово!"
+
+# === КНОПКА ЗАПРЕТА ТУАЛЕТА НА HUD ===
+func _create_no_toilet_button():
+	var hud = get_tree().get_first_node_in_group("ui")
+	if not hud:
+		return
+
+	_no_toilet_container = VBoxContainer.new()
+	_no_toilet_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_no_toilet_container.position = Vector2(20, -140)
+	_no_toilet_container.add_theme_constant_override("separation", 2)
+	hud.add_child(_no_toilet_container)
+
+	_no_toilet_btn = Button.new()
+	_no_toilet_btn.text = "🚽 Запретить с*ать [R]"
+	_no_toilet_btn.custom_minimum_size = Vector2(200, 40)
+	_no_toilet_btn.pressed.connect(_activate_no_toilet)
+
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.6, 0.2, 0.2, 1)
+	btn_style.corner_radius_top_left = 10
+	btn_style.corner_radius_top_right = 10
+	btn_style.corner_radius_bottom_right = 10
+	btn_style.corner_radius_bottom_left = 10
+	btn_style.content_margin_left = 12
+	btn_style.content_margin_right = 12
+	btn_style.content_margin_top = 6
+	btn_style.content_margin_bottom = 6
+	_no_toilet_btn.add_theme_stylebox_override("normal", btn_style)
+
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = Color(0.75, 0.3, 0.3, 1)
+	_no_toilet_btn.add_theme_stylebox_override("hover", btn_hover)
+
+	var btn_disabled = btn_style.duplicate()
+	btn_disabled.bg_color = Color(0.5, 0.5, 0.5, 0.6)
+	_no_toilet_btn.add_theme_stylebox_override("disabled", btn_disabled)
+
+	_no_toilet_btn.add_theme_color_override("font_color", Color.WHITE)
+	_no_toilet_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	_no_toilet_btn.add_theme_color_override("font_disabled_color", Color(0.8, 0.8, 0.8, 0.6))
+	_no_toilet_btn.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(_no_toilet_btn, "semibold")
+
+	_no_toilet_container.add_child(_no_toilet_btn)
+
+	_no_toilet_cooldown_label = Label.new()
+	_no_toilet_cooldown_label.text = ""
+	_no_toilet_cooldown_label.add_theme_font_size_override("font_size", 11)
+	_no_toilet_cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+	_no_toilet_cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_no_toilet_cooldown_label, "regular")
+	_no_toilet_container.add_child(_no_toilet_cooldown_label)
+
+	_update_no_toilet_btn()
+
+func _update_no_toilet_btn():
+	if _no_toilet_btn == null:
+		return
+
+	if not PMData.has_skill("no_toilet"):
+		_no_toilet_container.visible = false
+		return
+	_no_toilet_container.visible = true
+
+	if _no_toilet_cooldown_left > 0:
+		_no_toilet_btn.disabled = true
+		var hours = int(_no_toilet_cooldown_left) / 60
+		var mins = int(_no_toilet_cooldown_left) % 60
+		_no_toilet_cooldown_label.text = "⏳ Перезарядка: %d:%02d" % [hours, mins]
+	else:
+		_no_toilet_btn.disabled = false
+		_no_toilet_cooldown_label.text = "Готово!"
