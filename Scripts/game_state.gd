@@ -119,9 +119,9 @@ func _on_loyalty_changed(client, old_value: int, new_value: int):
 	var reason = ""
 	if change > 0:
 		if change >= 3:  # ClientData.LOYALTY_ON_TIME
-			reason = "Проект завершён вовремя"
+			reason = tr("REASON_PROJECT_ON_TIME")
 		else:
-			reason = "Проект завершён с просрочкой"
+			reason = tr("REASON_PROJECT_LATE")
 	elif change < 0:
-		reason = "Проект провален"
+		reason = tr("REASON_PROJECT_FAILED")
 	record_loyalty_change(client, change, reason)

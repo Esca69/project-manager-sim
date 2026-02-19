@@ -835,36 +835,36 @@ func interact():
 
 func get_human_state_name() -> String:
 	match current_state:
-		State.IDLE: return "ждёт задачу"
-		State.MOVING: return "идёт к столу"
+		State.IDLE: return tr("EMP_ACTION_IDLE")
+		State.MOVING: return tr("EMP_ACTION_MOVING")
 		State.WORKING:
-			if data.employee_name == "Лера": return "отвечает тикеты..."
-			elif data.job_title == "Backend Developer": return "пишет код..."
-			elif data.job_title == "Business Analyst": return "составляет ТЗ..."
-			elif data.job_title == "QA Engineer": return "ищет баги..."
-			return "работает..."
-		State.GOING_HOME: return "идёт домой"
-		State.HOME: return "дома"
-		State.GOING_COFFEE: return "идёт за кофе"
-		State.COFFEE_BREAK: return "пьёт кофе"
-		State.GOING_TOILET: return "идёт в туалет"
-		State.TOILET_BREAK: return "в туалете"
-		State.WANDERING: return "слоняется без дела"
-		State.WANDER_PAUSE: return "задумался..."
+			if data.employee_name in ["Лера", "Lera"]: return tr("EMP_ACTION_WORK_LERA")
+			elif data.job_title == "Backend Developer": return tr("EMP_ACTION_WORK_DEV")
+			elif data.job_title == "Business Analyst": return tr("EMP_ACTION_WORK_BA")
+			elif data.job_title == "QA Engineer": return tr("EMP_ACTION_WORK_QA")
+			return tr("EMP_ACTION_WORK_DEFAULT")
+		State.GOING_HOME: return tr("EMP_ACTION_GOING_HOME")
+		State.HOME: return tr("EMP_ACTION_HOME")
+		State.GOING_COFFEE: return tr("EMP_ACTION_GOING_COFFEE")
+		State.COFFEE_BREAK: return tr("EMP_ACTION_COFFEE_BREAK")
+		State.GOING_TOILET: return tr("EMP_ACTION_GOING_TOILET")
+		State.TOILET_BREAK: return tr("EMP_ACTION_TOILET_BREAK")
+		State.WANDERING: return tr("EMP_ACTION_WANDERING")
+		State.WANDER_PAUSE: return tr("EMP_ACTION_WANDER_PAUSE")
 	return "..."
 
 func update_status_label():
 	if debug_label and data:
 		var action_text = get_human_state_name()
 		
-		# Определяем аббревиатуру роли
+		# Определяем аббревиатуру роли через локализацию
 		var short_role = ""
 		if data.job_title == "Backend Developer":
-			short_role = "DEV"
+			short_role = tr("ROLE_SHORT_DEV")
 		elif data.job_title == "Business Analyst":
-			short_role = "BA"
+			short_role = tr("ROLE_SHORT_BA")
 		elif data.job_title == "QA Engineer":
-			short_role = "QA"
+			short_role = tr("ROLE_SHORT_QA")
 		else:
 			short_role = data.job_title
 		
@@ -874,7 +874,7 @@ func update_status_label():
 func _show_random_work_thought():
 	var emoji = "💼"
 	if data:
-		if data.employee_name == "Лера": emoji = "☎️"
+		if data.employee_name in ["Лера", "Lera"]: emoji = "☎️"
 		elif data.job_title == "Backend Developer": emoji = "💻" 
 		elif data.job_title == "Business Analyst": emoji = "📝" 
 		elif data.job_title == "QA Engineer": emoji = "🐞" 

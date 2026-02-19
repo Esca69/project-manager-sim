@@ -34,10 +34,10 @@ func _ready():
 	btn_style_hover.corner_radius_bottom_right = 10
 	btn_style_hover.corner_radius_bottom_left = 10
 
-	_add_tab_button("👥 Сотрудники", "employees")
-	_add_tab_button("🤝 Заказчики", "clients")
-	_add_tab_button("🧠 Навыки PM", "pm_skills")
-	_add_tab_button("🏢 Босс", "boss")
+	_add_tab_button(tr("TAB_EMPLOYEES"), "employees")
+	_add_tab_button(tr("TAB_CLIENTS"), "clients")
+	_add_tab_button(tr("TAB_PM_SKILLS"), "pm_skills")
+	_add_tab_button(tr("TAB_BOSS"), "boss")
 
 func _add_tab_button(label_text: String, tab_name: String):
 	var btn = Button.new()

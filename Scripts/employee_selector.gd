@@ -29,7 +29,7 @@ func _ready():
 		var title_label = find_child("TitleLabel", true, false)
 		if title_label:
 			UITheme.apply_font(title_label, "bold")
-			title_label.text = "Выберите сотрудника"
+			title_label.text = tr("EMP_SELECT_TITLE")
 			
 	var list_style = StyleBoxFlat.new()
 	list_style.bg_color = Color(1, 1, 1, 1)
@@ -80,10 +80,10 @@ func open_list(stage_type: String = ""):
 			
 			# --- Проверяем, занят ли сотрудник на ЛЮБОМ проекте ---
 			var is_busy = _is_employee_assigned_to_any_project(npc.data)
-			var display_name = npc.data.employee_name + " (" + npc.data.job_title + ")"
+			var display_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
 			
 			if is_busy:
-				display_name += " — 🔒 Занят на проекте"
+				display_name += tr("EMP_SELECT_BUSY")
 			
 			var index = item_list.add_item(display_name)
 			item_list.set_item_metadata(index, npc.data)
@@ -95,7 +95,7 @@ func open_list(stage_type: String = ""):
 	
 	if item_list.item_count == 0:
 		var role_name = _get_role_name(_filter_stage_type)
-		item_list.add_item("⚠ Нет сотрудников с ролью " + role_name)
+		item_list.add_item(tr("EMP_SELECT_NO_ROLE") % role_name)
 		item_list.set_item_disabled(0, true)
 		item_list.set_item_selectable(0, false)
 
@@ -125,9 +125,9 @@ func _matches_stage_type(data: EmployeeData, stage_type: String) -> bool:
 
 func _get_role_name(stage_type: String) -> String:
 	match stage_type:
-		"BA": return "Business Analyst"
-		"DEV": return "Backend Developer"
-		"QA": return "QA Engineer"
+		"BA": return tr("HR_ROLE_BA")
+		"DEV": return tr("HR_ROLE_DEV")
+		"QA": return tr("HR_ROLE_QA")
 	return stage_type
 
 func _on_cancel_button_pressed():

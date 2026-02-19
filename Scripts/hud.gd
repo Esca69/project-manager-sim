@@ -113,6 +113,8 @@ func _ready():
 	GameState.balance_changed.connect(update_balance_ui)
 
 	end_day_button.pressed.connect(_on_end_day_pressed)
+	# Переводим кнопку конца дня
+	end_day_button.text = tr("END_DAY_BTN")
 
 	if not selection_ui.project_selected.is_connected(_on_project_taken):
 		selection_ui.project_selected.connect(_on_project_taken)
@@ -238,7 +240,6 @@ func open_hr_search():
 		_hr_role_screen.open()
 
 # === HR: ПОИСК НАЧАТ (сигнал из hr_role_screen) ===
-# === HR: ПОИСК НАЧАТ (сигнал из hr_role_screen) ===
 func _on_hr_search_started(role: String):
 	_is_searching = true
 	_search_role = role
@@ -248,9 +249,9 @@ func _on_hr_search_started(role: String):
 	var player = _get_player()
 	if player and player.has_method("show_discuss_bar"):
 		player.show_discuss_bar(_search_total_minutes)
-	# Меняем текст на плашке
+	# Меняем текст на плашке (используем существующий ключ)
 	if player and player._discuss_label:
-		player._discuss_label.text = "Поиск кандидатов"
+		player._discuss_label.text = tr("HR_SEARCH_LABEL")
 	if player and player._discuss_timer_label:
 		var hours = int(_search_total_minutes) / 60
 		var mins = int(_search_total_minutes) % 60
@@ -299,7 +300,7 @@ func _build_pm_level_ui():
 	level_vbox.custom_minimum_size = Vector2(140, 0)
 
 	_pm_level_label = Label.new()
-	_pm_level_label.text = "PM Ур. 1"
+	_pm_level_label.text = tr("UI_PM_LEVEL") % 1 # Инициализируем переведенной строкой
 	_pm_level_label.add_theme_font_size_override("font_size", 13)
 	_pm_level_label.add_theme_color_override("font_color", Color(0.85, 0.85, 1.0, 1))
 	_pm_level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -330,7 +331,7 @@ func _build_pm_level_ui():
 	level_vbox.add_child(_pm_xp_bar)
 
 	_pm_xp_label = Label.new()
-	_pm_xp_label.text = "0 / 50 XP"
+	_pm_xp_label.text = tr("UI_XP") % [0, 50]
 	_pm_xp_label.add_theme_font_size_override("font_size", 11)
 	_pm_xp_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.9, 1))
 	_pm_xp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -352,7 +353,7 @@ func _update_pm_level_ui():
 	if PMData == null:
 		return
 	var level = PMData.get_level()
-	_pm_level_label.text = "PM Ур. %d" % level
+	_pm_level_label.text = tr("UI_PM_LEVEL") % level
 
 	var progress = PMData.get_level_progress()
 	var current_in_level = progress[0]
@@ -362,7 +363,7 @@ func _update_pm_level_ui():
 	var tween = create_tween()
 	tween.tween_property(_pm_xp_bar, "value", current_in_level, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
-	_pm_xp_label.text = "%d / %d XP" % [current_in_level, needed_for_level]
+	_pm_xp_label.text = tr("UI_XP") % [current_in_level, needed_for_level]
 
 func _on_pm_xp_changed(_new_xp, _new_sp):
 	_update_pm_level_ui()
@@ -489,7 +490,7 @@ func update_time_label(_hour, _minute):
 		time_label.modulate = Color.WHITE
 
 func update_balance_ui(amount):
-	balance_label.text = "$ " + str(amount)
+	balance_label.text = tr("HUD_BALANCE") % amount
 
 	if amount < 0:
 		balance_label.modulate = Color.RED
@@ -499,9 +500,9 @@ func update_balance_ui(amount):
 # --- ОСТАЛЬНАЯ ЛОГИКА ---
 
 func show_employee_card(data: EmployeeData):
-	name_label.text = "Имя: " + data.employee_name
-	role_label.text = "Должность: " + data.job_title
-	salary_label.text = "Ставка: " + str(data.monthly_salary) + "$/месяц"
+	name_label.text = tr("HUD_INFO_NAME") % data.employee_name
+	role_label.text = tr("HUD_INFO_ROLE") % tr(data.job_title)
+	salary_label.text = tr("HUD_INFO_SALARY") % data.monthly_salary
 	if UITheme:
 		UITheme.fade_in(info_panel)
 	else:

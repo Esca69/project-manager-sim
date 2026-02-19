@@ -74,7 +74,7 @@ func _build_ui():
 	main_vbox.add_child(header_panel)
 
 	var title_label = Label.new()
-	title_label.text = "🏢 Новое задание от босса"
+	title_label.text = tr("BOSS_QUEST_TITLE")
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -107,7 +107,7 @@ func open(quest: Dictionary):
 
 	# Доверие
 	var trust_lbl = Label.new()
-	trust_lbl.text = "Доверие босса: %d 🤝  (%s)" % [BossManager.boss_trust, BossManager.get_trust_label()]
+	trust_lbl.text = tr("BOSS_TRUST_LABEL") % [BossManager.boss_trust, BossManager.get_trust_label()]
 	trust_lbl.add_theme_font_size_override("font_size", 14)
 	trust_lbl.add_theme_color_override("font_color", BossManager.get_trust_color())
 	trust_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -117,7 +117,7 @@ func open(quest: Dictionary):
 	# Предупреждение
 	if quest.get("is_impossible", false):
 		var warn_lbl = Label.new()
-		warn_lbl.text = "⚠️ Босс в этом месяце особенно требователен..."
+		warn_lbl.text = tr("BOSS_IMPOSSIBLE_WARN")
 		warn_lbl.add_theme_font_size_override("font_size", 13)
 		warn_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -138,7 +138,7 @@ func open(quest: Dictionary):
 
 	# Цели — заголовок
 	var goals_title = Label.new()
-	goals_title.text = "📋 Цели на месяц %d:" % quest["month"]
+	goals_title.text = tr("BOSS_GOALS_TITLE") % quest["month"]
 	goals_title.add_theme_font_size_override("font_size", 16)
 	goals_title.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(goals_title, "bold")
@@ -175,7 +175,8 @@ func open(quest: Dictionary):
 		obj_hbox.add_child(bullet)
 
 		var obj_lbl = Label.new()
-		obj_lbl.text = obj["label"]
+		# Label цели переводится в самом BossManager, здесь просто выводим как есть
+		obj_lbl.text = obj["label"] 
 		obj_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		obj_lbl.add_theme_font_size_override("font_size", 15)
 		obj_lbl.add_theme_color_override("font_color", COLOR_DARK)
@@ -194,7 +195,7 @@ func open(quest: Dictionary):
 
 	# Кнопка "Принять" — синяя, как везде
 	var accept_btn = Button.new()
-	accept_btn.text = "✅ Понял, босс!"
+	accept_btn.text = tr("BOSS_ACCEPT_BTN")
 	accept_btn.custom_minimum_size = Vector2(250, 44)
 	accept_btn.focus_mode = Control.FOCUS_NONE
 	accept_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -235,15 +236,15 @@ func _on_accept(quest: Dictionary):
 
 func _get_boss_speech(quest: Dictionary) -> String:
 	var speeches_normal = [
-		"Значит так, у нас планы на этот месяц. Покажи что ты можешь.",
-		"Руководство ждёт результатов. Давай не подведём.",
-		"Новый месяц — новые цели. Я рассчитываю на тебя.",
-		"Ладно, слушай внимательно. Вот что нужно сделать.",
+		tr("BOSS_SPEECH_1"),
+		tr("BOSS_SPEECH_2"),
+		tr("BOSS_SPEECH_3"),
+		tr("BOSS_SPEECH_4"),
 	]
 	var speeches_impossible = [
-		"Этот месяц будет непростым. Руководство поставило амбициозные цели...",
-		"Не буду врать, задача серьёзная. Но я верю в тебя.",
-		"Сверху пришли... интересные ожидания. Сделай что сможешь.",
+		tr("BOSS_SPEECH_IMPOSSIBLE_1"),
+		tr("BOSS_SPEECH_IMPOSSIBLE_2"),
+		tr("BOSS_SPEECH_IMPOSSIBLE_3"),
 	]
 
 	if quest.get("is_impossible", false):

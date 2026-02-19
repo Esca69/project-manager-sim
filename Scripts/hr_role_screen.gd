@@ -202,7 +202,7 @@ func _build_ui():
 	main_vbox.add_child(header_panel)
 
 	var title_label = Label.new()
-	title_label.text = "🔍 Какого специалиста ищем?"
+	title_label.text = tr("HR_ROLE_TITLE")
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -258,7 +258,7 @@ func _build_ui():
 
 	# Подсказка
 	var hint_lbl = Label.new()
-	hint_lbl.text = "Выберите роль сотрудника, которого хотите найти:"
+	hint_lbl.text = tr("HR_ROLE_HINT")
 	hint_lbl.add_theme_color_override("font_color", COLOR_DARK)
 	hint_lbl.add_theme_font_size_override("font_size", 15)
 	hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -270,15 +270,16 @@ func _build_ui():
 	roles_vbox.add_theme_constant_override("separation", 12)
 	content_vbox.add_child(roles_vbox)
 
+	# Используем ключи ролей из CSV
 	var role_data = [
-		{ "role": "Business Analyst", "icon": "📊", "label": "Бизнес-аналитик" },
-		{ "role": "Backend Developer", "icon": "💻", "label": "Backend-разработчик" },
-		{ "role": "QA Engineer", "icon": "🧪", "label": "QA-инженер" },
+		{ "role": "Business Analyst", "icon": "📊", "label": "HR_ROLE_BA" },
+		{ "role": "Backend Developer", "icon": "💻", "label": "HR_ROLE_DEV" },
+		{ "role": "QA Engineer", "icon": "🧪", "label": "HR_ROLE_QA" },
 	]
 
 	for rd in role_data:
 		var btn = Button.new()
-		btn.text = "%s  %s" % [rd["icon"], rd["label"]]
+		btn.text = "%s  %s" % [rd["icon"], tr(rd["label"])]
 		btn.custom_minimum_size = Vector2(0, 50)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.focus_mode = Control.FOCUS_NONE
@@ -323,7 +324,7 @@ func _build_ui():
 	content_vbox.add_child(btn_center)
 
 	_search_btn = Button.new()
-	_search_btn.text = "🔍  Начать поиск"
+	_search_btn.text = tr("HR_ROLE_BTN_SEARCH")
 	_search_btn.custom_minimum_size = Vector2(250, 48)
 	_search_btn.focus_mode = Control.FOCUS_NONE
 	_search_btn.disabled = true
@@ -349,9 +350,9 @@ func _update_time_info():
 		var search_minutes = PMData.get_hr_search_minutes()
 		if search_minutes >= 60:
 			var hours = search_minutes / 60
-			_time_info_lbl.text = "⏱ Поиск кандидатов занимает %d ч." % hours
+			_time_info_lbl.text = tr("HR_ROLE_TIME_H") % hours
 		else:
-			_time_info_lbl.text = "⏱ Поиск кандидатов занимает %d мин." % search_minutes
+			_time_info_lbl.text = tr("HR_ROLE_TIME_M") % search_minutes
 
 # === ВЫБОР РОЛИ ===
 func _on_role_selected(role: String):
@@ -378,16 +379,14 @@ func _update_search_button():
 	_search_btn.disabled = no_role or is_late
 
 	if is_late:
-		_search_btn.text = "Слишком поздно"
-	elif no_role:
-		_search_btn.text = "🔍  Начать поиск"
+		_search_btn.text = tr("HR_ROLE_BTN_LATE")
 	else:
-		_search_btn.text = "🔍  Начать поиск"
+		_search_btn.text = tr("HR_ROLE_BTN_SEARCH")
 
 func _update_time_warning():
 	if _is_too_late():
 		var cutoff = PMData.get_hr_cutoff_hour()
-		_time_warning_lbl.text = "🕐 Поиск нельзя начать после %d:00 — не хватит времени до конца рабочего дня." % cutoff
+		_time_warning_lbl.text = tr("HR_ROLE_WARN_LATE") % cutoff
 		_time_warning_lbl.visible = true
 	else:
 		_time_warning_lbl.visible = false

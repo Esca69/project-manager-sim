@@ -139,7 +139,7 @@ func generate_quest_for_month(month: int) -> Dictionary:
 	objectives.append({
 		"id": "projects",
 		"type": "projects_completed",
-		"label": "Завершить ≥ %d проектов" % projects_target,
+		"label": tr("QUEST_PROJECTS") % projects_target,
 		"target": projects_target,
 		"trust_reward": projects_trust,
 	})
@@ -183,7 +183,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 	pool.append({
 		"id": "hires",
 		"type": "hires",
-		"label": "Нанять ≥ %d сотрудников" % hire_target,
+		"label": tr("QUEST_HIRES") % hire_target,
 		"target": hire_target,
 		"trust_reward": 2,
 	})
@@ -199,7 +199,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 	pool.append({
 		"id": "loyalty",
 		"type": "total_loyalty",
-		"label": "Суммарная лояльность клиентов ≥ %d" % loyalty_target,
+		"label": tr("QUEST_LOYALTY") % loyalty_target,
 		"target": loyalty_target,
 		"trust_reward": 2,
 	})
@@ -208,7 +208,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 	pool.append({
 		"id": "no_fails",
 		"type": "no_fails",
-		"label": "Ни одного проваленного проекта",
+		"label": tr("QUEST_NO_FAILS"),
 		"target": 0,
 		"trust_reward": 4,
 	})
@@ -224,7 +224,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 	pool.append({
 		"id": "low_expenses",
 		"type": "max_expenses",
-		"label": "Расходы на зарплаты ≤ $%d" % expense_target,
+		"label": tr("QUEST_MAX_EXPENSES") % expense_target,
 		"target": expense_target,
 		"trust_reward": 2,
 	})
@@ -240,7 +240,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 	pool.append({
 		"id": "pm_level",
 		"type": "pm_level",
-		"label": "PM достигает уровня ≥ %d" % pm_level_target,
+		"label": tr("QUEST_PM_LEVEL") % pm_level_target,
 		"target": pm_level_target,
 		"trust_reward": 2,
 	})
@@ -256,7 +256,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 	pool.append({
 		"id": "employee_levelups",
 		"type": "employee_levelups",
-		"label": "Сотрудники повысились ≥ %d раз" % levelup_target,
+		"label": tr("QUEST_EMPLOYEE_LEVELUPS") % levelup_target,
 		"target": levelup_target,
 		"trust_reward": 2,
 	})
@@ -266,21 +266,21 @@ func _get_random_objectives_pool(month: int) -> Array:
 func _rebuild_label(obj: Dictionary) -> String:
 	match obj["type"]:
 		"profit":
-			return "Заработать ≥ $%d прибыли" % obj["target"]
+			return tr("QUEST_PROFIT") % obj["target"]
 		"projects_completed":
-			return "Завершить ≥ %d проектов" % obj["target"]
+			return tr("QUEST_PROJECTS") % obj["target"]
 		"hires":
-			return "Нанять ≥ %d сотрудников" % obj["target"]
+			return tr("QUEST_HIRES") % obj["target"]
 		"total_loyalty":
-			return "Суммарная лояльность клиентов ≥ %d" % obj["target"]
+			return tr("QUEST_LOYALTY") % obj["target"]
 		"no_fails":
-			return "Ни одного проваленного проекта"
+			return tr("QUEST_NO_FAILS")
 		"max_expenses":
-			return "Расходы на зарплаты ≤ $%d" % obj["target"]
+			return tr("QUEST_MAX_EXPENSES") % obj["target"]
 		"pm_level":
-			return "PM достигает уровня ≥ %d" % obj["target"]
+			return tr("QUEST_PM_LEVEL") % obj["target"]
 		"employee_levelups":
-			return "Сотрудники повысились ≥ %d раз" % obj["target"]
+			return tr("QUEST_EMPLOYEE_LEVELUPS") % obj["target"]
 	return obj.get("label", "???")
 
 # === ЗАПУСК КВЕСТА ===
@@ -329,7 +329,7 @@ func _evaluate_quest():
 
 	emit_signal("quest_completed", old_quest, total_trust > 0)
 
-	print("📊 Квест мес��ца завершён. Доверие: %+d (итого: %d)" % [total_trust, boss_trust])
+	print("📊 Квест месяца завершён. Доверие: %+d (итого: %d)" % [total_trust, boss_trust])
 
 func _check_objective(obj: Dictionary) -> bool:
 	match obj["type"]:
@@ -420,17 +420,17 @@ func mark_report_shown():
 # === ПОЛУЧИТЬ ТЕКСТОВОЕ ОПИСАНИЕ ДОВЕРИЯ ===
 func get_trust_label() -> String:
 	if boss_trust < 0:
-		return "😡 Недоволен"
+		return tr("BOSS_TRUST_STATE_ANGRY")
 	elif boss_trust < 10:
-		return "😐 Нейтрально"
+		return tr("BOSS_TRUST_STATE_NEUTRAL")
 	elif boss_trust < 25:
-		return "🙂 Нормально"
+		return tr("BOSS_TRUST_STATE_FINE")
 	elif boss_trust < 50:
-		return "😊 Доволен"
+		return tr("BOSS_TRUST_STATE_PLEASED")
 	elif boss_trust < 75:
-		return "😄 Очень доволен"
+		return tr("BOSS_TRUST_STATE_VERY_PLEASED")
 	else:
-		return "🌟 Восхищён"
+		return tr("BOSS_TRUST_STATE_AMAZED")
 
 func get_trust_color() -> Color:
 	if boss_trust < 0:

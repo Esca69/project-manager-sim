@@ -31,7 +31,10 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 	stage_data = data
 	is_readonly = readonly
 	is_stage_completed = data.get("is_completed", false)
-	role_label.text = data.type
+	
+	# ИСПРАВЛЕНИЕ: Используем короткие ключи (BA, DEV, QA), чтобы они влезали в интерфейс
+	role_label.text = tr("STAGE_SHORT_" + data.type)
+	
 	progress_label.text = "%d / %d" % [int(data.progress), int(data.amount)]
 
 	if UITheme:
@@ -51,7 +54,7 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 func _ready():
 	pass
 
-# === ИСПРАВЛЕНИЕ: Кнопка "Назначить" с нужными скруглениями и ховером ===
+# Кнопка "Назначить" с нужными скруглениями и ховером
 func _create_styled_button(text: String) -> Button:
 	var btn = Button.new()
 	btn.text = text
@@ -93,7 +96,7 @@ func _create_styled_button(text: String) -> Button:
 	
 	return btn
 
-# === ИСПРАВЛЕНИЕ: Кнопка "Удалить" (минус) в том же стиле ===
+# Кнопка "Удалить" (минус) в том же стиле
 func _create_remove_button() -> Button:
 	var btn = Button.new()
 	btn.text = "−"
@@ -198,7 +201,8 @@ func rebuild_worker_buttons():
 		_buttons_container.add_child(row)
 
 	if not is_readonly:
-		var add_btn = _create_styled_button("+ Назначить")
+		# Используем локализованную кнопку
+		var add_btn = _create_styled_button("+ " + tr("PROJECT_ASSIGN_WORKER_SHORT"))
 		add_btn.pressed.connect(func(): emit_signal("assignment_requested", stage_index))
 		_buttons_container.add_child(add_btn)
 

@@ -107,7 +107,7 @@ func _build_ui():
 
 	# TitleLabel — по центру
 	var title_label = Label.new()
-	title_label.text = "🤝 Заказчики"
+	title_label.text = tr("TAB_CLIENTS")
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -217,10 +217,10 @@ func _populate():
 	var weekly_projects = ClientManager.get_weekly_project_count()
 	
 	if _summary_loyalty_lbl:
-		_summary_loyalty_lbl.text = "❤ Общая лояльность: %d" % total_loyalty
+		_summary_loyalty_lbl.text = tr("CLIENT_TOTAL_LOYALTY") % total_loyalty
 		
 	if _summary_projects_lbl:
-		_summary_projects_lbl.text = "📅 Предложений от босса в неделю: %d" % weekly_projects
+		_summary_projects_lbl.text = tr("CLIENT_WEEKLY_PROJECTS") % weekly_projects
 	# -------------------------
 
 	for child in _cards_vbox.get_children():
@@ -274,7 +274,7 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 
 	var loyalty_level = client.get_loyalty_level()
 	var loyalty_lbl = Label.new()
-	loyalty_lbl.text = "❤ %d очков  (ур. %d)" % [client.loyalty, loyalty_level]
+	loyalty_lbl.text = tr("CLIENT_LOYALTY_POINTS") % [client.loyalty, loyalty_level]
 	loyalty_lbl.add_theme_color_override("font_color", COLOR_LOYALTY)
 	loyalty_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(loyalty_lbl, "bold")
@@ -294,9 +294,9 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	stats_hbox.add_theme_constant_override("separation", 25)
 	card_vbox.add_child(stats_hbox)
 
-	_add_stat_label(stats_hbox, "✅ Успешно: %d" % client.projects_completed_on_time, COLOR_GREEN)
-	_add_stat_label(stats_hbox, "⚠ Просрочка софт: %d" % client.projects_completed_late, COLOR_ORANGE)
-	_add_stat_label(stats_hbox, "❌ Провал: %d" % client.projects_failed, COLOR_RED)
+	_add_stat_label(stats_hbox, tr("CLIENT_STAT_SUCCESS") % client.projects_completed_on_time, COLOR_GREEN)
+	_add_stat_label(stats_hbox, tr("CLIENT_STAT_LATE") % client.projects_completed_late, COLOR_ORANGE)
+	_add_stat_label(stats_hbox, tr("CLIENT_STAT_FAIL") % client.projects_failed, COLOR_RED)
 
 	# === СТРОКА 4: Текущие бонусы ===
 	var bonus_percent = client.get_budget_bonus_percent()
@@ -307,14 +307,14 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	card_vbox.add_child(bonus_hbox)
 
 	var bonus_lbl = Label.new()
-	bonus_lbl.text = "💰 Бюджет: +%d%%" % bonus_percent
+	bonus_lbl.text = tr("CLIENT_BONUS_BUDGET") % bonus_percent
 	bonus_lbl.add_theme_color_override("font_color", COLOR_GREEN if bonus_percent > 0 else COLOR_DARK)
 	bonus_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(bonus_lbl, "semibold")
 	bonus_hbox.add_child(bonus_lbl)
 
 	var types_lbl = Label.new()
-	var types_text = "📋 Проекты: " + ", ".join(unlocked_types).to_upper()
+	var types_text = tr("CLIENT_UNLOCKED_PROJECTS") % ", ".join(unlocked_types).to_upper()
 	types_lbl.text = types_text
 	types_lbl.add_theme_color_override("font_color", COLOR_UNLOCK)
 	types_lbl.add_theme_font_size_override("font_size", 14)
@@ -371,7 +371,8 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 			var mark_lbl = Label.new()
 			var is_reached = client.loyalty >= threshold
 			var icon = "✅" if is_reached else "⬜"
-			mark_lbl.text = "%s %d: %s" % [icon, threshold, level["label"]]
+			# Здесь мы оборачиваем level["label"] в tr(), так как внутри хранятся ключи (например, LOYALTY_MICRO_PROJECTS)
+			mark_lbl.text = "%s %d: %s" % [icon, threshold, tr(level["label"])]
 			mark_lbl.add_theme_font_size_override("font_size", 11)
 
 			if is_reached:
@@ -386,7 +387,7 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 		var next_threshold = next_info["threshold"]
 		var remaining = next_threshold - client.loyalty
 		var next_text_lbl = Label.new()
-		next_text_lbl.text = "⏭ До следующего: %d / %d  (%s)" % [client.loyalty, next_threshold, next_info["label"]]
+		next_text_lbl.text = tr("CLIENT_NEXT_LEVEL_INFO") % [client.loyalty, next_threshold, next_info["label"]]
 		next_text_lbl.add_theme_color_override("font_color", COLOR_DARK)
 		next_text_lbl.add_theme_font_size_override("font_size", 12)
 		if UITheme: UITheme.apply_font(next_text_lbl, "semibold")
@@ -395,7 +396,7 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	else:
 		# Максимальный уровень
 		var max_lbl = Label.new()
-		max_lbl.text = "🏆 Максимальный уровень лояльности!"
+		max_lbl.text = tr("CLIENT_MAX_LEVEL")
 		max_lbl.add_theme_color_override("font_color", COLOR_GREEN)
 		max_lbl.add_theme_font_size_override("font_size", 13)
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")

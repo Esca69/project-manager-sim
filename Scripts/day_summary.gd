@@ -103,7 +103,7 @@ func _build_ui():
 	main_vbox.add_child(header_panel)
 
 	var title_label = Label.new()
-	title_label.text = "Итоги дня"
+	title_label.text = tr("DAY_SUMMARY_TITLE")
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -145,7 +145,7 @@ func _build_ui():
 	btn_margin.add_child(btn_center)
 
 	_continue_btn = Button.new()
-	_continue_btn.text = "Продолжить →"
+	_continue_btn.text = tr("DAY_SUMMARY_CONTINUE")
 	_continue_btn.custom_minimum_size = Vector2(250, 40)
 	_continue_btn.focus_mode = Control.FOCUS_NONE
 
@@ -240,7 +240,7 @@ func _add_locked_hint(skill_name: String):
 	panel.add_child(margin)
 
 	var lbl = Label.new()
-	lbl.text = "🔒 Изучите навык «%s» в дереве навыков PM, чтобы видеть детализацию" % skill_name
+	lbl.text = tr("DAY_SUMMARY_LOCKED_HINT") % skill_name
 	lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -252,7 +252,7 @@ func _add_locked_hint(skill_name: String):
 
 # === СЕКЦИЯ ФИНАНСОВ ===
 func _build_finance_section():
-	var section = _create_section_label("💰 Финансы")
+	var section = _create_section_label(tr("DAY_SUMMARY_FINANCE"))
 	_content_vbox.add_child(section)
 
 	var grid = GridContainer.new()
@@ -266,15 +266,15 @@ func _build_finance_section():
 	var expenses = GameState.daily_expenses
 	var balance_end = GameState.company_balance
 
-	_add_finance_row(grid, "Баланс на начало дня:", "$%d" % balance_start, COLOR_DARK)
-	_add_finance_row(grid, "📈 Доходы за день:", "+$%d" % income, COLOR_GREEN)
-	_add_finance_row(grid, "📉 Расходы за день:", "-$%d" % expenses, COLOR_RED)
+	_add_finance_row(grid, tr("DAY_SUMMARY_BALANCE_START"), "$%d" % balance_start, COLOR_DARK)
+	_add_finance_row(grid, tr("DAY_SUMMARY_INCOME"), "+$%d" % income, COLOR_GREEN)
+	_add_finance_row(grid, tr("DAY_SUMMARY_EXPENSES"), "-$%d" % expenses, COLOR_RED)
 
 	if PMData.can_see_expense_details():
 		var salary_details = GameState.daily_salary_details
 		if salary_details.size() > 0:
 			var details_lbl = Label.new()
-			details_lbl.text = "    Зарплаты:"
+			details_lbl.text = "    " + tr("DAY_SUMMARY_SALARIES")
 			details_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 			details_lbl.add_theme_font_size_override("font_size", 12)
 			if UITheme: UITheme.apply_font(details_lbl, "regular")
@@ -283,17 +283,18 @@ func _build_finance_section():
 				var emp_name: String = entry["name"]
 				var amount: int = entry["amount"]
 				var det_lbl = Label.new()
-				det_lbl.text = "        • %s — $%d" % [emp_name, amount]
+				det_lbl.text = tr("DAY_SUMMARY_EMP_SALARY") % [emp_name, amount]
 				det_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 				det_lbl.add_theme_font_size_override("font_size", 12)
 				if UITheme: UITheme.apply_font(det_lbl, "regular")
 				_content_vbox.add_child(det_lbl)
 	else:
 		if GameState.daily_expenses > 0:
-			_add_locked_hint("Учёт расходов")
+			# Передаем переведенное название навыка
+			_add_locked_hint(tr("SKILL_REPORT_EXPENSES_NAME"))
 
 	var total_color = COLOR_GREEN if balance_end >= balance_start else COLOR_RED
-	_add_finance_row(grid, "Баланс на конец дня:", "$%d" % balance_end, total_color, true)
+	_add_finance_row(grid, tr("DAY_SUMMARY_BALANCE_END"), "$%d" % balance_end, total_color, true)
 
 func _add_finance_row(grid: GridContainer, label_text: String, value_text: String, value_color: Color, bold: bool = false):
 	var lbl = Label.new()
@@ -312,7 +313,7 @@ func _add_finance_row(grid: GridContainer, label_text: String, value_text: Strin
 
 # === СЕКЦИЯ ПРОЕКТОВ ===
 func _build_projects_section():
-	var section = _create_section_label("📋 Проекты")
+	var section = _create_section_label(tr("DAY_SUMMARY_PROJECTS"))
 	_content_vbox.add_child(section)
 
 	var has_analytics = PMData.can_see_project_analytics()
@@ -320,19 +321,19 @@ func _build_projects_section():
 	var failed_today = GameState.projects_failed_today.duplicate()
 
 	if finished_today.size() > 0:
-		var sub_label = _create_subsection_label("✅ Завершены сегодня:")
+		var sub_label = _create_subsection_label(tr("DAY_SUMMARY_PROJ_FINISHED"))
 		_content_vbox.add_child(sub_label)
 		for entry in finished_today:
 			var proj: ProjectData = entry["project"]
 			var payout: int = entry["payout"]
 			var text: String
 			if has_analytics:
-				text = "[%s] %s — Выплата: $%d" % [proj.category.to_upper(), proj.title, payout]
+				text = tr("DAY_SUMMARY_PROJ_PAYOUT") % [proj.category.to_upper(), proj.title, payout]
 				if payout < proj.budget:
 					var penalty = proj.budget - payout
-					text += " (⚠ штраф -$%d, просрочка софт)" % penalty
+					text += tr("DAY_SUMMARY_PROJ_PENALTY") % penalty
 			else:
-				text = "[%s] %s — завершён" % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_COMPLETED") % [proj.category.to_upper(), proj.title]
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_GREEN)
@@ -341,14 +342,14 @@ func _build_projects_section():
 			_content_vbox.add_child(lbl)
 
 	if failed_today.size() > 0:
-		var sub_label = _create_subsection_label("❌ Провалены сегодня:")
+		var sub_label = _create_subsection_label(tr("DAY_SUMMARY_PROJ_FAILED"))
 		_content_vbox.add_child(sub_label)
 		for proj in failed_today:
 			var text: String
 			if has_analytics:
-				text = "[%s] %s — Хард-дедлайн истёк, выплата: $0" % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_FAILED_DETAIL") % [proj.category.to_upper(), proj.title]
 			else:
-				text = "[%s] %s — провален" % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_FAILED_SHORT") % [proj.category.to_upper(), proj.title]
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_RED)
@@ -365,7 +366,7 @@ func _build_projects_section():
 			drafting.append(proj)
 
 	if in_progress.size() > 0:
-		var sub_label = _create_subsection_label("🔧 В работе:")
+		var sub_label = _create_subsection_label(tr("DAY_SUMMARY_PROJ_IN_PROGRESS"))
 		_content_vbox.add_child(sub_label)
 		for proj in in_progress:
 			var text: String
@@ -373,11 +374,11 @@ func _build_projects_section():
 				var stage_info = _get_current_stage_info(proj)
 				var soft_days = proj.soft_deadline_day - GameTime.day
 				var hard_days = proj.deadline_day - GameTime.day
-				text = "[%s] %s — %s | софт: %d дн. | хард: %d дн." % [
+				text = tr("DAY_SUMMARY_PROJ_ACTIVE_DETAIL") % [
 					proj.category.to_upper(), proj.title, stage_info, soft_days, hard_days
 				]
 			else:
-				text = "[%s] %s — в работе" % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_ACTIVE_SHORT") % [proj.category.to_upper(), proj.title]
 
 			var lbl = Label.new()
 			lbl.text = text
@@ -398,10 +399,10 @@ func _build_projects_section():
 			_content_vbox.add_child(lbl)
 
 	if drafting.size() > 0:
-		var sub_label = _create_subsection_label("📝 Ожидают старта:")
+		var sub_label = _create_subsection_label(tr("DAY_SUMMARY_PROJ_DRAFT"))
 		_content_vbox.add_child(sub_label)
 		for proj in drafting:
-			var text = "[%s] %s — не начат, назначьте людей" % [proj.category.to_upper(), proj.title]
+			var text = tr("DAY_SUMMARY_PROJ_DRAFT_DETAIL") % [proj.category.to_upper(), proj.title]
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_GRAY)
@@ -410,11 +411,11 @@ func _build_projects_section():
 			_content_vbox.add_child(lbl)
 
 	if not has_analytics and (in_progress.size() > 0 or finished_today.size() > 0):
-		_add_locked_hint("Аналитика проектов")
+		_add_locked_hint(tr("SKILL_REPORT_PROJECTS_NAME"))
 
 	if finished_today.size() == 0 and failed_today.size() == 0 and in_progress.size() == 0 and drafting.size() == 0:
 		var lbl = Label.new()
-		lbl.text = "Нет активных проектов"
+		lbl.text = tr("DAY_SUMMARY_NO_PROJECTS")
 		lbl.add_theme_color_override("font_color", COLOR_GRAY)
 		lbl.add_theme_font_size_override("font_size", 13)
 		if UITheme: UITheme.apply_font(lbl, "regular")
@@ -422,7 +423,7 @@ func _build_projects_section():
 
 # === СЕКЦИЯ СОТРУДНИКОВ ===
 func _build_employees_section():
-	var section = _create_section_label("👥 Сотрудники")
+	var section = _create_section_label(tr("TAB_EMPLOYEES"))
 	_content_vbox.add_child(section)
 
 	var has_productivity = PMData.can_see_productivity()
@@ -430,7 +431,7 @@ func _build_employees_section():
 
 	if npcs.is_empty():
 		var lbl = Label.new()
-		lbl.text = "Нет сотрудников"
+		lbl.text = tr("DAY_SUMMARY_NO_EMPLOYEES")
 		lbl.add_theme_color_override("font_color", COLOR_GRAY)
 		lbl.add_theme_font_size_override("font_size", 13)
 		if UITheme: UITheme.apply_font(lbl, "regular")
@@ -441,12 +442,12 @@ func _build_employees_section():
 
 	if not has_productivity:
 		var summary_lbl = Label.new()
-		summary_lbl.text = "👥 Всего сотрудников: %d" % total_count
+		summary_lbl.text = tr("DAY_SUMMARY_EMP_TOTAL_ONLY") % total_count
 		summary_lbl.add_theme_color_override("font_color", COLOR_DARK)
 		summary_lbl.add_theme_font_size_override("font_size", 14)
 		if UITheme: UITheme.apply_font(summary_lbl, "semibold")
 		_content_vbox.add_child(summary_lbl)
-		_add_locked_hint("Оценка продуктивности")
+		_add_locked_hint(tr("SKILL_REPORT_PRODUCTIVITY_NAME"))
 		return
 
 	var worked_list = []
@@ -463,14 +464,14 @@ func _build_employees_section():
 			idle_list.append(npc.data)
 
 	var summary_lbl = Label.new()
-	summary_lbl.text = "👥 Всего: %d  |  🔧 Работали: %d  |  💤 Простаивали: %d" % [total_count, worked_list.size(), idle_list.size()]
+	summary_lbl.text = tr("DAY_SUMMARY_EMP_STATS") % [total_count, worked_list.size(), idle_list.size()]
 	summary_lbl.add_theme_color_override("font_color", COLOR_DARK)
 	summary_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(summary_lbl, "semibold")
 	_content_vbox.add_child(summary_lbl)
 
 	if worked_list.size() > 0:
-		var sub = _create_subsection_label("🔧 Работали сегодня:")
+		var sub = _create_subsection_label(tr("DAY_SUMMARY_EMP_WORKED"))
 		_content_vbox.add_child(sub)
 		worked_list.sort_custom(func(a, b): return a["progress"] > b["progress"])
 		for entry in worked_list:
@@ -483,7 +484,7 @@ func _build_employees_section():
 			_content_vbox.add_child(card)
 
 	if idle_list.size() > 0:
-		var sub = _create_subsection_label("💤 Простаивали (не назначены на проект):")
+		var sub = _create_subsection_label(tr("DAY_SUMMARY_EMP_IDLE"))
 		_content_vbox.add_child(sub)
 		for emp in idle_list:
 			var card = _create_employee_card_idle(emp)
@@ -498,7 +499,7 @@ func _build_employees_section():
 		var names = []
 		for emp in low_energy:
 			names.append(emp.employee_name)
-		warn_lbl.text = "⚠ Низкая энергия: " + ", ".join(names)
+		warn_lbl.text = tr("DAY_SUMMARY_EMP_LOW_ENERGY") + " " + ", ".join(names)
 		warn_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn_lbl.add_theme_font_size_override("font_size", 13)
 		if UITheme: UITheme.apply_font(warn_lbl, "semibold")
@@ -536,7 +537,7 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	margin.add_child(hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -593,7 +594,7 @@ func _create_employee_card_idle(emp: EmployeeData) -> PanelContainer:
 	margin.add_child(hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
 	name_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -601,7 +602,7 @@ func _create_employee_card_idle(emp: EmployeeData) -> PanelContainer:
 	hbox.add_child(name_lbl)
 
 	var idle_lbl = Label.new()
-	idle_lbl.text = "💤 Не работал"
+	idle_lbl.text = tr("DAY_SUMMARY_EMP_NOT_WORKED")
 	idle_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 	idle_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(idle_lbl, "semibold")
@@ -640,28 +641,28 @@ func _get_current_stage_info(proj: ProjectData) -> String:
 				pct = (stage.progress / float(stage.amount)) * 100.0
 			var type_name = ""
 			match stage.type:
-				"BA": type_name = "Бизнес-анализ"
-				"DEV": type_name = "Разработка"
-				"QA": type_name = "Тестирование"
+				"BA": type_name = tr("STAGE_BA")
+				"DEV": type_name = tr("STAGE_DEV")
+				"QA": type_name = tr("STAGE_QA")
 				_: type_name = stage.type
-			return "этап %s (%d%%)" % [type_name, int(pct)]
-	return "завершён"
+			return tr("DAY_SUMMARY_STAGE_FORMAT") % [type_name, int(pct)]
+	return tr("DAY_SUMMARY_STAGE_DONE")
 
 func _format_work_time(minutes: float) -> String:
 	var h = int(minutes) / 60
 	var m = int(minutes) % 60
 	if h > 0:
-		return "%d ч %d мин" % [h, m]
-	return "%d мин" % m
+		return tr("DAY_SUMMARY_TIME_HM") % [h, m]
+	return tr("DAY_SUMMARY_TIME_M") % m
 
 func _format_progress(progress: float) -> String:
 	if progress >= 1000:
-		return "%dk очков" % int(progress / 1000.0)
-	return "%d очков" % int(progress)
+		return tr("DAY_SUMMARY_PTS_K") % int(progress / 1000.0)
+	return tr("DAY_SUMMARY_PTS") % int(progress)
 
 # === СЕКЦИЯ ЛЕВЕЛ-АПОВ ===
 func _build_levelups_section():
-	var section = _create_section_label("🎉 Повышения за день")
+	var section = _create_section_label(tr("DAY_SUMMARY_LEVELUPS"))
 	_content_vbox.add_child(section)
 
 	for entry in GameState.levelups_today:
@@ -694,7 +695,7 @@ func _build_levelups_section():
 		vbox.add_theme_constant_override("separation", 2)
 		card_margin.add_child(vbox)
 
-		var title_text = "🎉 %s получил уровень %d (%s)!" % [entry["name"], entry["new_level"], entry["grade"]]
+		var title_text = tr("DAY_SUMMARY_LEVELUP_TITLE") % [entry["name"], entry["new_level"], entry["grade"]]
 		var title_lbl = Label.new()
 		title_lbl.text = title_text
 		title_lbl.add_theme_color_override("font_color", COLOR_BLUE)
@@ -702,10 +703,10 @@ func _build_levelups_section():
 		if UITheme: UITheme.apply_font(title_lbl, "bold")
 		vbox.add_child(title_lbl)
 
-		var detail_text = "Навык +%d" % entry["skill_gain"]
+		var detail_text = tr("DAY_SUMMARY_SKILL_GAIN") % entry["skill_gain"]
 		if entry["new_trait"] != "":
-			var trait_name = EmployeeData.TRAIT_NAMES.get(entry["new_trait"], entry["new_trait"])
-			detail_text += "  |  Новый трейт: %s" % trait_name
+			var trait_name = tr(EmployeeData.TRAIT_NAMES.get(entry["new_trait"], entry["new_trait"]))
+			detail_text += tr("DAY_SUMMARY_NEW_TRAIT") % trait_name
 		var detail_lbl = Label.new()
 		detail_lbl.text = detail_text
 		detail_lbl.add_theme_color_override("font_color", COLOR_DARK)

@@ -134,7 +134,7 @@ func update_ui():
 		_fill_card(card, candidates[i], i)
 		_all_cards.append(card)
 
-	# === Со��даём экстра-карточки для 4-го, 5-го и т.д. ===
+	# === Создаём экстра-карточки для 4-го, 5-го и т.д. ===
 	if total > 3 and cards_container != null:
 		for i in range(3, total):
 			if candidates[i] == null:
@@ -149,7 +149,9 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 	card.visible = true
 	card.modulate = Color.WHITE
 	var btn = find_node_by_name(card, "HireButton")
-	if btn: btn.disabled = false
+	if btn: 
+		btn.disabled = false
+		btn.text = tr("HIRE_BTN")
 
 	var name_lbl = find_node_by_name(card, "NameLabel")
 	var role_lbl = find_node_by_name(card, "RoleLabel")
@@ -172,19 +174,19 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 		name_lbl.text = data.employee_name
 		if UITheme: UITheme.apply_font(name_lbl, "bold")
 	if role_lbl:
-		role_lbl.text = data.job_title
+		role_lbl.text = tr(data.job_title)
 		if UITheme: UITheme.apply_font(role_lbl, "semibold")
 	if salary_lbl:
-		salary_lbl.text = "$ " + str(data.monthly_salary)
+		salary_lbl.text = tr("UI_SALARY") % data.monthly_salary
 		if UITheme: UITheme.apply_font(salary_lbl, "bold")
 
 	var skill_text = ""
 	if data.skill_business_analysis > 0:
-		skill_text = "BA: " + PMData.get_blurred_skill(data.skill_business_analysis)
+		skill_text = tr("ROLE_SHORT_BA") + ": " + PMData.get_blurred_skill(data.skill_business_analysis)
 	elif data.skill_backend > 0:
-		skill_text = "Backend: " + PMData.get_blurred_skill(data.skill_backend)
+		skill_text = tr("ROLE_SHORT_DEV") + ": " + PMData.get_blurred_skill(data.skill_backend)
 	elif data.skill_qa > 0:
-		skill_text = "QA: " + PMData.get_blurred_skill(data.skill_qa)
+		skill_text = tr("ROLE_SHORT_QA") + ": " + PMData.get_blurred_skill(data.skill_qa)
 
 	if skill_lbl:
 		skill_lbl.text = skill_text
@@ -270,18 +272,18 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	left_info.add_child(name_lbl)
 
 	var role_lbl = Label.new()
-	role_lbl.text = data.job_title
+	role_lbl.text = tr(data.job_title)
 	role_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(role_lbl, "semibold")
 	left_info.add_child(role_lbl)
 
 	var skill_text = ""
 	if data.skill_business_analysis > 0:
-		skill_text = "BA: " + PMData.get_blurred_skill(data.skill_business_analysis)
+		skill_text = tr("ROLE_SHORT_BA") + ": " + PMData.get_blurred_skill(data.skill_business_analysis)
 	elif data.skill_backend > 0:
-		skill_text = "Backend: " + PMData.get_blurred_skill(data.skill_backend)
+		skill_text = tr("ROLE_SHORT_DEV") + ": " + PMData.get_blurred_skill(data.skill_backend)
 	elif data.skill_qa > 0:
-		skill_text = "QA: " + PMData.get_blurred_skill(data.skill_qa)
+		skill_text = tr("ROLE_SHORT_QA") + ": " + PMData.get_blurred_skill(data.skill_qa)
 
 	var skill_lbl = Label.new()
 	skill_lbl.text = skill_text
@@ -297,7 +299,7 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	top_hbox.add_child(right_vbox)
 
 	var salary_lbl = Label.new()
-	salary_lbl.text = "$ " + str(data.monthly_salary)
+	salary_lbl.text = tr("UI_SALARY") % data.monthly_salary
 	salary_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	salary_lbl.add_theme_font_size_override("font_size", 25)
@@ -305,7 +307,7 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	right_vbox.add_child(salary_lbl)
 
 	var hire_btn = Button.new()
-	hire_btn.text = "Нанять"
+	hire_btn.text = tr("HIRE_BTN")
 	hire_btn.custom_minimum_size = Vector2(180, 40)
 	hire_btn.focus_mode = Control.FOCUS_NONE
 	var btn_style = StyleBoxFlat.new()
@@ -353,17 +355,18 @@ func _create_level_badge(data: EmployeeData) -> HBoxContainer:
 	grade_style.corner_radius_bottom_left = 10
 
 	var grade = data.get_grade_name()
-	match grade:
-		"Junior":
+	# ИСПРАВЛЕНИЕ: Проверяем по уровню, чтобы не зависеть от перевода слова "Junior"
+	match data.employee_level:
+		0, 1, 2: # Junior
 			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
 			grade_style.border_color = Color(0.29, 0.69, 0.31, 1)
-		"Middle":
+		3, 4: # Middle
 			grade_style.bg_color = Color(0.93, 0.93, 1.0, 1)
 			grade_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-		"Senior":
+		5, 6: # Senior
 			grade_style.bg_color = Color(1.0, 0.95, 0.88, 1)
 			grade_style.border_color = Color(0.85, 0.55, 0.0, 1)
-		"Lead":
+		7, 8, 9, 10: # Lead
 			grade_style.bg_color = Color(0.95, 0.9, 0.98, 1)
 			grade_style.border_color = Color(0.6, 0.3, 0.7, 1)
 
@@ -381,13 +384,15 @@ func _create_level_badge(data: EmployeeData) -> HBoxContainer:
 	grade_panel.add_child(grade_margin)
 
 	var grade_lbl = Label.new()
-	grade_lbl.text = "%s  Ур. %d" % [grade, data.employee_level]
+	grade_lbl.text = tr("ROSTER_GRADE_LEVEL") % [grade, data.employee_level]
 	grade_lbl.add_theme_font_size_override("font_size", 12)
-	match grade:
-		"Junior": grade_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
-		"Middle": grade_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-		"Senior": grade_lbl.add_theme_color_override("font_color", Color(0.85, 0.55, 0.0, 1))
-		"Lead": grade_lbl.add_theme_color_override("font_color", Color(0.6, 0.3, 0.7, 1))
+	
+	match data.employee_level:
+		0, 1, 2: grade_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
+		3, 4: grade_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		5, 6: grade_lbl.add_theme_color_override("font_color", Color(0.85, 0.55, 0.0, 1))
+		7, 8, 9, 10: grade_lbl.add_theme_color_override("font_color", Color(0.6, 0.3, 0.7, 1))
+		
 	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
 	grade_margin.add_child(grade_lbl)
 
@@ -410,7 +415,7 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData, parent: Control)
 
 	var name_text = EmployeeData.TRAIT_NAMES.get(trait_id, trait_id)
 	var lbl = Label.new()
-	lbl.text = name_text
+	lbl.text = tr(name_text)
 	lbl.add_theme_color_override("font_color", color)
 	lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(lbl, "regular")
@@ -495,7 +500,7 @@ func _create_hidden_trait(parent: Control) -> HBoxContainer:
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip("Неизвестное качество сотрудника.\nИзучите навык «Чтение людей» в дереве навыков PM.", gray_color)
+		var tp = TraitUIHelper._create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
 		parent.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)

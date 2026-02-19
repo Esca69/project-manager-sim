@@ -96,7 +96,7 @@ func _build_ui():
 	main_vbox.add_child(header_panel)
 
 	var title_label = Label.new()
-	title_label.text = "🏢 Босс"
+	title_label.text = tr("BOSS_TITLE")
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -161,7 +161,7 @@ func _populate():
 	# === СТРОКА: Доверие ===
 	var trust = BossManager.boss_trust
 	var trust_lbl = Label.new()
-	trust_lbl.text = "Доверие: %d 🤝  %s" % [trust, BossManager.get_trust_label()]
+	trust_lbl.text = tr("BOSS_TRUST") % [trust, BossManager.get_trust_label()]
 	trust_lbl.add_theme_color_override("font_color", BossManager.get_trust_color())
 	trust_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(trust_lbl, "regular")
@@ -173,12 +173,12 @@ func _populate():
 	# === КВЕСТ ===
 	var quest = BossManager.current_quest
 	if quest.is_empty() or not BossManager.quest_active:
-		_add_label("Босс пока не дал задание.\nПодойдите к столу босса в начале месяца.", COLOR_GRAY, 14, "regular")
+		_add_label(tr("BOSS_NO_QUEST"), COLOR_GRAY, 14, "regular")
 		return
 
 	# Заголовок квеста
 	var quest_title = Label.new()
-	quest_title.text = "📋  Задание месяца %d:" % quest.get("month", 0)
+	quest_title.text = tr("BOSS_QUEST_MONTH") % quest.get("month", 0)
 	quest_title.add_theme_color_override("font_color", COLOR_BLUE)
 	quest_title.add_theme_font_size_override("font_size", 15)
 	if UITheme: UITheme.apply_font(quest_title, "bold")
@@ -190,11 +190,9 @@ func _populate():
 		_add_objective_row(obj)
 
 # === СТРОКА ЦЕЛИ ===
-# === СТРОКА ЦЕЛИ ===
 func _add_objective_row(obj: Dictionary):
 	var target = obj.get("target", 0)
 	
-	# === ИСПРАВЛЕНИЕ: вызываем get_objective_progress, а НЕ get_objective_current ===
 	var progress_data = BossManager.get_objective_progress(obj)
 	var current = progress_data["current"]
 	var is_done = progress_data["achieved"]
@@ -231,6 +229,7 @@ func _add_objective_row(obj: Dictionary):
 	row_vbox.add_child(top_hbox)
 
 	var goal_text = Label.new()
+	# Label здесь уже локализован в BossManager, поэтому просто берем obj.label
 	goal_text.text = obj.get("label", "")
 	goal_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	goal_text.add_theme_color_override("font_color", COLOR_GREEN if is_done else COLOR_DARK)
@@ -288,13 +287,15 @@ func _add_objective_row(obj: Dictionary):
 	# Подпись прогресса
 	var progress_lbl = Label.new()
 	if obj_type == "no_fails":
-		progress_lbl.text = "✅ Выполнено" if is_done else "❌ %d провалов" % current
+		# Используем новые ключи для статуса
+		progress_lbl.text = tr("QUEST_STATUS_COMPLETED") if is_done else tr("QUEST_STATUS_FAILS") % current
 	else:
 		progress_lbl.text = "%d / %d" % [current, target]
 	progress_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	progress_lbl.add_theme_font_size_override("font_size", 12)
 	if UITheme: UITheme.apply_font(progress_lbl, "regular")
 	row_vbox.add_child(progress_lbl)
+
 # === ХЕЛПЕРЫ ===
 func _add_label(text: String, color: Color, font_size: int, weight: String):
 	var lbl = Label.new()

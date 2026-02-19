@@ -16,15 +16,15 @@ const XP_THRESHOLDS = [
 var _last_threshold_index: int = -1
 
 # === ОПРЕДЕЛЕНИЕ НАВЫКОВ ===
+# Теперь используем ключи локализации вместо прямого текста
 const SKILL_TREE = {
 	# ===========================
 	# === КАТЕГОРИЯ: ПРОЕКТЫ ===
 	# ===========================
 
-	# --- Оценка объёма (2 навыка) ---
 	"estimate_work_1": {
-		"name": "📐 Оценка объёма I",
-		"description": "Объём работ по проекту показан как вилка ±20% вместо ±40%",
+		"name": "SKILL_ESTIMATE_WORK_1_NAME",
+		"description": "SKILL_ESTIMATE_WORK_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "projects",
@@ -32,8 +32,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"estimate_work_2": {
-		"name": "📐 Оценка объёма II",
-		"description": "Вы видите точный объём работ по каждому этапу",
+		"name": "SKILL_ESTIMATE_WORK_2_NAME",
+		"description": "SKILL_ESTIMATE_WORK_2_DESC",
 		"cost": 2,
 		"prerequisite": "estimate_work_1",
 		"category": "projects",
@@ -41,10 +41,9 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 
-	# --- Оценка бюджета (2 навыка) ---
 	"estimate_budget_1": {
-		"name": "💰 Оценка бюджета I",
-		"description": "Бюджет проекта показан как вилка ±15% вместо ±35%",
+		"name": "SKILL_ESTIMATE_BUDGET_1_NAME",
+		"description": "SKILL_ESTIMATE_BUDGET_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "projects",
@@ -52,8 +51,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"estimate_budget_2": {
-		"name": "💰 Оценка бюджета II",
-		"description": "Вы видите точный бюджет проекта",
+		"name": "SKILL_ESTIMATE_BUDGET_2_NAME",
+		"description": "SKILL_ESTIMATE_BUDGET_2_DESC",
 		"cost": 2,
 		"prerequisite": "estimate_budget_1",
 		"category": "projects",
@@ -61,10 +60,9 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 
-	# --- Лимит проектов (2 навыка) ---
 	"project_limit_1": {
-		"name": "📁 Лимит проектов I",
-		"description": "Максимум активных проектов увеличен до 3 (было 2)",
+		"name": "SKILL_PROJECT_LIMIT_1_NAME",
+		"description": "SKILL_PROJECT_LIMIT_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "projects",
@@ -72,8 +70,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"project_limit_2": {
-		"name": "📁 Лимит проектов II",
-		"description": "Максимум активных проектов увеличен до 5",
+		"name": "SKILL_PROJECT_LIMIT_2_NAME",
+		"description": "SKILL_PROJECT_LIMIT_2_DESC",
 		"cost": 2,
 		"prerequisite": "project_limit_1",
 		"category": "projects",
@@ -81,10 +79,9 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 
-	# --- Скорость обсуждения (2 навыка) ---
 	"boss_meeting_speed_1": {
-		"name": "⏱ Скорость обсуждения I",
-		"description": "Обсуждение проекта с боссом занимает 3 часа вместо 4",
+		"name": "SKILL_BOSS_MEETING_SPEED_1_NAME",
+		"description": "SKILL_BOSS_MEETING_SPEED_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "projects",
@@ -92,8 +89,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"boss_meeting_speed_2": {
-		"name": "⏱ Скорость обсуждения II",
-		"description": "Обсуждение проекта с боссом занимает 2 часа",
+		"name": "SKILL_BOSS_MEETING_SPEED_2_NAME",
+		"description": "SKILL_BOSS_MEETING_SPEED_2_DESC",
 		"cost": 2,
 		"prerequisite": "boss_meeting_speed_1",
 		"category": "projects",
@@ -105,10 +102,9 @@ const SKILL_TREE = {
 	# === КАТЕГОРИЯ: ЛЮДИ ===
 	# ========================
 
-	# --- Чтение людей (3 навыка) ---
 	"read_traits_1": {
-		"name": "👁 Чтение людей I",
-		"description": "При найме вы видите 1 трейт кандидата",
+		"name": "SKILL_READ_TRAITS_1_NAME",
+		"description": "SKILL_READ_TRAITS_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "people",
@@ -116,8 +112,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"read_traits_2": {
-		"name": "👁 Чтение людей II",
-		"description": "При найме вы видите 2 трейта кандидата",
+		"name": "SKILL_READ_TRAITS_2_NAME",
+		"description": "SKILL_READ_TRAITS_2_DESC",
 		"cost": 1,
 		"prerequisite": "read_traits_1",
 		"category": "people",
@@ -125,8 +121,8 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 	"read_traits_3": {
-		"name": "👁 Чтение людей III",
-		"description": "Вы видите все трейты кандидата при найме",
+		"name": "SKILL_READ_TRAITS_3_NAME",
+		"description": "SKILL_READ_TRAITS_3_DESC",
 		"cost": 2,
 		"prerequisite": "read_traits_2",
 		"category": "people",
@@ -134,10 +130,9 @@ const SKILL_TREE = {
 		"branch_order": 2,
 	},
 
-	# --- Оценка кадров (3 навыка) ---
 	"read_skills_1": {
-		"name": "📊 Оценка кадров I",
-		"description": "Навыки кандидата показаны как «Низкий / Средний / Высокий»\nвместо полного скрытия",
+		"name": "SKILL_READ_SKILLS_1_NAME",
+		"description": "SKILL_READ_SKILLS_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "people",
@@ -145,8 +140,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"read_skills_2": {
-		"name": "📊 Оценка кадров II",
-		"description": "Навыки кандидата показаны как диапазон (100–150)",
+		"name": "SKILL_READ_SKILLS_2_NAME",
+		"description": "SKILL_READ_SKILLS_2_DESC",
 		"cost": 1,
 		"prerequisite": "read_skills_1",
 		"category": "people",
@@ -154,8 +149,8 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 	"read_skills_3": {
-		"name": "📊 Оценка кадров III",
-		"description": "Вы видите точные значения навыков кандидата",
+		"name": "SKILL_READ_SKILLS_3_NAME",
+		"description": "SKILL_READ_SKILLS_3_DESC",
 		"cost": 2,
 		"prerequisite": "read_skills_2",
 		"category": "people",
@@ -163,10 +158,9 @@ const SKILL_TREE = {
 		"branch_order": 2,
 	},
 
-	# --- Кандидаты на вакансию (2 навыка) ---
 	"candidate_count_1": {
-		"name": "👤 Кандидаты I",
-		"description": "При поиске HR выдаёт 3 кандидата вместо 2",
+		"name": "SKILL_CANDIDATE_COUNT_1_NAME",
+		"description": "SKILL_CANDIDATE_COUNT_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "people",
@@ -174,8 +168,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"candidate_count_2": {
-		"name": "👤 Кандидаты II",
-		"description": "При поиске HR выдаёт 5 кандидатов",
+		"name": "SKILL_CANDIDATE_COUNT_2_NAME",
+		"description": "SKILL_CANDIDATE_COUNT_2_DESC",
 		"cost": 2,
 		"prerequisite": "candidate_count_1",
 		"category": "people",
@@ -183,10 +177,9 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 
-	# --- Скорость поиска (2 навыка) ---
 	"hr_search_speed_1": {
-		"name": "🔍 Скорость поиска I",
-		"description": "Поиск кандидатов занимает 1.5 часа вместо 2",
+		"name": "SKILL_HR_SEARCH_SPEED_1_NAME",
+		"description": "SKILL_HR_SEARCH_SPEED_1_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "people",
@@ -194,8 +187,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"hr_search_speed_2": {
-		"name": "🔍 Скорость поиска II",
-		"description": "Поиск кандидатов занимает 1 час",
+		"name": "SKILL_HR_SEARCH_SPEED_2_NAME",
+		"description": "SKILL_HR_SEARCH_SPEED_2_DESC",
 		"cost": 2,
 		"prerequisite": "hr_search_speed_1",
 		"category": "people",
@@ -207,8 +200,8 @@ const SKILL_TREE = {
 	# === КАТЕГОРИЯ: АНАЛИТИКА ===
 	# =============================
 	"report_expenses": {
-		"name": "📋 Учёт расходов",
-		"description": "В дневном отчёте видна детализация затрат:\nкому выплачена зарплата и сколько",
+		"name": "SKILL_REPORT_EXPENSES_NAME",
+		"description": "SKILL_REPORT_EXPENSES_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "analytics",
@@ -216,8 +209,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"report_projects": {
-		"name": "📋 Аналитика проектов",
-		"description": "В дневном отчёте видны этапы проектов,\nпроцент прогресса и дни до дедлайнов",
+		"name": "SKILL_REPORT_PROJECTS_NAME",
+		"description": "SKILL_REPORT_PROJECTS_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "analytics",
@@ -225,8 +218,8 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 	"report_productivity": {
-		"name": "📋 Оценка продуктивности",
-		"description": "В дневном отчёте видно кто из сотрудников\nсколько часов работал и сколько очков принёс",
+		"name": "SKILL_REPORT_PRODUCTIVITY_NAME",
+		"description": "SKILL_REPORT_PRODUCTIVITY_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "analytics",
@@ -238,10 +231,9 @@ const SKILL_TREE = {
 	# === КАТЕГОРИЯ: АКТИВНЫЕ ===
 	# ===============================
 
-	# --- Мотивация (1 навык, активный) ---
 	"motivate": {
-		"name": "🔥 Мотивировать",
-		"description": "Активный навык (Q): все сотрудники рядом\nполучают +20% скорости работы на 2 часа\nПерезарядка: 4 часа",
+		"name": "SKILL_MOTIVATE_NAME",
+		"description": "SKILL_MOTIVATE_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "active",
@@ -249,10 +241,9 @@ const SKILL_TREE = {
 		"branch_order": 0,
 	},
 
-	# --- Запрет туалета (1 навык, активный) ---
 	"no_toilet": {
-		"name": "🚽 Я вам запрещаю с*ать!",
-		"description": "Активный навык (R): все сотрудники\nне ходят в туалет 4 часа\nПерезарядка: 8 часов",
+		"name": "SKILL_NO_TOILET_NAME",
+		"description": "SKILL_NO_TOILET_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "active",
@@ -319,7 +310,8 @@ func unlock_skill(skill_id: String) -> bool:
 	var skill = SKILL_TREE[skill_id]
 	skill_points -= skill["cost"]
 	unlocked_skills.append(skill_id)
-	print("🧠 PM изучил навык: ", skill["name"])
+	# Используем tr() для вывода в консоль переведенного названия
+	print("🧠 PM изучил навык: ", tr(skill["name"]))
 	emit_signal("skill_unlocked", skill_id)
 	emit_signal("xp_changed", xp, skill_points)
 	return true
@@ -416,9 +408,9 @@ func get_blurred_skill(real_value: int) -> String:
 	match get_skill_read_level():
 		0: return "???"
 		1:
-			if real_value < 80: return "Низкий"
-			elif real_value < 140: return "Средний"
-			else: return "Высокий"
+			if real_value < 80: return tr("SKILL_VAL_LOW")
+			elif real_value < 140: return tr("SKILL_VAL_MEDIUM")
+			else: return tr("SKILL_VAL_HIGH")
 		2:
 			var spread = int(real_value * 0.20)
 			var low = max(1, real_value - spread)

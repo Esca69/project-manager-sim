@@ -18,7 +18,6 @@ func _ready():
 	var scroll = cards_container.get_parent()
 	if scroll and scroll is ScrollContainer:
 		# === ИСПРАВЛЕНИЕ БАГА СО СКРОЛЛОМ ===
-		# Теперь карточки не будут вылезать за рамки
 		scroll.clip_contents = true
 
 	btn_style = StyleBoxFlat.new()
@@ -66,10 +65,9 @@ func _rebuild_cards():
 		child.queue_free()
 
 	if ProjectManager.active_projects.is_empty():
-		# === ИСПРАВЛЕНИЕ: Красивое сообщение при отсутствии проектов ===
-		empty_label.text = "Нет активных проектов.\nВозьмите проект у босса."
+		# === ИСПРАВЛЕНИЕ: Используем локализацию для пустого списка ===
+		empty_label.text = tr("PROJ_LIST_EMPTY")
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		# Серый цвет, как принято для empty-state
 		empty_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		if UITheme: UITheme.apply_font(empty_label, "semibold")
 		
@@ -177,14 +175,15 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
 
-	# === ИЗМЕНЕНИЕ: используем get_category_label() вместо хардкода ===
 	var cat_label = proj.get_category_label()
 	var client_prefix = ""
 	if proj.client_id != "":
 		var client = proj.get_client()
 		if client:
 			client_prefix = client.emoji + " " + client.client_name + "  —  "
-	var title_text = client_prefix + cat_label + " " + proj.title
+	
+	# Используем tr() для заголовка проекта
+	var title_text = client_prefix + cat_label + " " + tr(proj.title)
 	if proj.state == ProjectData.State.FINISHED:
 		title_text = "✅ " + title_text
 	elif proj.state == ProjectData.State.FAILED:
@@ -199,17 +198,17 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var status_lbl = Label.new()
 	match proj.state:
 		ProjectData.State.DRAFTING:
-			status_lbl.text = "📝 Черновик — назначьте людей и нажмите Старт"
+			status_lbl.text = tr("PROJ_LIST_STATUS_DRAFT")
 			status_lbl.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 		ProjectData.State.IN_PROGRESS:
 			var stage_name = _get_current_stage_name(proj)
-			status_lbl.text = "🔧 В работе — этап: " + stage_name
+			status_lbl.text = tr("PROJ_LIST_STATUS_IN_PROGRESS") % stage_name
 			status_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 		ProjectData.State.FINISHED:
-			status_lbl.text = "✅ Завершён"
+			status_lbl.text = "✅ " + tr("PROJECT_STATE_FINISHED")
 			status_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 		ProjectData.State.FAILED:
-			status_lbl.text = "❌ Провален — хард-дедлайн истёк"
+			status_lbl.text = tr("PROJ_LIST_FAILED_DEADLINE")
 			status_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	if UITheme: UITheme.apply_font(status_lbl, "regular")
 	left_info.add_child(status_lbl)
@@ -231,7 +230,6 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 
 	var budget_lbl = Label.new()
 	
-	# === ИСПРАВЛЕНИЕ: Динамический расчет бюджета (штрафы за софт-дедлайн) ===
 	var current_payout = proj.budget
 	var is_penalty = false
 	var is_failed = false
@@ -255,15 +253,14 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 		if current_payout < proj.budget:
 			is_penalty = true
 
-	# Применение цветов в зависимости от статуса (Красный, Желтый, Зеленый)
 	if is_failed:
-		budget_lbl.text = "Бюджет: $0 (Провал)"
+		budget_lbl.text = tr("PROJ_LIST_BUDGET_FAILED")
 		budget_lbl.add_theme_color_override("font_color", Color(0.85, 0.21, 0.21)) 
 	elif is_penalty:
-		budget_lbl.text = "Бюджет: $" + str(current_payout)
+		budget_lbl.text = tr("PROJECT_BUDGET") % current_payout
 		budget_lbl.add_theme_color_override("font_color", Color(0.9, 0.72, 0.04)) 
 	else:
-		budget_lbl.text = "Бюджет: $" + str(proj.budget)
+		budget_lbl.text = tr("PROJECT_BUDGET") % proj.budget
 		budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 
 	budget_lbl.add_theme_font_size_override("font_size", 20)
@@ -272,7 +269,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	right_info.add_child(budget_lbl)
 
 	var open_btn = Button.new()
-	open_btn.text = "Открыть"
+	open_btn.text = tr("UI_OPEN")
 	open_btn.custom_minimum_size = Vector2(180, 40)
 	open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	open_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
@@ -294,13 +291,13 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	var hard_date = GameTime.get_date_short(proj.deadline_day)
 
 	var soft_lbl = Label.new()
-	soft_lbl.text = "Софт: %s (ост. %d дн.) | штраф -%d%%" % [soft_date, soft_days, proj.soft_deadline_penalty_percent]
+	soft_lbl.text = tr("PROJ_LIST_SOFT_INFO") % [soft_date, soft_days, proj.soft_deadline_penalty_percent]
 	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
 	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	deadlines_hbox.add_child(soft_lbl)
 
 	var hard_lbl = Label.new()
-	hard_lbl.text = "Хард: %s (ост. %d дн.)" % [hard_date, hard_days]
+	hard_lbl.text = tr("PROJ_LIST_HARD_INFO") % [hard_date, hard_days]
 	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	deadlines_hbox.add_child(hard_lbl)
@@ -326,9 +323,9 @@ func _get_current_stage_name(proj: ProjectData) -> String:
 			prev_ok = proj.stages[i - 1].get("is_completed", false)
 		if prev_ok:
 			match stage.type:
-				"BA": return "Бизнес-анализ"
-				"DEV": return "Разработка"
-				"QA": return "Тестирование"
+				"BA": return tr("STAGE_BA")
+				"DEV": return tr("STAGE_DEV")
+				"QA": return tr("STAGE_QA")
 			return stage.type
 	return "—"
 
@@ -344,5 +341,5 @@ func _get_progress_text(proj: ProjectData) -> String:
 			var pct = 0.0
 			if stage.amount > 0:
 				pct = (float(stage.progress) / float(stage.amount)) * 100.0
-			return "Прогресс: %d%%" % int(pct)
+			return tr("PROJ_LIST_PROGRESS") % int(pct)
 	return ""

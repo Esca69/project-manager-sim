@@ -1,7 +1,8 @@
 extends Resource
 class_name ProjectData
 
-@export var title: String = "Проект"
+# Меняем дефолтное значение на ключ
+@export var title: String = "PROJ_DEFAULT_TITLE"
 
 # --- КАТЕГОРИЯ ---
 # "micro" = 1 этап, "simple" = 2 этапа, "easy" = 3 этапа (BA→DEV→QA)
@@ -62,12 +63,12 @@ func get_client_display_name() -> String:
 	var client = get_client()
 	if client:
 		return client.get_display_name()
-	return "Неизвестный клиент"
+	return tr("PROJ_UNKNOWN_CLIENT")
 
 # Метка категории для UI
 func get_category_label() -> String:
 	match category:
-		"micro": return "[MICRO]"
-		"simple": return "[SIMPLE]"
-		"easy": return "[EASY]"
-	return "[???]"
+		"micro": return tr("PROJ_CAT_MICRO")
+		"simple": return tr("PROJ_CAT_SIMPLE")
+		"easy": return tr("PROJ_CAT_EASY")
+	return tr("PROJ_CAT_UNKNOWN")

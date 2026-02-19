@@ -40,12 +40,12 @@ func unassign_employee():
 	assigned_npc_node = null
 	update_desk_visuals()
 	
-	return old_npc  # Возвращаем ноду старого NPC, чтобы меню могло его "��тпустить"
+	return old_npc  # Возвращаем ноду старого NPC, чтобы меню могло его "отпустить"
 
 func update_desk_visuals():
 	if assigned_employee:
 		name_tag.text = assigned_employee.employee_name
 		name_tag.modulate = Color.GREEN
 	else:
-		name_tag.text = "СВОБОДНО"
+		name_tag.text = tr("DESK_AVAILABLE")
 		name_tag.modulate = Color.WHITE

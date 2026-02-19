@@ -11,11 +11,11 @@ func _init_clients():
 	clients.clear()
 
 	var defs = [
-		{"id": "novotech",     "name": "НовоТех",      "emoji": "🚀", "desc": "IT-стартап. Всегда хочет быстро и дёшево."},
-		{"id": "edaplus",      "name": "ЕдаПлюс",      "emoji": "🍕", "desc": "Сеть доставки еды. Много мелких задач."},
-		{"id": "finansgroup",  "name": "ФинансГрупп",   "emoji": "🏦", "desc": "Банк. Серьёзные проекты, хорошие бюджеты."},
-		{"id": "medialine",    "name": "МедиаЛайн",    "emoji": "📺", "desc": "Рекламное агентство. Креативные задачи."},
-		{"id": "stroymaster",  "name": "СтройМастер",   "emoji": "🏗", "desc": "Строительная компания. Стабильный поток."},
+		{"id": "novotech",     "name": tr("CLIENT_NOVOTECH"),      "emoji": "🚀", "desc": tr("CLIENT_NOVOTECH_DESC")},
+		{"id": "edaplus",      "name": tr("CLIENT_EDAPLUS"),       "emoji": "🍕", "desc": tr("CLIENT_EDAPLUS_DESC")},
+		{"id": "finansgroup",  "name": tr("CLIENT_FINANSGROUP"),   "emoji": "🏦", "desc": tr("CLIENT_FINANSGROUP_DESC")},
+		{"id": "medialine",    "name": tr("CLIENT_MEDIALINE"),     "emoji": "📺", "desc": tr("CLIENT_MEDIALINE_DESC")},
+		{"id": "stroymaster",  "name": tr("CLIENT_STROYMASTER"),   "emoji": "🏗", "desc": tr("CLIENT_STROYMASTER_DESC")},
 	]
 
 	for d in defs:

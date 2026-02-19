@@ -1,7 +1,13 @@
 extends Node
 
-var first_names = ["Олег", "Мария", "Алексей", "Дарья", "Иван", "Елена", "Макс", "Сергей", "Анна"]
-var last_names = ["Петров(а)", "Смирнов(а)", "Кузнецов(а)", "Попов(а)", "Васильев(а)", "Соколов(а)", "Михайлов(а)"]
+# === БАЗЫ ИМЁН (РУССКИЕ) ===
+var first_names_ru = ["Олег", "Мария", "Алексей", "Дарья", "Иван", "Елена", "Макс", "Сергей", "Анна"]
+var last_names_ru = ["Петров(а)", "Смирнов(а)", "Кузнецов(а)", "Попов(а)", "Васильев(а)", "Соколов(а)", "Михайлов(а)"]
+
+# === БАЗЫ ИМЁН (АНГЛИЙСКИЕ) ===
+var first_names_en = ["John", "Emma", "Michael", "Sarah", "David", "Laura", "Alex", "James", "Emily"]
+var last_names_en = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis"]
+
 var roles = ["Business Analyst", "Backend Developer", "QA Engineer"]
 
 var all_traits = ["fast_learner", "energizer", "early_bird", "cheap_hire", "toilet_lover", "coffee_lover", "slowpoke", "expensive"]
@@ -44,8 +50,19 @@ func generate_random_candidate() -> EmployeeData:
 func generate_candidate_for_role(role: String) -> EmployeeData:
 	var new_emp = EmployeeData.new()
 
-	# 1. Имя и Роль
-	new_emp.employee_name = first_names.pick_random() + " " + last_names.pick_random()
+	# 1. Имя и Роль (выбираем имена в зависимости от языка игры)
+	var locale = TranslationServer.get_locale()
+	var f_name = ""
+	var l_name = ""
+	
+	if locale.begins_with("ru"):
+		f_name = first_names_ru.pick_random()
+		l_name = last_names_ru.pick_random()
+	else:
+		f_name = first_names_en.pick_random()
+		l_name = last_names_en.pick_random()
+
+	new_emp.employee_name = f_name + " " + l_name
 	new_emp.job_title = role
 
 	# 2. Определяем уровень на основе дня игры

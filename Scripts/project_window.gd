@@ -31,19 +31,23 @@ func setup(data: ProjectData, selector_node):
 	project = data
 	selector_ref = selector_node
 
-	var cat_label = "[MICRO]" if project.category == "micro" else "[SIMPLE]"
+	var cat_label = project.get_category_label()
 	var client_prefix = ""
 	if project.client_id != "":
 		var client = project.get_client()
 		if client:
 			client_prefix = client.emoji + " " + client.client_name + "  —  "
-	title_label.text = client_prefix + cat_label + " " + project.title
+	
+	# Переводим заголовок проекта
+	title_label.text = client_prefix + cat_label + " " + tr(project.title)
 
 	var deadline_date = GameTime.get_date_short(project.deadline_day)
 	var days_left = project.deadline_day - GameTime.day
 	var soft_date = GameTime.get_date_short(project.soft_deadline_day)
 	var soft_left = project.soft_deadline_day - GameTime.day
-	deadline_label.text = "Софт: %s (%d дн., -%d%%) | Хард: %s (%d дн.)" % [
+	
+	# Используем комбинированный ключ для дедлайнов
+	deadline_label.text = tr("PROJ_WIN_DEADLINE_COMBINED") % [
 		soft_date, soft_left, project.soft_deadline_penalty_percent, deadline_date, days_left
 	]
 
@@ -97,6 +101,9 @@ func _ready():
 		cancel_node.queue_free()
 
 	start_btn.pressed.connect(_on_start_pressed)
+	# Локализация текста кнопки Старт
+	start_btn.text = tr("PROJ_WIN_BTN_START")
+	
 	close_window_btn.pressed.connect(func():
 		if UITheme:
 			UITheme.fade_out(self, 0.15)
@@ -104,7 +111,7 @@ func _ready():
 			visible = false
 	)
 
-	# === ИСПРАВЛЕНИЕ: Активный зелёный дизайн кнопки "Начать проект" ===
+	# === Стили кнопки "Начать проект" ===
 	var start_style_normal = StyleBoxFlat.new()
 	start_style_normal.bg_color = Color(1, 1, 1, 1)
 	start_style_normal.border_width_left = 2
@@ -137,7 +144,6 @@ func _ready():
 	start_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	start_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
 
-	# Красивый стиль для неактивной (серой) кнопки "Начать проект"
 	var disabled_style = StyleBoxFlat.new()
 	disabled_style.bg_color = Color(0.93, 0.93, 0.93, 1) 
 	disabled_style.border_width_left = 2
@@ -185,13 +191,13 @@ func _update_budget_display():
 			is_penalty = true
 
 	if is_failed:
-		budget_label.text = "Бюджет: $0 (Провал)"
+		budget_label.text = tr("PROJ_LIST_BUDGET_FAILED")
 		budget_label.add_theme_color_override("font_color", Color(0.85, 0.21, 0.21))
 	elif is_penalty:
-		budget_label.text = "Бюджет: $%d" % current_payout
+		budget_label.text = tr("PROJECT_BUDGET") % current_payout
 		budget_label.add_theme_color_override("font_color", Color(0.9, 0.72, 0.04))
 	else:
-		budget_label.text = "Бюджет: $%d" % project.budget
+		budget_label.text = tr("PROJECT_BUDGET") % project.budget
 		budget_label.add_theme_color_override("font_color", Color(0.3, 0.69, 0.31))
 
 func _migrate_stage(stage: Dictionary):
@@ -220,7 +226,8 @@ func _on_start_pressed():
 	var now = get_current_global_time()
 	project.start_global_time = now
 	project.state = project.State.IN_PROGRESS
-	print("КНОПКА СТАРТ: Записано время старта: ", project.start_global_time)
+	# Локализованный лог
+	print(tr("LOG_PROJECT_STARTED") % [tr(project.title), project.start_global_time])
 	update_buttons_visibility()
 
 func _process(delta):
@@ -381,7 +388,7 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 
 		if month_num != prev_month:
 			var month_lbl = Label.new()
-			month_lbl.text = "Мес. " + str(month_num)
+			month_lbl.text = tr("PROJ_WIN_MONTH_SHORT") % month_num
 			month_lbl.add_theme_font_size_override("font_size", 11)
 			month_lbl.modulate = Color(0.17, 0.31, 0.57, 0.8)
 			month_lbl.position = Vector2(x_pos + 2, -2)
@@ -500,11 +507,14 @@ func _on_employee_chosen(emp_data):
 
 	for existing_worker in stage.workers:
 		if existing_worker == emp_data:
-			print("⚠️ Этот сотрудник уже назначен на этот этап!")
+			# Локализованное предупреждение
+			print(tr("LOG_WARN_ALREADY_ASSIGNED"))
 			return
 
 	stage.workers.append(emp_data)
-	print("✅ Назначен: ", emp_data.employee_name, " на этап ", stage.type, " (всего: ", stage.workers.size(), ")")
+	# Локализованный лог назначения
+	print(tr("LOG_EMP_ASSIGNED") % [emp_data.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
+	
 	var track_node = tracks_container.get_child(current_selecting_track_index)
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()
@@ -519,7 +529,9 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 		return
 	var removed = stage.workers[worker_index]
 	stage.workers.remove_at(worker_index)
-	print("❌ Снят: ", removed.employee_name, " с этапа ", stage.type, " (осталось: ", stage.workers.size(), ")")
+	# Локализованный лог снятия
+	print(tr("LOG_EMP_REMOVED") % [removed.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
+	
 	var track_node = tracks_container.get_child(stage_index)
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()

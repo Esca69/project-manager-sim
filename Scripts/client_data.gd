@@ -23,13 +23,13 @@ const LOYALTY_FAILED: int = -5       # Провален
 # [порог_очков, тип_награды, значение_награды]
 # тип: "budget" = бонус к бюджету (%), "unlock" = разблокировка типа проектов
 const LOYALTY_LEVELS = [
-	{"threshold": 0,  "type": "unlock",  "value": "micro",  "label": "Micro проекты"},
-	{"threshold": 5,  "type": "budget",  "value": 5,        "label": "+5% к бюджету"},
-	{"threshold": 12, "type": "unlock",  "value": "simple", "label": "Simple проекты"},
-	{"threshold": 22, "type": "budget",  "value": 10,       "label": "+10% к бюджету"},
-	{"threshold": 35, "type": "unlock",  "value": "easy",   "label": "Easy проекты"},
-	{"threshold": 50, "type": "budget",  "value": 15,       "label": "+15% к бюджету"},
-	{"threshold": 70, "type": "budget",  "value": 20,       "label": "+20% к бюджету"},
+	{"threshold": 0,  "type": "unlock",  "value": "micro",  "label": "LOYALTY_MICRO_PROJECTS"},
+	{"threshold": 5,  "type": "budget",  "value": 5,        "label": "LOYALTY_BUDGET_5"},
+	{"threshold": 12, "type": "unlock",  "value": "simple", "label": "LOYALTY_SIMPLE_PROJECTS"},
+	{"threshold": 22, "type": "budget",  "value": 10,       "label": "LOYALTY_BUDGET_10"},
+	{"threshold": 35, "type": "unlock",  "value": "easy",   "label": "LOYALTY_EASY_PROJECTS"},
+	{"threshold": 50, "type": "budget",  "value": 15,       "label": "LOYALTY_BUDGET_15"},
+	{"threshold": 70, "type": "budget",  "value": 20,       "label": "LOYALTY_BUDGET_20"},
 ]
 
 const MAX_LOYALTY: int = 70  # Максимальный порог
@@ -70,7 +70,9 @@ func get_next_level_info() -> Dictionary:
 	if current_level >= LOYALTY_LEVELS.size() - 1:
 		return {}  # Уже максимум
 	var next = LOYALTY_LEVELS[current_level + 1]
-	return {"threshold": next["threshold"], "label": next["label"]}
+	
+	# Оборачиваем label в tr() для локализации
+	return {"threshold": next["threshold"], "label": tr(next["label"])}
 
 func get_total_projects() -> int:
 	return projects_completed_on_time + projects_completed_late + projects_failed
@@ -93,4 +95,5 @@ func record_project_failed():
 	add_loyalty(LOYALTY_FAILED)
 
 func get_display_name() -> String:
-	return emoji + " " + client_name
+	# Оборачиваем client_name в tr() для локализации имен (если в ресурсе указан ключ)
+	return emoji + " " + tr(client_name)

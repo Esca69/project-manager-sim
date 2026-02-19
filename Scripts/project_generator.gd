@@ -11,38 +11,38 @@ const AVERAGE_SKILL = 100.0
 const WORK_HOURS_PER_DAY = 9.0
 const MARGIN_MULTIPLIER = 1.4
 
-# === ШАБЛОНЫ ПРОЕКТОВ ===
+# === ШАБЛОНЫ ПРОЕКТОВ (используем ключи из CSV) ===
 
 # MICRO — 1 вид работ
 const MICRO_TEMPLATES = [
-	{ "name": "Фикс бага на сайте",            "stages": ["DEV"],  "difficulty": 1 },
-	{ "name": "Протестировать форму",           "stages": ["QA"],   "difficulty": 1 },
-	{ "name": "Составить ТЗ на лендинг",        "stages": ["BA"],   "difficulty": 1 },
-	{ "name": "Поправить вёрстку письма",        "stages": ["DEV"],  "difficulty": 1 },
-	{ "name": "Тестирование авторизации",        "stages": ["QA"],   "difficulty": 1 },
-	{ "name": "Анализ конкурентов",              "stages": ["BA"],   "difficulty": 1 },
+	{ "name": "PROJ_FIX_BUG",            "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "PROJ_TEST_FORM",           "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "PROJ_WRITE_TZ",           "stages": ["BA"],   "difficulty": 1 },
+	{ "name": "PROJ_FIX_LAYOUT",         "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "PROJ_TEST_AUTH",          "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "PROJ_COMPETITOR_ANALYSIS", "stages": ["BA"],   "difficulty": 1 },
 ]
 
 # SIMPLE — 2 вида работ
 const SIMPLE_TEMPLATES = [
-	{ "name": "Описать и сделать FAQ",          "stages": ["BA", "DEV"],  "difficulty": 2 },
-	{ "name": "Написать и протестить API",       "stages": ["DEV", "QA"], "difficulty": 2 },
-	{ "name": "Описание + правка формы",         "stages": ["BA", "DEV"], "difficulty": 2 },
-	{ "name": "Доработка + тест фильтров",       "stages": ["DEV", "QA"], "difficulty": 2 },
-	{ "name": "ТЗ + тестирование модуля",        "stages": ["BA", "QA"],  "difficulty": 2 },
-	{ "name": "Аналитика + разработка отчёта",   "stages": ["BA", "DEV"], "difficulty": 2 },
+	{ "name": "PROJ_FAQ",             "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_API",             "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_FORM_DESC",       "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_FILTERS",         "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_MODULE_TEST",     "stages": ["BA", "QA"],   "difficulty": 2 },
+	{ "name": "PROJ_REPORT",          "stages": ["BA", "DEV"],  "difficulty": 2 },
 ]
 
 # EASY — 3 вида работ (полный цикл BA→DEV→QA)
 const EASY_TEMPLATES = [
-	{ "name": "Лендинг пекарни",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "Сайт-визитка",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "CRM для такси",       "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "Модуль авторизации",   "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "Интернет-магазин",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "Портал заказов",       "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "Чат поддержки",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "Дашборд статистики",   "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_LANDING",      "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_SITE_CARD",    "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_CRM_TAXI",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_AUTH_MODULE",  "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_SHOP",         "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_ORDERS",       "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_CHAT",         "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_DASHBOARD",    "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
 ]
 
 # WORK_UNITS: micro увеличены x1.5
@@ -111,7 +111,9 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 			template = MICRO_TEMPLATES.pick_random()
 
 	new_proj.category = category
-	new_proj.title = template["name"]
+	
+	# ИСПРАВЛЕНИЕ: Используем TranslationServer для статической функции
+	new_proj.title = TranslationServer.translate(template["name"])
 
 	var stage_types: Array = template["stages"]
 	new_proj.stages = []
@@ -172,7 +174,6 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 
 	new_proj.soft_days_budget = int(soft_days)
 
-	# Абсолютные дедлайны НЕ выставляем — они будут вычислены при взятии проекта
 	new_proj.deadline_day = 0
 	new_proj.soft_deadline_day = 0
 

@@ -203,8 +203,8 @@ func _rebuild_cards():
 	# --- Плашка лимита проектов ---
 	if _is_project_limit_reached():
 		var limit_bar = _create_warning_bar(
-			"⚠ Достигнут лимит активных проектов (%d из %d)" % [ProjectManager.count_active_projects(), PMData.get_max_projects()],
-			"Завершите текущие проекты или прокачайте навык PM для увеличения лимита.",
+			tr("PROJ_SEL_LIMIT_TITLE") % [ProjectManager.count_active_projects(), PMData.get_max_projects()],
+			tr("PROJ_SEL_LIMIT_HINT"),
 			Color(0.9, 0.5, 0.1, 1)
 		)
 		_cards_container.add_child(limit_bar)
@@ -213,8 +213,8 @@ func _rebuild_cards():
 	if _is_too_late_for_boss():
 		var cutoff = PMData.get_boss_cutoff_hour()
 		var time_bar = _create_warning_bar(
-			"🕐 Босс не хочет обсуждать проекты после %d:00" % cutoff,
-			"Приходите завтра утром.",
+			tr("PROJ_SEL_TIME_TITLE") % cutoff,
+			tr("PROJ_SEL_TIME_HINT"),
 			Color(0.7, 0.2, 0.2, 1)
 		)
 		_cards_container.add_child(time_bar)
@@ -229,7 +229,7 @@ func _rebuild_cards():
 
 	if not has_any:
 		var empty_lbl = Label.new()
-		empty_lbl.text = "Все проекты на этой неделе выбраны!"
+		empty_lbl.text = tr("PROJ_SEL_WEEK_DONE")
 		empty_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(empty_lbl, "semibold")
@@ -321,7 +321,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 			client_text = client.emoji + " " + client.client_name + "  —  "
 
 	var name_lbl = Label.new()
-	name_lbl.text = client_text + cat_label + " " + data.title
+	name_lbl.text = client_text + cat_label + " " + tr(data.title)
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
@@ -329,8 +329,8 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	var work_lbl = Label.new()
 	var parts = []
 	for stage in data.stages:
-		parts.append(stage.type + " " + PMData.get_blurred_work(stage.amount))
-	work_lbl.text = "Работы:  " + "    ".join(parts)
+		parts.append(tr("ROLE_SHORT_" + stage.type) + " " + PMData.get_blurred_work(stage.amount))
+	work_lbl.text = tr("PROJ_SEL_WORK_LABEL") + "  " + "    ".join(parts)
 	work_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
@@ -338,7 +338,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	# Метка "Обсуждение занимает N часов" — динамически из PMData
 	var boss_hours = PMData.get_boss_meeting_hours()
 	var time_lbl = Label.new()
-	time_lbl.text = "⏱ Обсуждение с боссом: %d ч." % boss_hours
+	time_lbl.text = tr("PROJ_SEL_BOSS_MEETING") % boss_hours
 	time_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55, 1))
 	time_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(time_lbl, "regular")
@@ -352,7 +352,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	top_hbox.add_child(right_info)
 
 	var budget_lbl = Label.new()
-	var budget_text = "Бюджет " + PMData.get_blurred_budget(data.budget)
+	var budget_text = tr("PROJ_SEL_BUDGET_LABEL") % PMData.get_blurred_budget(data.budget)
 	if data.client_id != "":
 		var client = data.get_client()
 		if client and client.get_budget_bonus_percent() > 0:
@@ -371,11 +371,11 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 
 	var select_btn = Button.new()
 	if is_limit:
-		select_btn.text = "Лимит"
+		select_btn.text = tr("PROJ_SEL_BTN_LIMIT")
 	elif is_late:
-		select_btn.text = "Поздно"
+		select_btn.text = tr("PROJ_SEL_BTN_LATE")
 	else:
-		select_btn.text = "Выбрать"
+		select_btn.text = tr("PROJ_SEL_BTN_SELECT")
 		
 	select_btn.custom_minimum_size = Vector2(180, 40)
 	select_btn.disabled = btn_blocked
@@ -402,13 +402,13 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	card_vbox.add_child(deadlines_hbox)
 
 	var soft_lbl = Label.new()
-	soft_lbl.text = "Софт: %d дн. (штраф -%d%%)" % [data.soft_days_budget, data.soft_deadline_penalty_percent]
+	soft_lbl.text = tr("PROJ_SEL_SOFT_DAYS") % [data.soft_days_budget, data.soft_deadline_penalty_percent]
 	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
 	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	deadlines_hbox.add_child(soft_lbl)
 
 	var hard_lbl = Label.new()
-	hard_lbl.text = "Хард: %d дн. (провал = $0)" % data.hard_days_budget
+	hard_lbl.text = tr("PROJ_SEL_HARD_DAYS") % data.hard_days_budget
 	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	deadlines_hbox.add_child(hard_lbl)
@@ -430,7 +430,8 @@ func _on_select_pressed(index: int):
 	if _is_too_late_for_boss():
 		return
 
-	print("⏱ Начинаем обсуждение проекта: ", selected.title)
+	# Переводим название для лога
+	print("⏱ Начинаем обсуждение проекта: ", tr(selected.title))
 
 	# Убираем проект из списка и закрываем UI
 	current_options[index] = null

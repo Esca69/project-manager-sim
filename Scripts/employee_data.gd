@@ -17,12 +17,12 @@ const MAX_LEVEL = 10
 const MAX_TRAITS = 4
 const TRAIT_ON_LEVELUP_CHANCE = 0.25
 
-# Названия грейдов
+# Названия грейдов (используем ключи для локализации)
 const GRADE_NAMES = {
-	0: "Junior", 1: "Junior", 2: "Junior",
-	3: "Middle", 4: "Middle",
-	5: "Senior", 6: "Senior",
-	7: "Lead", 8: "Lead", 9: "Lead", 10: "Lead",
+	0: "GRADE_JUNIOR", 1: "GRADE_JUNIOR", 2: "GRADE_JUNIOR",
+	3: "GRADE_MIDDLE", 4: "GRADE_MIDDLE",
+	5: "GRADE_SENIOR", 6: "GRADE_SENIOR",
+	7: "GRADE_LEAD", 8: "GRADE_LEAD", 9: "GRADE_LEAD", 10: "GRADE_LEAD",
 }
 
 # Базовые навыки по уровням (без рандома)
@@ -58,7 +58,7 @@ const ON_TIME_XP_BONUS = 0.30
 signal level_up(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String)
 
 func get_grade_name() -> String:
-	return GRADE_NAMES.get(employee_level, "Junior")
+	return tr(GRADE_NAMES.get(employee_level, "GRADE_JUNIOR"))
 
 func get_xp_for_next_level() -> int:
 	if employee_level >= MAX_LEVEL:
@@ -173,30 +173,30 @@ func get_primary_skill_value() -> int:
 @export var traits: Array[String] = []
 @export var trait_text: String = ""
 
-# Полный словарь трейтов
+# Полный словарь трейтов (заменили тексты на ключи из CSV)
 const TRAIT_NAMES = {
 	# Положительные
-	"fast_learner": "🧠 Быстрый ум",
-	"energizer": "⚡ Энерджайзер",
-	"early_bird": "🐦 Ранняя пташка",
-	"cheap_hire": "💰 Скромный",
+	"fast_learner": "TRAIT_FAST_LEARNER",
+	"energizer": "TRAIT_ENERGIZER",
+	"early_bird": "TRAIT_EARLY_BIRD",
+	"cheap_hire": "TRAIT_CHEAP_HIRE",
 	# Отрицательные
-	"toilet_lover": "🚽 Любит покакать",
-	"coffee_lover": "☕ Кофеман",
-	"slowpoke": "🐌 Тормоз",
-	"expensive": "💸 Зазнайка",
+	"toilet_lover": "TRAIT_TOILET_LOVER",
+	"coffee_lover": "TRAIT_COFFEE_LOVER",
+	"slowpoke": "TRAIT_SLOWPOKE",
+	"expensive": "TRAIT_EXPENSIVE",
 }
 
-# Описания для тултипов (что де��ает трейт)
+# Описания для тултипов (заменили тексты на ключи из CSV)
 const TRAIT_DESCRIPTIONS = {
-	"fast_learner": "+20% к скорости работы на этапах проекта",
-	"energizer": "Энергия тратится на 30% медленнее",
-	"early_bird": "Приходит на работу на 30-40 минут раньше",
-	"cheap_hire": "Зарплата на 15% ниже",
-	"toilet_lover": "Сидит в туалете в 2 раза дольше",
-	"coffee_lover": "Кофе-брейк длится в 2 раза дольше",
-	"slowpoke": "-20% к скорости работы на этапах проекта",
-	"expensive": "Зарплата на 20% выше",
+	"fast_learner": "TRAIT_DESC_FAST_LEARNER",
+	"energizer": "TRAIT_DESC_ENERGIZER",
+	"early_bird": "TRAIT_DESC_EARLY_BIRD",
+	"cheap_hire": "TRAIT_DESC_CHEAP_HIRE",
+	"toilet_lover": "TRAIT_DESC_TOILET_LOVER",
+	"coffee_lover": "TRAIT_DESC_COFFEE_LOVER",
+	"slowpoke": "TRAIT_DESC_SLOWPOKE",
+	"expensive": "TRAIT_DESC_EXPENSIVE",
 }
 
 # Какие трейты положительные
@@ -224,14 +224,14 @@ func build_trait_text() -> String:
 	var parts: Array[String] = []
 	for t in traits:
 		if TRAIT_NAMES.has(t):
-			parts.append(TRAIT_NAMES[t])
+			parts.append(tr(TRAIT_NAMES[t]))
 		else:
 			parts.append(t)
 	return ", ".join(parts)
 
 func get_trait_description(trait_id: String) -> String:
 	if TRAIT_DESCRIPTIONS.has(trait_id):
-		return TRAIT_DESCRIPTIONS[trait_id]
+		return tr(TRAIT_DESCRIPTIONS[trait_id])
 	return ""
 
 # --- Модификатор скорости работы (учитывает fast_learner, slowpoke И мотивацию) ---

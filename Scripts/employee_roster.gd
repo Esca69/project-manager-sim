@@ -138,7 +138,7 @@ func _update_live_data():
 
 		if energy_lbl:
 			var energy_pct = int(emp_data.current_energy)
-			energy_lbl.text = "Энергия: %d%%" % energy_pct
+			energy_lbl.text = tr("ROSTER_ENERGY") % energy_pct
 			if energy_pct >= 70:
 				energy_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
 			elif energy_pct >= 40:
@@ -149,10 +149,10 @@ func _update_live_data():
 		if eff_lbl:
 			var eff_val = emp_data.get_efficiency_multiplier()
 			if emp_data.motivation_bonus > 0:
-				eff_lbl.text = "🔥 Эффект.: x%.1f" % eff_val
+				eff_lbl.text = tr("ROSTER_EFFICIENCY_MOTIVATED") % eff_val
 				eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
 			else:
-				eff_lbl.text = "Эффект.: x%.1f" % eff_val
+				eff_lbl.text = tr("ROSTER_EFFICIENCY") % eff_val
 				eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 
 		if status_lbl:
@@ -239,7 +239,8 @@ func _create_card(npc_node) -> PanelContainer:
 	grade_style.border_width_bottom = 2
 
 	var grade_color: Color
-	match grade:
+	# Оставляем английские ключи для свитча, так как логика может зависеть от них
+	match emp.GRADE_NAMES.get(emp.employee_level, "Junior"):
 		"Junior":
 			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
 			grade_style.border_color = Color(0.29, 0.69, 0.31, 1)
@@ -271,7 +272,7 @@ func _create_card(npc_node) -> PanelContainer:
 	grade_panel.add_child(gm)
 
 	var grade_lbl = Label.new()
-	grade_lbl.text = "%s  Ур. %d" % [grade, emp.employee_level]
+	grade_lbl.text = tr("ROSTER_GRADE_LEVEL") % [grade, emp.employee_level]
 	grade_lbl.add_theme_font_size_override("font_size", 12)
 	grade_lbl.add_theme_color_override("font_color", grade_color)
 	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
@@ -289,13 +290,12 @@ func _create_card(npc_node) -> PanelContainer:
 		level_hbox.add_child(xp_vbox)
 
 		var xp_lbl = Label.new()
-		xp_lbl.text = "XP: %d / %d" % [xp_current, xp_needed]
+		xp_lbl.text = tr("UI_XP") % [xp_current, xp_needed]
 		xp_lbl.add_theme_font_size_override("font_size", 11)
 		xp_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		if UITheme: UITheme.apply_font(xp_lbl, "regular")
 		xp_vbox.add_child(xp_lbl)
 
-		# === ИСПРАВЛЕННЫЙ ПРОГРЕСС-БАР НА ОСНОВЕ УЗЛА PROGRESS BAR ===
 		var pbar = ProgressBar.new()
 		pbar.custom_minimum_size = Vector2(120, 8)
 		pbar.min_value = 0
@@ -322,13 +322,12 @@ func _create_card(npc_node) -> PanelContainer:
 		xp_vbox.add_child(pbar)
 	else:
 		var max_lbl = Label.new()
-		max_lbl.text = "✦ MAX"
+		max_lbl.text = tr("ROSTER_MAX_LEVEL")
 		max_lbl.add_theme_font_size_override("font_size", 11)
 		max_lbl.add_theme_color_override("font_color", grade_color)
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")
 		level_hbox.add_child(max_lbl)
 
-	# === ИСПРАВЛЕНИЕ: ТОЛЬКО 1 ПРОФИЛЬНЫЙ НАВЫК ===
 	var skill_text = ""
 	if emp.skill_business_analysis > 0:
 		skill_text = "BA: " + PMData.get_blurred_skill(emp.skill_business_analysis)
@@ -338,14 +337,14 @@ func _create_card(npc_node) -> PanelContainer:
 		skill_text = "QA: " + PMData.get_blurred_skill(emp.skill_qa)
 
 	var skills_lbl = Label.new()
-	skills_lbl.text = "Навык:  " + skill_text
+	skills_lbl.text = tr("ROSTER_SKILL") % skill_text
 	skills_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	skills_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(skills_lbl, "semibold")
 	info_vbox.add_child(skills_lbl)
 
 	var salary_lbl = Label.new()
-	salary_lbl.text = "Зарплата: %d $/мес" % emp.monthly_salary
+	salary_lbl.text = tr("ROSTER_SALARY") % emp.monthly_salary
 	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	salary_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(salary_lbl, "bold")
@@ -388,7 +387,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var energy_lbl = Label.new()
 	var energy_pct = int(emp.current_energy)
-	energy_lbl.text = "Энергия: %d%%" % energy_pct
+	energy_lbl.text = tr("ROSTER_ENERGY") % energy_pct
 	energy_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(energy_lbl, "semibold")
 	if energy_pct >= 70:
@@ -403,10 +402,10 @@ func _create_card(npc_node) -> PanelContainer:
 	var eff_lbl = Label.new()
 	var eff_val = emp.get_efficiency_multiplier()
 	if emp.motivation_bonus > 0:
-		eff_lbl.text = "🔥 Эффект.: x%.1f" % eff_val
+		eff_lbl.text = tr("ROSTER_EFFICIENCY_MOTIVATED") % eff_val
 		eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
 	else:
-		eff_lbl.text = "Эффект.: x%.1f" % eff_val
+		eff_lbl.text = tr("ROSTER_EFFICIENCY") % eff_val
 		eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	eff_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(eff_lbl, "regular")
@@ -418,7 +417,7 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(spacer)
 
 	var fire_btn = Button.new()
-	fire_btn.text = "Уволить"
+	fire_btn.text = tr("ROSTER_FIRE_BTN")
 	fire_btn.custom_minimum_size = Vector2(180, 40)
 	fire_btn.focus_mode = Control.FOCUS_NONE
 	fire_btn.add_theme_stylebox_override("normal", fire_btn_style)
@@ -445,7 +444,7 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 
 	var name_text = EmployeeData.TRAIT_NAMES.get(trait_id, trait_id)
 	var lbl = Label.new()
-	lbl.text = name_text
+	lbl.text = tr(name_text)
 	lbl.add_theme_color_override("font_color", color)
 	lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(lbl, "regular")
@@ -531,7 +530,7 @@ func _create_hidden_trait() -> HBoxContainer:
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip("Неизвестное качество сотрудника.\nИзучите навык «Чтение людей» в дереве навыков PM.", gray_color)
+		var tp = TraitUIHelper._create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
 		parent_ref.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
@@ -594,19 +593,19 @@ func _get_status_text(npc_node) -> String:
 		return "—"
 	var state = npc_node.current_state
 	match state:
-		0: return "💤 Простаивает"
-		1: return "🚶 Идёт к столу"
+		0: return tr("ROSTER_STATUS_IDLE")
+		1: return tr("ROSTER_STATUS_MOVING")
 		2:
 			var proj_name = _get_working_project_name(npc_node.data)
-			return "🔧 Работает (" + proj_name + ")"
-		3: return "🏠 Идёт домой"
-		4: return "🏠 Дома"
-		5: return "☕ Идёт за кофе"
-		6: return "☕ Кофе-брейк"
-		7: return "🚽 Идёт в туалет"
-		8: return "🚽 В туалете"
-		9: return "🚶 Слоняется"
-		10: return "🚶 Стоит, думает"
+			return tr("ROSTER_STATUS_WORKING") % proj_name
+		3: return tr("ROSTER_STATUS_GOING_HOME")
+		4: return tr("ROSTER_STATUS_HOME")
+		5: return tr("ROSTER_STATUS_GOING_COFFEE")
+		6: return tr("ROSTER_STATUS_COFFEE_BREAK")
+		7: return tr("ROSTER_STATUS_GOING_TOILET")
+		8: return tr("ROSTER_STATUS_TOILET_BREAK")
+		9: return tr("ROSTER_STATUS_WANDERING")
+		10: return tr("ROSTER_STATUS_THINKING")
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
@@ -630,7 +629,8 @@ func _get_working_project_name(emp_data: EmployeeData) -> String:
 				continue
 			for worker in stage.workers:
 				if worker == emp_data:
-					return project.title
+					# Добавлен tr, чтобы название проекта переводилось
+					return tr(project.title)
 	return "?"
 
 func _find_npc_node(emp_data: EmployeeData):
@@ -645,13 +645,13 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 
 	var projects_list = _get_assigned_projects(emp_data)
 
-	var text = "Уволить " + emp_data.employee_name + "?"
+	var text = tr("ROSTER_FIRE_CONFIRM_NAME") % emp_data.employee_name
 	if projects_list.size() > 0:
 		var proj_names = []
 		for p in projects_list:
-			proj_names.append(p.title)
-		text += "\n\n⚠️ Этот сотрудник назначен на проекты:\n" + ", ".join(proj_names)
-		text += "\n\nОн будет снят со всех этапов!"
+			proj_names.append(tr(p.title))
+		text += "\n\n" + tr("ROSTER_FIRE_WARN_PROJECTS") + "\n" + ", ".join(proj_names)
+		text += "\n\n" + tr("ROSTER_FIRE_WARN_STAGES")
 
 	_confirm_label.text = text
 	_dialog_layer.visible = true
@@ -762,7 +762,7 @@ func _build_confirm_dialog():
 	dialog_margin.add_child(vbox)
 
 	var title_lbl = Label.new()
-	title_lbl.text = "⚠️ Подтверждение увольнения"
+	title_lbl.text = tr("ROSTER_FIRE_TITLE")
 	title_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
 	title_lbl.add_theme_font_size_override("font_size", 18)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -783,7 +783,7 @@ func _build_confirm_dialog():
 	vbox.add_child(btn_hbox)
 
 	var cancel_btn = Button.new()
-	cancel_btn.text = "Отмена"
+	cancel_btn.text = tr("UI_CANCEL")
 	cancel_btn.custom_minimum_size = Vector2(180, 40)
 	cancel_btn.focus_mode = Control.FOCUS_NONE
 	var cancel_style = StyleBoxFlat.new()
@@ -804,7 +804,7 @@ func _build_confirm_dialog():
 	btn_hbox.add_child(cancel_btn)
 
 	var confirm_btn = Button.new()
-	confirm_btn.text = "Уволить"
+	confirm_btn.text = tr("ROSTER_FIRE_BTN")
 	confirm_btn.custom_minimum_size = Vector2(180, 40)
 	confirm_btn.focus_mode = Control.FOCUS_NONE
 	confirm_btn.add_theme_stylebox_override("normal", fire_btn_hover_style)

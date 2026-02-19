@@ -12,11 +12,11 @@ const COLOR_ORANGE = Color(0.9, 0.4, 0.1, 1)
 
 # === РАЗМЕРЫ ===
 const NODE_SIZE = Vector2(180, 80)
-const NODE_H_GAP = 30         # Горизонтальный отступ между нодами в цепочке
-const ROW_V_GAP = 20          # Вертикальный отступ между рядами (цепочками)
-const CATEGORY_GAP = 30       # Отступ между категориями
-const LEFT_MARGIN = 40        # Отступ слева
-const TOP_MARGIN = 20         # Отступ сверху
+const NODE_H_GAP = 30          # Горизонтальный отступ между нодами в цепочке
+const ROW_V_GAP = 20           # Вертикальный отступ между рядами (цепочками)
+const CATEGORY_GAP = 30        # Отступ между категориями
+const LEFT_MARGIN = 40         # Отступ слева
+const TOP_MARGIN = 20          # Отступ сверху
 
 # === НОДЫ ===
 @onready var close_btn = find_child("CloseButton", true, false)
@@ -33,25 +33,29 @@ var _initialized: bool = false
 const CATEGORIES = [
 	{
 		"id": "projects",
-		"label": "📋 ПРОЕКТЫ",
+		"label": "SKILL_CATEGORY_PROJECTS",
+		"emoji": "📋",
 		"color": COLOR_BLUE,
 		"branches": ["estimate_work", "estimate_budget", "project_limit", "boss_meeting_speed"],
 	},
 	{
 		"id": "people",
-		"label": "👥 ЛЮДИ",
+		"label": "SKILL_CATEGORY_PEOPLE",
+		"emoji": "👥",
 		"color": COLOR_BLUE,
 		"branches": ["read_traits", "read_skills", "candidate_count", "hr_search_speed"],
 	},
 	{
 		"id": "analytics",
-		"label": "📊 АНАЛИТИКА",
+		"label": "SKILL_CATEGORY_ANALYTICS",
+		"emoji": "📊",
 		"color": COLOR_TEAL,
 		"branches": ["report_expenses", "report_projects", "report_productivity"],
 	},
 	{
 		"id": "active",
-		"label": "⚡ АКТИВНЫЕ",
+		"label": "SKILL_CATEGORY_ACTIVE",
+		"emoji": "⚡",
 		"color": COLOR_ORANGE,
 		"branches": ["motivate", "no_toilet"],
 	},
@@ -108,6 +112,16 @@ func _build_ui():
 
 	var header = main_vbox.get_node_or_null("Header")
 	if header:
+		# --- ИСПРАВЛЕНИЕ: Переводим заголовок окна ---
+		var title_lbl = header.get_node_or_null("TitleLabel")
+		if not title_lbl:
+			title_lbl = header.find_child("TitleLabel", true, false)
+		
+		if title_lbl:
+			title_lbl.text = tr("TAB_PM_SKILLS")
+			if UITheme: UITheme.apply_font(title_lbl, "bold")
+		# -------------------------------------------
+
 		var header_margin = header.get_node_or_null("MarginContainer")
 		if not header_margin:
 			header_margin = header
@@ -162,11 +176,11 @@ func _update_header(_new_xp = 0, _new_sp = 0):
 	if _xp_label:
 		var next_threshold = _get_next_threshold()
 		if next_threshold > 0:
-			_xp_label.text = "XP: %d / %d" % [PMData.xp, next_threshold]
+			_xp_label.text = tr("UI_XP") % [PMData.xp, next_threshold]
 		else:
-			_xp_label.text = "XP: %d (MAX)" % PMData.xp
+			_xp_label.text = tr("UI_XP_MAX") % PMData.xp
 	if _sp_label:
-		_sp_label.text = "🧠 Очков навыков: %d" % PMData.skill_points
+		_sp_label.text = "🧠 " + tr("UI_SKILL_POINTS") % PMData.skill_points
 
 func _get_next_threshold() -> int:
 	if PMData == null:
@@ -195,12 +209,14 @@ func _rebuild_tree():
 	for cat_data in CATEGORIES:
 		var cat_id = cat_data["id"]
 		var cat_label = cat_data["label"]
+		var cat_emoji = cat_data["emoji"]
 		var cat_color = cat_data["color"]
 		var cat_branches = cat_data["branches"]
 
 		# --- Заголовок категории ---
 		var cat_lbl = Label.new()
-		cat_lbl.text = cat_label
+		# Добавляем эмодзи и переводим название
+		cat_lbl.text = cat_emoji + " " + tr(cat_label).to_upper()
 		cat_lbl.add_theme_font_size_override("font_size", 18)
 		cat_lbl.add_theme_color_override("font_color", Color(cat_color, 0.6))
 		if UITheme: UITheme.apply_font(cat_lbl, "bold")
@@ -347,7 +363,8 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 	margin.add_child(vbox)
 
 	var title_lbl = Label.new()
-	title_lbl.text = skill["name"]
+	# Названия навыков в PMData уже являются ключами
+	title_lbl.text = tr(skill["name"])
 	title_lbl.add_theme_font_size_override("font_size", 13)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
@@ -364,7 +381,7 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 
 	if not is_unlocked:
 		var cost_lbl = Label.new()
-		cost_lbl.text = "🧠 " + str(skill["cost"]) + " очк."
+		cost_lbl.text = tr("UI_SKILL_COST_VAL") % skill["cost"]
 		cost_lbl.add_theme_font_size_override("font_size", 11)
 		cost_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		cost_lbl.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4, 1))
@@ -373,7 +390,7 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 
 	if can_unlock:
 		var btn = Button.new()
-		btn.text = "Изучить"
+		btn.text = tr("UI_SKILL_UNLOCK_BTN")
 		btn.custom_minimum_size = Vector2(120, 28)
 		btn.focus_mode = Control.FOCUS_NONE
 
@@ -491,7 +508,8 @@ func _show_tooltip(skill_id: String, anchor: Control):
 	_tooltip_panel.add_child(margin)
 
 	var lbl = Label.new()
-	lbl.text = skill["description"]
+	# Описания навыков в PMData тоже являются ключами
+	lbl.text = tr(skill["description"])
 	lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
 	lbl.add_theme_font_size_override("font_size", 13)
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

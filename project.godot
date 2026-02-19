@@ -87,7 +87,7 @@ no_toilet={
 [internationalization]
 
 locale/translations=PackedStringArray("res://Localization/translations.en.translation", "res://Localization/translations.ru.translation")
-locale/test="en"
+locale/test="ru"
 
 [rendering]
 

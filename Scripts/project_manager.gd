@@ -11,10 +11,12 @@ func _ready():
 
 func add_project(proj: ProjectData):
 	if count_active_projects() >= PMData.get_max_projects():
-		print("⚠ Максимум активных проектов достигнут! (", PMData.get_max_projects(), ")")
+		# Используем tr() для сообщения в консоли (по желанию можно добавить в CSV)
+		print(tr("LOG_MAX_PROJECTS") % PMData.get_max_projects())
 		return false
 	active_projects.append(proj)
-	print("📋 Проект добавлен: ", proj.title, " (всего: ", active_projects.size(), ")")
+	# Переводим название проекта при выводе в лог
+	print(tr("LOG_PROJECT_ADDED") % [tr(proj.title), active_projects.size()])
 	return true
 
 func can_take_more() -> bool:
@@ -49,7 +51,7 @@ func _physics_process(delta):
 
 		project.elapsed_days = now - project.start_global_time
 
-		# Хард-дедлайн: наступает когда day >= deadline_day (а не >)
+		# Хард-дедлайн: наступает когда day >= deadline_day
 		if GameTime.day >= project.deadline_day:
 			_fail_project(project)
 			continue
@@ -96,8 +98,6 @@ func _physics_process(delta):
 
 				# === НАЧИСЛЕНИЕ XP СОТРУДНИКАМ ===
 				_award_stage_xp(active_stage, project)
-
-				# Фиксируем имена исполнителей на завершённом этапе
 				_freeze_stage_workers(active_stage)
 		else:
 			_finish_project(project)
@@ -111,7 +111,8 @@ func _award_stage_xp(stage: Dictionary, project: ProjectData):
 	for worker_data in stage.workers:
 		if worker_data is EmployeeData:
 			var result = worker_data.add_employee_xp(base_xp)
-			print("📈 %s получил %d XP за этап %s" % [worker_data.employee_name, base_xp, stage.type])
+			# Локализованный лог опыта
+			print(tr("LOG_XP_GAIN") % [worker_data.employee_name, base_xp, tr("STAGE_" + stage.type)])
 			if result["leveled_up"]:
 				emit_signal("employee_leveled_up", worker_data, result["new_level"], result["skill_gain"], result["new_trait"])
 
@@ -140,7 +141,7 @@ func _freeze_stage_workers(stage: Dictionary):
 func _fail_project(project: ProjectData):
 	if project.state == ProjectData.State.FAILED:
 		return
-	print("❌ ПРОЕКТ ПРОВАЛЕН (хард-дедлайн): ", project.title)
+	print(tr("LOG_PROJECT_FAILED") % tr(project.title))
 	project.state = ProjectData.State.FAILED
 	for stage in project.stages:
 		_freeze_stage_workers(stage)
@@ -150,6 +151,7 @@ func _fail_project(project: ProjectData):
 	var client = project.get_client()
 	if client:
 		client.record_project_failed()
+		# Вывод через get_display_name (там уже есть tr())
 		print("💔 %s: лояльность %d (провал проекта)" % [client.get_display_name(), client.loyalty])
 
 	emit_signal("project_failed", project)
@@ -160,9 +162,10 @@ func _finish_project(project: ProjectData):
 	var payout = project.get_final_payout(GameTime.day)
 	if payout < project.budget:
 		var penalty = project.budget - payout
-		print("⚠️ ПРОЕКТ ЗАВЕРШЁН С ПРОСРОЧКОЙ: ", project.title, " | Штраф: -$", penalty, " | Выплата: $", payout)
+		print(tr("LOG_PROJECT_FINISHED_LATE") % [tr(project.title), penalty, payout])
 	else:
-		print("🎉 ПРОЕКТ ЗАВЕРШЁН ВОВРЕМЯ: ", project.title, " | Выплата: $", payout)
+		print(tr("LOG_PROJECT_FINISHED_ON_TIME") % [tr(project.title), payout])
+	
 	project.state = ProjectData.State.FINISHED
 	for stage in project.stages:
 		if stage.get("is_completed", false) and not stage.has("completed_worker_names"):
@@ -182,7 +185,6 @@ func _finish_project(project: ProjectData):
 
 	# Бонус XP за вовремя
 	_award_on_time_bonus(project)
-
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):

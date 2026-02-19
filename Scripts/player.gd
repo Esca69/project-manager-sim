@@ -142,7 +142,7 @@ func _create_discuss_bar():
 	_discuss_bar_container.add_child(vbox)
 
 	_discuss_label = Label.new()
-	_discuss_label.text = "Обсуждение"
+	_discuss_label.text = tr("PLAYER_DISCUSS_TITLE")
 	_discuss_label.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	_discuss_label.add_theme_font_size_override("font_size", 11)
 	_discuss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -328,12 +328,12 @@ func interact():
 			body.interact()
 			return
 
-# === ПРОГРЕСС-БА�� ОБСУЖДЕНИЯ: ПУБЛИЧНЫЙ API ДЛЯ HUD ===
+# === ПРОГРЕСС-БАР ОБСУЖДЕНИЯ: ПУБЛИЧНЫЙ API ДЛЯ HUD ===
 
 func show_discuss_bar(total_minutes: float):
 	_discuss_progress_bar.max_value = total_minutes
 	_discuss_progress_bar.value = 0
-	_discuss_label.text = "Обсуждение"
+	_discuss_label.text = tr("PLAYER_DISCUSS_TITLE")
 	var hours = int(total_minutes) / 60
 	var mins = int(total_minutes) % 60
 	_discuss_timer_label.text = "🤝 %d:%02d" % [hours, mins]
@@ -474,7 +474,7 @@ func _activate_no_toilet():
 
 	var hud = get_tree().get_first_node_in_group("ui")
 	if hud and hud.has_method("is_pm_busy") and hud.is_pm_busy():
-		print("🚽 PM за��ят, нельзя запретить туалет!")
+		print("🚽 PM занят, нельзя запретить туалет!")
 		return
 
 	AudioManager.play_sfx("closedoor")
@@ -592,7 +592,7 @@ func _create_motivate_button():
 	hud.add_child(_motivate_container)
 
 	_motivate_btn = Button.new()
-	_motivate_btn.text = "🔥 Мотивировать [Q]"
+	_motivate_btn.text = tr("SKILL_MOTIVATE_NAME") + " [Q]"
 	_motivate_btn.custom_minimum_size = Vector2(200, 40)
 	_motivate_btn.pressed.connect(_activate_motivate)
 
@@ -647,10 +647,10 @@ func _update_motivate_btn():
 		_motivate_btn.disabled = true
 		var hours = int(_motivate_cooldown_left) / 60
 		var mins = int(_motivate_cooldown_left) % 60
-		_motivate_cooldown_label.text = "⏳ Перезарядка: %d:%02d" % [hours, mins]
+		_motivate_cooldown_label.text = tr("PLAYER_COOLDOWN_FORMAT") % [hours, mins]
 	else:
 		_motivate_btn.disabled = false
-		_motivate_cooldown_label.text = "Готово!"
+		_motivate_cooldown_label.text = tr("PLAYER_SKILL_READY")
 
 # === КНОПКА ЗАПРЕТА ТУАЛЕТА НА HUD ===
 func _create_no_toilet_button():
@@ -665,7 +665,7 @@ func _create_no_toilet_button():
 	hud.add_child(_no_toilet_container)
 
 	_no_toilet_btn = Button.new()
-	_no_toilet_btn.text = "🚽 Запретить с*ать [R]"
+	_no_toilet_btn.text = tr("SKILL_NO_TOILET_NAME") + " [R]"
 	_no_toilet_btn.custom_minimum_size = Vector2(200, 40)
 	_no_toilet_btn.pressed.connect(_activate_no_toilet)
 
@@ -720,7 +720,7 @@ func _update_no_toilet_btn():
 		_no_toilet_btn.disabled = true
 		var hours = int(_no_toilet_cooldown_left) / 60
 		var mins = int(_no_toilet_cooldown_left) % 60
-		_no_toilet_cooldown_label.text = "⏳ Перезарядка: %d:%02d" % [hours, mins]
+		_no_toilet_cooldown_label.text = tr("PLAYER_COOLDOWN_FORMAT") % [hours, mins]
 	else:
 		_no_toilet_btn.disabled = false
-		_no_toilet_cooldown_label.text = "Готово!"
+		_no_toilet_cooldown_label.text = tr("PLAYER_SKILL_READY")

@@ -73,7 +73,7 @@ func _build_ui():
 	main_vbox.add_child(header_panel)
 
 	var title_label = Label.new()
-	title_label.text = "📊 Итоги месяца"
+	title_label.text = tr("BOSS_REPORT_TITLE")
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -111,7 +111,7 @@ func open(report: Dictionary):
 
 	if was_impossible:
 		var warn = Label.new()
-		warn.text = "(Это был месяц с повышенными требованиями)"
+		warn.text = tr("BOSS_REPORT_IMPOSSIBLE")
 		warn.add_theme_font_size_override("font_size", 12)
 		warn.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -181,7 +181,7 @@ func open(report: Dictionary):
 	total_row.add_theme_constant_override("separation", 10)
 
 	var total_lbl = Label.new()
-	total_lbl.text = "Изменение доверия:"
+	total_lbl.text = tr("BOSS_REPORT_TRUST_CHANGE")
 	total_lbl.add_theme_font_size_override("font_size", 16)
 	total_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if UITheme: UITheme.apply_font(total_lbl, "bold")
@@ -203,7 +203,7 @@ func open(report: Dictionary):
 
 	# Текущее доверие
 	var current_trust = Label.new()
-	current_trust.text = "Текущее доверие: %d  %s" % [BossManager.boss_trust, BossManager.get_trust_label()]
+	current_trust.text = tr("BOSS_REPORT_CURRENT_TRUST") % [BossManager.boss_trust, BossManager.get_trust_label()]
 	current_trust.add_theme_font_size_override("font_size", 14)
 	current_trust.add_theme_color_override("font_color", BossManager.get_trust_color())
 	current_trust.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -222,7 +222,7 @@ func open(report: Dictionary):
 
 	# Кнопка — синяя
 	var close_btn = Button.new()
-	close_btn.text = "Понятно"
+	close_btn.text = tr("BOSS_REPORT_CLOSE")
 	close_btn.custom_minimum_size = Vector2(200, 40)
 	close_btn.focus_mode = Control.FOCUS_NONE
 	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -262,14 +262,14 @@ func _on_close():
 
 func _get_boss_reaction(trust: int, was_impossible: bool) -> String:
 	if was_impossible and trust > 0:
-		return "\"Невероятно! Я не ожидал что ты справишься с такими планами.\""
+		return '"%s"' % tr("BOSS_REACTION_IMPOSSIBLE_WIN")
 	if trust >= 8:
-		return "\"Отличная работа! Так держать.\""
+		return '"%s"' % tr("BOSS_REACTION_GREAT")
 	elif trust >= 4:
-		return "\"Неплохо. Есть над чем работать, но в целом доволен.\""
+		return '"%s"' % tr("BOSS_REACTION_OK")
 	elif trust > 0:
-		return "\"Могло быть и лучше, но хоть что-то сделал.\""
+		return '"%s"' % tr("BOSS_REACTION_MEH")
 	elif trust == 0:
-		return "\"Ничего не выполнено... Я разочарован.\""
+		return '"%s"' % tr("BOSS_REACTION_ZERO")
 	else:
-		return "\"Это провал. Мне придётся подумать о твоём будущем здесь.\""
+		return '"%s"' % tr("BOSS_REACTION_FAIL")

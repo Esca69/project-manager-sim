@@ -20,8 +20,17 @@ const NIGHT_SKIP_DURATION_SECONDS = 3.0
 # --- КАЛЕНДАРЬ ---
 const DAYS_IN_MONTH = 30
 const DAYS_IN_WEEK = 7
-const WEEKDAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
-const WEEKDAY_NAMES_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+
+# Заменили хардкодные массивы на ключи из CSV
+const WEEKDAY_KEYS_SHORT = [
+	"WEEKDAY_SHORT_MON", "WEEKDAY_SHORT_TUE", "WEEKDAY_SHORT_WED", 
+	"WEEKDAY_SHORT_THU", "WEEKDAY_SHORT_FRI", "WEEKDAY_SHORT_SAT", "WEEKDAY_SHORT_SUN"
+]
+
+const WEEKDAY_KEYS_FULL = [
+	"WEEKDAY_FULL_MON", "WEEKDAY_FULL_TUE", "WEEKDAY_FULL_WED", 
+	"WEEKDAY_FULL_THU", "WEEKDAY_FULL_FRI", "WEEKDAY_FULL_SAT", "WEEKDAY_FULL_SUN"
+]
 
 var day = 1
 var hour = 8 
@@ -112,11 +121,15 @@ func get_weekday_index(d: int = -1) -> int:
 	if d == -1: d = day
 	return (d - 1) % DAYS_IN_WEEK
 
+# Возвращает переведенный короткий день недели (Пн, Вт...)
 func get_weekday_name(d: int = -1) -> String:
-	return WEEKDAY_NAMES[get_weekday_index(d)]
+	var idx = get_weekday_index(d)
+	return tr(WEEKDAY_KEYS_SHORT[idx])
 
+# Возвращает переведенный полный день недели (Понедельник...)
 func get_weekday_name_full(d: int = -1) -> String:
-	return WEEKDAY_NAMES_FULL[get_weekday_index(d)]
+	var idx = get_weekday_index(d)
+	return tr(WEEKDAY_KEYS_FULL[idx])
 
 func is_weekend(d: int = -1) -> bool:
 	var idx = get_weekday_index(d)
@@ -127,12 +140,12 @@ func get_date_string(d: int = -1) -> String:
 	var m = get_month(d)
 	var dm = get_day_in_month(d)
 	var wd = get_weekday_name(d)
-	return "Мес. %d, День %d (%s)" % [m, dm, wd]
+	return tr("DATE_FORMAT") % [m, dm, wd]
 
 func get_date_short(d: int) -> String:
 	var m = get_month(d)
 	var dm = get_day_in_month(d)
-	return "Мес. %d, День %d" % [m, dm]
+	return tr("DATE_FORMAT_SHORT") % [m, dm]
 
 # === НОЧНАЯ ПРОМОТКА ===
 
