@@ -1,0 +1,235 @@
+id,ru,en
+WEEKDAY_SHORT_MON,Пн,Mon
+WEEKDAY_SHORT_TUE,Вт,Tue
+WEEKDAY_SHORT_WED,Ср,Wed
+WEEKDAY_SHORT_THU,Чт,Thu
+WEEKDAY_SHORT_FRI,Пт,Fri
+WEEKDAY_SHORT_SAT,Сб,Sat
+WEEKDAY_SHORT_SUN,Вс,Sun
+WEEKDAY_FULL_MON,Понедельник,Monday
+WEEKDAY_FULL_TUE,Вторник,Tuesday
+WEEKDAY_FULL_WED,Среда,Wednesday
+WEEKDAY_FULL_THU,Четверг,Thursday
+WEEKDAY_FULL_FRI,Пятница,Friday
+WEEKDAY_FULL_SAT,Суббота,Saturday
+WEEKDAY_FULL_SUN,Воскресенье,Sunday
+DATE_FORMAT,"Мес. %d, День %d (%s)","Mo. %d, Day %d (%s)"
+DATE_FORMAT_SHORT,"Мес. %d, День %d","Mo. %d, Day %d"
+TRAIT_FAST_LEARNER,🧠 Быстрый ум,🧠 Fast Learner
+TRAIT_ENERGIZER,⚡ Энерджайзер,⚡ Energizer
+TRAIT_EARLY_BIRD,🐦 Ранняя пташка,🐦 Early Bird
+TRAIT_CHEAP_HIRE,💰 Скромный,💰 Modest
+TRAIT_TOILET_LOVER,🚽 Любит покакать,🚽 Toilet Lover
+TRAIT_COFFEE_LOVER,☕ Кофеман,☕ Coffee Addict
+TRAIT_SLOWPOKE,🐌 Тормоз,🐌 Slowpoke
+TRAIT_EXPENSIVE,💸 Зазнайка,💸 Pricey
+TRAIT_DESC_FAST_LEARNER,+20% к скорости работы на этапах проекта,+20% work speed on project stages
+TRAIT_DESC_ENERGIZER,Энергия тратится на 30% медленнее,Energy drains 30% slower
+TRAIT_DESC_EARLY_BIRD,Приходит на работу на 30-40 минут раньше,Arrives at work 30-40 minutes earlier
+TRAIT_DESC_CHEAP_HIRE,Зарплата на 15% ��иже,Salary is 15% lower
+TRAIT_DESC_TOILET_LOVER,Сидит в туалете в 2 раза дольше,Spends 2x longer in the toilet
+TRAIT_DESC_COFFEE_LOVER,Кофе-брейк длится в 2 раза дольше,Coffee break lasts 2x longer
+TRAIT_DESC_SLOWPOKE,-20% к скорости работы на этапах проекта,-20% work speed on project stages
+TRAIT_DESC_EXPENSIVE,Зарплата на 20% выше,Salary is 20% higher
+EMPLOYEE_DEFAULT_NAME,Новичок,Rookie
+SKILL_ESTIMATE_WORK_1_NAME,📐 Оценка объёма I,📐 Work Estimate I
+SKILL_ESTIMATE_WORK_1_DESC,"Объём работ по пр��екту показан как вилка ±20% вместо ±40%","Project work scope shown as ±20% range instead of ±40%"
+SKILL_ESTIMATE_WORK_2_NAME,📐 Оценка объёма II,📐 Work Estimate II
+SKILL_ESTIMATE_WORK_2_DESC,"Вы видите точный объём работ по каждому этапу","You see the exact work amount for each stage"
+SKILL_ESTIMATE_BUDGET_1_NAME,💰 Оценка бюджета I,💰 Budget Estimate I
+SKILL_ESTIMATE_BUDGET_1_DESC,"Бюджет проекта показан как вилка ±15% вместо ±35%","Project budget shown as ±15% range instead of ±35%"
+SKILL_ESTIMATE_BUDGET_2_NAME,💰 Оценка бюджета II,💰 Budget Estimate II
+SKILL_ESTIMATE_BUDGET_2_DESC,"Вы видите точный бюджет проекта","You see the exact project budget"
+SKILL_PROJECT_LIMIT_1_NAME,📁 Лимит проектов I,📁 Project Limit I
+SKILL_PROJECT_LIMIT_1_DESC,"Максимум активных проектов увеличен до 3 (было 2)","Max active projects increased to 3 (was 2)"
+SKILL_PROJECT_LIMIT_2_NAME,📁 Лимит проектов II,📁 Project Limit II
+SKILL_PROJECT_LIMIT_2_DESC,"Максимум активных проектов увеличен до 5","Max active projects increased to 5"
+SKILL_BOSS_MEETING_SPEED_1_NAME,⏱ Скорость обсуждения I,⏱ Meeting Speed I
+SKILL_BOSS_MEETING_SPEED_1_DESC,"Обсуждение проекта с боссом занимает 3 часа вместо 4","Boss meeting takes 3 hours instead of 4"
+SKILL_BOSS_MEETING_SPEED_2_NAME,⏱ Скорость обсуждения II,⏱ Meeting Speed II
+SKILL_BOSS_MEETING_SPEED_2_DESC,"Обсуждение проекта с боссом занимает 2 часа","Boss meeting takes 2 hours"
+SKILL_READ_TRAITS_1_NAME,👁 Чтение людей I,👁 Read People I
+SKILL_READ_TRAITS_1_DESC,"При найме вы видите 1 трейт кандидата","You can see 1 trait when hiring"
+SKILL_READ_TRAITS_2_NAME,👁 Чтение людей II,👁 Read People II
+SKILL_READ_TRAITS_2_DESC,"При найме вы видите 2 трейта кандидата","You can see 2 traits when hiring"
+SKILL_READ_TRAITS_3_NAME,👁 Чтение люд��й III,👁 Read People III
+SKILL_READ_TRAITS_3_DESC,"Вы видите все трейты кандидата при найме","You see all candidate traits when hiring"
+SKILL_READ_SKILLS_1_NAME,📊 Оценка кадров I,📊 Skill Assessment I
+SKILL_READ_SKILLS_1_DESC,"Навыки кандидата показаны как «Низкий / Средний / Высокий» вместо полного скрытия","Candidate skills shown as Low / Medium / High instead of hidden"
+SKILL_READ_SKILLS_2_NAME,📊 Оценка кадров II,📊 Skill Assessment II
+SKILL_READ_SKILLS_2_DESC,"Навыки кандидата показаны как диапазон (100–150)","Candidate skills shown as range (100–150)"
+SKILL_READ_SKILLS_3_NAME,📊 Оценка кадров III,📊 Skill Assessment III
+SKILL_READ_SKILLS_3_DESC,"Вы видите точные значения навыков кандидата","You see exact candidate skill values"
+SKILL_CANDIDATE_COUNT_1_NAME,👤 Кандидаты I,👤 Candidates I
+SKILL_CANDIDATE_COUNT_1_DESC,"При поиске HR выдаёт 3 кандидата вместо 2","HR search returns 3 candidates instead of 2"
+SKILL_CANDIDATE_COUNT_2_NAME,👤 Кандидаты II,👤 Candidates II
+SKILL_CANDIDATE_COUNT_2_DESC,"При поиске HR выдаёт 5 кандидатов","HR search returns 5 candidates"
+SKILL_HR_SEARCH_SPEED_1_NAME,🔍 Скорость поиска I,🔍 Search Speed I
+SKILL_HR_SEARCH_SPEED_1_DESC,"Поиск кандидатов занимает 1.5 часа вместо 2","Candidate search takes 1.5 hours instead of 2"
+SKILL_HR_SEARCH_SPEED_2_NAME,🔍 Скорость поиска II,🔍 Search Speed II
+SKILL_HR_SEARCH_SPEED_2_DESC,"Поиск кандидатов занимает 1 час","Candidate search takes 1 hour"
+SKILL_REPORT_EXPENSES_NAME,📋 Учёт расходов,📋 Expense Tracking
+SKILL_REPORT_EXPENSES_DESC,"В дневном отчёте видна детализация затрат: кому выплачена зарплата и сколько","Day report shows expense details: who was paid and how much"
+SKILL_REPORT_PROJECTS_NAME,📋 Аналитика проектов,📋 Project Analytics
+SKILL_REPORT_PROJECTS_DESC,"В дневном отчёте видны этапы проектов, процент прогресса и дни до дедлайнов","Day report shows project stages, progress % and days until deadlines"
+SKILL_REPORT_PRODUCTIVITY_NAME,📋 Оценка продуктивности,📋 Productivity Report
+SKILL_REPORT_PRODUCTIVITY_DESC,"В дневном отчёте видно кто из сотрудников сколько часов работал и сколько очков принёс","Day report shows how many hours each employee worked and points earned"
+SKILL_MOTIVATE_NAME,🔥 Мотивировать,🔥 Motivate
+SKILL_MOTIVATE_DESC,"Активный навык (Q): все сотрудники рядом получают +20% скорости работы на 2 часа. Перезарядка: 4 часа","Active skill (Q): nearby employees get +20% work speed for 2 hours. Cooldown: 4 hours"
+SKILL_NO_TOILET_NAME,🚽 Не сейчас!,🚽 Not Now!
+SKILL_NO_TOILET_DESC,"Активный навык (R): сотрудники рядом не уходят в туалет 4 часа. Перезарядка: 8 часов","Active skill (R): nearby employees won't take toilet breaks for 4 hours. Cooldown: 8 hours"
+SKILL_CATEGORY_PROJECTS,Проекты,Projects
+SKILL_CATEGORY_PEOPLE,Люди,People
+SKILL_CATEGORY_ANALYTICS,Аналитика,Analytics
+SKILL_CATEGORY_ACTIVE,Активные,Active
+TAB_EMPLOYEES,👥 Сотрудники,👥 Employees
+TAB_CLIENTS,🤝 Заказчики,🤝 Clients
+TAB_PM_SKILLS,🧠 Навыки PM,🧠 PM Skills
+TAB_BOSS,🏢 Босс,🏢 Boss
+DAY_SUMMARY_TITLE,Итоги дня,Day Summary
+DAY_SUMMARY_CONTINUE,Продолжить →,Continue →
+DAY_SUMMARY_FINANCE,💰 Финансы,💰 Finances
+DAY_SUMMARY_BALANCE_START,Баланс на начало дня:,Balance at day start:
+DAY_SUMMARY_INCOME,📈 Доходы за день:,📈 Income today:
+DAY_SUMMARY_EXPENSES,📉 Расходы за день:,📉 Expenses today:
+DAY_SUMMARY_SALARIES,Зарплаты:,Salaries:
+DAY_SUMMARY_BALANCE_END,Баланс на конец дня:,Balance at day end:
+DAY_SUMMARY_LOCKED_HINT,"🔒 Изучите навык «%s» в ��ереве навыков PM, чтобы видеть детализацию","🔒 Unlock ""%s"" in the PM skill tree to see details"
+ROSTER_ENERGY,Энергия: %d%%,Energy: %d%%
+ROSTER_EFFICIENCY,Эффект.: x%.1f,Efficiency: x%.1f
+ROSTER_EFFICIENCY_MOTIVATED,🔥 Эффект.: x%.1f,🔥 Efficiency: x%.1f
+ROSTER_FIRE_BTN,Уволить,Fire
+ROSTER_FIRE_CONFIRM,"Вы уверены, что хотите уволить",Are you sure you want to fire
+ROSTER_FIRE_YES,Да,Yes
+ROSTER_FIRE_NO,Нет,No
+STATUS_IDLE,Свободен,Idle
+STATUS_WORKING,Работает,Working
+STATUS_COFFEE,Кофе-брейк ☕,Coffee break ☕
+STATUS_TOILET,В туалете 🚽,In toilet 🚽
+STATUS_WANDERING,Гуляет,Wandering
+STATUS_GOING_HOME,Уходит домой,Going home
+STATUS_HOME,Дома,At home
+STATUS_DISCUSSING,Обсуждение,Discussing
+STATUS_MOVING,Идёт к месту,Moving
+HR_BUSY_DISCUSSING,HR: PM занят обсуждением с боссом.,HR: PM is busy discussing with the boss.
+HR_BUSY_SEARCHING,HR: PM уже ищет кандидатов.,HR: PM is already searching for candidates.
+HR_SEARCH_LABEL,Поиск кандидатов,Searching for candidates
+HR_TOO_LATE,"Слишком поздно — HR не успеет завершить поиск до конца дня.","Too late — HR won't finish the search before end of day."
+END_DAY_BTN,Завершить день,End Day
+CLIENT_NOVOTECH,НовоТех,NovoTech
+CLIENT_NOVOTECH_DESC,"IT-стартап. Всегда хочет быстро и дёшево.","IT startup. Always wants it fast and cheap."
+CLIENT_EDAPLUS,ЕдаПлюс,FoodPlus
+CLIENT_EDAPLUS_DESC,"Сеть доставки еды. Много мелких задач.","Food delivery chain. Lots of small tasks."
+CLIENT_FINANSGROUP,ФинансГрупп,FinanceGroup
+CLIENT_FINANSGROUP_DESC,"Банк. Серьёзные проекты, хорошие бюджеты.","Bank. Serious projects, good budgets."
+CLIENT_MEDIALINE,МедиаЛайн,MediaLine
+CLIENT_MEDIALINE_DESC,"Рекламное агентство. Креативные задачи.","Ad agency. Creative tasks."
+CLIENT_STROYMASTER,СтройМастер,BuildMaster
+CLIENT_STROYMASTER_DESC,"Строительная компания. Стабильный поток.","Construction company. Steady workflow."
+LOYALTY_MICRO_PROJECTS,Micro проекты,Micro projects
+LOYALTY_BUDGET_5,+5% к бюджету,+5% to budget
+LOYALTY_SIMPLE_PROJECTS,Simple проекты,Simple projects
+LOYALTY_BUDGET_10,+10% к бюджету,+10% to budget
+LOYALTY_EASY_PROJECTS,Easy проекты,Easy projects
+LOYALTY_BUDGET_15,+15% к бюджету,+15% to budget
+LOYALTY_BUDGET_20,+20% к бюджету,+20% to budget
+PROJ_FIX_BUG,Фикс б��га на сайте,Fix website bug
+PROJ_TEST_FORM,Протестировать форму,Test form
+PROJ_WRITE_TZ,Составить ТЗ на лендинг,Write landing page spec
+PROJ_FIX_LAYOUT,Поправить вёрстку письма,Fix email layout
+PROJ_TEST_AUTH,Тестирование авторизации,Test authentication
+PROJ_COMPETITOR_ANALYSIS,Анализ конкурентов,Competitor analysis
+PROJ_FAQ,Описать и сделать FAQ,Describe and build FAQ
+PROJ_API,Написать и протестить API,Write and test API
+PROJ_FORM_DESC,Описание + правка формы,Description + form fix
+PROJ_FILTERS,Доработка + тест фильтров,Improve + test filters
+PROJ_MODULE_TEST,ТЗ + тестирование модуля,Spec + module testing
+PROJ_REPORT,Аналитика + разработка отчёта,Analytics + report development
+PROJ_LANDING,Лендинг пекарни,Bakery landing page
+PROJ_SITE_CARD,Сайт-визитка,Business card website
+PROJ_CRM_TAXI,CRM для такси,CRM for taxi
+PROJ_AUTH_MODULE,Модуль авторизации,Auth module
+PROJ_SHOP,Интернет-магазин,Online store
+PROJ_ORDERS,Портал заказов,Orders portal
+PROJ_CHAT,Чат поддержки,Support chat
+PROJ_DASHBOARD,Дашборд статистики,Statistics dashboard
+QUEST_PROFIT,Заработать ≥ $%d прибыли,Earn ≥ $%d profit
+QUEST_PROJECTS,Завершить ≥ %d проектов,Complete ≥ %d projects
+QUEST_HIRES,Нанять ≥ %d сотрудников,Hire ≥ %d employees
+QUEST_LOYALTY,Суммарная лояльность клиентов ≥ %d,Total client loyalty ≥ %d
+QUEST_NO_FAILS,Ни одного проваленного проекта,No failed projects
+QUEST_MAX_EXPENSES,Расходы на зарплаты ≤ $%d,Salary expenses ≤ $%d
+QUEST_PM_LEVEL,PM достигает уровня ≥ %d,PM reaches level ≥ %d
+QUEST_EMPLOYEE_LEVELUPS,Сотрудники повысились ≥ %d раз,Employees leveled up ≥ %d times
+BOSS_TITLE,🏢 Босс,🏢 Boss
+BOSS_TRUST,Доверие: %d 🤝  %s,Trust: %d 🤝  %s
+BOSS_NO_QUEST,"Босс пока не дал задание.\nПодойдите к столу босса в начале месяца.","No assignment yet.\nVisit the boss's desk at the start of the month."
+BOSS_QUEST_MONTH,📋  Задание месяца %d:,📋  Month %d assignment:
+BOSS_QUEST_TITLE,🏢 Новое задание от босса,🏢 New assignment from the boss
+BOSS_TRUST_LABEL,Доверие босса: %d 🤝  (%s),Boss trust: %d 🤝  (%s)
+BOSS_IMPOSSIBLE_WARN,⚠️ Босс в этом месяце особенно требователен...,⚠️ The boss is extra demanding this month...
+BOSS_GOALS_TITLE,📋 Цели на месяц %d:,📋 Goals for month %d:
+BOSS_ACCEPT_BTN,✅ Понял босс!,✅ Got it boss!
+BOSS_SPEECH_1,"Значит так, у нас планы на этот месяц. Покажи что ты можешь.","So, we have plans this month. Show me what you can do."
+BOSS_SPEECH_2,"Руководство ждёт результатов. Давай не подведём.","Management expects results. Let's not disappoint."
+BOSS_SPEECH_3,"Новый месяц — новые цели. Я рассчитываю на тебя.","New month — new goals. I'm counting on you."
+BOSS_SPEECH_4,"Ладно, слушай внимательно. Вот что нужно сделать.","Alright, listen carefully. Here's what needs to be done."
+BOSS_SPEECH_IMPOSSIBLE_1,"Этот месяц будет непростым. Руководство поставило амбициозные цели...","This month won't be easy. Management set ambitious goals..."
+BOSS_SPEECH_IMPOSSIBLE_2,"Не буду врать, задача серьёзная. Но я верю в тебя.","I won't lie, it's a tough one. But I believe in you."
+BOSS_SPEECH_IMPOSSIBLE_3,"Сверху пришли... интересные ожидания. Сделай что сможешь.","Interesting expectations came from above. Do what you can."
+BOSS_REPORT_TITLE,📊 Итоги месяца,📊 Monthly Results
+BOSS_REPORT_IMPOSSIBLE,(Это был месяц с повышенными требованиями),(This was a month with elevated demands)
+BOSS_REPORT_TRUST_CHANGE,Изменение доверия:,Trust change:
+BOSS_REPORT_CURRENT_TRUST,Текущее доверие: %d  %s,Current trust: %d  %s
+BOSS_REPORT_CLOSE,Понятно,Got it
+BOSS_REACTION_IMPOSSIBLE_WIN,"Невероятно! Я не ожидал что ты справишься с такими планами.","Incredible! I didn't expect you to handle such plans."
+BOSS_REACTION_GREAT,"Отличная работа! Так держать.","Excellent work! Keep it up."
+BOSS_REACTION_OK,"Неплохо. Есть над чем работать, но в целом доволен.","Not bad. Room for improvement, but overall satisfied."
+BOSS_REACTION_MEH,"Могло быть и лучше, но хоть что-то сделал.","Could've been better, but at least something got done."
+BOSS_REACTION_ZERO,"Ничего не выполнено... Я разочарован.","Nothing was completed... I'm disappointed."
+BOSS_REACTION_FAIL,"Это провал. Мне придётся подумать о твоём будущем здесь.","This is a failure. I'll have to think about your future here."
+HR_ROLE_TITLE,Выберите роль для поиска,Select role to search
+HR_ROLE_BA,Business Analyst,Business Analyst
+HR_ROLE_DEV,Backend Developer,Backend Developer
+HR_ROLE_QA,QA Engineer,QA Engineer
+NAME_OLEG,Олег,Oleg
+NAME_MARIA,Мария,Maria
+NAME_ALEXEY,Алексей,Alexey
+NAME_DARYA,Дарья,Darya
+NAME_IVAN,Иван,Ivan
+NAME_ELENA,Елена,Elena
+NAME_MAX,Макс,Max
+NAME_SERGEY,Сергей,Sergey
+NAME_ANNA,Анна,Anna
+SURNAME_PETROV,Петров(а),Petrov
+SURNAME_SMIRNOV,Смирнов(а),Smirnov
+SURNAME_KUZNETSOV,Кузнецов(а),Kuznetsov
+SURNAME_POPOV,Попов(а),Popov
+SURNAME_VASILIEV,Васильев(а),Vasiliev
+SURNAME_SOKOLOV,Соколов(а),Sokolov
+SURNAME_MIKHAILOV,Михайлов(а),Mikhailov
+UI_CLOSE,Закрыть,Close
+UI_SALARY,$ %d,$ %d
+UI_LEVEL,Уровень %d,Level %d
+UI_XP,XP: %d / %d,XP: %d / %d
+UI_PM_LEVEL,PM Уровень %d,PM Level %d
+UI_SKILL_POINTS,Очки навыков: %d,Skill points: %d
+UI_SKILL_LOCKED,🔒 Заблокировано,🔒 Locked
+UI_SKILL_UNLOCKED,✅ Изучено,✅ Unlocked
+UI_SKILL_COST,Стоимость: %d,Cost: %d
+UI_SKILL_REQUIRES,Требуется: %s,Requires: %s
+PROJECT_STATE_DRAFTING,Черновик,Draft
+PROJECT_STATE_IN_PROGRESS,В работе,In Progress
+PROJECT_STATE_FINISHED,Завершён,Completed
+PROJECT_STATE_FAILED,Провален,Failed
+PROJECT_BUDGET,Бюджет: $%d,Budget: $%d
+PROJECT_DEADLINE_SOFT,Софт-дедлайн: %s,Soft deadline: %s
+PROJECT_DEADLINE_HARD,Хард-дедлайн: %s,Hard deadline: %s
+PROJECT_PENALTY,Штраф за просрочку: %d%%,Late penalty: %d%%
+PROJECT_STAGE,Этап %d: %s,Stage %d: %s
+PROJECT_ASSIGN_WORKER,Назначить сотр��дника,Assign employee
+PROJECT_REMOVE_WORKER,Убрать,Remove
+PROJECT_TAKE,Взять проект,Take project
+PROJECT_CLIENT,Заказчик: %s,Client: %s
+HIRE_BTN,Нанять,Hire
+HIRE_HIDDEN_TRAIT,??? Неизвестный трейт,??? Unknown trait

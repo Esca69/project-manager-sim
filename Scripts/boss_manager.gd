@@ -118,7 +118,7 @@ func generate_quest_for_month(month: int) -> Dictionary:
 	objectives.append({
 		"id": "profit",
 		"type": "profit",
-		"label": "Заработать ≥ $%d прибыли" % profit_target,
+		"label": tr("QUEST_PROFIT") % profit_target,
 		"target": profit_target,
 		"trust_reward": profit_trust,
 	})
