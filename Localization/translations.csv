@@ -407,3 +407,18 @@ LOG_WARN_ALREADY_AT_DESK,Этот сотрудник уже сидит за эт
 LOG_EMP_RELEASED,🔄 %s освобождён от текущего стола,🔄 %s released from current desk
 LOG_EMP_MOVED_DESK,🔄 %s снят со стола: %s,🔄 %s removed from desk: %s
 LOG_EMP_ORDER_DESK,✅ %s получил приказ идти к столу!,✅ %s ordered to move to desk!
+MENU_SUBTITLE,Симулятор офисного выживания,Office Survival Simulator
+MENU_CONTINUE,Продолжить,Continue
+MENU_NEW_GAME,Новая игра,New Game
+MENU_SETTINGS,Настройки,Settings
+MENU_QUIT,Выход,Quit
+MENU_LOADING,Загрузка...,Loading...
+MENU_LANGUAGE,Язык,Language
+MENU_MUSIC_VOLUME,Музыка,Music
+MENU_SFX_VOLUME,Эффекты,SFX
+MENU_BACK,Назад,Back
+PAUSE_TITLE,Пауза,Pause
+PAUSE_RESUME,Продолжить,Resume
+PAUSE_SAVE,Сохранить,Save Game
+PAUSE_SAVED,Сохранено!,Saved!
+PAUSE_MAIN_MENU,В главное меню,Main Menu

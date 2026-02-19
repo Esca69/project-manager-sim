@@ -54,6 +54,9 @@ const HR_CUTOFF_HOUR: int = 16
 # === ЭКРАН ВЫБОРА РОЛИ (HR) ===
 var _hr_role_screen: Control
 
+# >>> ДОБАВЛЕНО: Пауз-меню (Escape)
+var _pause_menu: CanvasLayer
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -152,6 +155,12 @@ func _ready():
 	# Тик времени для обсуждения и поиска
 	GameTime.time_tick.connect(_on_discuss_time_tick)
 	GameTime.time_tick.connect(_on_search_time_tick)
+
+	# >>> ДОБАВЛЕНО: Создаём пауз-меню (Escape)
+	var pause_script = load("res://Scripts/pause_menu.gd")
+	_pause_menu = CanvasLayer.new()
+	_pause_menu.set_script(pause_script)
+	add_child(_pause_menu)
 
 func _apply_fonts():
 	if UITheme == null:
@@ -258,6 +267,7 @@ func _on_hr_search_started(role: String):
 		player._discuss_timer_label.text = "🔍 %d:%02d" % [hours, mins]
 
 	print("🔍 Поиск кандидатов начат: %s (%d мин.)" % [role, int(_search_total_minutes)])
+
 func _on_search_time_tick(_h, _m):
 	if not _is_searching:
 		return
@@ -373,7 +383,6 @@ func _get_player():
 	return get_tree().get_first_node_in_group("player")
 
 # === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ ===
-# === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ ===
 func _start_discussion(proj_data: ProjectData):
 	_is_discussing = true
 	_discuss_project = proj_data
@@ -437,6 +446,7 @@ func _finish_discussion():
 	print("🎯 PM +5 XP за взятие проекта")
 
 	_discuss_project = null
+
 # === ПРОВЕРКА: PM ЗАНЯТ ===
 func is_pm_busy() -> bool:
 	return _is_discussing or _is_searching
@@ -466,6 +476,10 @@ func is_any_menu_open() -> bool:
 	var assignment_menu = get_node_or_null("AssignmentMenu")
 	if assignment_menu and assignment_menu.visible: return true
 
+	# >>> ДОБАВЛЕНО: Проверка пауз-меню
+	if _pause_menu and _pause_menu.is_open():
+		return true
+
 	return false
 
 func _on_project_finished_xp(_proj):
@@ -476,7 +490,7 @@ func _on_project_failed_xp(_proj):
 	PMData.add_xp(10)
 	print("🎯 PM +10 XP за проваленный проект (опыт всё равно)")
 
-# --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
+# --- ОБНОВЛЕНИЕ ИНТ��РФЕЙСА ---
 
 func update_time_label(_hour, _minute):
 	var time_str = "%02d:%02d" % [GameTime.hour, GameTime.minute]
@@ -628,3 +642,5 @@ func _on_night_skip_started():
 
 func _on_night_skip_finished():
 	end_day_button.visible = false
+	# === АВТОСОХРАНЕНИЕ: начало нового рабочего дня ===
+	SaveManager.save_game()
