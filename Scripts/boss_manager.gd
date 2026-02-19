@@ -21,6 +21,7 @@ var monthly_expenses: int = 0
 var monthly_projects_finished: int = 0
 var monthly_projects_failed: int = 0
 var monthly_hires: int = 0
+var monthly_employee_levelups: int = 0
 
 # === ИСТОРИЯ КВЕСТОВ ===
 var quest_history: Array = []  # [{month, objectives, completed, trust_gained}]
@@ -66,6 +67,7 @@ func _reset_monthly_stats():
 	monthly_projects_finished = 0
 	monthly_projects_failed = 0
 	monthly_hires = 0
+	monthly_employee_levelups = 0
 
 # === ТРЕКИНГ СОБЫТИЙ ===
 func _on_balance_changed(_new_amount):
@@ -74,7 +76,6 @@ func _on_balance_changed(_new_amount):
 
 func _on_project_finished(_proj: ProjectData):
 	monthly_projects_finished += 1
-	monthly_income += _proj.get_final_payout(GameTime.day)
 
 func _on_project_failed(_proj: ProjectData):
 	monthly_projects_failed += 1
@@ -88,7 +89,10 @@ func track_income(amount: int):
 func track_expense(amount: int):
 	monthly_expenses += amount
 
-# === ГЕНЕРАЦИЯ КВЕС��А НА МЕСЯЦ ===
+func track_employee_levelup():
+	monthly_employee_levelups += 1
+
+# === ГЕНЕРАЦИЯ КВЕСТА НА МЕСЯЦ ===
 func generate_quest_for_month(month: int) -> Dictionary:
 	var quest = {
 		"month": month,
@@ -102,10 +106,10 @@ func generate_quest_for_month(month: int) -> Dictionary:
 	var profit_target: int
 	var profit_trust: int
 	if month == 1:
-		profit_target = 5000
+		profit_target = 1000
 		profit_trust = 3
 	elif month == 2:
-		profit_target = 12000
+		profit_target = 3000
 		profit_trust = 3
 	else:
 		profit_target = 15000 + (month - 3) * 5000
@@ -123,11 +127,11 @@ func generate_quest_for_month(month: int) -> Dictionary:
 	var projects_target: int
 	var projects_trust: int
 	if month == 1:
-		projects_target = 3
-		projects_trust = 2
+		projects_target = 10
+		projects_trust = 3
 	elif month == 2:
-		projects_target = 6
-		projects_trust = 2
+		projects_target = 14
+		projects_trust = 3
 	else:
 		projects_target = 8 + (month - 3)
 		projects_trust = 3
@@ -169,25 +173,35 @@ func _get_random_objectives_pool(month: int) -> Array:
 	var pool = []
 
 	# Нанять сотрудников
-	var hire_target = 2 if month <= 2 else 3
-	var hire_trust = 2 if month <= 2 else 2
+	var hire_target: int
+	if month == 1:
+		hire_target = 3
+	elif month == 2:
+		hire_target = 5
+	else:
+		hire_target = 5 + (month - 3)
 	pool.append({
 		"id": "hires",
 		"type": "hires",
 		"label": "Нанять ≥ %d сотрудников" % hire_target,
 		"target": hire_target,
-		"trust_reward": hire_trust,
+		"trust_reward": 2,
 	})
 
 	# Лояльность клиентов
-	var loyalty_target = 5 if month <= 2 else 10 + (month - 3) * 3
-	var loyalty_trust = 1 if month <= 2 else 2
+	var loyalty_target: int
+	if month == 1:
+		loyalty_target = 20
+	elif month == 2:
+		loyalty_target = 40
+	else:
+		loyalty_target = 50 + (month - 3) * 10
 	pool.append({
 		"id": "loyalty",
 		"type": "total_loyalty",
 		"label": "Суммарная лояльность клиентов ≥ %d" % loyalty_target,
 		"target": loyalty_target,
-		"trust_reward": loyalty_trust,
+		"trust_reward": 2,
 	})
 
 	# Без провалов
@@ -196,11 +210,17 @@ func _get_random_objectives_pool(month: int) -> Array:
 		"type": "no_fails",
 		"label": "Ни одного проваленного проекта",
 		"target": 0,
-		"trust_reward": 3,
+		"trust_reward": 4,
 	})
 
 	# Минимум расходов
-	var expense_target = 3000 if month <= 2 else 5000 + (month - 3) * 1000
+	var expense_target: int
+	if month == 1:
+		expense_target = 8000
+	elif month == 2:
+		expense_target = 10000
+	else:
+		expense_target = 12000 + (month - 3) * 2000
 	pool.append({
 		"id": "low_expenses",
 		"type": "max_expenses",
@@ -210,12 +230,34 @@ func _get_random_objectives_pool(month: int) -> Array:
 	})
 
 	# PM уровень
-	var pm_level_target = 2 if month <= 2 else 3 + (month - 3)
+	var pm_level_target: int
+	if month == 1:
+		pm_level_target = 5
+	elif month == 2:
+		pm_level_target = 8
+	else:
+		pm_level_target = 9 + (month - 3)
 	pool.append({
 		"id": "pm_level",
 		"type": "pm_level",
 		"label": "PM достигает уровня ≥ %d" % pm_level_target,
 		"target": pm_level_target,
+		"trust_reward": 2,
+	})
+
+	# Левел-апы сотрудников
+	var levelup_target: int
+	if month == 1:
+		levelup_target = 2
+	elif month == 2:
+		levelup_target = 5
+	else:
+		levelup_target = 6 + (month - 3)
+	pool.append({
+		"id": "employee_levelups",
+		"type": "employee_levelups",
+		"label": "Сотрудники повысились ≥ %d раз" % levelup_target,
+		"target": levelup_target,
 		"trust_reward": 2,
 	})
 
@@ -232,11 +274,13 @@ func _rebuild_label(obj: Dictionary) -> String:
 		"total_loyalty":
 			return "Суммарная лояльность клиентов ≥ %d" % obj["target"]
 		"no_fails":
-			return "Н�� одного проваленного проекта"
+			return "Ни одного проваленного проекта"
 		"max_expenses":
 			return "Расходы на зарплаты ≤ $%d" % obj["target"]
 		"pm_level":
 			return "PM достигает уровня ≥ %d" % obj["target"]
+		"employee_levelups":
+			return "Сотрудники повысились ≥ %d раз" % obj["target"]
 	return obj.get("label", "???")
 
 # === ЗАПУСК КВЕСТА ===
@@ -285,7 +329,7 @@ func _evaluate_quest():
 
 	emit_signal("quest_completed", old_quest, total_trust > 0)
 
-	print("���� Квест месяца завершён. Доверие: %+d (итого: %d)" % [total_trust, boss_trust])
+	print("📊 Квест мес��ца завершён. Доверие: %+d (итого: %d)" % [total_trust, boss_trust])
 
 func _check_objective(obj: Dictionary) -> bool:
 	match obj["type"]:
@@ -304,6 +348,8 @@ func _check_objective(obj: Dictionary) -> bool:
 			return monthly_expenses <= obj["target"]
 		"pm_level":
 			return PMData.get_level() >= obj["target"]
+		"employee_levelups":
+			return monthly_employee_levelups >= obj["target"]
 	return false
 
 # === ТЕКУЩИЙ ПРОГРЕСС ПО ЦЕЛЯМ ===
@@ -329,6 +375,8 @@ func get_objective_progress(obj: Dictionary) -> Dictionary:
 			is_inverse = true
 		"pm_level":
 			current = PMData.get_level()
+		"employee_levelups":
+			current = monthly_employee_levelups
 
 	var achieved = _check_objective(obj)
 
@@ -355,7 +403,7 @@ func should_show_quest() -> bool:
 	return GameTime.get_day_in_month() <= 3  # Первые 3 дня месяца
 
 func should_show_report() -> bool:
-	# ��оказываем отчёт когда есть завершённый квест в истории для прошлого месяца
+	# Показываем отчёт когда есть завершённый квест в истории для прошлого месяца
 	if _report_shown_this_month:
 		return false
 	if quest_history.is_empty():

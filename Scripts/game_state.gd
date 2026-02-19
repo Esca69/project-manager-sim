@@ -76,8 +76,6 @@ func pay_daily_salaries():
 
 	if total_daily_cost > 0:
 		add_expense(total_daily_cost)
-		# === ТРЕКИНГ ДЛЯ БОССА ===
-		BossManager.track_expense(total_daily_cost)
 		print("Всего выплачено за день: ", total_daily_cost, "$")
 	else:
 		print("Некому платить зарплату. Бюджет цел.")
@@ -92,6 +90,7 @@ func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trai
 		"skill_gain": skill_gain,
 		"new_trait": new_trait,
 	})
+	BossManager.track_employee_levelup()
 
 # === ЗАПИСЬ ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ===
 func record_loyalty_change(client, change: int, reason: String):
