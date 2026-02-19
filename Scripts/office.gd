@@ -30,6 +30,16 @@ func _ready():
 	add_child(_post_effects)
 	_post_effects.setup(self)
 
+	# === ЗАГРУЗКА СОХРАНЕНИЯ: восстанавли��аем сотрудников и проекты ===
+	# Вызываем deferred, чтобы вся сцена (HUD, столы, NPC-слой) была полностью готова
+	call_deferred("_try_restore_save")
+
+func _try_restore_save():
+	if SaveManager.pending_restore:
+		SaveManager.pending_restore = false
+		print("📂 В��сстанавливаем сотрудников и проекты из сохранения...")
+		SaveManager.restore_employees_and_projects()
+
 func _setup_environment():
 	# Ищем существующий WorldEnvironment среди детей
 	var world_env = null

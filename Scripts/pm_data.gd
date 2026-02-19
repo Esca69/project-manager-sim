@@ -2,7 +2,7 @@ extends Node
 
 # === ОПЫТ ===
 var xp: int = 0
-var skill_points: int = 20
+var skill_points: int = 0
 
 signal xp_changed(new_xp: int, new_skill_points: int)
 signal skill_unlocked(skill_id: String)

@@ -6,6 +6,9 @@ extends Node
 const SAVE_PATH = "user://savegame.json"
 const SAVE_VERSION = 1
 
+# >>> ДОБАВЛЕНО: Флаг — синглтоны загружены, нужно восстановить сотрудников после загрузки сцены
+var pending_restore: bool = false
+
 signal game_saved
 signal game_loaded
 
@@ -226,10 +229,11 @@ func load_game() -> bool:
 	_load_boss_manager(data.get("boss_manager", {}))
 	_load_clients(data.get("clients", []))
 
-	# Сотрудники и проекты восстанавливаются после загрузки сцены
-	# (см. _load_employees_and_projects)
+	# Сотрудники и прое��ты восстанавливаются после загрузки сцены
+	# (вызывается из office.gd → _try_restore_save)
 
 	print("📂 Данные синглтонов восстановлены")
+	pending_restore = true  # >>> ДОБАВЛЕНО: ставим флаг для office.gd
 	emit_signal("game_loaded")
 	return true
 
