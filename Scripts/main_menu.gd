@@ -545,7 +545,7 @@ func _reset_all_singletons():
 
 	# PMData
 	PMData.xp = 0
-	PMData.skill_points = 20
+	PMData.skill_points = 0
 	PMData._last_threshold_index = -1
 	PMData.unlocked_skills.clear()
 
