@@ -524,17 +524,18 @@ func _on_hire_pressed(index):
 
 	print("Нанимаем: ", human_to_hire.employee_name)
 
-	var office = get_tree().current_scene
+		# Ищем офис по группе — надёжнее чем current_scene
+	var office = get_tree().get_first_node_in_group("office")
+	
+	if not office:
+		office = get_tree().current_scene
 
-	if not office.has_method("spawn_new_employee"):
-		var office_manager = get_tree().get_first_node_in_group("office_manager")
-		if office_manager and office_manager.has_method("spawn_new_employee"):
-			office = office_manager
-
-	if office.has_method("spawn_new_employee"):
+	if office and office.has_method("spawn_new_employee"):
 		office.spawn_new_employee(human_to_hire)
 	else:
 		print("КРИТИЧЕСКАЯ ОШИБКА: Не найден метод spawn_new_employee!")
+		print("  current_scene = ", get_tree().current_scene)
+		print("  office group = ", get_tree().get_first_node_in_group("office"))
 
 	PMData.add_xp(5)
 	print("🎯 PM +5 XP за найм сотрудника")

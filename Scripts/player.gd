@@ -285,9 +285,9 @@ func _update_interact_hint():
 
 	var target_world_pos: Vector2
 	if target is Node2D:
-		target_world_pos = target.global_position + Vector2(0, -80)
+		target_world_pos = target.global_position + Vector2(0, -60)
 	else:
-		target_world_pos = target.global_position + Vector2(0, -80)
+		target_world_pos = target.global_position + Vector2(0, -60)
 
 	var screen_pos = _world_to_screen(target_world_pos)
 
