@@ -12,6 +12,9 @@ var _shadows: Node = null
 var _post_effects: Node = null
 
 func _ready():
+	# === КРИТИЧНО: добавляем в группу "office" для поиска из SaveManager ===
+	add_to_group("office")
+	
 	# === WorldEnvironment — настраиваем кодом (deferred чтобы дерево было готово) ===
 	call_deferred("_setup_environment")
 
@@ -30,15 +33,21 @@ func _ready():
 	add_child(_post_effects)
 	_post_effects.setup(self)
 
-	# === ЗАГРУЗКА СОХРАНЕНИЯ: восстанавли��аем сотрудников и проекты ===
-	# Вызываем deferred, чтобы вся сцена (HUD, столы, NPC-слой) была полностью готова
+	# === ЗАГРУЗКА СОХРАНЕНИЯ ===
+	# Используем call_deferred, чтобы вся сцена была готова,
+	# а затем запускаем restore как отдельную корутину
 	call_deferred("_try_restore_save")
 
 func _try_restore_save():
 	if SaveManager.pending_restore:
 		SaveManager.pending_restore = false
-		print("📂 В��сстанавливаем сотрудников и проекты из сохранения...")
-		SaveManager.restore_employees_and_projects()
+		print("📂 Восстанавливаем сотрудников и проекты из сохранения...")
+		# Запускаем как корутину — await внутри restore будет работать корректно
+		_do_restore()
+
+func _do_restore():
+	await SaveManager.restore_employees_and_projects()
+	print("📂 Восстановление завершено")
 
 func _setup_environment():
 	# Ищем существующий WorldEnvironment среди детей

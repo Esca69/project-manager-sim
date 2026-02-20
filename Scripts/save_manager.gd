@@ -298,7 +298,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# Создаём новых сотрудник��в
+	# Создаём новых сотрудников
 	var employee_map: Dictionary = {}  # имя → EmployeeData
 	var npc_map: Dictionary = {}       # имя → npc node
 
@@ -325,12 +325,17 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		# Спавним через office (используем setup_employee как при найме!)
 		var npc = _spawn_employee_in_office_proper(office, world_layer, emp_data)
 		if npc:
-			# Восстанавливаем визуал
+			# === FIX: setup_employee рандомит цвета и сбрасывает energy ===
+			# Восстанавливаем СОХРАНЁННЫЕ цвета (после рандома в setup_employee)
 			npc.personal_color = Color.from_string(emp_dict.get("personal_color", "#FFFFFF"), Color.WHITE)
 			npc.skin_color = Color.from_string(emp_dict.get("skin_color", "#FFE0BD"), Color("#FFE0BD"))
 			npc.update_visuals()
 
-			# Восстанавливаем позицию стола
+			# === FIX: setup_employee сбрасывает energy на 100 — восстанавливаем из сохранения ===
+			npc.data.current_energy = float(emp_dict.get("current_energy", 100.0))
+			npc.data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
+
+			# Восстанавли��аем позицию стола
 			var desk_x = float(emp_dict.get("desk_position_x", 0.0))
 			var desk_y = float(emp_dict.get("desk_position_y", 0.0))
 			if desk_x != 0.0 or desk_y != 0.0:
@@ -393,6 +398,14 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 	# === Привязываем сотрудников к столам (если они были на этапе) ===
 	_rebind_employees_to_desks()
+
+	# === FIX: После загрузки ставим скорость 1x ===
+	GameTime.is_game_paused = false
+	GameTime.is_night_skip = false
+	GameTime.current_speed_scale = 1.0
+	Engine.time_scale = 1.0
+	get_tree().paused = false
+	print("⏩ Скорость после загрузки: x1")
 
 	print("✅ Сотрудники и проекты восстановлены из сохранения")
 
@@ -482,6 +495,10 @@ func _load_game_time(d: Dictionary):
 	GameTime.hour = int(d.get("hour", 8))
 	GameTime.minute = int(d.get("minute", 0))
 	GameTime.time_accumulator = 0.0
+	# === FIX: Сбрасываем состояние скорости при загру��ке ===
+	GameTime.current_speed_scale = 1.0
+	GameTime.is_game_paused = false
+	GameTime.is_night_skip = false
 
 # --- Загрузка GameState ---
 func _load_game_state(d: Dictionary):
