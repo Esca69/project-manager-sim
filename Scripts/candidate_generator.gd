@@ -20,25 +20,23 @@ const SALARY_CONFIG = {
 	"Backend Developer":  { "base": 1200, "mult": 16, "rand": 200 },
 }
 
-# === РАСПРЕДЕЛЕНИЕ ГРЕЙДОВ ПО ДНЮ ИГРЫ ===
+# === РАСПРЕДЕЛЕНИЕ ГРЕЙДОВ ПО МЕСЯЦУ ИГРЫ (1 мес = 30 дней) ===
 # Каждый элемент: [шанс, min_level, max_level]
 const GRADE_DISTRIBUTION = {
-	"early": [   # Дни 1–15
-		[0.60, 0, 2],   # Junior
-		[0.35, 3, 4],   # Middle
-		[0.05, 5, 5],   # Senior
+	"month_1": [   # Первый месяц (Дни 1–30)
+		[0.65, 0, 2],   # Junior (65%)
+		[0.35, 3, 4],   # Middle (35%)
 	],
-	"mid": [     # Дни 16–45
-		[0.30, 0, 2],   # Junior
-		[0.45, 3, 4],   # Middle
-		[0.20, 5, 6],   # Senior
-		[0.05, 7, 7],   # Lead
+	"month_2": [   # Второй месяц (Дни 31–60)
+		[0.60, 0, 2],   # Junior (60%)
+		[0.35, 3, 4],   # Middle (35%)
+		[0.05, 5, 6],   # Senior (5%)
 	],
-	"late": [    # Дни 46+
-		[0.15, 1, 2],   # Junior
-		[0.35, 3, 4],   # Middle
-		[0.35, 5, 7],   # Senior
-		[0.15, 7, 8],   # Lead
+	"month_3": [   # Третий месяц и далее (Дни 61+)
+		[0.50, 0, 2],   # Junior (50%)
+		[0.35, 3, 4],   # Middle (35%)
+		[0.10, 5, 6],   # Senior (10%)
+		[0.05, 7, 8],   # Lead (5%)
 	],
 }
 
@@ -123,11 +121,11 @@ func _roll_level() -> int:
 	if GameTime:
 		current_day = GameTime.day
 
-	var distribution_key = "early"
-	if current_day >= 46:
-		distribution_key = "late"
-	elif current_day >= 16:
-		distribution_key = "mid"
+	var distribution_key = "month_1"
+	if current_day >= 61:
+		distribution_key = "month_3"
+	elif current_day >= 31:
+		distribution_key = "month_2"
 
 	var distribution = GRADE_DISTRIBUTION[distribution_key]
 	var roll = randf()
@@ -138,7 +136,7 @@ func _roll_level() -> int:
 		if roll <= cumulative:
 			return randi_range(int(entry[1]), int(entry[2]))
 
-	# Fallback
+	# Fallback на всякий случай
 	var last = distribution[distribution.size() - 1]
 	return randi_range(int(last[1]), int(last[2]))
 

@@ -239,21 +239,21 @@ func _create_card(npc_node) -> PanelContainer:
 	grade_style.border_width_bottom = 2
 
 	var grade_color: Color
-	# Оставляем английские ключи для свитча, так как логика может зависеть от них
-	match emp.GRADE_NAMES.get(emp.employee_level, "Junior"):
-		"Junior":
+	# --- ИСПРАВЛЕНИЕ ЗДЕСЬ: используем ключи локализации ---
+	match emp.GRADE_NAMES.get(emp.employee_level, "GRADE_JUNIOR"):
+		"GRADE_JUNIOR":
 			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
 			grade_style.border_color = Color(0.29, 0.69, 0.31, 1)
 			grade_color = Color(0.29, 0.69, 0.31, 1)
-		"Middle":
+		"GRADE_MIDDLE":
 			grade_style.bg_color = Color(0.93, 0.93, 1.0, 1)
 			grade_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 			grade_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-		"Senior":
+		"GRADE_SENIOR":
 			grade_style.bg_color = Color(1.0, 0.95, 0.88, 1)
 			grade_style.border_color = Color(0.85, 0.55, 0.0, 1)
 			grade_color = Color(0.85, 0.55, 0.0, 1)
-		"Lead":
+		"GRADE_LEAD":
 			grade_style.bg_color = Color(0.95, 0.9, 0.98, 1)
 			grade_style.border_color = Color(0.6, 0.3, 0.7, 1)
 			grade_color = Color(0.6, 0.3, 0.7, 1)
@@ -629,7 +629,6 @@ func _get_working_project_name(emp_data: EmployeeData) -> String:
 				continue
 			for worker in stage.workers:
 				if worker == emp_data:
-					# Добавлен tr, чтобы название проекта переводилось
 					return tr(project.title)
 	return "?"
 

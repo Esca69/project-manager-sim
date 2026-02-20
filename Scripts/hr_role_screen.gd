@@ -347,12 +347,18 @@ func _build_ui():
 # === ОБНОВЛЕНИЕ ТЕКСТА ВРЕМЕНИ ПОИСКА ===
 func _update_time_info():
 	if _time_info_lbl:
-		var search_minutes = PMData.get_hr_search_minutes()
-		if search_minutes >= 60:
-			var hours = search_minutes / 60
+		var search_minutes = int(PMData.get_hr_search_minutes())
+		var hours = search_minutes / 60
+		var mins = search_minutes % 60
+		
+		# Если есть и часы, и минуты (например, 1 ч 30 мин)
+		if hours > 0 and mins > 0:
+			# Используем массив для передачи двух параметров в локализацию
+			_time_info_lbl.text = tr("HR_ROLE_TIME_H_M") % [hours, mins]
+		elif hours > 0:
 			_time_info_lbl.text = tr("HR_ROLE_TIME_H") % hours
 		else:
-			_time_info_lbl.text = tr("HR_ROLE_TIME_M") % search_minutes
+			_time_info_lbl.text = tr("HR_ROLE_TIME_M") % mins
 
 # === ВЫБОР РОЛИ ===
 func _on_role_selected(role: String):

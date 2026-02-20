@@ -302,13 +302,25 @@ func _hide_interact_hint():
 		_interact_hint.visible = false
 	_current_hint_target = null
 
+
+# =========================================================================
+# === ИСПРАВЛЕННАЯ ЖЕЛЕЗОБЕТОННАЯ ЛОГИКА ПОИСКА (БЕЗ СОТРУДНИКОВ) ===
+# =========================================================================
+
 func _get_nearest_interactable():
 	var bodies = interaction_zone.get_overlapping_bodies()
 	for body in bodies:
-		if body.is_in_group("npc") and "data" in body and body.data:
-			return body
+		if body == self:
+			continue
+			
+		# 1. Если это сотрудник (группа npc) — жестко игнорируем!
+		if body.is_in_group("npc"):
+			continue
+			
+		# 2. Оставляем взаимодействие ТОЛЬКО для столов (hr_desk, boss_desk и тд)
 		if body.is_in_group("desk") and body.has_method("interact"):
 			return body
+			
 	return null
 
 func _world_to_screen(world_pos: Vector2) -> Vector2:
@@ -318,15 +330,19 @@ func _world_to_screen(world_pos: Vector2) -> Vector2:
 func interact():
 	var bodies = interaction_zone.get_overlapping_bodies()
 	for body in bodies:
-		if body.is_in_group("npc") and body.data:
-			AudioManager.play_sfx("interact")
-			get_tree().call_group("ui", "show_employee_card", body.data)
-			return
-
+		if body == self:
+			continue
+			
+		# 1. Если это сотрудник — игнорируем нажатие Е
+		if body.is_in_group("npc"):
+			continue
+			
+		# 2. Вызываем функцию стола
 		if body.is_in_group("desk") and body.has_method("interact"):
 			AudioManager.play_sfx("interact")
 			body.interact()
 			return
+
 
 # === ПРОГРЕСС-БАР ОБСУЖДЕНИЯ: ПУБЛИЧНЫЙ API ДЛЯ HUD ===
 
