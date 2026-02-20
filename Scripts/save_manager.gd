@@ -6,7 +6,7 @@ extends Node
 const SAVE_PATH = "user://savegame.json"
 const SAVE_VERSION = 1
 
-# >>> ДОБАВЛЕНО: Флаг — синглтоны загружены, нужно восстановить сотрудников после загрузки сцены
+# >>> Флаг — синглтоны загружены, нужно восстановить сотрудников после загрузки сцены
 var pending_restore: bool = false
 
 signal game_saved
@@ -51,6 +51,9 @@ func save_game():
 
 		# --- Проекты ---
 		"projects": _serialize_projects(),
+		
+		# --- Привязка столов ---
+		"desk_assignments": _serialize_desk_assignments(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -146,6 +149,23 @@ func _serialize_employees() -> Array:
 		})
 	return result
 
+# --- Привязка столов ---
+func _serialize_desk_assignments() -> Array:
+	var result = []
+	var desks = get_tree().get_nodes_in_group("desk")
+	for desk in desks:
+		if not ("assigned_employee" in desk):
+			continue
+		if desk.assigned_employee == null:
+			continue
+		# Сохраняем позицию стола и имя назначенного сотрудника
+		result.append({
+			"desk_position_x": desk.global_position.x,
+			"desk_position_y": desk.global_position.y,
+			"employee_name": desk.assigned_employee.employee_name,
+		})
+	return result
+
 # --- Проекты ---
 func _serialize_projects() -> Array:
 	var result = []
@@ -229,11 +249,11 @@ func load_game() -> bool:
 	_load_boss_manager(data.get("boss_manager", {}))
 	_load_clients(data.get("clients", []))
 
-	# Сотрудники и прое��ты восстанавливаются после загрузки сцены
+	# Сотрудники и проекты восстанавливаются после загрузки сцены
 	# (вызывается из office.gd → _try_restore_save)
 
 	print("📂 Данные синглтонов восстановлены")
-	pending_restore = true  # >>> ДОБАВЛЕНО: ставим флаг для office.gd
+	pending_restore = true
 	emit_signal("game_loaded")
 	return true
 
@@ -258,12 +278,16 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 	var employee_dicts = data.get("employees", [])
 	var project_dicts = data.get("projects", [])
+	var desk_assignments = data.get("desk_assignments", [])
 
 	# === Спавним сотрудников ===
 	var office = get_tree().get_first_node_in_group("office")
 	if not office:
 		push_error("Не найдена нода office для спавна сотрудников")
 		return
+
+	# Ищем world_layer для правильной сортировки (как при обычном найме)
+	var world_layer = get_tree().get_first_node_in_group("world_layer")
 
 	# Удаляем существующих NPC (если есть)
 	var existing_npcs = get_tree().get_nodes_in_group("npc")
@@ -274,8 +298,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# Создаём новых сотрудников
+	# Создаём новых сотрудник��в
 	var employee_map: Dictionary = {}  # имя → EmployeeData
+	var npc_map: Dictionary = {}       # имя → npc node
 
 	for emp_dict in employee_dicts:
 		var emp_data = EmployeeData.new()
@@ -297,8 +322,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			emp_data.traits.append(str(t))
 		emp_data.trait_text = emp_data.build_trait_text()
 
-		# Спавним через office
-		var npc = _spawn_employee_in_office(office, emp_data)
+		# Спавним через office (используем setup_employee как при найме!)
+		var npc = _spawn_employee_in_office_proper(office, world_layer, emp_data)
 		if npc:
 			# Восстанавливаем визуал
 			npc.personal_color = Color.from_string(emp_dict.get("personal_color", "#FFFFFF"), Color.WHITE)
@@ -312,6 +337,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.my_desk_position = Vector2(desk_x, desk_y)
 
 			employee_map[emp_data.employee_name] = emp_data
+			npc_map[emp_data.employee_name] = npc
 
 	# === Восстанавливаем проекты ===
 	ProjectManager.active_projects.clear()
@@ -348,8 +374,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 			# Восстанавливаем completed_worker_names
 			var cwn = stage_dict.get("completed_worker_names", [])
-			for name in cwn:
-				stage["completed_worker_names"].append(str(name))
+			for cname in cwn:
+				stage["completed_worker_names"].append(str(cname))
 
 			# Восстанавливаем привязку работников
 			var worker_names = stage_dict.get("worker_names", [])
@@ -362,10 +388,83 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 		ProjectManager.active_projects.append(proj)
 
+	# === Восстанавливаем привязку столов ===
+	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
+
 	# === Привязываем сотрудников к столам (если они были на этапе) ===
 	_rebind_employees_to_desks()
 
 	print("✅ Сотрудники и проекты восстановлены из сохранения")
+
+# --- НОВЫЙ: Правильный спавн сотрудника (как при найме) ---
+func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeData):
+	var employee_scene = load("res://Scenes/Employee.tscn")
+	if not employee_scene:
+		push_error("Не удалось загрузить Employee.tscn")
+		return null
+
+	var npc = employee_scene.instantiate()
+	
+	# Используем setup_employee если он есть (как при обычном найме)
+	if npc.has_method("setup_employee"):
+		npc.setup_employee(emp_data)
+	else:
+		npc.data = emp_data
+
+	# Добавляем в world_layer (как делает office.gd при найме), а не напрямую в office
+	if world_layer:
+		world_layer.add_child(npc)
+	else:
+		office.add_child(npc)
+		print("ВНИМАНИЕ: Нет группы 'world_layer' при загрузке! Сортировка может сломаться.")
+
+	# Ставим у входа
+	var entrance = get_tree().get_first_node_in_group("entrance")
+	if entrance:
+		npc.global_position = entrance.global_position
+
+	return npc
+
+# --- НОВЫЙ: Восстанавливаем привязку столов ---
+func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary, npc_map: Dictionary):
+	if desk_assignments.is_empty():
+		return
+	
+	var desks = get_tree().get_nodes_in_group("desk")
+	
+	for assignment in desk_assignments:
+		var desk_x = float(assignment.get("desk_position_x", 0.0))
+		var desk_y = float(assignment.get("desk_position_y", 0.0))
+		var emp_name = str(assignment.get("employee_name", ""))
+		
+		if emp_name.is_empty():
+			continue
+		if not employee_map.has(emp_name):
+			continue
+		
+		var emp_data = employee_map[emp_name]
+		var saved_desk_pos = Vector2(desk_x, desk_y)
+		
+		# Ищем ближайший стол к сохранённой позиции
+		var best_desk = null
+		var best_dist = 50.0  # Порог — 50 пикселей максимум
+		
+		for desk in desks:
+			var dist = desk.global_position.distance_to(saved_desk_pos)
+			if dist < best_dist:
+				best_dist = dist
+				best_desk = desk
+		
+		if best_desk and best_desk.has_method("assign_employee"):
+			# Проверяем что стол ещё свободен
+			if "assigned_employee" in best_desk and best_desk.assigned_employee == null:
+				best_desk.assign_employee(emp_data)
+				print("🪑 Восстановлена привязка стола для: ", emp_name)
+				
+				# Устанавливаем desk_position для NPC
+				if npc_map.has(emp_name):
+					var npc = npc_map[emp_name]
+					npc.my_desk_position = best_desk.global_position
 
 # --- Привязка сотрудников к столам после загрузки ---
 func _rebind_employees_to_desks():
@@ -374,27 +473,6 @@ func _rebind_employees_to_desks():
 		if npc.my_desk_position != Vector2.ZERO:
 			if ProjectManager.is_employee_on_active_stage(npc.data):
 				npc.move_to_desk(npc.my_desk_position)
-
-# --- Спавн сотрудника ---
-func _spawn_employee_in_office(office, emp_data: EmployeeData):
-	# Ищем сцену сотрудника
-	var employee_scene = load("res://Scenes/employee.tscn")
-	if not employee_scene:
-		push_error("Не удалось загрузить employee.tscn")
-		return null
-
-	var npc = employee_scene.instantiate()
-	npc.data = emp_data
-
-	# Добавляем в офис
-	office.add_child(npc)
-
-	# Ставим у входа
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		npc.global_position = entrance.global_position
-
-	return npc
 
 # --- Загрузка GameTime ---
 func _load_game_time(d: Dictionary):
@@ -424,7 +502,7 @@ func _load_pm_data(d: Dictionary):
 	if d.is_empty():
 		return
 	PMData.xp = int(d.get("xp", 0))
-	PMData.skill_points = int(d.get("skill_points", 20))
+	PMData.skill_points = int(d.get("skill_points", 0))
 	PMData._last_threshold_index = int(d.get("_last_threshold_index", -1))
 
 	PMData.unlocked_skills.clear()
