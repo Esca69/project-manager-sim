@@ -38,7 +38,6 @@ func setup(data: ProjectData, selector_node):
 		if client:
 			client_prefix = client.emoji + " " + client.client_name + "  —  "
 	
-	# Переводим заголовок проекта
 	title_label.text = client_prefix + cat_label + " " + tr(project.title)
 
 	var deadline_date = GameTime.get_date_short(project.deadline_day)
@@ -46,7 +45,6 @@ func setup(data: ProjectData, selector_node):
 	var soft_date = GameTime.get_date_short(project.soft_deadline_day)
 	var soft_left = project.soft_deadline_day - GameTime.day
 	
-	# Используем комбинированный ключ для дедлайнов
 	deadline_label.text = tr("PROJ_WIN_DEADLINE_COMBINED") % [
 		soft_date, soft_left, project.soft_deadline_penalty_percent, deadline_date, days_left
 	]
@@ -101,7 +99,6 @@ func _ready():
 		cancel_node.queue_free()
 
 	start_btn.pressed.connect(_on_start_pressed)
-	# Локализация текста кнопки Старт
 	start_btn.text = tr("PROJ_WIN_BTN_START")
 	
 	close_window_btn.pressed.connect(func():
@@ -111,7 +108,6 @@ func _ready():
 			visible = false
 	)
 
-	# === Стили кнопки "Начать проект" ===
 	var start_style_normal = StyleBoxFlat.new()
 	start_style_normal.bg_color = Color(1, 1, 1, 1)
 	start_style_normal.border_width_left = 2
@@ -226,7 +222,6 @@ func _on_start_pressed():
 	var now = get_current_global_time()
 	project.start_global_time = now
 	project.state = project.State.IN_PROGRESS
-	# Локализованный лог
 	print(tr("LOG_PROJECT_STARTED") % [tr(project.title), project.start_global_time])
 	update_buttons_visibility()
 
@@ -240,12 +235,14 @@ func _process(delta):
 	var origin_time = _get_origin_time()
 	var is_done = (project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED)
 
+	# Рассчитываем высоту линий: высота хедера + высота контейнера с треками + отступы
+	var line_height = timeline_header.size.y + tracks_container.size.y + 10
+
 	if project.state == ProjectData.State.DRAFTING:
 		var horizon_from_origin = float(project.deadline_day - origin_day) * 1.1
 		if horizon_from_origin < MIN_TIMELINE_DAYS:
 			horizon_from_origin = MIN_TIMELINE_DAYS
 		var pixels_per_day = GANTT_VIEW_WIDTH / horizon_from_origin
-		var line_height = max(tracks_container.size.y + 50, 500)
 
 		if current_time_line:
 			var now_offset = get_current_global_time() - origin_time
@@ -294,8 +291,6 @@ func _process(delta):
 			if stage.amount > 0:
 				percent = float(stage.progress) / float(stage.amount)
 			track_node.update_progress(percent)
-
-	var line_height = max(tracks_container.size.y + 50, 500)
 
 	if current_time_line:
 		if is_done:
@@ -366,7 +361,8 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 		if child == hard_deadline_line: continue
 		child.queue_free()
 
-	var line_height = max(tracks_container.size.y + 80, 500)
+	# Динамическая высота для фоновых линий сетки
+	var line_height = timeline_header.size.y + tracks_container.size.y + 10
 	var prev_month = -1
 
 	for i in range(0, int(horizon_days) + 1):
@@ -507,12 +503,10 @@ func _on_employee_chosen(emp_data):
 
 	for existing_worker in stage.workers:
 		if existing_worker == emp_data:
-			# Локализованное предупреждение
 			print(tr("LOG_WARN_ALREADY_ASSIGNED"))
 			return
 
 	stage.workers.append(emp_data)
-	# Локализованный лог назначения
 	print(tr("LOG_EMP_ASSIGNED") % [emp_data.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
 	
 	var track_node = tracks_container.get_child(current_selecting_track_index)
@@ -529,7 +523,6 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 		return
 	var removed = stage.workers[worker_index]
 	stage.workers.remove_at(worker_index)
-	# Локализованный лог снятия
 	print(tr("LOG_EMP_REMOVED") % [removed.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
 	
 	var track_node = tracks_container.get_child(stage_index)
