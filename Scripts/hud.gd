@@ -57,6 +57,9 @@ var _hr_role_screen: Control
 # >>> ДОБАВЛЕНО: Пауз-меню (Escape)
 var _pause_menu: CanvasLayer
 
+# <<< TUTORIAL: переменная для туториала
+var _tutorial: Control
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -161,6 +164,9 @@ func _ready():
 	_pause_menu = CanvasLayer.new()
 	_pause_menu.set_script(pause_script)
 	add_child(_pause_menu)
+
+	# <<< TUTORIAL: Создаём туториал
+	_build_tutorial()
 
 func _apply_fonts():
 	if UITheme == null:
@@ -292,7 +298,7 @@ func _finish_search():
 	if player and player.has_method("hide_discuss_bar"):
 		player.hide_discuss_bar()
 
-	print("✅ Поиск завершён! Роль: ", _search_role)
+	print("✅ Поиск завершён! Р��ль: ", _search_role)
 
 	# Открываем HiringMenu с результатами
 	var hiring_menu = get_node_or_null("HiringMenu")
@@ -480,6 +486,9 @@ func is_any_menu_open() -> bool:
 	if _pause_menu and _pause_menu.is_open():
 		return true
 
+	# <<< TUTORIAL: Проверка туториала
+	if _tutorial and _tutorial.visible: return true
+
 	return false
 
 func _on_project_finished_xp(_proj):
@@ -490,7 +499,7 @@ func _on_project_failed_xp(_proj):
 	PMData.add_xp(10)
 	print("🎯 PM +10 XP за проваленный проект (опыт всё равно)")
 
-# --- ОБНОВЛЕНИЕ ИНТ��РФЕЙСА ---
+# --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 
 func update_time_label(_hour, _minute):
 	var time_str = "%02d:%02d" % [GameTime.hour, GameTime.minute]
@@ -644,3 +653,25 @@ func _on_night_skip_finished():
 	end_day_button.visible = false
 	# === АВТОСОХРАНЕНИЕ: начало нового рабочего дня ===
 	SaveManager.save_game()
+
+# <<< TUTORIAL: Построение и запуск туториала ===
+func _build_tutorial():
+	var script = load("res://Scripts/tutorial.gd")
+	_tutorial = Control.new()
+	_tutorial.set_script(script)
+	_tutorial.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_tutorial.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_tutorial)
+
+	if not _tutorial.tutorial_finished.is_connected(_on_tutorial_finished):
+		_tutorial.tutorial_finished.connect(_on_tutorial_finished)
+
+	# Показываем туториал при первом запуске (с задержкой, чтобы сцена загрузилась)
+	if not GameState.tutorial_completed:
+		get_tree().create_timer(0.5).timeout.connect(func():
+			if _tutorial and not GameState.tutorial_completed:
+				_tutorial.open()
+		)
+
+func _on_tutorial_finished():
+	print("📖 Туториал завершён!")

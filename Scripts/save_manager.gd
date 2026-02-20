@@ -78,6 +78,7 @@ func _serialize_game_time() -> Dictionary:
 func _serialize_game_state() -> Dictionary:
 	return {
 		"company_balance": GameState.company_balance,
+		"tutorial_completed": GameState.tutorial_completed,  # <<< TUTORIAL
 	}
 
 # --- PMData ---
@@ -240,7 +241,7 @@ func load_game() -> bool:
 	# Проверка версии
 	var version = data.get("save_version", 0)
 	if version != SAVE_VERSION:
-		push_warning("Версия сохранения (%d) отличается от текущей (%d)" % [version, SAVE_VERSION])
+		push_warning("Версия сохранения (%d) ��тличается от текущей (%d)" % [version, SAVE_VERSION])
 
 	# === Восстанавливаем все данные ===
 	_load_game_time(data.get("game_time", {}))
@@ -286,7 +287,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		push_error("Не найдена нода office для спавна сотрудников")
 		return
 
-	# Ищем world_layer для правильной сортировки (как при обычном найме)
+	# Ищем world_layer для правильной сортировки (��ак при обычном найме)
 	var world_layer = get_tree().get_first_node_in_group("world_layer")
 
 	# Удаляем существующих NPC (если есть)
@@ -335,7 +336,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.data.current_energy = float(emp_dict.get("current_energy", 100.0))
 			npc.data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
 
-			# Восстанавли��аем позицию стола
+			# Восстанавливаем позицию стола
 			var desk_x = float(emp_dict.get("desk_position_x", 0.0))
 			var desk_y = float(emp_dict.get("desk_position_y", 0.0))
 			if desk_x != 0.0 or desk_y != 0.0:
@@ -495,7 +496,7 @@ func _load_game_time(d: Dictionary):
 	GameTime.hour = int(d.get("hour", 8))
 	GameTime.minute = int(d.get("minute", 0))
 	GameTime.time_accumulator = 0.0
-	# === FIX: Сбрасываем состояние скорости при загру��ке ===
+	# === FIX: Сбрасываем состояние скорости при загрузке ===
 	GameTime.current_speed_scale = 1.0
 	GameTime.is_game_paused = false
 	GameTime.is_night_skip = false
@@ -513,6 +514,7 @@ func _load_game_state(d: Dictionary):
 	GameState.projects_failed_today.clear()
 	GameState.levelups_today.clear()
 	GameState.loyalty_changes_today.clear()
+	GameState.tutorial_completed = d.get("tutorial_completed", false)  # <<< TUTORIAL
 
 # --- Загрузка PMData ---
 func _load_pm_data(d: Dictionary):

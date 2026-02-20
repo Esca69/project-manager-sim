@@ -13,6 +13,7 @@ var daily_expenses: int = 0
 var daily_salary_details: Array = []  # [{name: String, amount: int}]
 var projects_finished_today: Array = []  # [{project: ProjectData, payout: int}]
 var projects_failed_today: Array = []    # [ProjectData]
+var tutorial_completed: bool = false
 
 # === ЛЕВЕЛ-АПЫ ЗА ДЕНЬ ===
 var levelups_today: Array = []  # [{name, role, new_level, grade, skill_gain, new_trait}]
