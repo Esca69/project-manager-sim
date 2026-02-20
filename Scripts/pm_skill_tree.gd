@@ -28,6 +28,7 @@ var _sp_label: Label
 var _tooltip_panel: PanelContainer = null
 var _skill_nodes: Dictionary = {}
 var _initialized: bool = false
+var _bg_overlay: ColorRect
 
 # === ОПРЕДЕЛЕНИЕ КАТЕГОРИЙ И ИХ ПОРЯДКА ===
 const CATEGORIES = [
@@ -65,6 +66,23 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 
+	# Слой выше чем у прогресс-бара босса
+	z_index = 90
+	
+	# Пропускаем клики через сам корень окна (как в client_panel)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	# Принудительно растягиваем на весь экран
+	_force_fullscreen_size()
+
+	# Затемненный фон-оверлей
+	_bg_overlay = ColorRect.new()
+	_bg_overlay.color = Color(0, 0, 0, 0.45)
+	_bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_bg_overlay)
+	move_child(_bg_overlay, 0) # Убираем на задний фон
+
 	if close_btn:
 		close_btn.pressed.connect(func():
 			if UITheme:
@@ -75,6 +93,12 @@ func _ready():
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
 	call_deferred("_deferred_init")
+
+# === НОВОЕ: Функция жесткого растягивания размера ===
+func _force_fullscreen_size():
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
 
 func _deferred_init():
 	if PMData == null:
@@ -95,6 +119,10 @@ func _on_skill_unlocked_rebuild(_id):
 func open():
 	if not _initialized:
 		return
+	
+	# Снова растягиваем при открытии (на случай ресайза окна игры)
+	_force_fullscreen_size()
+	
 	_rebuild_tree()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -112,7 +140,6 @@ func _build_ui():
 
 	var header = main_vbox.get_node_or_null("Header")
 	if header:
-		# --- ИСПРАВЛЕНИЕ: Переводим заголовок окна ---
 		var title_lbl = header.get_node_or_null("TitleLabel")
 		if not title_lbl:
 			title_lbl = header.find_child("TitleLabel", true, false)
@@ -120,7 +147,6 @@ func _build_ui():
 		if title_lbl:
 			title_lbl.text = tr("TAB_PM_SKILLS")
 			if UITheme: UITheme.apply_font(title_lbl, "bold")
-		# -------------------------------------------
 
 		var header_margin = header.get_node_or_null("MarginContainer")
 		if not header_margin:
@@ -135,13 +161,11 @@ func _build_ui():
 		if not hbox:
 			hbox = HBoxContainer.new()
 			hbox.add_theme_constant_override("separation", 20)
-			# ИСПРАВЛЕНИЕ 1: Выравниваем HBox по центру по вертикали
 			hbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER 
 			header_margin.add_child(hbox)
 
 		_xp_label = Label.new()
 		_xp_label.add_theme_color_override("font_color", COLOR_BLUE)
-		# ИСПРАВЛЕНИЕ 1: Увеличиваем шрифт с 14 до 20 и выравниваем по вертикали
 		_xp_label.add_theme_font_size_override("font_size", 20)
 		_xp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(_xp_label, "semibold")
@@ -149,7 +173,6 @@ func _build_ui():
 
 		_sp_label = Label.new()
 		_sp_label.add_theme_color_override("font_color", COLOR_GREEN)
-		# ИСПРАВЛЕНИЕ 1: Увеличиваем шрифт с 14 до 20 и выравниваем по вертикали
 		_sp_label.add_theme_font_size_override("font_size", 20)
 		_sp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(_sp_label, "bold")
@@ -221,7 +244,6 @@ func _rebuild_tree():
 
 		# --- Заголовок категории ---
 		var cat_lbl = Label.new()
-		# Добавляем эмодзи и переводим название
 		cat_lbl.text = cat_emoji + " " + tr(cat_label).to_upper()
 		cat_lbl.add_theme_font_size_override("font_size", 18)
 		cat_lbl.add_theme_color_override("font_color", Color(cat_color, 0.6))
@@ -234,7 +256,6 @@ func _rebuild_tree():
 		var is_inline = (cat_id == "analytics" or cat_id == "active")
 
 		if is_inline:
-			# Все навыки в одну горизонтальную линию без стрелок
 			var x = LEFT_MARGIN
 			for branch_id in cat_branches:
 				var branch_skills = _get_branch_skills(branch_id)
@@ -247,7 +268,6 @@ func _rebuild_tree():
 					x += NODE_SIZE.x + NODE_H_GAP
 			cursor_y += NODE_SIZE.y + ROW_V_GAP
 		else:
-			# Обычные ветки: каждая ветка — горизонтальный ряд со стрелками
 			for branch_id in cat_branches:
 				var branch_skills = _get_branch_skills(branch_id)
 				if branch_skills.is_empty():
@@ -263,7 +283,6 @@ func _rebuild_tree():
 					_canvas.add_child(node)
 					_skill_nodes[skill_id] = node
 
-					# Стрелка от предыдущего навыка
 					if prev_skill_id != "":
 						var prev_node = _skill_nodes[prev_skill_id]
 						var from_pos = prev_node.position + Vector2(NODE_SIZE.x, NODE_SIZE.y / 2.0)
@@ -293,7 +312,6 @@ func _rebuild_tree():
 		sep.size = Vector2(700, 1)
 		_canvas.add_child(sep)
 
-	# Обновляем размер канваса
 	_canvas.custom_minimum_size = Vector2(800, cursor_y + 40)
 
 func _get_branch_skills(branch_id: String) -> Array:
@@ -336,7 +354,6 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 	if UITheme: UITheme.apply_shadow(style)
 	panel.add_theme_stylebox_override("panel", style)
 
-	# Hover — подсветка рамки
 	var style_hover = style.duplicate()
 	if is_unlocked:
 		style_hover.border_color = Color(0.2, 0.6, 0.25, 1)
@@ -369,7 +386,6 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 	margin.add_child(vbox)
 
 	var title_lbl = Label.new()
-	# Названия навыков в PMData уже являются ключами
 	title_lbl.text = tr(skill["name"])
 	title_lbl.add_theme_font_size_override("font_size", 13)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -399,7 +415,6 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 		btn.text = tr("UI_SKILL_UNLOCK_BTN")
 		btn.custom_minimum_size = Vector2(120, 28)
 		btn.focus_mode = Control.FOCUS_NONE
-		# ИСПРАВЛЕНИЕ 2: Пропускаем мышь через кнопку, чтобы тултип не пропадал
 		btn.mouse_filter = Control.MOUSE_FILTER_PASS
 
 		var btn_style = StyleBoxFlat.new()
@@ -456,7 +471,6 @@ func _draw_arrow_line(from: Vector2, to: Vector2, color: Color, dashed: bool = f
 		line.z_index = -1
 		_canvas.add_child(line)
 
-	# Стрелка на конце
 	var arrow_size = 10.0
 	var arrow_tip = to - direction * 5
 	var perp = Vector2(-direction.y, direction.x)
@@ -516,7 +530,6 @@ func _show_tooltip(skill_id: String, anchor: Control):
 	_tooltip_panel.add_child(margin)
 
 	var lbl = Label.new()
-	# Описания навыков в PMData тоже являются ключами
 	lbl.text = tr(skill["description"])
 	lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
 	lbl.add_theme_font_size_override("font_size", 13)
