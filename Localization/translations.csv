@@ -44,9 +44,9 @@ SKILL_PROJECT_LIMIT_1_NAME,📁 Лимит проектов I,📁 Project Limit
 SKILL_PROJECT_LIMIT_1_DESC,Максимум активных проектов увеличен до 3 (было 2),Max active projects increased to 3 (was 2)
 SKILL_PROJECT_LIMIT_2_NAME,📁 Лимит проектов II,📁 Project Limit II
 SKILL_PROJECT_LIMIT_2_DESC,Максимум активных проектов увеличен до 5,Max active projects increased to 5
-SKILL_BOSS_MEETING_SPEED_1_NAME,⏱ Скорость обсуждения I,⏱ Meeting Speed I
+SKILL_BOSS_MEETING_SPEED_1_NAME,⏱ Обсуждение I,⏱ Meetings I
 SKILL_BOSS_MEETING_SPEED_1_DESC,Обсуждение проекта с боссом занимает 3 часа вместо 4,Boss meeting takes 3 hours instead of 4
-SKILL_BOSS_MEETING_SPEED_2_NAME,⏱ Скорость обсуждения II,⏱ Meeting Speed II
+SKILL_BOSS_MEETING_SPEED_2_NAME,⏱ Обсуждение II,⏱ Meetings II
 SKILL_BOSS_MEETING_SPEED_2_DESC,Обсуждение проекта с боссом занимает 2 часа,Boss meeting takes 2 hours
 SKILL_READ_TRAITS_1_NAME,👁 Чтение людей I,👁 Read People I
 SKILL_READ_TRAITS_1_DESC,При найме вы видите 1 трейт кандидата,You can see 1 trait when hiring

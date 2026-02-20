@@ -135,17 +135,23 @@ func _build_ui():
 		if not hbox:
 			hbox = HBoxContainer.new()
 			hbox.add_theme_constant_override("separation", 20)
+			# ИСПРАВЛЕНИЕ 1: Выравниваем HBox по центру по вертикали
+			hbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER 
 			header_margin.add_child(hbox)
 
 		_xp_label = Label.new()
 		_xp_label.add_theme_color_override("font_color", COLOR_BLUE)
-		_xp_label.add_theme_font_size_override("font_size", 14)
+		# ИСПРАВЛЕНИЕ 1: Увеличиваем шрифт с 14 до 20 и выравниваем по вертикали
+		_xp_label.add_theme_font_size_override("font_size", 20)
+		_xp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(_xp_label, "semibold")
 		hbox.add_child(_xp_label)
 
 		_sp_label = Label.new()
 		_sp_label.add_theme_color_override("font_color", COLOR_GREEN)
-		_sp_label.add_theme_font_size_override("font_size", 14)
+		# ИСПРАВЛЕНИЕ 1: Увеличиваем шрифт с 14 до 20 и выравниваем по вертикали
+		_sp_label.add_theme_font_size_override("font_size", 20)
+		_sp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		if UITheme: UITheme.apply_font(_sp_label, "bold")
 		hbox.add_child(_sp_label)
 
@@ -393,6 +399,8 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 		btn.text = tr("UI_SKILL_UNLOCK_BTN")
 		btn.custom_minimum_size = Vector2(120, 28)
 		btn.focus_mode = Control.FOCUS_NONE
+		# ИСПРАВЛЕНИЕ 2: Пропускаем мышь через кнопку, чтобы тултип не пропадал
+		btn.mouse_filter = Control.MOUSE_FILTER_PASS
 
 		var btn_style = StyleBoxFlat.new()
 		btn_style.bg_color = accent_color
