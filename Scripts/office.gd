@@ -1,7 +1,7 @@
 extends Node2D
 
-# Ссылка на сцену сотрудника
-var employee_scene = preload("res://Scenes/Employee.tscn")
+# Ссылка на сцену сотрудника — load вместо preload!
+var employee_scene: PackedScene = null
 
 # Точка спавна
 @onready var spawn_point = $SpawnPoint
@@ -14,6 +14,16 @@ var _post_effects: Node = null
 func _ready():
 	# === КРИТИЧНО: добавляем в группу "office" для поиска из SaveManager ===
 	add_to_group("office")
+	
+	# === ЗАГРУЗКА СЦЕНЫ СОТРУДНИКА (load вместо preload!) ===
+	employee_scene = load("res://Scenes/Employee.tscn")
+	if employee_scene == null:
+		# Пробуем альтернативные пути (на случай переименования)
+		employee_scene = load("res://Scenes/employee.tscn")
+	if employee_scene == null:
+		push_error("🔴 [OFFICE] Employee.tscn НЕ НАЙДЕН! Проверь что файл существует в Scenes/")
+	else:
+		print("🟢 [OFFICE] Employee.tscn загружен успешно")
 	
 	# === WorldEnvironment — настраиваем кодом (deferred чтобы дерево было готово) ===
 	call_deferred("_setup_environment")
@@ -28,7 +38,7 @@ func _ready():
 	add_child(_shadows)
 	_shadows.setup(self)
 
-	# === Пост-эффекты (виньетка) ===
+	# === Пост-эффекты (��иньетка) ===
 	_post_effects = preload("res://Scripts/post_effects.gd").new()
 	add_child(_post_effects)
 	_post_effects.setup(self)
@@ -85,6 +95,13 @@ func _setup_environment():
 
 # Эту функцию вызывает UI Найма
 func spawn_new_employee(data: EmployeeData):
+	# Подстраховка: если не загрузилось в _ready, пробуем ещё раз
+	if employee_scene == null:
+		employee_scene = load("res://Scenes/Employee.tscn")
+	if employee_scene == null:
+		push_error("🔴 [OFFICE] Employee.tscn НЕ ЗАГРУЖЕН! Сотрудник не создан: " + data.employee_name)
+		return
+
 	# 1. Создаем копию
 	var new_npc = employee_scene.instantiate()
 

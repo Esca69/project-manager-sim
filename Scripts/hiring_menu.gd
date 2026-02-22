@@ -518,24 +518,52 @@ func _create_hidden_trait(parent: Control) -> HBoxContainer:
 
 func _on_hire_pressed(index):
 	if index >= candidates.size():
+		print("🔴 [HIRE] index %d >= candidates.size() %d — ОТМЕНА" % [index, candidates.size()])
 		return
 	var human_to_hire = candidates[index]
-	if human_to_hire == null: return
+	if human_to_hire == null:
+		print("🔴 [HIRE] candidates[%d] == null — уже нанят" % index)
+		return
 
-	print("Нанимаем: ", human_to_hire.employee_name)
+	print("🟡 [HIRE] Нанимаем: ", human_to_hire.employee_name)
 
-		# Ищем офис по группе — надёжнее чем current_scene
+	# === ДИАГНОСТИКА: Дерево сцен ===
+	print("🟡 [HIRE] current_scene = ", get_tree().current_scene)
+	print("🟡 [HIRE] current_scene name = ", get_tree().current_scene.name if get_tree().current_scene else "NULL")
+	
+	# Ищем офис по группе
 	var office = get_tree().get_first_node_in_group("office")
+	print("🟡 [HIRE] office (по группе 'office') = ", office)
+	
+	# Дополнительно: выведем ВСЕ ноды в группе office
+	var all_offices = get_tree().get_nodes_in_group("office")
+	print("🟡 [HIRE] Все ноды в группе 'office': ", all_offices)
 	
 	if not office:
 		office = get_tree().current_scene
+		print("🟡 [HIRE] Фоллбек на current_scene: ", office)
 
 	if office and office.has_method("spawn_new_employee"):
+		print("🟢 [HIRE] Вызываю spawn_new_employee на: ", office)
 		office.spawn_new_employee(human_to_hire)
 	else:
-		print("КРИТИЧЕСКАЯ ОШИБКА: Не найден метод spawn_new_employee!")
-		print("  current_scene = ", get_tree().current_scene)
-		print("  office group = ", get_tree().get_first_node_in_group("office"))
+		print("🔴 [HIRE] КРИТИЧЕСКАЯ ОШИБКА: Не найден метод spawn_new_employee!")
+		if office:
+			print("🔴 [HIRE]   office = ", office, " | script = ", office.get_script())
+			print("🔴 [HIRE]   has spawn_new_employee: ", office.has_method("spawn_new_employee"))
+		else:
+			print("🔴 [HIRE]   office = NULL")
+		
+		# АВАРИЙНЫЙ ПОИСК: ищем по всему дереву ноду со скриптом office
+		print("🔴 [HIRE] Пробуем аварийный поиск по дереву...")
+		var root = get_tree().root
+		var found = _find_node_with_method(root, "spawn_new_employee")
+		if found:
+			print("🟢 [HIRE] НАЙДЕНО аварийно: ", found, " | Путь: ", found.get_path())
+			found.spawn_new_employee(human_to_hire)
+		else:
+			print("🔴 [HIRE] Нода со spawn_new_employee НЕ НАЙДЕНА нигде в дереве!")
+			return
 
 	PMData.add_xp(5)
 	print("🎯 PM +5 XP за найм сотрудника")
@@ -556,6 +584,16 @@ func _on_hire_pressed(index):
 				card.visible = false
 				card.modulate.a = 1.0
 			)
+
+# === АВАРИЙНЫЙ ПОИСК НОДЫ С МЕТОДОМ ===
+func _find_node_with_method(node: Node, method_name: String) -> Node:
+	if node.has_method(method_name):
+		return node
+	for child in node.get_children():
+		var found = _find_node_with_method(child, method_name)
+		if found:
+			return found
+	return null
 
 func find_node_by_name(root, target_name):
 	if root.name == target_name: return root
