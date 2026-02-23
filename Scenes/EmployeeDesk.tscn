@@ -37,4 +37,4 @@ texture = ExtResource("2_68q08")
 offset = Vector2(0, -75)
 
 [node name="SeatPosition" type="Marker2D" parent="."]
-position = Vector2(-1, -110)
+position = Vector2(-6, -51)

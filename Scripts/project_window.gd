@@ -24,9 +24,6 @@ var hard_deadline_line: ColorRect
 # Красивый зелёный цвет для кнопки СТАРТ
 var color_green_main = Color(0.29803923, 0.6862745, 0.3137255, 1)
 
-# === ДОБАВЛЕНО ДЛЯ ФОНА ===
-var _overlay: ColorRect
-
 func _get_origin_time() -> float:
 	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
 
@@ -62,12 +59,11 @@ func setup(data: ProjectData, selector_node):
 	for i in range(project.stages.size()):
 		var stage = project.stages[i]
 		_migrate_stage(stage)
-		if not stage.has("plan_start"):
-			stage["plan_start"] = 0.0
-			stage["plan_duration"] = 0.0
-			stage["actual_start"] = -1.0
-			stage["actual_end"] = -1.0
-			stage["is_completed"] = false
+		if not stage.has("plan_start"): stage["plan_start"] = 0.0
+		if not stage.has("plan_duration"): stage["plan_duration"] = 0.0
+		if not stage.has("actual_start"): stage["actual_start"] = -1.0
+		if not stage.has("actual_end"): stage["actual_end"] = -1.0
+		if not stage.has("is_completed"): stage["is_completed"] = false
 
 		var stage_readonly = is_readonly or stage.get("is_completed", false)
 
@@ -97,21 +93,6 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	
-	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (ОТВЯЗАННОЕ ОТ РАЗМЕРА ОКНА) ===
-	z_index = 90
-	_overlay = ColorRect.new()
-	_overlay.color = Color(0, 0, 0, 0.45)
-	# Делаем оверлей независимым (TopLevel), чтобы он брал размеры вьюпорта, а не окна
-	_overlay.set_as_top_level(true) 
-	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	# Назначаем Z-индекс чуть меньше, чем у самого окна, чтобы фон был сзади, но окно спереди
-	_overlay.z_index = z_index - 1 
-	add_child(_overlay)
-	
-	# Привязываем обновление размера фона к изменению размера окна игры
-	get_viewport().size_changed.connect(_update_overlay_size)
-	_update_overlay_size() # Вызываем один раз при старте
-	
 	var cancel_node = $MainLayout/ContentWrapper/Body/Footer/CancelButton
 	if cancel_node:
 		cancel_node.queue_free()
@@ -119,7 +100,12 @@ func _ready():
 	start_btn.pressed.connect(_on_start_pressed)
 	start_btn.text = tr("PROJ_WIN_BTN_START")
 	
-	close_window_btn.pressed.connect(close)
+	close_window_btn.pressed.connect(func():
+		if UITheme:
+			UITheme.fade_out(self, 0.15)
+		else:
+			visible = false
+	)
 
 	var start_style_normal = StyleBoxFlat.new()
 	start_style_normal.bg_color = Color(1, 1, 1, 1)
@@ -173,19 +159,6 @@ func _ready():
 		UITheme.apply_font(budget_label, "bold")
 		UITheme.apply_font(start_btn, "semibold")
 		UITheme.apply_font(close_window_btn, "semibold")
-
-# === ОБНОВЛЕНИЕ РАЗМЕРА ФОНА ===
-func _update_overlay_size():
-	if _overlay:
-		_overlay.position = Vector2.ZERO
-		_overlay.size = get_viewport().get_visible_rect().size
-
-# === ФУНКЦИЯ ЗАКРЫТИЯ ===
-func close():
-	if UITheme:
-		UITheme.fade_out(self, 0.15)
-	else:
-		visible = false
 
 func _update_budget_display():
 	if not project: return
@@ -254,10 +227,6 @@ func _on_start_pressed():
 func _process(delta):
 	if not project: return
 	if not visible: return
-	
-	# Следим, чтобы оверлей прятался вместе с окном
-	if _overlay:
-		_overlay.visible = visible
 	
 	_update_budget_display()
 
@@ -558,16 +527,3 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 	var track_node = tracks_container.get_child(stage_index)
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()
-
-# === ОБРАБОТКА ВВОДА (ESC) ===
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and visible:
-		# Проверяем, открыт ли селектор выбора сотрудника для проекта
-		if selector_ref and selector_ref.visible:
-			if UITheme:
-				UITheme.fade_out(selector_ref, 0.15)
-			else:
-				selector_ref.visible = false
-		else:
-			close()
-		get_viewport().set_input_as_handled()

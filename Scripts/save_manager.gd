@@ -196,6 +196,8 @@ func _serialize_projects() -> Array:
 				"is_completed": stage.get("is_completed", false),
 				"actual_start": stage.get("actual_start", -1.0),
 				"actual_end": stage.get("actual_end", -1.0),
+				"plan_start": stage.get("plan_start", 0.0),          # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
+				"plan_duration": stage.get("plan_duration", 0.0),    # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
 				# Сохраняем имена текущих работников
 				"worker_names": [],
 				# Сохраняем имена работников из завершённых этапов
@@ -241,7 +243,7 @@ func load_game() -> bool:
 	# Проверка версии
 	var version = data.get("save_version", 0)
 	if version != SAVE_VERSION:
-		push_warning("Версия сохранения (%d) ��тличается от текущей (%d)" % [version, SAVE_VERSION])
+		push_warning("Версия сохранения (%d) отличается от текущей (%d)" % [version, SAVE_VERSION])
 
 	# === Восстанавливаем все данные ===
 	_load_game_time(data.get("game_time", {}))
@@ -287,7 +289,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		push_error("Не найдена нода office для спавна сотрудников")
 		return
 
-	# Ищем world_layer для правильной сортировки (��ак при обычном найме)
+	# Ищем world_layer для правильной сортировки (как при обычном найме)
 	var world_layer = get_tree().get_first_node_in_group("world_layer")
 
 	# Удаляем существующих NPC (если есть)
@@ -374,6 +376,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				"is_completed": stage_dict.get("is_completed", false),
 				"actual_start": float(stage_dict.get("actual_start", -1.0)),
 				"actual_end": float(stage_dict.get("actual_end", -1.0)),
+				"plan_start": float(stage_dict.get("plan_start", 0.0)),         # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
+				"plan_duration": float(stage_dict.get("plan_duration", 0.0)),   # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
 				"workers": [],
 				"completed_worker_names": [],
 			}
@@ -439,7 +443,6 @@ func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeDat
 
 	return npc
 
-# --- НОВЫЙ: Восстанавливаем привязку столов ---
 # --- НОВЫЙ: Восстанавливаем привязку столов ---
 func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary, npc_map: Dictionary):
 	if desk_assignments.is_empty():
@@ -571,7 +574,7 @@ func _load_clients(arr: Array):
 			client.projects_failed = int(cd.get("projects_failed", 0))
 
 # ============================================================
-#                       УТИЛИТЫ
+#                        УТИЛИТЫ
 # ============================================================
 
 func _deep_copy_dict(d) -> Dictionary:
