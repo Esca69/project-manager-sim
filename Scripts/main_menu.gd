@@ -5,7 +5,7 @@ extends Control
 
 const SETTINGS_PATH = "user://settings.json"
 
-# Цвета в стиле игры
+# Цвета в стил�� игры
 const COLOR_PRIMARY = Color(0.17254902, 0.30980393, 0.5686275, 1)  # Синий как в bottom_bar
 const COLOR_PRIMARY_LIGHT = Color(0.25, 0.42, 0.72, 1)
 const COLOR_ACCENT = Color(0.29803923, 0.6862745, 0.3137255, 1)    # Зелёный как end_day_button
@@ -570,8 +570,17 @@ func _reset_all_singletons():
 	# ProjectManager
 	ProjectManager.active_projects.clear()
 	
-		# Tutorial
+	# Tutorial
 	GameState.tutorial_completed = false
+
+	# === EVENT SYSTEM: Сброс ивент-системы ===
+	var em = get_node_or_null("/root/EventManager")
+	if em:
+		em.active_effects.clear()
+		em.employee_cooldowns.clear()
+		em.last_event_day = 0
+		em.last_sick_day = -100
+		em.last_dayoff_day = -100
 
 # === СОХРАНЕНИЕ / ЗАГРУЗКА НАСТРОЕК ===
 

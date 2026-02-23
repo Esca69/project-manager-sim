@@ -28,7 +28,7 @@ const GRADE_NAMES = {
 # Базовые навыки по уровням (без рандома)
 const SKILL_TABLE = [80, 100, 120, 145, 170, 200, 225, 250, 270, 285, 300]
 
-# Прибавка навыка при левел-апе [min, max]
+# Прибавка навыка при левел-��пе [min, max]
 const SKILL_GAIN_PER_LEVEL = [
 	[17, 23],  # 0 → 1
 	[17, 23],  # 1 → 2
@@ -234,7 +234,7 @@ func get_trait_description(trait_id: String) -> String:
 		return tr(TRAIT_DESCRIPTIONS[trait_id])
 	return ""
 
-# --- Модификатор скорости работы (учитывает fast_learner, slowpoke И мотивацию) ---
+# --- Модификатор скорости работы (учитывает fast_learner, slowpoke, мотивацию И ивент-эффекты) ---
 func get_work_speed_multiplier() -> float:
 	var mult = 1.0
 	if has_trait("fast_learner"):
@@ -243,6 +243,12 @@ func get_work_speed_multiplier() -> float:
 		mult -= 0.2
 	# === БОНУС МОТИВАЦИИ ===
 	mult += motivation_bonus
+	# === EVENT SYSTEM: Баффы/дебаффы от ивентов ===
+	var em = Engine.get_singleton("EventManager") if Engine.has_singleton("EventManager") else null
+	if em == null:
+		em = _get_event_manager()
+	if em:
+		mult += em.get_employee_efficiency_modifier(employee_name)
 	return mult
 
 # --- Модификатор расхода энергии (учитывает energizer) ---
@@ -266,7 +272,7 @@ var hourly_rate: int:
 
 @export var avatar: Texture2D
 
-# --- Эффективность: энергия + мотивация (для отображения в ростере) ---
+# --- Эффективность: энергия + мотивация + ивент-эффекты (для отображения в ростере) ---
 func get_efficiency_multiplier() -> float:
 	var base: float
 	if current_energy >= 70.0:
@@ -279,4 +285,20 @@ func get_efficiency_multiplier() -> float:
 		base = 0.2
 	
 	# Добавляем бонус мотивации
-	return base + motivation_bonus
+	base += motivation_bonus
+	# === EVENT SYSTEM: Баффы/дебаффы от ивентов ===
+	var em = _get_event_manager()
+	if em:
+		base += em.get_employee_efficiency_modifier(employee_name)
+	return base
+
+# === EVENT SYSTEM: Безопасный доступ к EventManager из Resource ===
+func _get_event_manager():
+	# Resource не имеет доступа к дереву сцены, поэтому ищем через autoload
+	if Engine.has_singleton("EventManager"):
+		return Engine.get_singleton("EventManager")
+	# Fallback: получаем через MainLoop → root
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop is SceneTree:
+		return main_loop.root.get_node_or_null("/root/EventManager")
+	return null

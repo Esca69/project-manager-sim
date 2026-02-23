@@ -12,7 +12,10 @@ enum State {
 	GOING_TOILET,
 	TOILET_BREAK,
 	WANDERING,
-	WANDER_PAUSE
+	WANDER_PAUSE,
+	# === EVENT SYSTEM: Новые стейты ===
+	SICK_LEAVE,
+	DAY_OFF,
 }
 
 var current_state = State.IDLE
@@ -74,6 +77,10 @@ var _motivation_anim_tween: Tween = null
 # === ЗАПРЕТ ТУАЛЕТА ОТ PM ===
 var _toilet_ban_minutes_left: float = 0.0
 
+# === EVENT SYSTEM: Счётчик дней болезни и флаг отгула ===
+var sick_days_left: int = 0
+var is_on_day_off: bool = false
+
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
 var skin_color: Color = Color.WHITE
@@ -96,7 +103,7 @@ const CLOTHING_PALETTE: Array[Color] = [
 	Color("#FF9F1C"), # Оранжевый
 	Color("#2EC4B6"), # Морская волна
 	Color("#E71D36"), # Карминно-красный
-	Color("#9C89B8"), # Приглушенный фиолетовый
+	Color("#9C89B8"), # Пригл��шенный фиолетовый
 	Color("#F0A6CA"), # Пыльная роза
 	Color("#B8BEDD"), # Серо-голубой
 	Color("#99E2B4")  # Светло-зеленый
@@ -219,6 +226,97 @@ func apply_toilet_ban(duration_minutes: float):
 func remove_toilet_ban():
 	_toilet_ban_minutes_left = 0.0
 
+# =============================================
+# === EVENT SYSTEM: БОЛЕЗНЬ ===
+# =============================================
+func start_sick_leave(days: int):
+	sick_days_left = days
+	is_on_day_off = false
+	
+	# Освобождаем все ресурсы
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
+	# Прячем сотрудника
+	visible = false
+	$CollisionShape2D.disabled = true
+	velocity = Vector2.ZERO
+	current_state = State.SICK_LEAVE
+	
+	show_thought_bubble("🤒", 3.0)
+	if data:
+		print("🤒 %s уходит на больничный (%d дн.)" % [data.employee_name, days])
+
+func tick_sick_day():
+	# Вызывается EventManager каждое утро для больных
+	if current_state != State.SICK_LEAVE:
+		return
+	
+	sick_days_left -= 1
+	if sick_days_left <= 0:
+		_recover_from_sick()
+
+func _recover_from_sick():
+	sick_days_left = 0
+	current_state = State.HOME
+	# Сотрудник проснётся и придёт на работу через обычный _on_work_started
+	if data:
+		data.current_energy = 100.0
+		print("✅ %s выздоровел и готов к работе!" % data.employee_name)
+
+# =============================================
+# === EVENT SYSTEM: ОТГУЛ ===
+# =============================================
+func start_day_off():
+	is_on_day_off = true
+	sick_days_left = 0
+	
+	# Освобождаем ресурсы
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	
+	# Уходим домой через анимацию
+	velocity = Vector2.ZERO
+	z_index = 0
+	
+	var entrance = get_tree().get_first_node_in_group("entrance")
+	if entrance:
+		nav_agent.target_position = entrance.global_position
+		current_state = State.GOING_HOME
+		# После прихода к выходу — перейдёт в DAY_OFF через _on_arrived_home_or_dayoff
+	else:
+		# Нет входа — мгновенно прячем
+		_finalize_day_off()
+
+func _finalize_day_off():
+	visible = false
+	$CollisionShape2D.disabled = true
+	velocity = Vector2.ZERO
+	current_state = State.DAY_OFF
+	if data:
+		print("🏠 %s ушёл в отгул до завтра" % data.employee_name)
+
+func end_day_off():
+	# Вызывается EventManager утром следующего дня
+	if current_state != State.DAY_OFF:
+		return
+	is_on_day_off = false
+	current_state = State.HOME
+	# Сотрудник придёт на работу через обычный _on_work_started
+	if data:
+		data.current_energy = 100.0
+		print("✅ %s вернулся из отгула" % data.employee_name)
+
 # === АНИМАЦИЯ РЕАКЦИИ НА МОТИВАЦИЮ ===
 func _play_motivation_reaction():
 	if not body_sprite or not head_sprite:
@@ -305,6 +403,10 @@ func _on_day_started(_day_number: int):
 func _on_time_tick(_hour, _minute):
 	if not data: return
 
+	# === EVENT SYSTEM: Не тикаем таймеры если болеем или в отгуле ===
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+		return
+
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
 		_motivation_minutes_left -= 1.0
@@ -388,6 +490,10 @@ func _physics_process(delta):
 		
 		State.HOME:
 			_apply_lean(Vector2.ZERO, delta)
+		
+		# === EVENT SYSTEM: Новые стейты — ничего не делаем ===
+		State.SICK_LEAVE, State.DAY_OFF:
+			pass
 			
 		State.WORKING:
 			if not _is_work_time():
@@ -427,7 +533,11 @@ func _physics_process(delta):
 		State.GOING_HOME:
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 50.0:
-				_on_arrived_home()
+				# === EVENT SYSTEM: Если это отгул — переходим в DAY_OFF, а не HOME ===
+				if is_on_day_off:
+					_finalize_day_off()
+				else:
+					_on_arrived_home()
 				return
 			_move_along_path(delta)
 
@@ -488,7 +598,8 @@ func _force_go_home():
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	if current_state == State.HOME or current_state == State.GOING_HOME:
+	# === EVENT SYSTEM: Не уходим домой если болеем/в отгуле ===
+	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	
 	velocity = Vector2.ZERO
@@ -743,6 +854,10 @@ func _on_navigation_finished():
 	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
 func _on_work_started():
+	# === EVENT SYSTEM: Больной или в отгуле — НЕ приходит на работу ===
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+		return
+	
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		if current_state != State.HOME:
 			return
@@ -786,7 +901,8 @@ func _on_work_started():
 		_start_wandering()
 
 func _on_work_ended():
-	if current_state == State.HOME or current_state == State.GOING_HOME:
+	# === EVENT SYSTEM: Больной или в отгуле — игнорируем ===
+	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	_should_go_home = true
 
@@ -801,6 +917,10 @@ func _go_to_sleep_instant():
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
+	
+	# === EVENT SYSTEM: Не сбрасываем состояние если болеем/в отгуле ===
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+		return
 	
 	visible = false
 	$CollisionShape2D.disabled = true
@@ -851,6 +971,9 @@ func get_human_state_name() -> String:
 		State.TOILET_BREAK: return tr("EMP_ACTION_TOILET_BREAK")
 		State.WANDERING: return tr("EMP_ACTION_WANDERING")
 		State.WANDER_PAUSE: return tr("EMP_ACTION_WANDER_PAUSE")
+		# === EVENT SYSTEM: Названия новых стейтов ===
+		State.SICK_LEAVE: return tr("EMP_ACTION_SICK_LEAVE")
+		State.DAY_OFF: return tr("EMP_ACTION_DAY_OFF")
 	return "..."
 
 func update_status_label():

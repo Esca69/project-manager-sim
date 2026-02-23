@@ -54,6 +54,9 @@ func save_game():
 		
 		# --- Привязка столов ---
 		"desk_assignments": _serialize_desk_assignments(),
+
+		# === EVENT SYSTEM: Сохраняем состояние EventManager ===
+		"event_manager": _serialize_event_manager(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -147,6 +150,10 @@ func _serialize_employees() -> Array:
 			# Позиция стола (для восстановления привязки)
 			"desk_position_x": npc.my_desk_position.x,
 			"desk_position_y": npc.my_desk_position.y,
+			# === EVENT SYSTEM: Сохраняем состояние болезни/отгула ===
+			"sick_days_left": npc.sick_days_left,
+			"is_on_day_off": npc.is_on_day_off,
+			"current_state": npc.current_state,
 		})
 	return result
 
@@ -196,11 +203,11 @@ func _serialize_projects() -> Array:
 				"is_completed": stage.get("is_completed", false),
 				"actual_start": stage.get("actual_start", -1.0),
 				"actual_end": stage.get("actual_end", -1.0),
-				"plan_start": stage.get("plan_start", 0.0),          # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
-				"plan_duration": stage.get("plan_duration", 0.0),    # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
+				"plan_start": stage.get("plan_start", 0.0),
+				"plan_duration": stage.get("plan_duration", 0.0),
 				# Сохраняем имена текущих работников
 				"worker_names": [],
-				# Сохраняем имена работников из завершённых этапов
+				# ��охраняем имена работников из завершённых этапов
 				"completed_worker_names": stage.get("completed_worker_names", []),
 			}
 			# Сериализуем текущих работников по имени
@@ -211,6 +218,14 @@ func _serialize_projects() -> Array:
 
 		result.append(proj_dict)
 	return result
+
+# === EVENT SYSTEM: Сериализация EventManager ===
+func _serialize_event_manager() -> Dictionary:
+	var em = get_node_or_null("/root/EventManager")
+	if em == null:
+		return {}
+	# Используем встроенный метод serialize() из event_manager.gd
+	return em.serialize()
 
 # ============================================================
 #                        ЗАГРУЗКА
@@ -251,6 +266,9 @@ func load_game() -> bool:
 	_load_pm_data(data.get("pm_data", {}))
 	_load_boss_manager(data.get("boss_manager", {}))
 	_load_clients(data.get("clients", []))
+
+	# === EVENT SYSTEM: Восстанавливаем EventManager ===
+	_load_event_manager(data.get("event_manager", {}))
 
 	# Сотрудники и проекты восстанавливаются после загрузки сцены
 	# (вызывается из office.gd → _try_restore_save)
@@ -344,6 +362,22 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			if desk_x != 0.0 or desk_y != 0.0:
 				npc.my_desk_position = Vector2(desk_x, desk_y)
 
+			# === EVENT SYSTEM: Восстанавливаем состояние болезни/отгула ===
+			npc.sick_days_left = int(emp_dict.get("sick_days_left", 0))
+			npc.is_on_day_off = emp_dict.get("is_on_day_off", false)
+			var saved_state = int(emp_dict.get("current_state", 0))
+			# Если сотрудник был на больничном — восстанавливаем это состояние
+			if saved_state == 11:  # State.SICK_LEAVE
+				npc.visible = false
+				npc.get_node("CollisionShape2D").disabled = true
+				npc.velocity = Vector2.ZERO
+				npc.current_state = 11  # SICK_LEAVE
+			elif saved_state == 12:  # State.DAY_OFF
+				npc.visible = false
+				npc.get_node("CollisionShape2D").disabled = true
+				npc.velocity = Vector2.ZERO
+				npc.current_state = 12  # DAY_OFF
+
 			employee_map[emp_data.employee_name] = emp_data
 			npc_map[emp_data.employee_name] = npc
 
@@ -376,8 +410,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				"is_completed": stage_dict.get("is_completed", false),
 				"actual_start": float(stage_dict.get("actual_start", -1.0)),
 				"actual_end": float(stage_dict.get("actual_end", -1.0)),
-				"plan_start": float(stage_dict.get("plan_start", 0.0)),         # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
-				"plan_duration": float(stage_dict.get("plan_duration", 0.0)),   # <<< ИСПРАВЛЕНИЕ: ПЛАН-ГРАФИК
+				"plan_start": float(stage_dict.get("plan_start", 0.0)),
+				"plan_duration": float(stage_dict.get("plan_duration", 0.0)),
 				"workers": [],
 				"completed_worker_names": [],
 			}
@@ -387,7 +421,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			for cname in cwn:
 				stage["completed_worker_names"].append(str(cname))
 
-			# Восстанавливаем привязку работников
+			# Восстанавливае�� привязку работников
 			var worker_names = stage_dict.get("worker_names", [])
 			for wname in worker_names:
 				var wname_str = str(wname)
@@ -490,13 +524,15 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 					if "seat_point" in best_desk and best_desk.seat_point:
 						npc_node.my_desk_position = best_desk.seat_point.global_position
 					else:
-						# Фолбэк на случай если у стола нет seat_point (например, это другой тип стола)
 						npc_node.my_desk_position = best_desk.global_position
 
 # --- Привязка сотрудников к столам после загрузки ---
 func _rebind_employees_to_desks():
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
+		# === EVENT SYSTEM: Не привязываем к столам больных/в отгуле ===
+		if npc.current_state == 11 or npc.current_state == 12:
+			continue
 		if npc.my_desk_position != Vector2.ZERO:
 			if ProjectManager.is_employee_on_active_stage(npc.data):
 				npc.move_to_desk(npc.my_desk_position)
@@ -514,7 +550,7 @@ func _load_game_time(d: Dictionary):
 	GameTime.is_game_paused = false
 	GameTime.is_night_skip = false
 
-# --- Загрузка GameState ---
+# --- Загруз��а GameState ---
 func _load_game_state(d: Dictionary):
 	if d.is_empty():
 		return
@@ -572,6 +608,16 @@ func _load_clients(arr: Array):
 			client.projects_completed_on_time = int(cd.get("projects_completed_on_time", 0))
 			client.projects_completed_late = int(cd.get("projects_completed_late", 0))
 			client.projects_failed = int(cd.get("projects_failed", 0))
+
+# === EVENT SYSTEM: Загрузка EventManager ===
+func _load_event_manager(d: Dictionary):
+	var em = get_node_or_null("/root/EventManager")
+	if em == null:
+		return
+	if d.is_empty():
+		return
+	# Используем встроенный метод deserialize() из event_manager.gd
+	em.deserialize(d)
 
 # ============================================================
 #                        УТИЛИТЫ

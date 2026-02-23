@@ -60,6 +60,9 @@ var _pause_menu: CanvasLayer
 # <<< TUTORIAL: переменная для туториала
 var _tutorial: Control
 
+# === EVENT SYSTEM: Попап ивентов ===
+var _event_popup: Control
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -167,6 +170,9 @@ func _ready():
 
 	# <<< TUTORIAL: Создаём туториал
 	_build_tutorial()
+
+	# === EVENT SYSTEM: Создаём ивент-попап ===
+	_build_event_popup()
 
 func _apply_fonts():
 	if UITheme == null:
@@ -298,7 +304,7 @@ func _finish_search():
 	if player and player.has_method("hide_discuss_bar"):
 		player.hide_discuss_bar()
 
-	print("✅ Поиск завершён! Р��ль: ", _search_role)
+	print("✅ Поиск завершён! Роль: ", _search_role)
 
 	# Открываем HiringMenu с результатами
 	var hiring_menu = get_node_or_null("HiringMenu")
@@ -489,6 +495,9 @@ func is_any_menu_open() -> bool:
 	# <<< TUTORIAL: Проверка туториала
 	if _tutorial and _tutorial.visible: return true
 
+	# === EVENT SYSTEM: Проверка ивент-попапа ===
+	if _event_popup and _event_popup.visible: return true
+
 	return false
 
 func _on_project_finished_xp(_proj):
@@ -675,3 +684,20 @@ func _build_tutorial():
 
 func _on_tutorial_finished():
 	print("📖 Туториал завершён!")
+
+# === EVENT SYSTEM: Построение попапа ивентов ===
+func _build_event_popup():
+	var script = load("res://Scripts/event_popup.gd")
+	if script == null:
+		push_warning("event_popup.gd не найден — ивент-попап не будет работать")
+		return
+	_event_popup = Control.new()
+	_event_popup.set_script(script)
+	_event_popup.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_event_popup.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_event_popup)
+
+# === EVENT SYSTEM: Открыть попап ивента (вызывается из EventManager) ===
+func show_event_popup(event_data: Dictionary):
+	if _event_popup and _event_popup.has_method("open"):
+		_event_popup.open(event_data)

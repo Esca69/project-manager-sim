@@ -440,3 +440,21 @@ TUTORIAL_STEP_7,"Всё. Больше разжёвывать не собираю
 TAB_ACTIVE_PROJECTS,Активные проекты,Active Projects
 TAB_COMPLETED_PROJECTS,Завершенные проекты,Completed Projects
 HR_ROLE_TIME_H_M,Время поиска: %s ч. %s мин. ,Search will take: %s h. %s min. 
+EVENT_SICK_TITLE,Болезнь сотрудника,Employee Illness
+EVENT_SICK_DESC,%s слёг с температурой и не может выйти на работу.,%s has fallen ill and cannot come to work.
+EVENT_SICK_CHOICE_CURE,Оплатить экспресс-лечение ($%d),Pay for express treatment ($%d)
+EVENT_SICK_CURE_DESC,Вернётся завтра.,Will return tomorrow.
+EVENT_SICK_CHOICE_LEAVE,Отправить на больничный,Send on sick leave
+EVENT_SICK_LEAVE_DESC,Вернётся через %d дн. Бесплатно. Зарплата сохраняется.,Will return in %d days. Free. Salary is preserved.
+EVENT_DAYOFF_TITLE,Просьба об отгуле,Request for Day Off
+EVENT_DAYOFF_DESC,"%s подходит к вам: ""У меня срочная ситуация дома, можно я уйду на сегодня?""","%s approaches you: ""I have an urgent situation at home, can I leave for today?"""
+EVENT_DAYOFF_CHOICE_ALLOW,Отпустить,Let them go
+EVENT_DAYOFF_ALLOW_DESC,Уйдёт до конца дня. Завтра вернётся с бонусом +10% к эффективности.,Will leave for the day. Tomorrow returns with +10% efficiency bonus.
+EVENT_DAYOFF_CHOICE_DENY,Отказать,Deny
+EVENT_DAYOFF_DENY_DESC,Останется работать с -20% эффективностью до конца дня.,Will stay working but with -20% efficiency until end of day.
+ROSTER_STATUS_SICK,🤒 Болеет (%d дн.),🤒 Sick (%d d.)
+ROSTER_STATUS_DAYOFF,🏠 В отгуле,🏠 Day off
+ROSTER_STATUS_BUFF,💚 Мотивирован,💚 Motivated
+ROSTER_STATUS_DEBUFF,😤 Раздражён,😤 Irritated
+EMP_ACTION_SICK_LEAVE,🤒 На больничном,🤒 Sick leave
+EMP_ACTION_DAY_OFF,🏠 В отгуле,🏠 Day off

@@ -135,6 +135,8 @@ func _update_live_data():
 		var energy_lbl = card.get_meta("energy_label") if card.has_meta("energy_label") else null
 		var status_lbl = card.get_meta("status_label") if card.has_meta("status_label") else null
 		var eff_lbl = card.get_meta("eff_label") if card.has_meta("eff_label") else null
+		# === EVENT SYSTEM: метка эффекта ===
+		var effect_lbl = card.get_meta("effect_label") if card.has_meta("effect_label") else null
 
 		if energy_lbl:
 			var energy_pct = int(emp_data.current_energy)
@@ -160,6 +162,12 @@ func _update_live_data():
 			if npc_node:
 				status_lbl.text = _get_status_text(npc_node)
 				status_lbl.add_theme_color_override("font_color", _get_status_color(npc_node))
+
+		# === EVENT SYSTEM: обновляем метку эффекта в реальном времени ===
+		if effect_lbl:
+			var effect_text = _get_event_effect_text(emp_data)
+			effect_lbl.text = effect_text
+			effect_lbl.visible = effect_text != ""
 
 func _rebuild_cards():
 	for child in cards_container.get_children():
@@ -385,6 +393,16 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(status_lbl)
 	card.set_meta("status_label", status_lbl)
 
+	# === EVENT SYSTEM: Метка ивент-эффекта (бафф/дебафф/болезнь) ===
+	var effect_lbl = Label.new()
+	effect_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(effect_lbl, "semibold")
+	var effect_text = _get_event_effect_text(emp)
+	effect_lbl.text = effect_text
+	effect_lbl.visible = effect_text != ""
+	right_vbox.add_child(effect_lbl)
+	card.set_meta("effect_label", effect_lbl)
+
 	var energy_lbl = Label.new()
 	var energy_pct = int(emp.current_energy)
 	energy_lbl.text = tr("ROSTER_ENERGY") % energy_pct
@@ -606,6 +624,9 @@ func _get_status_text(npc_node) -> String:
 		8: return tr("ROSTER_STATUS_TOILET_BREAK")
 		9: return tr("ROSTER_STATUS_WANDERING")
 		10: return tr("ROSTER_STATUS_THINKING")
+		# === EVENT SYSTEM: Новые стейты ===
+		11: return tr("ROSTER_STATUS_SICK") % npc_node.sick_days_left
+		12: return tr("ROSTER_STATUS_DAYOFF")
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
@@ -618,7 +639,22 @@ func _get_status_color(npc_node) -> Color:
 		6: return Color(0.3, 0.7, 0.85, 1)
 		8: return Color(0.6, 0.4, 0.7, 1)
 		9, 10: return Color(0.75, 0.6, 0.4, 1)
+		# === EVENT SYSTEM: Цвета для новых стейтов ===
+		11: return Color(0.85, 0.25, 0.2, 1)    # Красный — болезнь
+		12: return Color(0.9, 0.6, 0.1, 1)      # Оранжевый — отгул
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
+
+# === EVENT SYSTEM: Текст ивент-эффекта для ростера ===
+func _get_event_effect_text(emp_data: EmployeeData) -> String:
+	var em = get_node_or_null("/root/EventManager")
+	if em == null:
+		return ""
+	var emoji = em.get_employee_effect_emoji(emp_data.employee_name)
+	if emoji == "💚":
+		return tr("ROSTER_STATUS_BUFF")
+	elif emoji == "😤":
+		return tr("ROSTER_STATUS_DEBUFF")
+	return ""
 
 func _get_working_project_name(emp_data: EmployeeData) -> String:
 	for project in ProjectManager.active_projects:
