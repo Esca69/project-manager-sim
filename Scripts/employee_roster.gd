@@ -815,3 +815,15 @@ func _build_confirm_dialog():
 	if UITheme: UITheme.apply_font(confirm_btn, "semibold")
 	confirm_btn.pressed.connect(_confirm_fire)
 	btn_hbox.add_child(confirm_btn)
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		# Если открыто окно подтверждения увольнения - закрываем его
+		if _dialog_layer and _dialog_layer.visible:
+			_cancel_fire()
+		# Иначе закрываем саму панель сотрудников
+		else:
+			_on_close_pressed()
+			
+		get_viewport().set_input_as_handled()

@@ -34,7 +34,7 @@ func _ready():
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_overlay)
-	move_child(_overlay, 0)
+	move_child(_overlay, 0) # Чётко кидаем на самый задний план, чтобы не блокировал окно
 
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)
@@ -335,7 +335,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
 
-	# Метка "Обсуждение занимает N часов" — динамически из PMData
+	# Метка "Обсуждение занимает N часов"
 	var boss_hours = PMData.get_boss_meeting_hours()
 	var time_lbl = Label.new()
 	time_lbl.text = tr("PROJ_SEL_BOSS_MEETING") % boss_hours
@@ -364,7 +364,6 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(budget_lbl, "bold")
 	right_info.add_child(budget_lbl)
 
-	# Кнопка "Выбрать" — блокируется если лимит или поздно
 	var is_limit = _is_project_limit_reached()
 	var is_late = _is_too_late_for_boss()
 	var btn_blocked = is_limit or is_late
@@ -396,7 +395,6 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(select_btn, "semibold")
 	right_info.add_child(select_btn)
 
-	# Дедлайны — показываем БЮДЖЕТ ДНЕЙ (фиксированные, не тикают)
 	var deadlines_hbox = HBoxContainer.new()
 	deadlines_hbox.add_theme_constant_override("separation", 40)
 	card_vbox.add_child(deadlines_hbox)
@@ -424,18 +422,20 @@ func _on_select_pressed(index: int):
 	if selected == null:
 		return
 
-	# Финальные проверки
 	if _is_project_limit_reached():
 		return
 	if _is_too_late_for_boss():
 		return
 
-	# Переводим название для лога
 	print("⏱ Начинаем обсуждение проекта: ", tr(selected.title))
 
-	# Убираем проект из списка и закрываем UI
 	current_options[index] = null
 	_on_close_pressed()
 
-	# Эмитим сигнал — hud.gd начнёт процесс обсуждения
 	emit_signal("project_selected", selected)
+
+# === ОБРАБОТКА ВВОДА (ESC) ===
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		_on_close_pressed()
+		get_viewport().set_input_as_handled()

@@ -305,3 +305,8 @@ func _add_label(text: String, color: Color, font_size: int, weight: String):
 	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if UITheme: UITheme.apply_font(lbl, weight)
 	_content_vbox.add_child(lbl)
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		close()
+		get_viewport().set_input_as_handled()

@@ -84,12 +84,7 @@ func _ready():
 	move_child(_bg_overlay, 0) # Убираем на задний фон
 
 	if close_btn:
-		close_btn.pressed.connect(func():
-			if UITheme:
-				UITheme.fade_out(self, 0.15)
-			else:
-				visible = false
-		)
+		close_btn.pressed.connect(close)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
 	call_deferred("_deferred_init")
@@ -545,3 +540,16 @@ func _hide_tooltip():
 	if _tooltip_panel and is_instance_valid(_tooltip_panel):
 		_tooltip_panel.queue_free()
 	_tooltip_panel = null
+
+
+# === ЗАКРЫТИЕ ОКНА И ОБРАБОТКА ВВОДА ===
+func close():
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		close()
+		get_viewport().set_input_as_handled()

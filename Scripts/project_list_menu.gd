@@ -22,8 +22,23 @@ var tab_inactive_style: StyleBoxFlat
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
 
+# === ДОБАВЛЕНО ДЛЯ ФОНА ===
+var _overlay: ColorRect
+
 func _ready():
 	visible = false
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_force_fullscreen_size()
+	
+	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (OVERLAY) ===
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
+	move_child(_overlay, 0) # Помещаем на самый задний план
+	
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
@@ -79,6 +94,11 @@ func _ready():
 	tab_inactive_style.bg_color = Color(1, 1, 1, 0) # Полностью прозрачный фон
 	
 	_create_tabs()
+
+func _force_fullscreen_size():
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
 
 func _create_tabs():
 	var main_vbox = $Window/MainVBox
@@ -158,6 +178,7 @@ func _on_tab_pressed(tab_name: String):
 	_rebuild_cards()
 
 func open_menu():
+	_force_fullscreen_size()
 	_current_tab = "active"
 	_rebuild_cards()
 	if UITheme:
@@ -442,7 +463,7 @@ func _on_open_pressed(index: int):
 		return
 	var proj = ProjectManager.active_projects[index]
 	emit_signal("project_opened", proj)
-	visible = false
+	_on_close_pressed()
 
 func _get_current_stage_name(proj: ProjectData) -> String:
 	for i in range(proj.stages.size()):
@@ -474,3 +495,9 @@ func _get_progress_text(proj: ProjectData) -> String:
 				pct = (float(stage.progress) / float(stage.amount)) * 100.0
 			return tr("PROJ_LIST_PROGRESS") % int(pct)
 	return ""
+
+# === ОБРАБОТКА ВВОДА (ESC) ===
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		_on_close_pressed()
+		get_viewport().set_input_as_handled()

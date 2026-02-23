@@ -17,8 +17,30 @@ var _all_cards: Array = []
 var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
 
+var _btn_style_normal: StyleBoxFlat
+var _btn_style_hover: StyleBoxFlat
+
+const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
+const COLOR_WHITE = Color(1, 1, 1, 1)
+
+# === ДОБАВЛЕНО ДЛЯ ФОНА ===
+var _overlay: ColorRect
+
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	_force_fullscreen_size()
+
+	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА ===
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
+	move_child(_overlay, 0) # Строго на самый задний план, чтобы не блокировал клики!
 
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
@@ -28,6 +50,31 @@ func _ready():
 
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)
+	
+	# === СОЗДАЕМ КРАСИВЫЕ СТИЛИ ДЛЯ КНОПОК ===
+	_btn_style_normal = StyleBoxFlat.new()
+	_btn_style_normal.bg_color = COLOR_WHITE
+	_btn_style_normal.border_width_left = 2
+	_btn_style_normal.border_width_top = 2
+	_btn_style_normal.border_width_right = 2
+	_btn_style_normal.border_width_bottom = 2
+	_btn_style_normal.border_color = COLOR_BLUE
+	_btn_style_normal.corner_radius_top_left = 20
+	_btn_style_normal.corner_radius_top_right = 20
+	_btn_style_normal.corner_radius_bottom_right = 20
+	_btn_style_normal.corner_radius_bottom_left = 20
+
+	_btn_style_hover = StyleBoxFlat.new()
+	_btn_style_hover.bg_color = COLOR_BLUE
+	_btn_style_hover.border_width_left = 2
+	_btn_style_hover.border_width_top = 2
+	_btn_style_hover.border_width_right = 2
+	_btn_style_hover.border_width_bottom = 2
+	_btn_style_hover.border_color = COLOR_BLUE
+	_btn_style_hover.corner_radius_top_left = 20
+	_btn_style_hover.corner_radius_top_right = 20
+	_btn_style_hover.corner_radius_bottom_right = 20
+	_btn_style_hover.corner_radius_bottom_left = 20
 
 	# Подключаем кнопки "Нанять" для 3 карточек из сцены
 	var scene_cards = [card1, card2, card3]
@@ -36,10 +83,16 @@ func _ready():
 		if card == null:
 			continue
 		var btn = find_node_by_name(card, "HireButton")
-		if btn:
+		if btn: 
 			if not btn.is_connected("pressed", _on_hire_pressed):
 				btn.pressed.connect(_on_hire_pressed.bind(i))
 			if UITheme: UITheme.apply_font(btn, "semibold")
+
+func _force_fullscreen_size():
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
 
 func _make_card_style(hover: bool) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
@@ -68,6 +121,7 @@ func _set_children_pass_filter(node: Node):
 
 # === ОТКРЫТИЕ С КОНКРЕТНОЙ РОЛЬЮ ===
 func open_hiring_menu_for_role(role: String):
+	_force_fullscreen_size()
 	generate_candidates_for_role(role)
 	update_ui()
 	if UITheme:
@@ -152,6 +206,14 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 	if btn: 
 		btn.disabled = false
 		btn.text = tr("HIRE_BTN")
+		
+		# --- ПРИМЕНЯЕМ КРАСИВЫЙ СИНИЙ СТИЛЬ ---
+		btn.add_theme_stylebox_override("normal", _btn_style_normal)
+		btn.add_theme_stylebox_override("hover", _btn_style_hover)
+		btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+		btn.add_theme_color_override("font_color", COLOR_BLUE)
+		btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+		btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
 
 	var name_lbl = find_node_by_name(card, "NameLabel")
 	var role_lbl = find_node_by_name(card, "RoleLabel")
@@ -267,13 +329,13 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 
 	var name_lbl = Label.new()
 	name_lbl.text = data.employee_name
-	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
 
 	var role_lbl = Label.new()
 	role_lbl.text = tr(data.job_title)
-	role_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	role_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(role_lbl, "semibold")
 	left_info.add_child(role_lbl)
 
@@ -287,7 +349,7 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 
 	var skill_lbl = Label.new()
 	skill_lbl.text = skill_text
-	skill_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	skill_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(skill_lbl, "regular")
 	left_info.add_child(skill_lbl)
 
@@ -310,19 +372,15 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	hire_btn.text = tr("HIRE_BTN")
 	hire_btn.custom_minimum_size = Vector2(180, 40)
 	hire_btn.focus_mode = Control.FOCUS_NONE
-	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(1, 1, 1, 1)
-	btn_style.border_width_left = 2
-	btn_style.border_width_top = 2
-	btn_style.border_width_right = 2
-	btn_style.border_width_bottom = 2
-	btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-	btn_style.corner_radius_top_left = 20
-	btn_style.corner_radius_top_right = 20
-	btn_style.corner_radius_bottom_right = 20
-	btn_style.corner_radius_bottom_left = 20
-	hire_btn.add_theme_stylebox_override("normal", btn_style)
-	hire_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	
+	# --- ПРИМЕНЯЕМ КРАСИВЫЙ СИНИЙ СТИЛЬ ---
+	hire_btn.add_theme_stylebox_override("normal", _btn_style_normal)
+	hire_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+	hire_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+	hire_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	hire_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	hire_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+	
 	if UITheme: UITheme.apply_font(hire_btn, "semibold")
 	hire_btn.pressed.connect(_on_hire_pressed.bind(index))
 	right_vbox.add_child(hire_btn)
@@ -355,14 +413,13 @@ func _create_level_badge(data: EmployeeData) -> HBoxContainer:
 	grade_style.corner_radius_bottom_left = 10
 
 	var grade = data.get_grade_name()
-	# ИСПРАВЛЕНИЕ: Проверяем по уровню, чтобы не зависеть от перевода слова "Junior"
 	match data.employee_level:
 		0, 1, 2: # Junior
 			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
 			grade_style.border_color = Color(0.29, 0.69, 0.31, 1)
 		3, 4: # Middle
 			grade_style.bg_color = Color(0.93, 0.93, 1.0, 1)
-			grade_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+			grade_style.border_color = COLOR_BLUE
 		5, 6: # Senior
 			grade_style.bg_color = Color(1.0, 0.95, 0.88, 1)
 			grade_style.border_color = Color(0.85, 0.55, 0.0, 1)
@@ -389,7 +446,7 @@ func _create_level_badge(data: EmployeeData) -> HBoxContainer:
 	
 	match data.employee_level:
 		0, 1, 2: grade_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
-		3, 4: grade_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		3, 4: grade_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 		5, 6: grade_lbl.add_theme_color_override("font_color", Color(0.85, 0.55, 0.0, 1))
 		7, 8, 9, 10: grade_lbl.add_theme_color_override("font_color", Color(0.6, 0.3, 0.7, 1))
 		
@@ -426,15 +483,15 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData, parent: Control)
 	help_btn.custom_minimum_size = Vector2(22, 22)
 	help_btn.focus_mode = Control.FOCUS_NONE
 	help_btn.add_theme_font_size_override("font_size", 11)
-	help_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	help_btn.add_theme_color_override("font_color", COLOR_BLUE)
 
 	var btn_style = StyleBoxFlat.new()
-	btn_style.bg_color = Color(1, 1, 1, 1)
+	btn_style.bg_color = COLOR_WHITE
 	btn_style.border_width_left = 2
 	btn_style.border_width_top = 2
 	btn_style.border_width_right = 2
 	btn_style.border_width_bottom = 2
-	btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	btn_style.border_color = COLOR_BLUE
 	btn_style.corner_radius_top_left = 11
 	btn_style.corner_radius_top_right = 11
 	btn_style.corner_radius_bottom_right = 11
@@ -601,3 +658,9 @@ func find_node_by_name(root, target_name):
 		var found = find_node_by_name(child, target_name)
 		if found: return found
 	return null
+
+# === ОБРАБОТКА ВВОДА (ESC) ===
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		_on_close_pressed()
+		get_viewport().set_input_as_handled()
