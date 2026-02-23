@@ -16,7 +16,7 @@ const MIN_EMPLOYEES_FOR_EVENTS: int = 1     # Минимум сотрудник�
 
 # === КУЛДАУНЫ ПО ТИПАМ ИВЕНТОВ ===
 const SICK_PERSONAL_COOLDOWN: int = 20      # Сотрудник не болеет чаще чем раз в 20 дней
-const SICK_GLOBAL_COOLDOWN: int = 7         # Между любыми болезнями — 7 дней
+const SICK_GLOBAL_COOLDOWN: int = 0         # Между любыми болезнями — 7 дней
 const DAYOFF_PERSONAL_COOLDOWN: int = 15    # Отгул не чаще чем раз в 15 дней
 const DAYOFF_GLOBAL_COOLDOWN: int = 5       # Между любыми отгулами — 5 дней
 
@@ -53,6 +53,7 @@ func _connect_signals():
 	GameTime.day_started.connect(_on_day_started)
 	GameTime.day_ended.connect(_on_day_ended)
 	GameTime.time_tick.connect(_on_time_tick)
+	GameTime.work_started.connect(_on_work_started)
 
 # =============================================
 # ОБРАБОТКА НОВОГО ДНЯ
@@ -60,7 +61,6 @@ func _connect_signals():
 func _on_day_started(_day_number):
 	_update_sick_employees()
 	_tick_daily_effects()
-	_try_trigger_morning_event()
 
 # =============================================
 # ОБРАБОТКА КОНЦА ДНЯ
@@ -68,6 +68,9 @@ func _on_day_started(_day_number):
 func _on_day_ended():
 	_remove_intraday_effects()
 
+func _on_work_started():
+	# Болезнь проверяем когда сотрудники уже пришли (09:00)
+	_try_trigger_morning_event()
 # =============================================
 # ОБРАБОТКА ТИКА ВРЕМЕНИ (каждую минуту)
 # =============================================
