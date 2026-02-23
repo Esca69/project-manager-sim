@@ -440,6 +440,7 @@ func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeDat
 	return npc
 
 # --- НОВЫЙ: Восстанавливаем привязку столов ---
+# --- НОВЫЙ: Восстанавливаем привязку столов ---
 func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary, npc_map: Dictionary):
 	if desk_assignments.is_empty():
 		return
@@ -472,13 +473,22 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 		if best_desk and best_desk.has_method("assign_employee"):
 			# Проверяем что стол ещё свободен
 			if "assigned_employee" in best_desk and best_desk.assigned_employee == null:
-				best_desk.assign_employee(emp_data)
+				
+				# ФИКС 1: Достаем npc_node и передаем его в стол, чтобы не было "двойных столов"
+				var npc_node = null
+				if npc_map.has(emp_name):
+					npc_node = npc_map[emp_name]
+				
+				best_desk.assign_employee(emp_data, npc_node)
 				print("🪑 Восстановлена привязка стола для: ", emp_name)
 				
-				# Устанавливаем desk_position для NPC
-				if npc_map.has(emp_name):
-					var npc = npc_map[emp_name]
-					npc.my_desk_position = best_desk.global_position
+				# ФИКС 2: Отправляем NPC на seat_point, а не в центр стола
+				if npc_node:
+					if "seat_point" in best_desk and best_desk.seat_point:
+						npc_node.my_desk_position = best_desk.seat_point.global_position
+					else:
+						# Фолбэк на случай если у стола нет seat_point (например, это другой тип стола)
+						npc_node.my_desk_position = best_desk.global_position
 
 # --- Привязка сотрудников к столам после загрузки ---
 func _rebind_employees_to_desks():

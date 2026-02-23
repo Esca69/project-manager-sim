@@ -8,7 +8,7 @@ var _normal_style: StyleBoxFlat
 var _active_style: StyleBoxFlat
 
 func _ready():
-	# Ст��ль обычной кнопки (белый фон, синяя обводка)
+	# Стиль обычной кнопки (белый фон, синяя обводка)
 	_normal_style = StyleBoxFlat.new()
 	_normal_style.bg_color = Color(1, 1, 1, 1)
 	_normal_style.border_width_left = 2
@@ -21,7 +21,7 @@ func _ready():
 	_normal_style.corner_radius_bottom_right = 12
 	_normal_style.corner_radius_bottom_left = 12
 	
-	# Стиль ак��ивной кнопки (жёлтый фон)
+	# Стиль активной кнопки (жёлтый фон)
 	_active_style = StyleBoxFlat.new()
 	_active_style.bg_color = COLOR_ACTIVE
 	_active_style.border_width_left = 2
@@ -62,6 +62,17 @@ func _on_2x_pressed():
 
 func _on_5x_pressed():
 	GameTime.speed_5x()
+
+# --- ОБРАБОТКА НАЖАТИЙ КЛАВИАТУРЫ ---
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("speed_pause"):
+		_on_pause_pressed()
+	elif event.is_action_pressed("speed_1x"):
+		_on_1x_pressed()
+	elif event.is_action_pressed("speed_2x"):
+		_on_2x_pressed()
+	elif event.is_action_pressed("speed_5x"):
+		_on_5x_pressed()
 
 func _process(_delta):
 	var current = GameTime.current_speed_scale
