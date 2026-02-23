@@ -192,6 +192,36 @@ func _add_furniture_shadows():
 			shadow_w = 70.0
 			shadow_h = 30.0
 			offset_y = 0.0
+			
+		elif child_name == "Fridge":
+			# collision 14×48, sprite offset=-85
+			shadow_w = 200.0
+			shadow_h = 50.0
+			offset_y = 5.0
+			
+		elif child_name == "Kitchen":
+			# collision 14×48, sprite offset=-85
+			shadow_w = 370.0
+			shadow_h = 40.0
+			offset_y = 5.0
+			
+		elif child_name == "foodtable":
+			# collision 14×48, sprite offset=-85
+			shadow_w = 120.0
+			shadow_h = 40.0
+			offset_y = 5.0
+			
+		elif child_name == "foodtable2":
+			# collision 14×48, sprite offset=-85
+			shadow_w = 120.0
+			shadow_h = 40.0
+			offset_y = 5.0
+
+		elif child_name == "foodtable3":
+			# collision 14×48, sprite offset=-85
+			shadow_w = 120.0
+			shadow_h = 40.0
+			offset_y = 5.0
 
 		else:
 			continue

@@ -1,7 +1,7 @@
-[gd_scene load_steps=36 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=42 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
-[ext_resource type="Texture2D" uid="uid://fvk50dhrrui7" path="res://Sprites/Office/full_office5.png" id="2_oaeid"]
+[ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
 [ext_resource type="PackedScene" uid="uid://cebrvtrf38laf" path="res://Scenes/player.tscn" id="2_vggx3"]
 [ext_resource type="PackedScene" uid="uid://l6ojv8bflski" path="res://Scenes/hud.tscn" id="6_7xo7e"]
 [ext_resource type="PackedScene" uid="uid://cmjsjpufedl22" path="res://Scenes/ComputerDesk.tscn" id="7_eqlnk"]
@@ -19,8 +19,11 @@
 [ext_resource type="PackedScene" uid="uid://dbkt45r0pwr26" path="res://Scenes/Mebel/tumbochka.tscn" id="16_ari0y"]
 [ext_resource type="PackedScene" uid="uid://ss2qipw67vmd" path="res://Scenes/Mebel/sofa.tscn" id="17_oqaoe"]
 [ext_resource type="Texture2D" uid="uid://dpvwemp6qprgh" path="res://Sprites/Office/panel.png" id="18_ari0y"]
+[ext_resource type="PackedScene" uid="uid://cpot20or6loas" path="res://Scenes/Mebel/fridge.tscn" id="19_2btma"]
 [ext_resource type="PackedScene" uid="uid://g6438sydtkj" path="res://Scenes/Boss.tscn" id="19_2uc8b"]
+[ext_resource type="PackedScene" uid="uid://37g45wjt4sq4" path="res://Scenes/Mebel/kitchen.tscn" id="20_2btma"]
 [ext_resource type="PackedScene" uid="uid://dguf0rohhwl1p" path="res://Scenes/Mebel/lamp.tscn" id="21_2uc8b"]
+[ext_resource type="PackedScene" uid="uid://bmmnhia48sjd" path="res://Scenes/Mebel/foodtable.tscn" id="21_8yipd"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_o84nh"]
 vertices = PackedVector2Array(1752.2188, 677, 1481, 677, 455.5, 593, 455.5, 547, -320.96094, 884.9531, -320.77344, 837.97656, -318.1172, 848.59375, -320.67188, 810.9922, -319.7422, 570.14844, -315.1172, 588.59375, -317.34375, 799.28125, -319.6875, 558.09375, -318.7422, 311.17188, -313.1172, 333.59375, -314.34375, 539.28125, -312.34375, 284.28125, -318.71875, 306.70313, -317.03125, -129.00781, -295.35156, 351.90625, -296.02344, 521.5, -297.35156, 606.90625, -299.02344, 781.5, 323.02344, 353.5, 338.5, 338.46875, 338.5, 340, 330.35156, 520.09375, 307.1172, 513.46094, 329.02344, 605.5, 344.5, 590.46875, 344.5, 593, 330.35156, 785.09375, 307.1172, 778.46094, 329.02344, 870.5, 344.5, 855.46875, 344.5, 856, -294.02344, 266.5, -300.35156, 866.90625, -272.1172, 358.53906, -272.5703, 515.6172, -274.1172, 613.53906, -275.5703, 775.6172, 934, -115, 1756.3281, -29, 449.5, 340, 449.5, 294, 791, -115, 2774.3125, -129.86719, 3316.4531, -131.95313, 3293.0234, -29, 2725.7734, -129.67969, -270.5703, 260.6172, -298, -67.5, 2832.5313, -578.25, 2838.3984, -474.3125, 2769.8672, -476.29688, 2675.9219, -582.6797, 2695.9297, -350.15625, 1756.8828, -125.96094, -91.42969, 361.3828, -91.88281, 518.46094, 455.5, 856, 1481, 745, 1751.8203, 745, 1751.0469, 876.03906, 305.5703, 876.3828, 455.5, 810, 934, -131.39063, 1756.9219, -132.97656, -93.42969, 616.3828, -94.88281, 778.46094, -298, -129.04688, -26, -67.5, -89.88281, 263.46094, -26, -129.5625, 791, -131.13281, 324.35156, 268.09375, 301.1172, 261.46094, 349.77344, 810, 348.1172, 803.40625, 305.5703, 611.3828, 126.42969, 775.6172, 124.88281, 608.53906, 102.97656, 781.5, 350.27344, 547, 348.1172, 538.40625, 299.5703, 359.3828, 126.42969, 510.6172, 118.88281, 356.53906, 102.97656, 516.5, -66.64844, 270.09375, 95.64844, 349.90625, 84.65625, 534.28125, 101.64844, 601.90625, 84.65625, 799.28125, 344.02344, 294, 342.1172, 286.40625, -67.97656, 355.5, -68.64844, 525.09375, -69.97656, 610.5, -71.64844, 785.09375, -277.1172, 873.53906, -48.882813, 288.40625, 120.42969, 258.6172, 96.97656, 264.5, -49.65625, 337.71875, -42.671875, 313.17188, 77.88281, 331.59375, 77.671875, 558.8281, -50.882813, 543.40625, -51.65625, 592.71875, -44.671875, 568.1719, 83.88281, 583.59375, 77.671875, 823.8281, -53.882813, 803.40625, 78.65625, 282.28125, 71.671875, 306.82813, -47.671875, 828.1719, 83.88281, 848.59375, -54.65625, 852.71875, 101.64844, 866.90625, -72.97656, 870.5, 124.88281, 873.53906, -96.42969, 876.3828)
@@ -30,7 +33,7 @@ source_geometry_mode = 1
 source_geometry_group_name = &"desk"
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o84nh"]
-size = Vector2(2007, 256.375)
+size = Vector2(879, 256.375)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2vylc"]
 size = Vector2(62, 1507)
@@ -66,7 +69,16 @@ size = Vector2(71, 525)
 size = Vector2(67, 437)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_uc7l7"]
-size = Vector2(244.5, 257.5)
+size = Vector2(474.5, 257.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2uc8b"]
+size = Vector2(1439.5, 321)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2btma"]
+size = Vector2(83, 813)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8yipd"]
+size = Vector2(957.5, 261)
 
 [node name="Office" type="Node2D"]
 z_as_relative = false
@@ -80,12 +92,12 @@ navigation_polygon = SubResource("NavigationPolygon_o84nh")
 [node name="FullOffice" type="Sprite2D" parent="."]
 z_index = -10
 position = Vector2(1498, -96)
-texture = ExtResource("2_oaeid")
+texture = ExtResource("2_oqaoe")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="FullOffice"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-922.5, -220.1875)
+position = Vector2(-1486.5, -220.1875)
 shape = SubResource("RectangleShape2D_o84nh")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
@@ -137,12 +149,24 @@ position = Vector2(1908.5, -90.5)
 shape = SubResource("RectangleShape2D_lsk72")
 
 [node name="CollisionShape2D14" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(1417.5, -570.5)
+position = Vector2(1654, -585)
 shape = SubResource("RectangleShape2D_ari0y")
 
 [node name="CollisionShape2D15" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(1264.75, -657.75)
+position = Vector2(1379.75, -657.75)
 shape = SubResource("RectangleShape2D_uc7l7")
+
+[node name="CollisionShape2D16" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-1179.25, -1008.5)
+shape = SubResource("RectangleShape2D_2uc8b")
+
+[node name="CollisionShape2D17" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-1920.5, -760.5)
+shape = SubResource("RectangleShape2D_2btma")
+
+[node name="CollisionShape2D18" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-373.75, -220.5)
+shape = SubResource("RectangleShape2D_8yipd")
 
 [node name="WorldObjects" type="Node2D" parent="." groups=["world_layer"]]
 y_sort_enabled = true
@@ -181,17 +205,17 @@ position = Vector2(216, 871)
 position = Vector2(862, -120)
 
 [node name="Board" type="Sprite2D" parent="WorldObjects"]
-position = Vector2(425, -332)
-texture = ExtResource("9_rs1ao")
-
-[node name="Board" type="Sprite2D" parent="WorldObjects/Board"]
-position = Vector2(1219, -771)
+position = Vector2(-169, -336)
 texture = ExtResource("9_rs1ao")
 
 [node name="Plant2" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(-329, -142)
 scale = Vector2(0.47151896, 0.47151905)
 texture = ExtResource("10_o2cca")
+
+[node name="Board3" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(1644, -1103)
+texture = ExtResource("9_rs1ao")
 
 [node name="Plant" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(1204, -585)
@@ -241,13 +265,29 @@ position = Vector2(1774, 723)
 [node name="Boss2" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2uc8b")]
 position = Vector2(1380, -763)
 
+[node name="Fridge" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2btma")]
+position = Vector2(956, -910)
+
+[node name="Kitchen" parent="WorldObjects" instance=ExtResource("20_2btma")]
+position = Vector2(754, -911)
+
+[node name="foodtable" parent="WorldObjects" instance=ExtResource("21_8yipd")]
+position = Vector2(851, -700)
+
+[node name="foodtable2" parent="WorldObjects" instance=ExtResource("21_8yipd")]
+position = Vector2(756, -551)
+
+[node name="foodtable3" parent="WorldObjects" instance=ExtResource("21_8yipd")]
+position = Vector2(942, -551)
+
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
+visible = false
 
 [node name="SpawnPoint" type="Marker2D" parent="."]
-position = Vector2(1099, 818)
+position = Vector2(1281, 831)
 
 [node name="OfficeEntrance" type="Marker2D" parent="." groups=["entrance"]]
-position = Vector2(1106, 773)
+position = Vector2(1264, 832)
 
 [node name="Bossplate" type="Sprite2D" parent="."]
 position = Vector2(1498, -380)

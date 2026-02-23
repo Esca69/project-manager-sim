@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bmmnhia48sjd"]
+
+[ext_resource type="Texture2D" uid="uid://d0mw7tbw15pmp" path="res://Sprites/Office/foodtable.png" id="1_duuk6"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_4dgc6"]
+radius = 28.160255
+
+[node name="foodtable" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_duuk6")
+offset = Vector2(0, -50)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1, -26)
+shape = SubResource("CircleShape2D_4dgc6")
