@@ -411,3 +411,9 @@ func _add_stat_label(parent: HBoxContainer, text: String, color: Color):
 	lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(lbl, "semibold")
 	parent.add_child(lbl)
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		close() 
+		get_viewport().set_input_as_handled()

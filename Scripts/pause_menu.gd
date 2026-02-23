@@ -34,14 +34,16 @@ func _ready():
 	_build_ui()
 	visible = false
 
-func _unhandled_input(event):
+# Обрабатываем только те нажатия, которые не съели другие элементы UI
+func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		if _settings_open:
-			_close_settings()
-		elif _is_open:
-			close()
+		# Проверяем, открыто ли меню сейчас
+		if is_open(): # (или visible, смотря как у тебя сделано)
+			close()   # Если открыто — закрываем
 		else:
-			open()
+			open()    # Если закрыто — открываем
+			
+		# На всякий случай поглощаем ввод и здесь
 		get_viewport().set_input_as_handled()
 
 # === ПОСТРОЕНИЕ UI ===
