@@ -9,16 +9,22 @@ signal effect_applied(effect: Dictionary)
 signal effect_expired(effect: Dictionary)
 
 # === ГЛОБАЛЬНЫЕ НАСТРОЙКИ ===
-const MIN_DAYS_BETWEEN_EVENTS: int = 0      # Минимум дней между любыми ивентами
-const BASE_EVENT_CHANCE: float = 1.0        # 25% шанс ивента каждый подходящий день
-const FIRST_SAFE_DAYS: int = 0  # TEST: ивенты с первого дня
+const MIN_DAYS_BETWEEN_EVENTS: int = 2      # Минимум 2 дня между любыми ивентами
+const BASE_EVENT_CHANCE: float = 0.25       # 25% шанс болезни утром (если все кулдауны прошли)
+const FIRST_SAFE_DAYS: int = 7              # Первая неделя — без болезней
 const MIN_EMPLOYEES_FOR_EVENTS: int = 1     # Минимум сотрудников для ивентов
 
 # === КУЛДАУНЫ ПО ТИПАМ ИВЕНТОВ ===
 const SICK_PERSONAL_COOLDOWN: int = 20      # Сотрудник не болеет чаще чем раз в 20 дней
-const SICK_GLOBAL_COOLDOWN: int = 0         # Между любыми болезнями — 7 дней
-const DAYOFF_PERSONAL_COOLDOWN: int = 15    # Отгул не чаще чем раз в 15 дней
+const SICK_GLOBAL_COOLDOWN: int = 7         # Между любыми болезнями — 7 дней
+const DAYOFF_PERSONAL_COOLDOWN: int = 15    # Отгул не чаще чем раз в 15 дней на сотрудника
 const DAYOFF_GLOBAL_COOLDOWN: int = 5       # Между любыми отгулами — 5 дней
+
+# === ПЕРВАЯ НЕДЕЛЯ: гарантированный отгул ===
+const FIRST_WEEK_DAYOFF_DAY_MIN: int = 3    # Самый ранний день для первого отгула
+const FIRST_WEEK_DAYOFF_DAY_MAX: int = 5    # Самый поздний день для первого отгула
+var _first_week_dayoff_target_day: int = -1  # Рандомный день для гарантированного отгула
+var _first_week_dayoff_done: bool = false    # Уже сработал?
 
 # === ВЕСА ИВЕНТОВ ===
 const EVENT_WEIGHTS = {
@@ -45,8 +51,13 @@ var active_effects: Array = []
 # Ссылка на попап (устанавливается из HUD)
 var _popup: Control = null
 
+# === ФЛАГ: отгул уже сработал сегодня ===
+var _dayoff_triggered_today: bool = false
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Выбираем рандомный день для гарантированного отгула на первой неделе
+	_first_week_dayoff_target_day = randi_range(FIRST_WEEK_DAYOFF_DAY_MIN, FIRST_WEEK_DAYOFF_DAY_MAX)
 	call_deferred("_connect_signals")
 
 func _connect_signals():
@@ -60,7 +71,10 @@ func _connect_signals():
 # =============================================
 func _on_day_started(_day_number):
 	_update_sick_employees()
-	_tick_daily_effects()
+	# Эффекты тикаем только в рабочие дни (чтобы бафф с пятницы дожил до понедельника)
+	if not GameTime.is_weekend():
+		_tick_daily_effects()
+	_dayoff_triggered_today = false  # Сброс флага на новый день
 
 # =============================================
 # ОБРАБОТКА КОНЦА ДНЯ
@@ -69,27 +83,30 @@ func _on_day_ended():
 	_remove_intraday_effects()
 
 func _on_work_started():
-	# Болезнь проверяем когда сотрудники уже пришли (09:00)
-	_try_trigger_morning_event()
+	# Болезнь проверяем утром (отложенно, чтобы сотрудники успели сменить стейт)
+	call_deferred("_try_trigger_morning_event")
+
 # =============================================
 # ОБРАБОТКА ТИКА ВРЕМЕНИ (каждую минуту)
 # =============================================
 func _on_time_tick(_hour, _minute):
 	if GameTime.is_game_paused or GameTime.is_night_skip:
 		return
-	# Отгул проверяем каждый час в рабочее время (10:00 — 16:00)
-	if _minute == 0 and _hour >= 10 and _hour <= 16:
-		pass  # TEST: отключён отгул, тестируем только болезнь
-		#_try_trigger_dayoff_event()
+	# Отгул проверяем каждую минуту в рабочее время (10:00 — 16:00)
+	if _hour >= 10 and _hour <= 16:
+		_try_trigger_dayoff_event()
 
 # =============================================
 # УТРЕННИЙ ИВЕНТ (болезнь)
 # =============================================
 func _try_trigger_morning_event():
+	# Первая неделя — без болезней (но отгул разрешён)
+	if GameTime.day <= FIRST_SAFE_DAYS:
+		return
+
 	if not _can_trigger_event():
 		return
 
-	# Болезнь срабатывает только утром
 	if not _can_trigger_sick():
 		return
 
@@ -107,32 +124,46 @@ func _try_trigger_morning_event():
 # ИВЕНТ ОТГУЛА (в течение дня)
 # =============================================
 func _try_trigger_dayoff_event():
+	# Только 1 отгул в день
+	if _dayoff_triggered_today:
+		return
+
+	# === ПЕРВАЯ НЕДЕЛЯ: гарантированный отгул в назначенный день ===
+	if not _first_week_dayoff_done and GameTime.day == _first_week_dayoff_target_day:
+		var candidate = _pick_dayoff_candidate()
+		if candidate != null:
+			_first_week_dayoff_done = true
+			_dayoff_triggered_today = true
+			_trigger_dayoff_event(candidate)
+			return
+
+	# === ОБЫЧНАЯ ЛОГИКА (после первой недели) ===
+	if GameTime.day <= FIRST_SAFE_DAYS:
+		return
+
 	if not _can_trigger_event():
 		return
 
 	if not _can_trigger_dayoff():
 		return
 
-	# Шанс за каждый час = BASE_EVENT_CHANCE / 7 (7 часов проверки: 10-16)
-	# Суммарно за день ~25%
-	var hourly_chance = BASE_EVENT_CHANCE / 7.0
-	if randf() > hourly_chance:
+	# Шанс каждую минуту: ~360 минут (10:00-16:00)
+	# P(хотя бы 1 за день) = 1 - (1 - 0.003)^360 ≈ 66%
+	var per_minute_chance = 0.003
+	if randf() > per_minute_chance:
 		return
 
 	var candidate = _pick_dayoff_candidate()
 	if candidate == null:
 		return
 
+	_dayoff_triggered_today = true
 	_trigger_dayoff_event(candidate)
 
 # =============================================
 # ПРОВЕРКИ ВОЗМОЖНОСТИ ТРИГГЕРА
 # =============================================
 func _can_trigger_event() -> bool:
-	# Первые дни — без ивентов
-	if GameTime.day <= FIRST_SAFE_DAYS:
-		return false
-
 	# Выходные — без ивентов
 	if GameTime.is_weekend():
 		return false
@@ -196,12 +227,13 @@ func _pick_dayoff_candidate():
 		# Только работающие / бездельничающие в офисе
 		if emp.current_state != emp.State.WORKING and emp.current_state != emp.State.IDLE and emp.current_state != emp.State.WANDERING and emp.current_state != emp.State.WANDER_PAUSE:
 			continue
-		# Персональный кулдаун
-		var name_key = emp.data.employee_name
-		if employee_cooldowns.has(name_key):
-			var cd = employee_cooldowns[name_key]
-			if GameTime.day - cd.get("last_dayoff_day", -100) < DAYOFF_PERSONAL_COOLDOWN:
-				continue
+		# Персональный кулдаун (пропускаем на первой неделе для гарантированного ивента)
+		if _first_week_dayoff_done or GameTime.day != _first_week_dayoff_target_day:
+			var name_key = emp.data.employee_name
+			if employee_cooldowns.has(name_key):
+				var cd = employee_cooldowns[name_key]
+				if GameTime.day - cd.get("last_dayoff_day", -100) < DAYOFF_PERSONAL_COOLDOWN:
+					continue
 		candidates.append(emp)
 
 	if candidates.is_empty():
@@ -316,7 +348,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 				"type": "efficiency_buff",
 				"employee_name": event_data["employee_name"],
 				"value": 0.10,
-				"days_left": 1,  # Действует 1 полный рабочий день (завтра)
+				"days_left": 2,  # Переживёт полночь, отработает полный следующий рабочий день
 				"emoji": "💚",
 			})
 			print("🏠 %s отпущен домой. Завтра +10%% эффективности" % event_data["employee_name"])
@@ -409,7 +441,7 @@ func _show_event_popup(event_data: Dictionary):
 	if _popup and _popup.has_method("show_event"):
 		_popup.show_event(event_data)
 	else:
-		push_warning("EventManager: попап не найден, ивент пропущен")
+		push_warning("EventManager: попап не найден, иве��т пропущен")
 
 func register_popup(popup_node: Control):
 	_popup = popup_node
@@ -431,6 +463,8 @@ func serialize() -> Dictionary:
 		"last_dayoff_day": last_dayoff_day,
 		"employee_cooldowns": employee_cooldowns.duplicate(true),
 		"active_effects": safe_effects,
+		"first_week_dayoff_done": _first_week_dayoff_done,
+		"first_week_dayoff_target_day": _first_week_dayoff_target_day,
 	}
 
 func deserialize(data: Dictionary):
@@ -447,3 +481,6 @@ func deserialize(data: Dictionary):
 	var effects = data.get("active_effects", [])
 	for e in effects:
 		active_effects.append(e)
+
+	_first_week_dayoff_done = data.get("first_week_dayoff_done", false)
+	_first_week_dayoff_target_day = int(data.get("first_week_dayoff_target_day", randi_range(FIRST_WEEK_DAYOFF_DAY_MIN, FIRST_WEEK_DAYOFF_DAY_MAX)))
