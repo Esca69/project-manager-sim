@@ -36,6 +36,12 @@ const EVENT_WEIGHTS = {
 const EXPRESS_CURE_MIN: int = 300
 const EXPRESS_CURE_MAX: int = 500
 
+# === MOOD-ЭФФЕКТЫ ОТГУЛА ===
+const DAYOFF_ALLOW_MOOD_VALUE: float = 6.0
+const DAYOFF_ALLOW_MOOD_DURATION: float = 2880.0   # 2 суток в минутах (48ч × 60)
+const DAYOFF_DENY_MOOD_VALUE: float = -10.0
+const DAYOFF_DENY_MOOD_DURATION: float = 2880.0    # 2 суток в минутах (48ч × 60)
+
 # === ДАННЫЕ ===
 var last_event_day: int = 0
 var last_sick_day: int = -100
@@ -71,7 +77,7 @@ func _connect_signals():
 # =============================================
 func _on_day_started(_day_number):
 	_update_sick_employees()
-	# Эффекты тикаем только в рабочие дни (чтобы бафф с пятницы дожил до понедельника)
+	# Эффекты тикаем только в рабочие дни (чтобы бафф с пятницы ��ожил до понедельника)
 	if not GameTime.is_weekend():
 		_tick_daily_effects()
 	_dayoff_triggered_today = false  # Сброс флага на новый день
@@ -87,7 +93,7 @@ func _on_work_started():
 	call_deferred("_try_trigger_morning_event")
 
 # =============================================
-# ОБРАБОТКА ТИКА ВРЕМЕНИ (каждую минуту)
+# ОБРАБОТКА ТИКА ВРЕМЕНИ (каждую мину��у)
 # =============================================
 func _on_time_tick(_hour, _minute):
 	if GameTime.is_game_paused or GameTime.is_night_skip:
@@ -172,7 +178,7 @@ func _can_trigger_event() -> bool:
 	if GameTime.day - last_event_day < MIN_DAYS_BETWEEN_EVENTS:
 		return false
 
-	# Минимум сотрудников
+	# Минимум сотрудн��ков
 	var employees = get_tree().get_nodes_in_group("npc")
 	var active_count = 0
 	for emp in employees:
@@ -342,7 +348,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 
 	match choice_id:
 		"allow":
-			# Отпустить — уходит домой, завтра бафф
+			# Отпустить — уходит домой, завтра бафф efficiency
 			emp_node.start_day_off()
 			add_effect({
 				"type": "efficiency_buff",
@@ -351,10 +357,18 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 				"days_left": 2,  # Переживёт полночь, отработает полный следующий рабочий день
 				"emoji": "💚",
 			})
-			print("🏠 %s отпущен домой. Завтра +10%% эффективности" % event_data["employee_name"])
+			# Mood: благодарен, +6 на 2 суток
+			if emp_node.data:
+				emp_node.data.add_mood_modifier(
+					"dayoff_gratitude",
+					"MOOD_MOD_DAYOFF_ALLOW",
+					DAYOFF_ALLOW_MOOD_VALUE,
+					DAYOFF_ALLOW_MOOD_DURATION
+				)
+			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [event_data["employee_name"], int(DAYOFF_ALLOW_MOOD_VALUE)])
 
 		"deny":
-			# Не отпустить — дебафф до конца дня
+			# Не отпус��ить — дебафф efficiency до конца дня
 			add_effect({
 				"type": "efficiency_debuff",
 				"employee_name": event_data["employee_name"],
@@ -362,7 +376,15 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 				"days_left": 0,  # 0 = до конца текущего дня
 				"emoji": "😤",
 			})
-			print("😤 %s не отпущен. -20%% эффективности до конца дня" % event_data["employee_name"])
+			# Mood: обижен, -10 на 2 суток
+			if emp_node.data:
+				emp_node.data.add_mood_modifier(
+					"dayoff_denied",
+					"MOOD_MOD_DAYOFF_DENY",
+					DAYOFF_DENY_MOOD_VALUE,
+					DAYOFF_DENY_MOOD_DURATION
+				)
+			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [event_data["employee_name"], int(DAYOFF_DENY_MOOD_VALUE)])
 
 # =============================================
 # СИСТЕМА ЭФФЕКТОВ
@@ -441,7 +463,7 @@ func _show_event_popup(event_data: Dictionary):
 	if _popup and _popup.has_method("show_event"):
 		_popup.show_event(event_data)
 	else:
-		push_warning("EventManager: попап не найден, иве��т пропущен")
+		push_warning("EventManager: попап не найден, ивент пропущен")
 
 func register_popup(popup_node: Control):
 	_popup = popup_node

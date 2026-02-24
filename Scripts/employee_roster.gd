@@ -168,7 +168,7 @@ func _update_live_data():
 			effect_lbl.text = effect_text
 			effect_lbl.visible = effect_text != ""
 
-		# === MOOD SYSTEM: обновляем mood в реальном вре��ени ===
+		# === MOOD SYSTEM: обновляем mood в реальном времени ===
 		if mood_lbl:
 			var mood_val = emp_data.mood
 			var zone_name = emp_data.get_mood_zone_name()
@@ -179,6 +179,15 @@ func _update_live_data():
 			var fill_style = mood_bar.get_theme_stylebox("fill") as StyleBoxFlat
 			if fill_style:
 				fill_style.bg_color = _get_mood_color(emp_data.mood)
+
+		# === MOOD: live-обновление тултипа, пока он открыт ===
+		var mood_tooltip_ref = card.get_meta("mood_tooltip_ref") if card.has_meta("mood_tooltip_ref") else null
+		var mood_tooltip_label_ref = card.get_meta("mood_tooltip_label_ref") if card.has_meta("mood_tooltip_label_ref") else null
+		if mood_tooltip_ref and mood_tooltip_label_ref:
+			var tp = mood_tooltip_ref[0]
+			var lbl = mood_tooltip_label_ref[0]
+			if tp != null and is_instance_valid(tp) and lbl != null and is_instance_valid(lbl):
+				lbl.text = _build_mood_breakdown_text(emp_data)
 
 func _rebuild_cards():
 	for child in cards_container.get_children():
@@ -431,6 +440,7 @@ func _create_card(npc_node) -> PanelContainer:
 	# Кнопка "?" — breakdown настроения
 	var mood_help_btn = _create_help_button()
 	var mood_tooltip_ref: Array = [null]
+	var mood_tooltip_label_ref: Array = [null]
 	var emp_ref = emp
 	var parent_ref = self
 
@@ -443,13 +453,19 @@ func _create_card(npc_node) -> PanelContainer:
 		var btn_global = mood_help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
 		mood_tooltip_ref[0] = tp
+		# Находим Label внутри тултипа для live-обновления
+		mood_tooltip_label_ref[0] = parent_ref._find_label_in_tooltip(tp)
 	)
 	mood_help_btn.mouse_exited.connect(func():
 		if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
 			mood_tooltip_ref[0].queue_free()
 		mood_tooltip_ref[0] = null
+		mood_tooltip_label_ref[0] = null
 	)
 	mood_hbox.add_child(mood_help_btn)
+	# Сохраняем ссылки в мету карточки для live-обновления
+	card.set_meta("mood_tooltip_ref", mood_tooltip_ref)
+	card.set_meta("mood_tooltip_label_ref", mood_tooltip_label_ref)
 
 	# Мини-полоска настроения
 	var mood_bar_container = VBoxContainer.new()
@@ -594,6 +610,17 @@ func _create_help_button() -> Button:
 	btn.add_theme_stylebox_override("hover", hover_style)
 
 	return btn
+
+# === Рекурсивный поиск Label внутри тултипа для live-обновления ===
+func _find_label_in_tooltip(tooltip_node: Control) -> Label:
+	for child in tooltip_node.get_children():
+		if child is Label:
+			return child
+		if child is Control:
+			var found = _find_label_in_tooltip(child)
+			if found:
+				return found
+	return null
 
 # === MOOD SYSTEM v2: Текст breakdown'а настроения ===
 func _build_mood_breakdown_text(emp: EmployeeData) -> String:

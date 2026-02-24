@@ -27,9 +27,12 @@ const MOOD_ZONES = [
 ]
 
 # === ПОСТОЯННЫЕ МОДИФИКАТОРЫ MOOD ===
-# Трейт → бонус к mood (только energizer влияет на настроение)
+# Трейт → бонус к mood
 const MOOD_TRAIT_MODIFIERS = {
 	"energizer": 5.0,
+	"optimist": 8.0,
+	"pessimist": -8.0,
+	# athletic и sleepyhead зависят от времени — обрабатываются отдельно в recalculate_mood()
 }
 
 # Ситуационные постоянные
@@ -38,6 +41,15 @@ const MOOD_NO_DESK_PENALTY: float = -5.0
 const MOOD_LOW_ENERGY_PENALTY: float = -5.0       # Энергия 30-50%
 const MOOD_VERY_LOW_ENERGY_PENALTY: float = -10.0  # Энергия <30%
 const MOOD_MOTIVATION_BONUS: float = 5.0           # Мотивация от PM активна
+
+# === Время-зависимые трейты: настройки ===
+const ATHLETIC_MOOD_BONUS: float = 3.0
+const ATHLETIC_EFFICIENCY_BONUS: float = 0.05
+const ATHLETIC_ACTIVE_BEFORE_HOUR: int = 13  # Работает до 13:00
+
+const SLEEPYHEAD_MOOD_PENALTY: float = -3.0
+const SLEEPYHEAD_EFFICIENCY_PENALTY: float = -0.05
+const SLEEPYHEAD_ACTIVE_FROM_HOUR: int = 14  # Работает с 14:00
 
 # === ВРЕМЕННЫЕ МОДИФИКАТОРЫ MOOD ===
 # Массив словарей: {id, name_key, value, minutes_left}
@@ -56,7 +68,21 @@ const MOOD_TRAIT_EFFICIENCY_MODIFIERS = {
 	"early_bird":    0.02,
 	"cheap_hire":    0.0,
 	"expensive":     0.0,
+	# Время-зависимые — НЕ кладём сюда, обрабатываем отдельно
+	"optimist":      0.0,
+	"pessimist":     0.0,
+	"athletic":      0.0,
+	"sleepyhead":    0.0,
 }
+
+# === Хелпер: получить текущий игровой час из Resource ===
+func _get_game_hour() -> int:
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop is SceneTree:
+		var gt = main_loop.root.get_node_or_null("/root/GameTime")
+		if gt and "hour" in gt:
+			return gt.hour
+	return 12  # Дефолт — середина дня (ни athletic, ни sleepyhead не активны)
 
 # === MOOD: Пересчёт (вызывается каждую игровую минуту) ===
 func recalculate_mood():
@@ -66,6 +92,13 @@ func recalculate_mood():
 	for t in traits:
 		if MOOD_TRAIT_MODIFIERS.has(t):
 			result += MOOD_TRAIT_MODIFIERS[t]
+
+	# Время-зависимые трейты: mood
+	var current_hour = _get_game_hour()
+	if "athletic" in traits and current_hour < ATHLETIC_ACTIVE_BEFORE_HOUR:
+		result += ATHLETIC_MOOD_BONUS
+	if "sleepyhead" in traits and current_hour >= SLEEPYHEAD_ACTIVE_FROM_HOUR:
+		result += SLEEPYHEAD_MOOD_PENALTY
 
 	# Постоянные: рабочее задание
 	if has_active_desk:
@@ -152,11 +185,24 @@ func get_mood_breakdown() -> Dictionary:
 	var permanent_mods: Array = []  # [{name, value}]
 	var temp_mods: Array = []       # [{name, value, minutes_left}]
 
-	# Трейты
+	# Трейты (постоянные)
 	for t in traits:
 		if MOOD_TRAIT_MODIFIERS.has(t) and MOOD_TRAIT_MODIFIERS[t] != 0.0:
 			var trait_name_key = EmployeeData.TRAIT_NAMES.get(t, t)
 			permanent_mods.append({"name": tr(trait_name_key), "value": MOOD_TRAIT_MODIFIERS[t]})
+
+	# Время-зависимые трейты
+	var current_hour = _get_game_hour()
+	if "athletic" in traits:
+		if current_hour < ATHLETIC_ACTIVE_BEFORE_HOUR:
+			permanent_mods.append({"name": tr("MOOD_MOD_ATHLETIC_ACTIVE"), "value": ATHLETIC_MOOD_BONUS})
+		else:
+			permanent_mods.append({"name": tr("MOOD_MOD_ATHLETIC_INACTIVE"), "value": 0.0})
+	if "sleepyhead" in traits:
+		if current_hour >= SLEEPYHEAD_ACTIVE_FROM_HOUR:
+			permanent_mods.append({"name": tr("MOOD_MOD_SLEEPYHEAD_ACTIVE"), "value": SLEEPYHEAD_MOOD_PENALTY})
+		else:
+			permanent_mods.append({"name": tr("MOOD_MOD_SLEEPYHEAD_INACTIVE"), "value": 0.0})
 
 	# Рабочее задание
 	if has_active_desk:
@@ -349,6 +395,10 @@ const TRAIT_NAMES = {
 	"coffee_lover": "TRAIT_COFFEE_LOVER",
 	"slowpoke": "TRAIT_SLOWPOKE",
 	"expensive": "TRAIT_EXPENSIVE",
+	"optimist": "TRAIT_OPTIMIST",
+	"pessimist": "TRAIT_PESSIMIST",
+	"athletic": "TRAIT_ATHLETIC",
+	"sleepyhead": "TRAIT_SLEEPYHEAD",
 }
 
 const TRAIT_DESCRIPTIONS = {
@@ -360,14 +410,20 @@ const TRAIT_DESCRIPTIONS = {
 	"coffee_lover": "TRAIT_DESC_COFFEE_LOVER",
 	"slowpoke": "TRAIT_DESC_SLOWPOKE",
 	"expensive": "TRAIT_DESC_EXPENSIVE",
+	"optimist": "TRAIT_DESC_OPTIMIST",
+	"pessimist": "TRAIT_DESC_PESSIMIST",
+	"athletic": "TRAIT_DESC_ATHLETIC",
+	"sleepyhead": "TRAIT_DESC_SLEEPYHEAD",
 }
 
-const POSITIVE_TRAITS = ["fast_learner", "energizer", "early_bird", "cheap_hire"]
-const NEGATIVE_TRAITS = ["toilet_lover", "coffee_lover", "slowpoke", "expensive"]
+const POSITIVE_TRAITS = ["fast_learner", "energizer", "early_bird", "cheap_hire", "optimist", "athletic"]
+const NEGATIVE_TRAITS = ["toilet_lover", "coffee_lover", "slowpoke", "expensive", "pessimist", "sleepyhead"]
 
 const CONFLICTING_PAIRS = [
 	["fast_learner", "slowpoke"],
 	["cheap_hire", "expensive"],
+	["optimist", "pessimist"],
+	["athletic", "sleepyhead"],
 ]
 
 func is_positive_trait(trait_id: String) -> bool:
@@ -431,6 +487,16 @@ var hourly_rate: int:
 
 @export var avatar: Texture2D
 
+# --- Хелпер: бонус эффективности от время-зависимых трейтов ---
+func _get_time_based_efficiency_mod() -> float:
+	var mod: float = 0.0
+	var current_hour = _get_game_hour()
+	if "athletic" in traits and current_hour < ATHLETIC_ACTIVE_BEFORE_HOUR:
+		mod += ATHLETIC_EFFICIENCY_BONUS
+	if "sleepyhead" in traits and current_hour >= SLEEPYHEAD_ACTIVE_FROM_HOUR:
+		mod += SLEEPYHEAD_EFFICIENCY_PENALTY
+	return mod
+
 # --- ЭФФЕКТИВНОСТЬ: МУЛЬТИПЛИКАТИВНАЯ ФОРМУЛА ---
 func get_efficiency_multiplier() -> float:
 	var mood_mult = get_mood_multiplier()
@@ -440,6 +506,9 @@ func get_efficiency_multiplier() -> float:
 	for t in traits:
 		if MOOD_TRAIT_EFFICIENCY_MODIFIERS.has(t):
 			trait_sum += MOOD_TRAIT_EFFICIENCY_MODIFIERS[t]
+
+	# Время-зависимые трейты
+	trait_sum += _get_time_based_efficiency_mod()
 
 	var motivation_mod = motivation_bonus
 
@@ -460,6 +529,9 @@ func get_efficiency_breakdown() -> Dictionary:
 	for t in traits:
 		if MOOD_TRAIT_EFFICIENCY_MODIFIERS.has(t):
 			trait_sum += MOOD_TRAIT_EFFICIENCY_MODIFIERS[t]
+
+	# Время-зависимые трейты
+	trait_sum += _get_time_based_efficiency_mod()
 
 	var motivation_mod = motivation_bonus
 

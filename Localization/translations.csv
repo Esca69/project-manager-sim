@@ -494,3 +494,17 @@ MOOD_MOD_TRAIT_COFFEE_LOVER,Трейт: Кофеман,Trait: Coffee Addict
 MOOD_MOD_TRAIT_TOILET_LOVER,Трейт: Любит покакать,Trait: Toilet Lover
 MOOD_MOD_TRAIT_SLOWPOKE,Трейт: Тормоз,Trait: Slowpoke
 MOOD_MOD_TRAIT_EXPENSIVE,Трейт: Зазнайка,Trait: Pricey
+TRAIT_OPTIMIST,😊 Оптимист,😊 Optimist
+TRAIT_PESSIMIST,😞 Пессимист,😞 Pessimist
+TRAIT_ATHLETIC,🏃 Спортсмен,🏃 Athletic
+TRAIT_SLEEPYHEAD,😴 Соня,😴 Sleepyhead
+TRAIT_DESC_OPTIMIST,Позитивный взгляд на жизнь. +8 к настроению.,Positive outlook on life. +8 to mood.
+TRAIT_DESC_PESSIMIST,Всегда ожидает худшего. -8 к настроению.,Always expects the worst. -8 to mood.
+TRAIT_DESC_ATHLETIC,Бодрый по утрам. До 13:00: +3 настроение и +5% эффективность.,Energetic in the mornings. Before 13:00: +3 mood and +5% efficiency.
+TRAIT_DESC_SLEEPYHEAD,Клюёт носом после обеда. После 14:00: -3 настроение и -5% эффективность.,Drowsy after lunch. After 14:00: -3 mood and -5% efficiency.
+MOOD_MOD_ATHLETIC_ACTIVE,🏃 Спортсмен (до 13:00),🏃 Athletic (before 13:00)
+MOOD_MOD_ATHLETIC_INACTIVE,🏃 Спортсмен (неактивен),🏃 Athletic (inactive)
+MOOD_MOD_SLEEPYHEAD_ACTIVE,😴 Соня (после 14:00),😴 Sleepyhead (after 14:00)
+MOOD_MOD_SLEEPYHEAD_INACTIVE,😴 Соня (неактивен),😴 Sleepyhead (inactive)
+MOOD_MOD_DAYOFF_ALLOW,Благодарен за отгул,Grateful for day off
+MOOD_MOD_DAYOFF_DENY,Обижен за отказ в отгуле,Upset about denied day off

@@ -108,12 +108,12 @@ func _award_stage_xp(stage: Dictionary, project: ProjectData):
 			print(tr("LOG_XP_GAIN") % [worker_data.employee_name, base_xp, tr("STAGE_" + stage.type)])
 
 			# === MOOD SYSTEM v2: Завершил этап → +5 на 8 часов (480 мин) ===
-			worker_data.add_mood_modifier("stage_complete", "MOOD_MOD_STAGE_COMPLETE", 5.0, 480.0)
+			worker_data.add_mood_modifier("stage_complete", "MOOD_MOD_STAGE_COMPLETE", 5.0, 1440.0)
 
 			if result["leveled_up"]:
 				emit_signal("employee_leveled_up", worker_data, result["new_level"], result["skill_gain"], result["new_trait"])
 				# === MOOD SYSTEM v2: Левел-ап → +7 на 24 часа (1440 мин) ===
-				worker_data.add_mood_modifier("level_up", "MOOD_MOD_LEVEL_UP", 7.0, 1440.0)
+				worker_data.add_mood_modifier("level_up", "MOOD_MOD_LEVEL_UP", 7.0, 2880.0)
 
 # === БОНУС XP ЗА ПРОЕКТ ВОВРЕМЯ ===
 func _award_on_time_bonus(project: ProjectData):
@@ -147,11 +147,11 @@ func _fail_project(project: ProjectData):
 	for stage in project.stages:
 		for worker_data in stage.workers:
 			if worker_data is EmployeeData:
-				worker_data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 1440.0)
+				worker_data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 2880.0)
 		var worker_names = stage.get("completed_worker_names", [])
 		for npc in get_tree().get_nodes_in_group("npc"):
 			if npc.data and npc.data.employee_name in worker_names:
-				npc.data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 1440.0)
+				npc.data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 2880.0)
 
 	for stage in project.stages:
 		_freeze_stage_workers(stage)
@@ -187,7 +187,7 @@ func _finish_project(project: ProjectData):
 		var worker_names = stage.get("completed_worker_names", [])
 		for npc in get_tree().get_nodes_in_group("npc"):
 			if npc.data and npc.data.employee_name in worker_names:
-				npc.data.add_mood_modifier("project_success", "MOOD_MOD_PROJECT_SUCCESS", 8.0, 1440.0)
+				npc.data.add_mood_modifier("project_success", "MOOD_MOD_PROJECT_SUCCESS", 8.0, 2880.0)
 
 	# === ЛОЯЛЬНОСТЬ: УСПЕХ ===
 	var client = project.get_client()
