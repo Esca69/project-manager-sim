@@ -10,8 +10,12 @@ var current_energy: float = 100.0
 # === БОНУС МОТИВАЦИИ ОТ PM ===
 var motivation_bonus: float = 0.0
 
-# === MOOD SYSTEM v1 ===
-var mood: float = 75.0  # 0..100, старт = 75 (верхняя граница "Нормально")
+# === MOOD SYSTEM v2 ===
+# mood вычисляется как: BASE + постоянные + временные, clamp(0..100)
+# Никакого дрейфа. Полная прозрачность для игрока.
+var mood: float = 55.0  # Будет пересчитан при первом recalculate_mood()
+
+const MOOD_BASE: float = 50.0  # Базовое значение настроения
 
 # Зоны настроения → множитель эффективности
 const MOOD_ZONES = [
@@ -22,28 +26,27 @@ const MOOD_ZONES = [
 	{"name": "MOOD_ZONE_HAPPY",     "min": 80.0, "max": 100.0, "multiplier": 1.15},
 ]
 
-# Дрейф настроения: скорость за игровую минуту
-const MOOD_DRIFT_SPEED: float = 0.03  # ~1.8 за час, ~16 за рабочий день
-const MOOD_BASE_TARGET: float = 50.0  # Базовая нейтральная точка
-
-# === ПОСТОЯННЫЕ ��ОДИФИКАТОРЫ MOOD (влияют на natural target) ===
-# Трейты → бонус/штраф к natural target
-const MOOD_TRAIT_TARGET_MODIFIERS = {
-	"energizer":     5.0,
-	"fast_learner":  3.0,
-	"early_bird":    2.0,
-	"coffee_lover": -3.0,
-	"toilet_lover": -3.0,
-	"slowpoke":     -5.0,
-	"cheap_hire":    0.0,
-	"expensive":     0.0,
+# === ПОСТОЯННЫЕ МОДИФИКАТОРЫ MOOD ===
+# Трейт → бонус к mood (только energizer влияет на настроение)
+const MOOD_TRAIT_MODIFIERS = {
+	"energizer": 5.0,
 }
 
-# Ситуационные модификаторы mood target (ключ → значение)
-const MOOD_HAS_DESK_BONUS: float = 10.0       # Назначен на проект, есть рабочее место
-const MOOD_NO_DESK_PENALTY: float = -5.0       # Бродит без дела
+# Ситуационные постоянные
+const MOOD_HAS_DESK_BONUS: float = 10.0
+const MOOD_NO_DESK_PENALTY: float = -5.0
+const MOOD_LOW_ENERGY_PENALTY: float = -5.0       # Энергия 30-50%
+const MOOD_VERY_LOW_ENERGY_PENALTY: float = -10.0  # Энергия <30%
+const MOOD_MOTIVATION_BONUS: float = 5.0           # Мотивация от PM активна
 
-# Постоянные модификаторы эффективности от трейтов (множитель)
+# === ВРЕМЕННЫЕ МОДИФИКАТОРЫ MOOD ===
+# Массив словарей: {id, name_key, value, minutes_left}
+var mood_temp_modifiers: Array = []
+
+# Флаг: назначен ли сотрудник на активный этап (обновляется извне)
+var has_active_desk: bool = false
+
+# Постоянные модификаторы эффективности от трейтов
 const MOOD_TRAIT_EFFICIENCY_MODIFIERS = {
 	"energizer":     0.05,
 	"coffee_lover": -0.03,
@@ -55,14 +58,87 @@ const MOOD_TRAIT_EFFICIENCY_MODIFIERS = {
 	"expensive":     0.0,
 }
 
-# Флаг: назначен ли сотрудник на активный этап (обновляется извне)
-var has_active_desk: bool = false
+# === MOOD: Пересчёт (вызывается каждую игровую минуту) ===
+func recalculate_mood():
+	var result = MOOD_BASE
 
+	# Постоянные: трейты
+	for t in traits:
+		if MOOD_TRAIT_MODIFIERS.has(t):
+			result += MOOD_TRAIT_MODIFIERS[t]
+
+	# Постоянные: рабочее задание
+	if has_active_desk:
+		result += MOOD_HAS_DESK_BONUS
+	else:
+		result += MOOD_NO_DESK_PENALTY
+
+	# Постоянные: энергия
+	if current_energy < 30.0:
+		result += MOOD_VERY_LOW_ENERGY_PENALTY
+	elif current_energy < 50.0:
+		result += MOOD_LOW_ENERGY_PENALTY
+
+	# Постоянные: мотивация от PM
+	if motivation_bonus > 0.0:
+		result += MOOD_MOTIVATION_BONUS
+
+	# Временные модификаторы
+	for mod in mood_temp_modifiers:
+		result += mod.value
+
+	mood = clampf(result, 0.0, 100.0)
+
+# === MOOD: Тик временных модификаторов (каждую игровую минуту) ===
+func tick_mood_modifiers():
+	# Уменьшаем таймеры
+	var expired: Array = []
+	for mod in mood_temp_modifiers:
+		mod.minutes_left -= 1.0
+		if mod.minutes_left <= 0.0:
+			expired.append(mod)
+
+	# Удаляем истёкшие
+	for mod in expired:
+		mood_temp_modifiers.erase(mod)
+
+	# Пересчитываем mood
+	recalculate_mood()
+
+# === MOOD: Добавить временный модификатор ===
+func add_mood_modifier(id: String, name_key: String, value: float, duration_minutes: float):
+	# Если модификатор с таким id уже есть — обновляем таймер (не дублируем)
+	for mod in mood_temp_modifiers:
+		if mod.id == id:
+			mod.minutes_left = duration_minutes
+			mod.value = value
+			recalculate_mood()
+			return
+
+	mood_temp_modifiers.append({
+		"id": id,
+		"name_key": name_key,
+		"value": value,
+		"minutes_left": duration_minutes,
+	})
+	recalculate_mood()
+
+# === MOOD: Убрать модификатор по id ===
+func remove_mood_modifier(id: String):
+	var to_remove = null
+	for mod in mood_temp_modifiers:
+		if mod.id == id:
+			to_remove = mod
+			break
+	if to_remove:
+		mood_temp_modifiers.erase(to_remove)
+		recalculate_mood()
+
+# === MOOD: Зоны ===
 func get_mood_zone() -> Dictionary:
 	for zone in MOOD_ZONES:
 		if mood >= zone.min and mood < zone.max:
 			return zone
-	# Если mood == 100, попадает в последнюю зону
 	return MOOD_ZONES[MOOD_ZONES.size() - 1]
 
 func get_mood_zone_name() -> String:
@@ -71,50 +147,45 @@ func get_mood_zone_name() -> String:
 func get_mood_multiplier() -> float:
 	return get_mood_zone().multiplier
 
-# === NATURAL TARGET: куда дрейфует mood ===
-func get_mood_natural_target() -> float:
-	var target = MOOD_BASE_TARGET
-
-	# Трейты
-	for t in traits:
-		if MOOD_TRAIT_TARGET_MODIFIERS.has(t):
-			target += MOOD_TRAIT_TARGET_MODIFIERS[t]
-
-	# Ситуация: есть стол / нет стола
-	if has_active_desk:
-		target += MOOD_HAS_DESK_BONUS
-	else:
-		target += MOOD_NO_DESK_PENALTY
-
-	return clampf(target, 0.0, 100.0)
-
-# === BREAKDOWN НАСТРОЕНИЯ (для тултипа) ===
+# === MOOD: Breakdown для тултипа (полная прозрачность) ===
 func get_mood_breakdown() -> Dictionary:
-	var modifiers: Array = []  # [{name, value}]
-	var target = MOOD_BASE_TARGET
+	var permanent_mods: Array = []  # [{name, value}]
+	var temp_mods: Array = []       # [{name, value, minutes_left}]
 
 	# Трейты
 	for t in traits:
-		if MOOD_TRAIT_TARGET_MODIFIERS.has(t) and MOOD_TRAIT_TARGET_MODIFIERS[t] != 0.0:
-			var val = MOOD_TRAIT_TARGET_MODIFIERS[t]
+		if MOOD_TRAIT_MODIFIERS.has(t) and MOOD_TRAIT_MODIFIERS[t] != 0.0:
 			var trait_name_key = EmployeeData.TRAIT_NAMES.get(t, t)
-			modifiers.append({"name": tr(trait_name_key), "value": val})
-			target += val
+			permanent_mods.append({"name": tr(trait_name_key), "value": MOOD_TRAIT_MODIFIERS[t]})
 
-	# Стол / нет стола
+	# Рабочее задание
 	if has_active_desk:
-		modifiers.append({"name": tr("MOOD_MOD_HAS_DESK"), "value": MOOD_HAS_DESK_BONUS})
-		target += MOOD_HAS_DESK_BONUS
+		permanent_mods.append({"name": tr("MOOD_MOD_HAS_DESK"), "value": MOOD_HAS_DESK_BONUS})
 	else:
-		modifiers.append({"name": tr("MOOD_MOD_NO_DESK"), "value": MOOD_NO_DESK_PENALTY})
-		target += MOOD_NO_DESK_PENALTY
+		permanent_mods.append({"name": tr("MOOD_MOD_NO_DESK"), "value": MOOD_NO_DESK_PENALTY})
 
-	target = clampf(target, 0.0, 100.0)
+	# Энергия
+	if current_energy < 30.0:
+		permanent_mods.append({"name": tr("MOOD_MOD_VERY_LOW_ENERGY"), "value": MOOD_VERY_LOW_ENERGY_PENALTY})
+	elif current_energy < 50.0:
+		permanent_mods.append({"name": tr("MOOD_MOD_LOW_ENERGY"), "value": MOOD_LOW_ENERGY_PENALTY})
+
+	# Мотивация
+	if motivation_bonus > 0.0:
+		permanent_mods.append({"name": tr("MOOD_MOD_MOTIVATED"), "value": MOOD_MOTIVATION_BONUS})
+
+	# Временные
+	for mod in mood_temp_modifiers:
+		temp_mods.append({
+			"name": tr(mod.name_key),
+			"value": mod.value,
+			"minutes_left": mod.minutes_left,
+		})
 
 	return {
-		"base": MOOD_BASE_TARGET,
-		"modifiers": modifiers,
-		"natural_target": target,
+		"base": MOOD_BASE,
+		"permanent_mods": permanent_mods,
+		"temp_mods": temp_mods,
 		"current_mood": mood,
 	}
 
@@ -125,7 +196,6 @@ const MAX_LEVEL = 10
 const MAX_TRAITS = 4
 const TRAIT_ON_LEVELUP_CHANCE = 0.25
 
-# Названия грейдов (используем ключи для локализации)
 const GRADE_NAMES = {
 	0: "GRADE_JUNIOR", 1: "GRADE_JUNIOR", 2: "GRADE_JUNIOR",
 	3: "GRADE_MIDDLE", 4: "GRADE_MIDDLE",
@@ -133,10 +203,8 @@ const GRADE_NAMES = {
 	7: "GRADE_LEAD", 8: "GRADE_LEAD", 9: "GRADE_LEAD", 10: "GRADE_LEAD",
 }
 
-# Базовые навыки по уровням (без рандома)
 const SKILL_TABLE = [80, 100, 120, 145, 170, 200, 225, 250, 270, 285, 300]
 
-# Прибавка навыка при левел-апе [min, max]
 const SKILL_GAIN_PER_LEVEL = [
 	[17, 23],  # 0 → 1
 	[17, 23],  # 1 → 2
@@ -150,17 +218,14 @@ const SKILL_GAIN_PER_LEVEL = [
 	[12, 18],  # 9 → 10
 ]
 
-# XP для перехода на следующий уровень
 const XP_PER_LEVEL = [50, 80, 120, 170, 230, 300, 400, 520, 660, 820]
 
-# XP за завершение этапа по категории проекта [min, max]
 const STAGE_XP_REWARD = {
 	"micro": [15, 25],
 	"simple": [30, 50],
 	"easy": [50, 80],
 }
 
-# Бонус XP за проект без просрочки софт-дедлайна
 const ON_TIME_XP_BONUS = 0.30
 
 signal level_up(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String)
@@ -341,7 +406,7 @@ func _get_energy_factor() -> float:
 	else:
 		return 0.4
 
-# --- Модификатор скорости работы (МУЛЬТИПЛИКАТИВНЫЙ через mood) ---
+# --- Модификатор скорости работы (алиас) ---
 func get_work_speed_multiplier() -> float:
 	return get_efficiency_multiplier()
 
@@ -366,34 +431,27 @@ var hourly_rate: int:
 
 @export var avatar: Texture2D
 
-# --- ЭФФЕКТИВНОСТЬ: МУЛЬТИПЛИКАТИВНАЯ ФОРМУЛА (Mood System v1) ---
+# --- ЭФФЕКТИВНОСТЬ: МУЛЬТИПЛИКАТИВНАЯ ФОРМУЛА ---
 func get_efficiency_multiplier() -> float:
-	# 1. Множитель зоны настроения
 	var mood_mult = get_mood_multiplier()
-
-	# 2. Множитель энергии
 	var energy_factor = _get_energy_factor()
 
-	# 3. Сумма постоянных трейт-модификаторов эффективности
 	var trait_sum: float = 0.0
 	for t in traits:
 		if MOOD_TRAIT_EFFICIENCY_MODIFIERS.has(t):
 			trait_sum += MOOD_TRAIT_EFFICIENCY_MODIFIERS[t]
 
-	# 4. Мотивация PM
 	var motivation_mod = motivation_bonus
 
-	# 5. Ивент-модификатор
 	var event_mod: float = 0.0
 	var em = _get_event_manager()
 	if em:
 		event_mod = em.get_employee_efficiency_modifier(employee_name)
 
-	# Итоговая форму��а
 	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod)
 	return result
 
-# --- РАЗБИВКА ЭФФЕКТИВНОСТИ (для тултипа в ростере) ---
+# --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
 func get_efficiency_breakdown() -> Dictionary:
 	var mood_mult = get_mood_multiplier()
 	var energy_factor = _get_energy_factor()
@@ -423,25 +481,6 @@ func get_efficiency_breakdown() -> Dictionary:
 		"event_mod": event_mod,
 		"total": total,
 	}
-
-# --- Д��ейф настроения к ДИНАМИЧЕСКОМУ natural target ---
-func tick_mood_drift():
-	var target = get_mood_natural_target()
-	if absf(mood - target) < 0.01:
-		mood = target
-		return
-	var direction = sign(target - mood)
-	mood += direction * MOOD_DRIFT_SPEED
-	# Не перепрыгиваем через цель
-	if direction > 0 and mood > target:
-		mood = target
-	elif direction < 0 and mood < target:
-		mood = target
-	mood = clampf(mood, 0.0, 100.0)
-
-# --- Изменение mood извне (кофе, ивенты, PM-действия и т.д.) ---
-func change_mood(delta: float):
-	mood = clampf(mood + delta, 0.0, 100.0)
 
 # === EVENT SYSTEM: Безопасный доступ к EventManager из Resource ===
 func _get_event_manager():

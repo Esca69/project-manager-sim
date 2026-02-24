@@ -20,7 +20,6 @@ func add_project(proj: ProjectData):
 func can_take_more() -> bool:
 	return count_active_projects() < PMData.get_max_projects()
 
-# Считаем только DRAFTING и IN_PROGRESS — завершённые и проваленные не в счёт
 func count_active_projects() -> int:
 	var count = 0
 	for proj in active_projects:
@@ -34,7 +33,6 @@ func get_current_global_time() -> float:
 	return float(GameTime.day) + day_part + min_part
 
 func _physics_process(delta):
-	# Прерываем вычисления прогресса и времени проекта, если игра на паузе
 	if GameTime.is_game_paused:
 		return
 		
@@ -49,7 +47,6 @@ func _physics_process(delta):
 
 		project.elapsed_days = now - project.start_global_time
 
-		# Хард-дедлайн: наступает когда day >= deadline_day
 		if GameTime.day >= project.deadline_day:
 			_fail_project(project)
 			continue
@@ -77,10 +74,6 @@ func _physics_process(delta):
 					var worker_node = _get_employee_node(worker_data)
 					if worker_node and worker_node.current_state == worker_node.State.WORKING:
 						var skill = _get_skill_for_stage(active_stage.type, worker_data)
-						# === MOOD SYSTEM: Единая формула эффективности ===
-						# get_efficiency_multiplier() уже содержит ВСЁ:
-						# mood_zone × energy × (1+traits) × (1+motivation) × (1+events)
-						# Убрали отдельный get_work_speed_multiplier() чтобы не было двойного множителя
 						var efficiency = worker_data.get_efficiency_multiplier()
 						var speed_per_second = (float(skill) * efficiency) / 60.0
 						var progress_this_tick = speed_per_second * delta
@@ -113,8 +106,14 @@ func _award_stage_xp(stage: Dictionary, project: ProjectData):
 		if worker_data is EmployeeData:
 			var result = worker_data.add_employee_xp(base_xp)
 			print(tr("LOG_XP_GAIN") % [worker_data.employee_name, base_xp, tr("STAGE_" + stage.type)])
+
+			# === MOOD SYSTEM v2: Завершил этап → +5 на 8 часов (480 мин) ===
+			worker_data.add_mood_modifier("stage_complete", "MOOD_MOD_STAGE_COMPLETE", 5.0, 480.0)
+
 			if result["leveled_up"]:
 				emit_signal("employee_leveled_up", worker_data, result["new_level"], result["skill_gain"], result["new_trait"])
+				# === MOOD SYSTEM v2: Левел-ап → +7 на 24 часа (1440 мин) ===
+				worker_data.add_mood_modifier("level_up", "MOOD_MOD_LEVEL_UP", 7.0, 1440.0)
 
 # === БОНУС XP ЗА ПРОЕКТ ВОВРЕМЯ ===
 func _award_on_time_bonus(project: ProjectData):
@@ -143,6 +142,17 @@ func _fail_project(project: ProjectData):
 		return
 	print(tr("LOG_PROJECT_FAILED") % tr(project.title))
 	project.state = ProjectData.State.FAILED
+
+	# === MOOD SYSTEM v2: Провал → -10 на 24 часа всем участникам ===
+	for stage in project.stages:
+		for worker_data in stage.workers:
+			if worker_data is EmployeeData:
+				worker_data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 1440.0)
+		var worker_names = stage.get("completed_worker_names", [])
+		for npc in get_tree().get_nodes_in_group("npc"):
+			if npc.data and npc.data.employee_name in worker_names:
+				npc.data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 1440.0)
+
 	for stage in project.stages:
 		_freeze_stage_workers(stage)
 	GameState.projects_failed_today.append(project)
@@ -171,6 +181,13 @@ func _finish_project(project: ProjectData):
 			_freeze_stage_workers(stage)
 	GameState.add_income(payout)
 	GameState.projects_finished_today.append({"project": project, "payout": payout})
+
+	# === MOOD SYSTEM v2: Проект завершён → +8 на 24 часа всем участникам ===
+	for stage in project.stages:
+		var worker_names = stage.get("completed_worker_names", [])
+		for npc in get_tree().get_nodes_in_group("npc"):
+			if npc.data and npc.data.employee_name in worker_names:
+				npc.data.add_mood_modifier("project_success", "MOOD_MOD_PROJECT_SUCCESS", 8.0, 1440.0)
 
 	# === ЛОЯЛЬНОСТЬ: УСПЕХ ===
 	var client = project.get_client()

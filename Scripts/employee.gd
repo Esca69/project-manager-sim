@@ -85,53 +85,25 @@ var is_on_day_off: bool = false
 var personal_color: Color = Color.WHITE
 var skin_color: Color = Color.WHITE
 
-# ��алитра из 20 уникальных, красивых и разнообразных цветов
 const CLOTHING_PALETTE: Array[Color] = [
-	Color("#FFADAD"), # Светло-красный
-	Color("#FFD6A5"), # Персиковый
-	Color("#FDFFB6"), # Светло-желтый
-	Color("#CAFFBF"), # Мятный
-	Color("#9BF6FF"), # Светло-голубой
-	Color("#A0C4FF"), # Небесно-синий
-	Color("#BDB2FF"), # Сиреневый
-	Color("#FFC6FF"), # Светло-розовый
-	Color("#F15BB5"), # Ярко-розовый
-	Color("#FEE440"), # Насыщенный желтый
-	Color("#00BBF9"), # Голубой
-	Color("#00F5D4"), # Аквамарин
-	Color("#8A2BE2"), # Фиолетовый
-	Color("#FF9F1C"), # Оранжевый
-	Color("#2EC4B6"), # Морская волна
-	Color("#E71D36"), # Карминно-красный
-	Color("#9C89B8"), # Приглушенный фиолетовый
-	Color("#F0A6CA"), # Пыльная роза
-	Color("#B8BEDD"), # Серо-голубой
-	Color("#99E2B4")  # Светло-зеленый
+	Color("#FFADAD"), Color("#FFD6A5"), Color("#FDFFB6"), Color("#CAFFBF"),
+	Color("#9BF6FF"), Color("#A0C4FF"), Color("#BDB2FF"), Color("#FFC6FF"),
+	Color("#F15BB5"), Color("#FEE440"), Color("#00BBF9"), Color("#00F5D4"),
+	Color("#8A2BE2"), Color("#FF9F1C"), Color("#2EC4B6"), Color("#E71D36"),
+	Color("#9C89B8"), Color("#F0A6CA"), Color("#B8BEDD"), Color("#99E2B4")
 ]
 
-# --- ПАЛИТРЫ КОЖИ ПО КАТЕГОРИЯМ ВЕРОЯТНОСТИ ---
 const SKIN_LIGHT: Array[Color] = [
-	Color("#FFE0BD"), # Очень светлый
-	Color("#FFCD94"), # Светлый
-	Color("#fff0e1") # Как у ПМа
+	Color("#FFE0BD"), Color("#FFCD94"), Color("#fff0e1")
 ]
 
 const SKIN_MEDIUM: Array[Color] = [
-	Color("#FFAD60"), # Золотистый
-	Color("#CB8E63"), # Загорелый
-	Color("#C68642"), # Смуглый
-	Color("#8D5524")  # Темно-смуглый
+	Color("#FFAD60"), Color("#CB8E63"), Color("#C68642"), Color("#8D5524")
 ]
 
 const SKIN_DARK: Array[Color] = [
-	Color("#61412A"), # Темный
-	Color("#4A2E1B"), # Очень темный
-	Color("#311A0E")  # Глубокий темный
+	Color("#61412A"), Color("#4A2E1B"), Color("#311A0E")
 ]
-
-# === MOOD SYSTEM: Константы влияния на mood ===
-const MOOD_COFFEE_BOOST: float = 3.0        # Выпил кофе → +3 mood
-const MOOD_WANDER_PENALTY: float = -0.05     # Бродит без дела → -0.05/мин (~-0.5/час)
 
 @export var data: EmployeeData
 
@@ -148,7 +120,6 @@ func _ready():
 	nav_agent.path_desired_distance = 20.0
 	nav_agent.target_desired_distance = 20.0
 	
-	# --- НАСТРОЙКА КРАСИВОГО Т��КСТА (Inter) ---
 	if debug_label:
 		var label_settings = LabelSettings.new()
 		label_settings.font = load("res://Fonts/Inter-VariableFont_opsz,wght.ttf")
@@ -159,12 +130,10 @@ func _ready():
 		
 		debug_label.label_settings = label_settings
 		debug_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		# Приподняли текст повыше, чтобы поместилась третья строка
 		debug_label.position = Vector2(-20, -230)
 		debug_label.custom_minimum_size = Vector2(200, 75)
 		debug_label.modulate.a = 0.0 
 		
-		# Делаем надписи всегда поверх столов и туалетов
 		debug_label.z_index = 50
 		debug_label.z_as_relative = false
 	
@@ -205,7 +174,6 @@ func apply_toilet_ban(duration_minutes: float):
 	show_thought_bubble("🚫", 5.0)
 	_play_motivation_reaction()
 	
-	# Если NPC сейчас идёт в туалет или в туалете — принудительно вернуть к работе
 	if current_state == State.GOING_TOILET:
 		if toilet_ref:
 			toilet_ref.release(self)
@@ -237,7 +205,6 @@ func start_sick_leave(days: int):
 	sick_days_left = days
 	is_on_day_off = false
 	
-	# Освобождаем все ресурсы
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:
 		coffee_machine_ref.release(self)
@@ -246,7 +213,6 @@ func start_sick_leave(days: int):
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	# Прячем сотрудника
 	visible = false
 	$CollisionShape2D.disabled = true
 	velocity = Vector2.ZERO
@@ -257,7 +223,6 @@ func start_sick_leave(days: int):
 		print("🤒 %s уходит на больничный (%d дн.)" % [data.employee_name, days])
 
 func tick_sick_day():
-	# Вызывается EventManager каждое утро для больных
 	if current_state != State.SICK_LEAVE:
 		return
 	
@@ -268,7 +233,6 @@ func tick_sick_day():
 func _recover_from_sick():
 	sick_days_left = 0
 	current_state = State.HOME
-	# Сотрудник проснётся и придёт на работу через обычный _on_work_started
 	if data:
 		data.current_energy = 100.0
 		print("✅ %s выздоровел и готов к работе!" % data.employee_name)
@@ -280,7 +244,6 @@ func start_day_off():
 	is_on_day_off = true
 	sick_days_left = 0
 	
-	# Освобождаем ресурсы
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:
 		coffee_machine_ref.release(self)
@@ -289,7 +252,6 @@ func start_day_off():
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	# Уходим домой через анимацию
 	velocity = Vector2.ZERO
 	z_index = 0
 	
@@ -297,9 +259,7 @@ func start_day_off():
 	if entrance:
 		nav_agent.target_position = entrance.global_position
 		current_state = State.GOING_HOME
-		# После прихода к выходу — перейдёт в DAY_OFF через _on_arrived_home_or_dayoff
 	else:
-		# Нет входа — мгновенно прячем
 		_finalize_day_off()
 
 func _finalize_day_off():
@@ -311,12 +271,10 @@ func _finalize_day_off():
 		print("🏠 %s ушёл в отгул до завтра" % data.employee_name)
 
 func end_day_off():
-	# Вызывается EventManager утром следующего дня
 	if current_state != State.DAY_OFF:
 		return
 	is_on_day_off = false
 	current_state = State.HOME
-	# Сотрудник придёт на работу через обычный _on_work_started
 	if data:
 		data.current_energy = 100.0
 		print("✅ %s вернулся из отгула" % data.employee_name)
@@ -326,17 +284,14 @@ func _play_motivation_reaction():
 	if not body_sprite or not head_sprite:
 		return
 
-	# Убиваем предыдущую анимацию мотивации, если она ещё играет
 	if _motivation_anim_tween and _motivation_anim_tween.is_valid():
 		_motivation_anim_tween.kill()
 
-	# Запоминаем исходные позиции
 	var body_origin_y = body_sprite.position.y
 	var head_origin_rot = head_sprite.rotation
 
 	_motivation_anim_tween = create_tween()
 
-	# --- Фаза 1: ПОДПРЫГ (Body прыгает вверх и обратно) ---
 	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y - 30.0, 0.12) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y + 5.0, 0.08) \
@@ -344,7 +299,6 @@ func _play_motivation_reaction():
 	_motivation_anim_tween.tween_property(body_sprite, "position:y", body_origin_y, 0.06) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
-	# --- Фаза 2: ТРЯСКА ГОЛОВЫ ---
 	var shake_angle = 0.25
 	var shake_step = 0.07
 
@@ -355,7 +309,6 @@ func _play_motivation_reaction():
 	_motivation_anim_tween.tween_property(head_sprite, "rotation", shake_angle * 0.3, shake_step)
 	_motivation_anim_tween.tween_property(head_sprite, "rotation", -shake_angle * 0.3, shake_step)
 
-	# --- Возврат в нейтральное положение ---
 	_motivation_anim_tween.tween_property(head_sprite, "rotation", head_origin_rot, 0.1) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
@@ -379,7 +332,6 @@ func _assign_random_color():
 	else:
 		personal_color = available_colors.pick_random()
 
-	# --- ЖЕЛЕЗОБЕТОННАЯ ГЕНЕРАЦИЯ ЦВЕТА КОЖИ ---
 	var skin_roll = randi_range(1, 100)
 	
 	if skin_roll <= 75:
@@ -411,15 +363,11 @@ func _on_time_tick(_hour, _minute):
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 
-	# === MOOD SYSTEM: Обновляем флаг стола для natural target ===
+	# === MOOD SYSTEM v2: Обновляем флаг стола ===
 	data.has_active_desk = (my_desk_position != Vector2.ZERO and _is_my_stage_active())
 
-	# === MOOD SYSTEM: Дрейф настроения каждую игровую минуту ===
-	data.tick_mood_drift()
-
-	# === MOOD SYSTEM: Штраф за бродяжничество (нет задачи) ===
-	if current_state == State.WANDERING or current_state == State.WANDER_PAUSE:
-		data.change_mood(MOOD_WANDER_PENALTY)
+	# === MOOD SYSTEM v2: Тикаем временные модификаторы + пересчёт mood ===
+	data.tick_mood_modifiers()
 
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
@@ -505,7 +453,6 @@ func _physics_process(delta):
 		State.HOME:
 			_apply_lean(Vector2.ZERO, delta)
 		
-		# === EVENT SYSTEM: Новые стейты — ничего не делаем ===
 		State.SICK_LEAVE, State.DAY_OFF:
 			pass
 			
@@ -547,7 +494,6 @@ func _physics_process(delta):
 		State.GOING_HOME:
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 50.0:
-				# === EVENT SYSTEM: Если это отгул — переходим в DAY_OFF, а не HOME ===
 				if is_on_day_off:
 					_finalize_day_off()
 				else:
@@ -612,7 +558,6 @@ func _force_go_home():
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	# === EVENT SYSTEM: Не уходим домой если болеем/в отгуле ===
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	
@@ -737,9 +682,9 @@ func _finish_coffee_break():
 	
 	data.current_energy = min(100.0, data.current_energy + randf_range(COFFEE_MIN_GAIN, COFFEE_MAX_GAIN))
 	
-	# === MOOD SYSTEM: Кофе поднимает настроение ===
+	# === MOOD SYSTEM v2: Кофе → временный модификатор +3 на 60 мин ===
 	if data:
-		data.change_mood(MOOD_COFFEE_BOOST)
+		data.add_mood_modifier("coffee_boost", "MOOD_MOD_COFFEE", 3.0, 60.0)
 	
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
@@ -760,7 +705,6 @@ func _setup_toilet_schedule():
 	toilet_visit_times.sort()
 
 func _try_start_toilet_break():
-	# === ЗАПРЕТ ТУАЛЕТА: если бан активен — даже не пытаемся ===
 	if _toilet_ban_minutes_left > 0:
 		return
 	
@@ -799,6 +743,10 @@ func _finish_toilet_break():
 		toilet_ref = null
 	
 	toilet_visits_done += 1
+	
+	# === MOOD SYSTEM v2: Туалет → временный модификатор +3 на 60 мин ===
+	if data:
+		data.add_mood_modifier("toilet_relief", "MOOD_MOD_TOILET", 3.0, 60.0)
 	
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
@@ -872,7 +820,6 @@ func _on_navigation_finished():
 	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
 func _on_work_started():
-	# === EVENT SYSTEM: Больной или в отгуле — НЕ приходит на работу ===
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	
@@ -919,7 +866,6 @@ func _on_work_started():
 		_start_wandering()
 
 func _on_work_ended():
-	# === EVENT SYSTEM: Больной или в отгуле — игнорируем ===
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	_should_go_home = true
@@ -936,7 +882,6 @@ func _go_to_sleep_instant():
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	# === EVENT SYSTEM: Не сбрасываем состояние если ��олеем/в отгуле ===
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	
@@ -989,7 +934,6 @@ func get_human_state_name() -> String:
 		State.TOILET_BREAK: return tr("EMP_ACTION_TOILET_BREAK")
 		State.WANDERING: return tr("EMP_ACTION_WANDERING")
 		State.WANDER_PAUSE: return tr("EMP_ACTION_WANDER_PAUSE")
-		# === EVENT SYSTEM: Названия новых стейтов ===
 		State.SICK_LEAVE: return tr("EMP_ACTION_SICK_LEAVE")
 		State.DAY_OFF: return tr("EMP_ACTION_DAY_OFF")
 	return "..."
@@ -998,7 +942,6 @@ func update_status_label():
 	if debug_label and data:
 		var action_text = get_human_state_name()
 		
-		# Определяем аббревиатуру роли через локализацию
 		var short_role = ""
 		if data.job_title == "Backend Developer":
 			short_role = tr("ROLE_SHORT_DEV")
@@ -1009,7 +952,6 @@ func update_status_label():
 		else:
 			short_role = data.job_title
 		
-		# Добавляем роль верхней строкой
 		debug_label.text = short_role + "\n" + data.employee_name + "\n" + action_text
 
 func _show_random_work_thought():

@@ -132,6 +132,20 @@ func _serialize_employees() -> Array:
 		if not npc.data or not npc.data is EmployeeData:
 			continue
 		var d = npc.data
+		
+		# === MOOD SYSTEM v2: Сериализуем временные mood_modifiers ===
+		var serialized_modifiers = []
+		for mod in d.mood_modifiers:
+			# Сохраняем только временные (у которых duration > 0)
+			if mod.get("duration", 0.0) > 0.0:
+				serialized_modifiers.append({
+					"id": mod.get("id", ""),
+					"display_name": mod.get("display_name", ""),
+					"value": mod.get("value", 0.0),
+					"duration": mod.get("duration", 0.0),
+					"elapsed": mod.get("elapsed", 0.0),
+				})
+		
 		result.append({
 			"employee_name": d.employee_name,
 			"job_title": d.job_title,
@@ -144,12 +158,13 @@ func _serialize_employees() -> Array:
 			"traits": d.traits.duplicate(),
 			"current_energy": d.current_energy,
 			"motivation_bonus": d.motivation_bonus,
-			# === MOOD SYSTEM: Сохраняем mood ===
+			# === MOOD SYSTEM v2: Сохраняем mood + модификаторы ===
 			"mood": d.mood,
+			"mood_modifiers": serialized_modifiers,
 			# Визуал
 			"personal_color": npc.personal_color.to_html(),
 			"skin_color": npc.skin_color.to_html(),
-			# Позиция стола (для восстанов��ения привязки)
+			# Позиция стола (для восстановления привязки)
 			"desk_position_x": npc.my_desk_position.x,
 			"desk_position_y": npc.my_desk_position.y,
 			# === EVENT SYSTEM: Сохраняем состояние болезни/отгула ===
@@ -337,8 +352,20 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 			npc.data.current_energy = float(emp_dict.get("current_energy", 100.0))
 			npc.data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
-			# === MOOD SYSTEM: Восстанавливаем mood ===
+			# === MOOD SYSTEM v2: Восстанавливаем mood ===
 			npc.data.mood = float(emp_dict.get("mood", 75.0))
+
+			# === MOOD SYSTEM v2: Восстанавливаем временные модификаторы ===
+			var saved_mods = emp_dict.get("mood_modifiers", [])
+			for mod_dict in saved_mods:
+				var mod = {
+					"id": str(mod_dict.get("id", "")),
+					"display_name": str(mod_dict.get("display_name", "")),
+					"value": float(mod_dict.get("value", 0.0)),
+					"duration": float(mod_dict.get("duration", 0.0)),
+					"elapsed": float(mod_dict.get("elapsed", 0.0)),
+				}
+				npc.data.mood_modifiers.append(mod)
 
 			var desk_x = float(emp_dict.get("desk_position_x", 0.0))
 			var desk_y = float(emp_dict.get("desk_position_y", 0.0))

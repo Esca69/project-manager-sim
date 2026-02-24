@@ -477,3 +477,20 @@ ROSTER_MOOD_BREAKDOWN_TITLE,🎭 Из чего складывается наст
 ROSTER_MOOD_BREAKDOWN_BASE,База: %d,Base: %d
 ROSTER_MOOD_BREAKDOWN_TARGET,🎯 Естественный уровень: %d,🎯 Natural target: %d
 ROSTER_MOOD_BREAKDOWN_CURRENT,📍 Текущее: %d,📍 Current mood: %d
+ROSTER_MOOD_BREAKDOWN_CURRENT,📍 Текущее: %d,📍 Current mood: %d
+ROSTER_MOOD_BREAKDOWN_PERMANENT,📌 Постоянные:,📌 Permanent:
+ROSTER_MOOD_BREAKDOWN_TEMPORARY,⏳ Временные:,⏳ Temporary:
+MOOD_MOD_COFFEE,Выпил кофе,Had coffee
+MOOD_MOD_TOILET,Сходил в туалет,Used toilet
+MOOD_MOD_STAGE_COMPLETE,Завершил этап,Completed stage
+MOOD_MOD_LEVEL_UP,Повышение уровня!,Level up!
+MOOD_MOD_PROJECT_SUCCESS,Проект успешен,Project succeeded
+MOOD_MOD_PROJECT_FAILED,Проект провален,Project failed
+MOOD_MOD_TRAIT_FAST_LEARNER,Трейт: Быстрый ум,Trait: Fast Learner
+MOOD_MOD_TRAIT_ENERGIZER,Трейт: Энерджайзер,Trait: Energizer
+MOOD_MOD_TRAIT_EARLY_BIRD,Трейт: Ранняя пташка,Trait: Early Bird
+MOOD_MOD_TRAIT_CHEAP_HIRE,Трейт: Скромный,Trait: Modest
+MOOD_MOD_TRAIT_COFFEE_LOVER,Трейт: Кофеман,Trait: Coffee Addict
+MOOD_MOD_TRAIT_TOILET_LOVER,Трейт: Любит покакать,Trait: Toilet Lover
+MOOD_MOD_TRAIT_SLOWPOKE,Трейт: Тормоз,Trait: Slowpoke
+MOOD_MOD_TRAIT_EXPENSIVE,Трейт: Зазнайка,Trait: Pricey

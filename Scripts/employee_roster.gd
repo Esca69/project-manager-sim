@@ -168,7 +168,7 @@ func _update_live_data():
 			effect_lbl.text = effect_text
 			effect_lbl.visible = effect_text != ""
 
-		# === MOOD SYSTEM: обновляем mood в реальном времени ===
+		# === MOOD SYSTEM: обновляем mood в реальном вре��ени ===
 		if mood_lbl:
 			var mood_val = emp_data.mood
 			var zone_name = emp_data.get_mood_zone_name()
@@ -595,18 +595,37 @@ func _create_help_button() -> Button:
 
 	return btn
 
-# === MOOD SYSTEM: Текст breakdown'а настроения ===
+# === MOOD SYSTEM v2: Текст breakdown'а настроения ===
 func _build_mood_breakdown_text(emp: EmployeeData) -> String:
 	var bd = emp.get_mood_breakdown()
 	var lines: Array[String] = []
 
 	lines.append(tr("ROSTER_MOOD_BREAKDOWN_TITLE"))
 	lines.append(tr("ROSTER_MOOD_BREAKDOWN_BASE") % int(bd.base))
-	lines.append("")
 
-	for mod in bd.modifiers:
-		var sign_str = "+" if mod.value > 0 else ""
-		lines.append("  %s%d  %s" % [sign_str, int(mod.value), mod.name])
+	# --- Постоянные модифи��аторы ---
+	if bd.permanent_modifiers.size() > 0:
+		lines.append("")
+		lines.append(tr("ROSTER_MOOD_BREAKDOWN_PERMANENT"))
+		for mod in bd.permanent_modifiers:
+			var sign_str = "+" if mod.value > 0 else ""
+			lines.append("  %s%d  %s" % [sign_str, int(mod.value), mod.name])
+
+	# --- Временные модификаторы ---
+	if bd.temporary_modifiers.size() > 0:
+		lines.append("")
+		lines.append(tr("ROSTER_MOOD_BREAKDOWN_TEMPORARY"))
+		for mod in bd.temporary_modifiers:
+			var sign_str = "+" if mod.value > 0 else ""
+			var time_left = int(mod.minutes_left)
+			var hours = time_left / 60
+			var mins = time_left % 60
+			var time_str = ""
+			if hours > 0:
+				time_str = "%dh %dm" % [hours, mins]
+			else:
+				time_str = "%dm" % mins
+			lines.append("  %s%d  %s  (%s)" % [sign_str, int(mod.value), mod.name, time_str])
 
 	lines.append("")
 	lines.append(tr("ROSTER_MOOD_BREAKDOWN_TARGET") % int(bd.natural_target))
