@@ -21,6 +21,7 @@ var _scroll_ready: bool = false
 var _overlay: ColorRect
 
 func _ready():
+	add_to_group("project_selection_ui")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	z_index = 90

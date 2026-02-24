@@ -95,6 +95,9 @@ func _serialize_pm_data() -> Dictionary:
 
 # --- BossManager ---
 func _serialize_boss_manager() -> Dictionary:
+	# Сериализуем проекты из project_selection_ui
+	var selection_data = _serialize_project_selection()
+
 	return {
 		"boss_trust": BossManager.boss_trust,
 		"quest_active": BossManager.quest_active,
@@ -109,6 +112,8 @@ func _serialize_boss_manager() -> Dictionary:
 		"_current_month": BossManager._current_month,
 		"_quest_shown_this_month": BossManager._quest_shown_this_month,
 		"_report_shown_this_month": BossManager._report_shown_this_month,
+		# Проекты для выбора у босса
+		"project_selection": selection_data,
 	}
 
 # --- Клиенты ---
@@ -133,17 +138,16 @@ func _serialize_employees() -> Array:
 			continue
 		var d = npc.data
 		
-		# === MOOD SYSTEM v2: Сериализуем временные mood_modifiers ===
+		# === MOOD SYSTEM v2: Сериализуем временные mood_temp_modifiers ===
+		# Формат в employee_data.gd: {id, name_key, value, minutes_left}
 		var serialized_modifiers = []
 		for mod in d.mood_temp_modifiers:
-			# Сохраняем только временные (у которых duration > 0)
-			if mod.get("duration", 0.0) > 0.0:
+			if mod.get("minutes_left", 0.0) > 0.0:
 				serialized_modifiers.append({
 					"id": mod.get("id", ""),
-					"display_name": mod.get("display_name", ""),
+					"name_key": mod.get("name_key", ""),
 					"value": mod.get("value", 0.0),
-					"duration": mod.get("duration", 0.0),
-					"elapsed": mod.get("elapsed", 0.0),
+					"minutes_left": mod.get("minutes_left", 0.0),
 				})
 		
 		result.append({
@@ -231,6 +235,64 @@ func _serialize_projects() -> Array:
 
 		result.append(proj_dict)
 	return result
+
+# --- Сериализация проектов для выбора у босса ---
+func _serialize_project_selection() -> Dictionary:
+	var sel_ui = get_tree().get_first_node_in_group("project_selection_ui")
+	if sel_ui == null:
+		# Попробуем найти через HUD
+		var hud = get_tree().get_first_node_in_group("ui")
+		if hud and "project_selection" in hud:
+			sel_ui = hud.project_selection
+	
+	if sel_ui == null:
+		return {}
+	
+	var options_data = []
+	for opt in sel_ui.current_options:
+		if opt == null:
+			options_data.append(null)
+		elif opt is ProjectData:
+			options_data.append(_serialize_single_project(opt))
+		else:
+			options_data.append(null)
+	
+	return {
+		"generated_for_week": sel_ui._generated_for_week,
+		"current_options": options_data,
+	}
+
+func _serialize_single_project(proj: ProjectData) -> Dictionary:
+	var proj_dict = {
+		"title": proj.title,
+		"category": proj.category,
+		"client_id": proj.client_id,
+		"created_at_day": proj.created_at_day,
+		"deadline_day": proj.deadline_day,
+		"soft_deadline_day": proj.soft_deadline_day,
+		"start_global_time": proj.start_global_time,
+		"elapsed_days": proj.elapsed_days,
+		"hard_days_budget": proj.hard_days_budget,
+		"soft_days_budget": proj.soft_days_budget,
+		"budget": proj.budget,
+		"soft_deadline_penalty_percent": proj.soft_deadline_penalty_percent,
+		"state": proj.state,
+		"stages": [],
+	}
+	for stage in proj.stages:
+		proj_dict["stages"].append({
+			"type": stage.get("type", ""),
+			"amount": stage.get("amount", 0),
+			"progress": stage.get("progress", 0.0),
+			"is_completed": stage.get("is_completed", false),
+			"actual_start": stage.get("actual_start", -1.0),
+			"actual_end": stage.get("actual_end", -1.0),
+			"plan_start": stage.get("plan_start", 0.0),
+			"plan_duration": stage.get("plan_duration", 0.0),
+			"worker_names": [],
+			"completed_worker_names": stage.get("completed_worker_names", []),
+		})
+	return proj_dict
 
 # === EVENT SYSTEM: Сериализация EventManager ===
 func _serialize_event_manager() -> Dictionary:
@@ -356,14 +418,14 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.data.mood = float(emp_dict.get("mood", 75.0))
 
 			# === MOOD SYSTEM v2: Восстанавливаем временные модификаторы ===
+			# Формат: {id, name_key, value, minutes_left}
 			var saved_mods = emp_dict.get("mood_modifiers", [])
 			for mod_dict in saved_mods:
 				var mod = {
 					"id": str(mod_dict.get("id", "")),
-					"display_name": str(mod_dict.get("display_name", "")),
+					"name_key": str(mod_dict.get("name_key", "")),
 					"value": float(mod_dict.get("value", 0.0)),
-					"duration": float(mod_dict.get("duration", 0.0)),
-					"elapsed": float(mod_dict.get("elapsed", 0.0)),
+					"minutes_left": float(mod_dict.get("minutes_left", 0.0)),
 				}
 				npc.data.mood_temp_modifiers.append(mod)
 
@@ -441,6 +503,11 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
 	_rebind_employees_to_desks()
+
+	# === Восстанавливаем проекты для выбора у босса ===
+	var sel_data = data.get("boss_manager", {}).get("project_selection", {})
+	if not sel_data.is_empty():
+		_restore_project_selection(sel_data)
 
 	GameTime.is_game_paused = false
 	GameTime.is_night_skip = false
@@ -528,6 +595,69 @@ func _rebind_employees_to_desks():
 		if npc.my_desk_position != Vector2.ZERO:
 			if ProjectManager.is_employee_on_active_stage(npc.data):
 				npc.move_to_desk(npc.my_desk_position)
+
+# --- Восстановление проектов для выбора у босса ---
+func _restore_project_selection(sel_data: Dictionary):
+	# Даём UI немного времени проинициализироваться
+	await get_tree().process_frame
+
+	var sel_ui = get_tree().get_first_node_in_group("project_selection_ui")
+	if sel_ui == null:
+		var hud = get_tree().get_first_node_in_group("ui")
+		if hud and "project_selection" in hud:
+			sel_ui = hud.project_selection
+
+	if sel_ui == null:
+		print("⚠️ project_selection_ui не найден для восстановления")
+		return
+
+	var saved_week = int(sel_data.get("generated_for_week", -1))
+	var saved_options = sel_data.get("current_options", [])
+
+	sel_ui.current_options.clear()
+	for opt_data in saved_options:
+		if opt_data == null or not opt_data is Dictionary:
+			sel_ui.current_options.append(null)
+		else:
+			var proj = _deserialize_single_project(opt_data)
+			sel_ui.current_options.append(proj)
+
+	sel_ui._generated_for_week = saved_week
+	print("📋 Восстановлены проекты у босса: %d шт., неделя %d" % [sel_ui.current_options.size(), saved_week])
+
+func _deserialize_single_project(d: Dictionary) -> ProjectData:
+	var proj = ProjectData.new()
+	proj.title = d.get("title", "PROJ_DEFAULT_TITLE")
+	proj.category = d.get("category", "simple")
+	proj.client_id = d.get("client_id", "")
+	proj.created_at_day = int(d.get("created_at_day", 1))
+	proj.deadline_day = int(d.get("deadline_day", 0))
+	proj.soft_deadline_day = int(d.get("soft_deadline_day", 0))
+	proj.start_global_time = float(d.get("start_global_time", 0.0))
+	proj.elapsed_days = float(d.get("elapsed_days", 0.0))
+	proj.hard_days_budget = int(d.get("hard_days_budget", 0))
+	proj.soft_days_budget = int(d.get("soft_days_budget", 0))
+	proj.budget = int(d.get("budget", 5000))
+	proj.soft_deadline_penalty_percent = int(d.get("soft_deadline_penalty_percent", 10))
+	proj.state = int(d.get("state", 0))
+
+	proj.stages.clear()
+	var saved_stages = d.get("stages", [])
+	for stage_dict in saved_stages:
+		proj.stages.append({
+			"type": stage_dict.get("type", ""),
+			"amount": float(stage_dict.get("amount", 0)),
+			"progress": float(stage_dict.get("progress", 0.0)),
+			"is_completed": stage_dict.get("is_completed", false),
+			"actual_start": float(stage_dict.get("actual_start", -1.0)),
+			"actual_end": float(stage_dict.get("actual_end", -1.0)),
+			"plan_start": float(stage_dict.get("plan_start", 0.0)),
+			"plan_duration": float(stage_dict.get("plan_duration", 0.0)),
+			"workers": [],
+			"completed_worker_names": [],
+		})
+
+	return proj
 
 func _load_game_time(d: Dictionary):
 	if d.is_empty():
