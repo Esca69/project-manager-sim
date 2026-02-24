@@ -135,7 +135,7 @@ func _serialize_employees() -> Array:
 		
 		# === MOOD SYSTEM v2: Сериализуем временные mood_modifiers ===
 		var serialized_modifiers = []
-		for mod in d.mood_modifiers:
+		for mod in d.mood_temp_modifiers:
 			# Сохраняем только временные (у которых duration > 0)
 			if mod.get("duration", 0.0) > 0.0:
 				serialized_modifiers.append({
@@ -365,7 +365,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 					"duration": float(mod_dict.get("duration", 0.0)),
 					"elapsed": float(mod_dict.get("elapsed", 0.0)),
 				}
-				npc.data.mood_modifiers.append(mod)
+				npc.data.mood_temp_modifiers.append(mod)
 
 			var desk_x = float(emp_dict.get("desk_position_x", 0.0))
 			var desk_y = float(emp_dict.get("desk_position_y", 0.0))

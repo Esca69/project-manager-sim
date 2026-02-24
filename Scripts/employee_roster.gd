@@ -603,19 +603,19 @@ func _build_mood_breakdown_text(emp: EmployeeData) -> String:
 	lines.append(tr("ROSTER_MOOD_BREAKDOWN_TITLE"))
 	lines.append(tr("ROSTER_MOOD_BREAKDOWN_BASE") % int(bd.base))
 
-	# --- Постоянные модифи��аторы ---
-	if bd.permanent_modifiers.size() > 0:
+	# --- Постоянные модификаторы ---
+	if bd.permanent_mods.size() > 0:
 		lines.append("")
 		lines.append(tr("ROSTER_MOOD_BREAKDOWN_PERMANENT"))
-		for mod in bd.permanent_modifiers:
+		for mod in bd.permanent_mods:
 			var sign_str = "+" if mod.value > 0 else ""
 			lines.append("  %s%d  %s" % [sign_str, int(mod.value), mod.name])
 
 	# --- Временные модификаторы ---
-	if bd.temporary_modifiers.size() > 0:
+	if bd.temp_mods.size() > 0:
 		lines.append("")
 		lines.append(tr("ROSTER_MOOD_BREAKDOWN_TEMPORARY"))
-		for mod in bd.temporary_modifiers:
+		for mod in bd.temp_mods:
 			var sign_str = "+" if mod.value > 0 else ""
 			var time_left = int(mod.minutes_left)
 			var hours = time_left / 60
@@ -628,7 +628,6 @@ func _build_mood_breakdown_text(emp: EmployeeData) -> String:
 			lines.append("  %s%d  %s  (%s)" % [sign_str, int(mod.value), mod.name, time_str])
 
 	lines.append("")
-	lines.append(tr("ROSTER_MOOD_BREAKDOWN_TARGET") % int(bd.natural_target))
 	lines.append(tr("ROSTER_MOOD_BREAKDOWN_CURRENT") % int(bd.current_mood))
 
 	return "\n".join(lines)
