@@ -81,7 +81,7 @@ func _serialize_game_time() -> Dictionary:
 func _serialize_game_state() -> Dictionary:
 	return {
 		"company_balance": GameState.company_balance,
-		"tutorial_completed": GameState.tutorial_completed,  # <<< TUTORIAL
+		"tutorial_completed": GameState.tutorial_completed,
 	}
 
 # --- PMData ---
@@ -144,10 +144,12 @@ func _serialize_employees() -> Array:
 			"traits": d.traits.duplicate(),
 			"current_energy": d.current_energy,
 			"motivation_bonus": d.motivation_bonus,
+			# === MOOD SYSTEM: Сохраняем mood ===
+			"mood": d.mood,
 			# Визуал
 			"personal_color": npc.personal_color.to_html(),
 			"skin_color": npc.skin_color.to_html(),
-			# Позиция стола (для восстановления привязки)
+			# Позиция стола (для восстанов��ения привязки)
 			"desk_position_x": npc.my_desk_position.x,
 			"desk_position_y": npc.my_desk_position.y,
 			# === EVENT SYSTEM: Сохраняем состояние болезни/отгула ===
@@ -166,7 +168,6 @@ func _serialize_desk_assignments() -> Array:
 			continue
 		if desk.assigned_employee == null:
 			continue
-		# Сохраняем позицию стола и имя назначенного сотрудника
 		result.append({
 			"desk_position_x": desk.global_position.x,
 			"desk_position_y": desk.global_position.y,
@@ -191,7 +192,7 @@ func _serialize_projects() -> Array:
 			"soft_days_budget": proj.soft_days_budget,
 			"budget": proj.budget,
 			"soft_deadline_penalty_percent": proj.soft_deadline_penalty_percent,
-			"state": proj.state,  # enum int
+			"state": proj.state,
 			"stages": [],
 		}
 
@@ -205,12 +206,9 @@ func _serialize_projects() -> Array:
 				"actual_end": stage.get("actual_end", -1.0),
 				"plan_start": stage.get("plan_start", 0.0),
 				"plan_duration": stage.get("plan_duration", 0.0),
-				# Сохраняем имена текущих работников
 				"worker_names": [],
-				# ��охраняем имена работников из завершённых этапов
 				"completed_worker_names": stage.get("completed_worker_names", []),
 			}
-			# Сериализуем текущих работников по имени
 			for w in stage.get("workers", []):
 				if w is EmployeeData:
 					stage_dict["worker_names"].append(w.employee_name)
@@ -224,7 +222,6 @@ func _serialize_event_manager() -> Dictionary:
 	var em = get_node_or_null("/root/EventManager")
 	if em == null:
 		return {}
-	# Используем встроенный метод serialize() из event_manager.gd
 	return em.serialize()
 
 # ============================================================
@@ -255,12 +252,10 @@ func load_game() -> bool:
 		push_error("Некорректный формат сохранения")
 		return false
 
-	# Проверка версии
 	var version = data.get("save_version", 0)
 	if version != SAVE_VERSION:
 		push_warning("Версия сохранения (%d) отличается от текущей (%d)" % [version, SAVE_VERSION])
 
-	# === Восстанавливаем все данные ===
 	_load_game_time(data.get("game_time", {}))
 	_load_game_state(data.get("game_state", {}))
 	_load_pm_data(data.get("pm_data", {}))
@@ -269,9 +264,6 @@ func load_game() -> bool:
 
 	# === EVENT SYSTEM: Восстанавливаем EventManager ===
 	_load_event_manager(data.get("event_manager", {}))
-
-	# Сотрудники и проекты восстанавливаются после загрузки сцены
-	# (вызывается из office.gd → _try_restore_save)
 
 	print("📂 Данные синглтонов восстановлены")
 	pending_restore = true
@@ -284,7 +276,6 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	if not data_override.is_empty():
 		data = data_override
 	else:
-		# Перечитываем файл
 		if not has_save():
 			return
 		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
@@ -301,27 +292,22 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	var project_dicts = data.get("projects", [])
 	var desk_assignments = data.get("desk_assignments", [])
 
-	# === Спавним сотрудников ===
 	var office = get_tree().get_first_node_in_group("office")
 	if not office:
 		push_error("Не найдена нода office для спавна сотрудников")
 		return
 
-	# Ищем world_layer для правильной сортировки (как при обычном найме)
 	var world_layer = get_tree().get_first_node_in_group("world_layer")
 
-	# Удаляем существующих NPC (если есть)
 	var existing_npcs = get_tree().get_nodes_in_group("npc")
 	for npc in existing_npcs:
 		npc.queue_free()
 
-	# Ждём удаления
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# Создаём новых сотрудников
-	var employee_map: Dictionary = {}  # имя → EmployeeData
-	var npc_map: Dictionary = {}       # имя → npc node
+	var employee_map: Dictionary = {}
+	var npc_map: Dictionary = {}
 
 	for emp_dict in employee_dicts:
 		var emp_data = EmployeeData.new()
@@ -343,20 +329,17 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			emp_data.traits.append(str(t))
 		emp_data.trait_text = emp_data.build_trait_text()
 
-		# Спавним через office (используем setup_employee как при найме!)
 		var npc = _spawn_employee_in_office_proper(office, world_layer, emp_data)
 		if npc:
-			# === FIX: setup_employee рандомит цвета и сбрасывает energy ===
-			# Восстанавливаем СОХРАНЁННЫЕ цвета (после рандома в setup_employee)
 			npc.personal_color = Color.from_string(emp_dict.get("personal_color", "#FFFFFF"), Color.WHITE)
 			npc.skin_color = Color.from_string(emp_dict.get("skin_color", "#FFE0BD"), Color("#FFE0BD"))
 			npc.update_visuals()
 
-			# === FIX: setup_employee сбрасывает energy на 100 — восстанавливаем из сохранения ===
 			npc.data.current_energy = float(emp_dict.get("current_energy", 100.0))
 			npc.data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
+			# === MOOD SYSTEM: Восстанавливаем mood ===
+			npc.data.mood = float(emp_dict.get("mood", 75.0))
 
-			# Восстанавливаем позицию стола
 			var desk_x = float(emp_dict.get("desk_position_x", 0.0))
 			var desk_y = float(emp_dict.get("desk_position_y", 0.0))
 			if desk_x != 0.0 or desk_y != 0.0:
@@ -366,17 +349,16 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.sick_days_left = int(emp_dict.get("sick_days_left", 0))
 			npc.is_on_day_off = emp_dict.get("is_on_day_off", false)
 			var saved_state = int(emp_dict.get("current_state", 0))
-			# Если сотрудник был на больничном — восстанавливаем это состояние
 			if saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
-				npc.current_state = 11  # SICK_LEAVE
+				npc.current_state = 11
 			elif saved_state == 12:  # State.DAY_OFF
 				npc.visible = false
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
-				npc.current_state = 12  # DAY_OFF
+				npc.current_state = 12
 
 			employee_map[emp_data.employee_name] = emp_data
 			npc_map[emp_data.employee_name] = npc
@@ -416,12 +398,10 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				"completed_worker_names": [],
 			}
 
-			# Восстанавливаем completed_worker_names
 			var cwn = stage_dict.get("completed_worker_names", [])
 			for cname in cwn:
 				stage["completed_worker_names"].append(str(cname))
 
-			# Восстанавливае�� привязку работников
 			var worker_names = stage_dict.get("worker_names", [])
 			for wname in worker_names:
 				var wname_str = str(wname)
@@ -432,13 +412,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 		ProjectManager.active_projects.append(proj)
 
-	# === Восстанавливаем привязку столов ===
 	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
-
-	# === Привязываем сотрудников к столам (если они были на этапе) ===
 	_rebind_employees_to_desks()
 
-	# === FIX: После загрузки ставим скорость 1x ===
 	GameTime.is_game_paused = false
 	GameTime.is_night_skip = false
 	GameTime.current_speed_scale = 1.0
@@ -448,7 +424,6 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 	print("✅ Сотрудники и проекты восстановлены из сохранения")
 
-# --- НОВЫЙ: Правильный спавн сотрудника (как при найме) ---
 func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeData):
 	var employee_scene = load("res://Scenes/Employee.tscn")
 	if not employee_scene:
@@ -457,27 +432,23 @@ func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeDat
 
 	var npc = employee_scene.instantiate()
 	
-	# Используем setup_employee если он есть (как при обычном найме)
 	if npc.has_method("setup_employee"):
 		npc.setup_employee(emp_data)
 	else:
 		npc.data = emp_data
 
-	# Добавляем в world_layer (как делает office.gd при найме), а не напрямую в office
 	if world_layer:
 		world_layer.add_child(npc)
 	else:
 		office.add_child(npc)
 		print("ВНИМАНИЕ: Нет группы 'world_layer' при загрузке! Сортировка может сломаться.")
 
-	# Ставим у входа
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
 		npc.global_position = entrance.global_position
 
 	return npc
 
-# --- НОВЫЙ: Восстанавливаем привязку столов ---
 func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary, npc_map: Dictionary):
 	if desk_assignments.is_empty():
 		return
@@ -497,9 +468,8 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 		var emp_data = employee_map[emp_name]
 		var saved_desk_pos = Vector2(desk_x, desk_y)
 		
-		# Ищем ближайший стол к сохранённой позиции
 		var best_desk = null
-		var best_dist = 50.0  # Порог — 50 пикселей максимум
+		var best_dist = 50.0
 		
 		for desk in desks:
 			var dist = desk.global_position.distance_to(saved_desk_pos)
@@ -508,10 +478,8 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 				best_desk = desk
 		
 		if best_desk and best_desk.has_method("assign_employee"):
-			# Проверяем что стол ещё свободен
 			if "assigned_employee" in best_desk and best_desk.assigned_employee == null:
 				
-				# ФИКС 1: Достаем npc_node и передаем его в стол, чтобы не было "двойных столов"
 				var npc_node = null
 				if npc_map.has(emp_name):
 					npc_node = npc_map[emp_name]
@@ -519,25 +487,21 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 				best_desk.assign_employee(emp_data, npc_node)
 				print("🪑 Восстановлена привязка стола для: ", emp_name)
 				
-				# ФИКС 2: Отправляем NPC на seat_point, а не в центр стола
 				if npc_node:
 					if "seat_point" in best_desk and best_desk.seat_point:
 						npc_node.my_desk_position = best_desk.seat_point.global_position
 					else:
 						npc_node.my_desk_position = best_desk.global_position
 
-# --- Привязка сотрудников к столам после загрузки ---
 func _rebind_employees_to_desks():
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
-		# === EVENT SYSTEM: Не привязываем к столам больных/в отгуле ===
 		if npc.current_state == 11 or npc.current_state == 12:
 			continue
 		if npc.my_desk_position != Vector2.ZERO:
 			if ProjectManager.is_employee_on_active_stage(npc.data):
 				npc.move_to_desk(npc.my_desk_position)
 
-# --- Загрузка GameTime ---
 func _load_game_time(d: Dictionary):
 	if d.is_empty():
 		return
@@ -545,12 +509,10 @@ func _load_game_time(d: Dictionary):
 	GameTime.hour = int(d.get("hour", 8))
 	GameTime.minute = int(d.get("minute", 0))
 	GameTime.time_accumulator = 0.0
-	# === FIX: Сбрасываем состояние скорости при загрузке ===
 	GameTime.current_speed_scale = 1.0
 	GameTime.is_game_paused = false
 	GameTime.is_night_skip = false
 
-# --- Загруз��а GameState ---
 func _load_game_state(d: Dictionary):
 	if d.is_empty():
 		return
@@ -563,9 +525,8 @@ func _load_game_state(d: Dictionary):
 	GameState.projects_failed_today.clear()
 	GameState.levelups_today.clear()
 	GameState.loyalty_changes_today.clear()
-	GameState.tutorial_completed = d.get("tutorial_completed", false)  # <<< TUTORIAL
+	GameState.tutorial_completed = d.get("tutorial_completed", false)
 
-# --- Загрузка PMData ---
 func _load_pm_data(d: Dictionary):
 	if d.is_empty():
 		return
@@ -578,7 +539,6 @@ func _load_pm_data(d: Dictionary):
 	for s in skills:
 		PMData.unlocked_skills.append(str(s))
 
-# --- Загрузка BossManager ---
 func _load_boss_manager(d: Dictionary):
 	if d.is_empty():
 		return
@@ -596,7 +556,6 @@ func _load_boss_manager(d: Dictionary):
 	BossManager._quest_shown_this_month = d.get("_quest_shown_this_month", false)
 	BossManager._report_shown_this_month = d.get("_report_shown_this_month", false)
 
-# --- Загрузка клиентов ---
 func _load_clients(arr: Array):
 	if arr.is_empty():
 		return
@@ -609,14 +568,12 @@ func _load_clients(arr: Array):
 			client.projects_completed_late = int(cd.get("projects_completed_late", 0))
 			client.projects_failed = int(cd.get("projects_failed", 0))
 
-# === EVENT SYSTEM: Загрузка EventManager ===
 func _load_event_manager(d: Dictionary):
 	var em = get_node_or_null("/root/EventManager")
 	if em == null:
 		return
 	if d.is_empty():
 		return
-	# Используем встроенный метод deserialize() из event_manager.gd
 	em.deserialize(d)
 
 # ============================================================

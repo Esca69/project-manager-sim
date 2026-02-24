@@ -24,18 +24,17 @@ var _overlay: ColorRect
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	z_index = 90 # Поверх остальных элементов
-	mouse_filter = Control.MOUSE_FILTER_IGNORE # Пропускаем клики до оверлея
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_force_fullscreen_size()
 
-	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (OVERLAY) ===
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0.45)
 	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_overlay)
-	move_child(_overlay, 0) # Помещаем на самый задний план, позади $Window
+	move_child(_overlay, 0)
 
 	_body_texture = load("res://Sprites/body2.png")
 	_head_texture = load("res://Sprites/head2.png")
@@ -135,8 +134,9 @@ func _update_live_data():
 		var energy_lbl = card.get_meta("energy_label") if card.has_meta("energy_label") else null
 		var status_lbl = card.get_meta("status_label") if card.has_meta("status_label") else null
 		var eff_lbl = card.get_meta("eff_label") if card.has_meta("eff_label") else null
-		# === EVENT SYSTEM: метка эффекта ===
 		var effect_lbl = card.get_meta("effect_label") if card.has_meta("effect_label") else null
+		var mood_lbl = card.get_meta("mood_label") if card.has_meta("mood_label") else null
+		var mood_bar = card.get_meta("mood_bar") if card.has_meta("mood_bar") else null
 
 		if energy_lbl:
 			var energy_pct = int(emp_data.current_energy)
@@ -163,11 +163,22 @@ func _update_live_data():
 				status_lbl.text = _get_status_text(npc_node)
 				status_lbl.add_theme_color_override("font_color", _get_status_color(npc_node))
 
-		# === EVENT SYSTEM: обновляем метку эффекта в реальном времени ===
 		if effect_lbl:
 			var effect_text = _get_event_effect_text(emp_data)
 			effect_lbl.text = effect_text
 			effect_lbl.visible = effect_text != ""
+
+		# === MOOD SYSTEM: обновляем mood в реальном времени ===
+		if mood_lbl:
+			var mood_val = emp_data.mood
+			var zone_name = emp_data.get_mood_zone_name()
+			mood_lbl.text = tr("ROSTER_MOOD") % [int(mood_val), zone_name]
+			mood_lbl.add_theme_color_override("font_color", _get_mood_color(mood_val))
+		if mood_bar:
+			mood_bar.value = emp_data.mood
+			var fill_style = mood_bar.get_theme_stylebox("fill") as StyleBoxFlat
+			if fill_style:
+				fill_style.bg_color = _get_mood_color(emp_data.mood)
 
 func _rebuild_cards():
 	for child in cards_container.get_children():
@@ -247,7 +258,6 @@ func _create_card(npc_node) -> PanelContainer:
 	grade_style.border_width_bottom = 2
 
 	var grade_color: Color
-	# --- ИСПРАВЛЕНИЕ ЗДЕСЬ: используем ключи локализации ---
 	match emp.GRADE_NAMES.get(emp.employee_level, "GRADE_JUNIOR"):
 		"GRADE_JUNIOR":
 			grade_style.bg_color = Color(0.9, 0.95, 0.9, 1)
@@ -380,6 +390,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 			info_vbox.add_child(flow)
 
+	# === ПРАВАЯ КОЛОНКА ===
 	var right_vbox = VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 5)
 	right_vbox.custom_minimum_size = Vector2(250, 0)
@@ -393,7 +404,6 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(status_lbl)
 	card.set_meta("status_label", status_lbl)
 
-	# === EVENT SYSTEM: Метка ивент-эффекта (бафф/дебафф/болезнь) ===
 	var effect_lbl = Label.new()
 	effect_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(effect_lbl, "semibold")
@@ -403,6 +413,76 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(effect_lbl)
 	card.set_meta("effect_label", effect_lbl)
 
+	# === MOOD SYSTEM: Настроение + "?" + мини-полоска ===
+	var mood_hbox = HBoxContainer.new()
+	mood_hbox.add_theme_constant_override("separation", 6)
+	right_vbox.add_child(mood_hbox)
+
+	var mood_lbl = Label.new()
+	var mood_val = emp.mood
+	var zone_name = emp.get_mood_zone_name()
+	mood_lbl.text = tr("ROSTER_MOOD") % [int(mood_val), zone_name]
+	mood_lbl.add_theme_color_override("font_color", _get_mood_color(mood_val))
+	mood_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(mood_lbl, "semibold")
+	mood_hbox.add_child(mood_lbl)
+	card.set_meta("mood_label", mood_lbl)
+
+	# Кнопка "?" — breakdown настроения
+	var mood_help_btn = _create_help_button()
+	var mood_tooltip_ref: Array = [null]
+	var emp_ref = emp
+	var parent_ref = self
+
+	mood_help_btn.mouse_entered.connect(func():
+		if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
+			mood_tooltip_ref[0].queue_free()
+		var breakdown_text = _build_mood_breakdown_text(emp_ref)
+		var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+		parent_ref.add_child(tp)
+		var btn_global = mood_help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		mood_tooltip_ref[0] = tp
+	)
+	mood_help_btn.mouse_exited.connect(func():
+		if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
+			mood_tooltip_ref[0].queue_free()
+		mood_tooltip_ref[0] = null
+	)
+	mood_hbox.add_child(mood_help_btn)
+
+	# Мини-полоска настроения
+	var mood_bar_container = VBoxContainer.new()
+	mood_bar_container.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	mood_hbox.add_child(mood_bar_container)
+
+	var mood_bar = ProgressBar.new()
+	mood_bar.custom_minimum_size = Vector2(60, 8)
+	mood_bar.min_value = 0
+	mood_bar.max_value = 100
+	mood_bar.value = mood_val
+	mood_bar.show_percentage = false
+
+	var mood_bg_style = StyleBoxFlat.new()
+	mood_bg_style.bg_color = Color(0.88, 0.88, 0.88, 1)
+	mood_bg_style.corner_radius_top_left = 4
+	mood_bg_style.corner_radius_top_right = 4
+	mood_bg_style.corner_radius_bottom_right = 4
+	mood_bg_style.corner_radius_bottom_left = 4
+	mood_bar.add_theme_stylebox_override("background", mood_bg_style)
+
+	var mood_fill_style = StyleBoxFlat.new()
+	mood_fill_style.bg_color = _get_mood_color(mood_val)
+	mood_fill_style.corner_radius_top_left = 4
+	mood_fill_style.corner_radius_top_right = 4
+	mood_fill_style.corner_radius_bottom_right = 4
+	mood_fill_style.corner_radius_bottom_left = 4
+	mood_bar.add_theme_stylebox_override("fill", mood_fill_style)
+
+	mood_bar_container.add_child(mood_bar)
+	card.set_meta("mood_bar", mood_bar)
+
+	# === Энергия ===
 	var energy_lbl = Label.new()
 	var energy_pct = int(emp.current_energy)
 	energy_lbl.text = tr("ROSTER_ENERGY") % energy_pct
@@ -417,6 +497,11 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(energy_lbl)
 	card.set_meta("energy_label", energy_lbl)
 
+	# === ЭФФЕКТИВНОСТЬ + КНОПКА "?" ===
+	var eff_hbox = HBoxContainer.new()
+	eff_hbox.add_theme_constant_override("separation", 6)
+	right_vbox.add_child(eff_hbox)
+
 	var eff_lbl = Label.new()
 	var eff_val = emp.get_efficiency_multiplier()
 	if emp.motivation_bonus > 0:
@@ -427,8 +512,29 @@ func _create_card(npc_node) -> PanelContainer:
 		eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	eff_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(eff_lbl, "regular")
-	right_vbox.add_child(eff_lbl)
+	eff_hbox.add_child(eff_lbl)
 	card.set_meta("eff_label", eff_lbl)
+
+	# Кнопка "?" — breakdown эффективности
+	var eff_help_btn = _create_help_button()
+	var eff_tooltip_ref: Array = [null]
+
+	eff_help_btn.mouse_entered.connect(func():
+		if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+			eff_tooltip_ref[0].queue_free()
+		var breakdown_text = _build_efficiency_breakdown_text(emp_ref)
+		var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+		parent_ref.add_child(tp)
+		var btn_global = eff_help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		eff_tooltip_ref[0] = tp
+	)
+	eff_help_btn.mouse_exited.connect(func():
+		if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+			eff_tooltip_ref[0].queue_free()
+		eff_tooltip_ref[0] = null
+	)
+	eff_hbox.add_child(eff_help_btn)
 
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -451,6 +557,101 @@ func _create_card(npc_node) -> PanelContainer:
 	call_deferred("_set_children_pass_filter", card)
 
 	return card
+
+# === УНИВЕРСАЛЬНАЯ КНОПКА "?" (стиль как у трейтов) ===
+func _create_help_button() -> Button:
+	var btn = Button.new()
+	btn.text = "?"
+	btn.custom_minimum_size = Vector2(22, 22)
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 11)
+	btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(1, 1, 1, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", bstyle)
+
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.92, 0.94, 1.0, 1)
+	hover_style.border_width_left = 2
+	hover_style.border_width_top = 2
+	hover_style.border_width_right = 2
+	hover_style.border_width_bottom = 2
+	hover_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	hover_style.corner_radius_top_left = 11
+	hover_style.corner_radius_top_right = 11
+	hover_style.corner_radius_bottom_right = 11
+	hover_style.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("hover", hover_style)
+
+	return btn
+
+# === MOOD SYSTEM: Текст breakdown'а настроения ===
+func _build_mood_breakdown_text(emp: EmployeeData) -> String:
+	var bd = emp.get_mood_breakdown()
+	var lines: Array[String] = []
+
+	lines.append(tr("ROSTER_MOOD_BREAKDOWN_TITLE"))
+	lines.append(tr("ROSTER_MOOD_BREAKDOWN_BASE") % int(bd.base))
+	lines.append("")
+
+	for mod in bd.modifiers:
+		var sign_str = "+" if mod.value > 0 else ""
+		lines.append("  %s%d  %s" % [sign_str, int(mod.value), mod.name])
+
+	lines.append("")
+	lines.append(tr("ROSTER_MOOD_BREAKDOWN_TARGET") % int(bd.natural_target))
+	lines.append(tr("ROSTER_MOOD_BREAKDOWN_CURRENT") % int(bd.current_mood))
+
+	return "\n".join(lines)
+
+# === Текст breakdown'а эффективности ===
+func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
+	var bd = emp.get_efficiency_breakdown()
+	var lines: Array[String] = []
+
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TITLE"))
+	lines.append("")
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOOD") % [bd.mood_zone_name, int(bd.mood_value), _format_mult(bd.mood_mult)])
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_ENERGY") % [int(bd.energy_value), _format_mult(bd.energy_factor)])
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TRAITS") % _format_mod(bd.trait_sum))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _format_mod(bd.motivation_mod))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _format_mod(bd.event_mod))
+	lines.append("")
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _format_mult(bd.total))
+
+	return "\n".join(lines)
+
+func _format_mult(val: float) -> String:
+	return "×%.2f" % val
+
+func _format_mod(val: float) -> String:
+	if val >= 0:
+		return "+%d%%" % int(val * 100)
+	else:
+		return "%d%%" % int(val * 100)
+
+# === MOOD SYSTEM: Цвет по уровню mood ===
+func _get_mood_color(mood_val: float) -> Color:
+	if mood_val >= 80.0:
+		return Color(0.29, 0.69, 0.31, 1)
+	elif mood_val >= 60.0:
+		return Color(0.3, 0.6, 0.85, 1)
+	elif mood_val >= 40.0:
+		return Color(0.9, 0.7, 0.1, 1)
+	elif mood_val >= 20.0:
+		return Color(0.9, 0.45, 0.1, 1)
+	else:
+		return Color(0.85, 0.25, 0.2, 1)
 
 func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
@@ -578,7 +779,6 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 	if npc_node:
 		if "personal_color" in npc_node:
 			body_color = npc_node.personal_color
-			
 		if "head_color" in npc_node:
 			head_color = npc_node.head_color
 		elif "skin_color" in npc_node:
@@ -624,7 +824,6 @@ func _get_status_text(npc_node) -> String:
 		8: return tr("ROSTER_STATUS_TOILET_BREAK")
 		9: return tr("ROSTER_STATUS_WANDERING")
 		10: return tr("ROSTER_STATUS_THINKING")
-		# === EVENT SYSTEM: Новые стейты ===
 		11: return tr("ROSTER_STATUS_SICK") % npc_node.sick_days_left
 		12: return tr("ROSTER_STATUS_DAYOFF")
 	return "—"
@@ -639,12 +838,10 @@ func _get_status_color(npc_node) -> Color:
 		6: return Color(0.3, 0.7, 0.85, 1)
 		8: return Color(0.6, 0.4, 0.7, 1)
 		9, 10: return Color(0.75, 0.6, 0.4, 1)
-		# === EVENT SYSTEM: Цвета для новых стейтов ===
-		11: return Color(0.85, 0.25, 0.2, 1)    # Красный — болезнь
-		12: return Color(0.9, 0.6, 0.1, 1)      # Оранжевый — отгул
+		11: return Color(0.85, 0.25, 0.2, 1)
+		12: return Color(0.9, 0.6, 0.1, 1)
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
 
-# === EVENT SYSTEM: Текст ивент-эффекта для ростера ===
 func _get_event_effect_text(emp_data: EmployeeData) -> String:
 	var em = get_node_or_null("/root/EventManager")
 	if em == null:
@@ -855,11 +1052,8 @@ func _build_confirm_dialog():
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
-		# Если открыто окно подтверждения увольнения - закрываем его
 		if _dialog_layer and _dialog_layer.visible:
 			_cancel_fire()
-		# Иначе закрываем саму панель сотрудников
 		else:
 			_on_close_pressed()
-			
 		get_viewport().set_input_as_handled()

@@ -85,7 +85,7 @@ var is_on_day_off: bool = false
 var personal_color: Color = Color.WHITE
 var skin_color: Color = Color.WHITE
 
-# Палитра из 20 уникальных, красивых и разнообразных цветов
+# ��алитра из 20 уникальных, красивых и разнообразных цветов
 const CLOTHING_PALETTE: Array[Color] = [
 	Color("#FFADAD"), # Светло-красный
 	Color("#FFD6A5"), # Персиковый
@@ -103,7 +103,7 @@ const CLOTHING_PALETTE: Array[Color] = [
 	Color("#FF9F1C"), # Оранжевый
 	Color("#2EC4B6"), # Морская волна
 	Color("#E71D36"), # Карминно-красный
-	Color("#9C89B8"), # Пригл��шенный фиолетовый
+	Color("#9C89B8"), # Приглушенный фиолетовый
 	Color("#F0A6CA"), # Пыльная роза
 	Color("#B8BEDD"), # Серо-голубой
 	Color("#99E2B4")  # Светло-зеленый
@@ -129,6 +129,10 @@ const SKIN_DARK: Array[Color] = [
 	Color("#311A0E")  # Глубокий темный
 ]
 
+# === MOOD SYSTEM: Константы влияния на mood ===
+const MOOD_COFFEE_BOOST: float = 3.0        # Выпил кофе → +3 mood
+const MOOD_WANDER_PENALTY: float = -0.05     # Бродит без дела → -0.05/мин (~-0.5/час)
+
 @export var data: EmployeeData
 
 @onready var body_sprite = $Visuals/Body
@@ -144,7 +148,7 @@ func _ready():
 	nav_agent.path_desired_distance = 20.0
 	nav_agent.target_desired_distance = 20.0
 	
-	# --- НАСТРОЙКА КРАСИВОГО ТЕКСТА (Inter) ---
+	# --- НАСТРОЙКА КРАСИВОГО Т��КСТА (Inter) ---
 	if debug_label:
 		var label_settings = LabelSettings.new()
 		label_settings.font = load("res://Fonts/Inter-VariableFont_opsz,wght.ttf")
@@ -406,6 +410,16 @@ func _on_time_tick(_hour, _minute):
 	# === EVENT SYSTEM: Не тикаем таймеры если болеем или в отгуле ===
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
+
+	# === MOOD SYSTEM: Обновляем флаг стола для natural target ===
+	data.has_active_desk = (my_desk_position != Vector2.ZERO and _is_my_stage_active())
+
+	# === MOOD SYSTEM: Дрейф настроения каждую игровую минуту ===
+	data.tick_mood_drift()
+
+	# === MOOD SYSTEM: Штраф за бродяжничество (нет задачи) ===
+	if current_state == State.WANDERING or current_state == State.WANDER_PAUSE:
+		data.change_mood(MOOD_WANDER_PENALTY)
 
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
@@ -723,6 +737,10 @@ func _finish_coffee_break():
 	
 	data.current_energy = min(100.0, data.current_energy + randf_range(COFFEE_MIN_GAIN, COFFEE_MAX_GAIN))
 	
+	# === MOOD SYSTEM: Кофе поднимает настроение ===
+	if data:
+		data.change_mood(MOOD_COFFEE_BOOST)
+	
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		move_to_desk(my_desk_position)
 	elif _is_work_time():
@@ -918,7 +936,7 @@ func _go_to_sleep_instant():
 		toilet_ref.release(self)
 		toilet_ref = null
 	
-	# === EVENT SYSTEM: Не сбрасываем состояние если болеем/в отгуле ===
+	# === EVENT SYSTEM: Не сбрасываем состояние если ��олеем/в отгуле ===
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
 	

@@ -10,6 +10,114 @@ var current_energy: float = 100.0
 # === БОНУС МОТИВАЦИИ ОТ PM ===
 var motivation_bonus: float = 0.0
 
+# === MOOD SYSTEM v1 ===
+var mood: float = 75.0  # 0..100, старт = 75 (верхняя граница "Нормально")
+
+# Зоны настроения → множитель эффективности
+const MOOD_ZONES = [
+	{"name": "MOOD_ZONE_MISERABLE", "min": 0.0,  "max": 20.0,  "multiplier": 0.4},
+	{"name": "MOOD_ZONE_SAD",       "min": 20.0, "max": 40.0,  "multiplier": 0.65},
+	{"name": "MOOD_ZONE_NORMAL",    "min": 40.0, "max": 60.0,  "multiplier": 0.85},
+	{"name": "MOOD_ZONE_GOOD",      "min": 60.0, "max": 80.0,  "multiplier": 1.0},
+	{"name": "MOOD_ZONE_HAPPY",     "min": 80.0, "max": 100.0, "multiplier": 1.15},
+]
+
+# Дрейф настроения: скорость за игровую минуту
+const MOOD_DRIFT_SPEED: float = 0.03  # ~1.8 за час, ~16 за рабочий день
+const MOOD_BASE_TARGET: float = 50.0  # Базовая нейтральная точка
+
+# === ПОСТОЯННЫЕ ��ОДИФИКАТОРЫ MOOD (влияют на natural target) ===
+# Трейты → бонус/штраф к natural target
+const MOOD_TRAIT_TARGET_MODIFIERS = {
+	"energizer":     5.0,
+	"fast_learner":  3.0,
+	"early_bird":    2.0,
+	"coffee_lover": -3.0,
+	"toilet_lover": -3.0,
+	"slowpoke":     -5.0,
+	"cheap_hire":    0.0,
+	"expensive":     0.0,
+}
+
+# Ситуационные модификаторы mood target (ключ → значение)
+const MOOD_HAS_DESK_BONUS: float = 10.0       # Назначен на проект, есть рабочее место
+const MOOD_NO_DESK_PENALTY: float = -5.0       # Бродит без дела
+
+# Постоянные модификаторы эффективности от трейтов (множитель)
+const MOOD_TRAIT_EFFICIENCY_MODIFIERS = {
+	"energizer":     0.05,
+	"coffee_lover": -0.03,
+	"toilet_lover": -0.03,
+	"slowpoke":     -0.05,
+	"fast_learner":  0.03,
+	"early_bird":    0.02,
+	"cheap_hire":    0.0,
+	"expensive":     0.0,
+}
+
+# Флаг: назначен ли сотрудник на активный этап (обновляется извне)
+var has_active_desk: bool = false
+
+func get_mood_zone() -> Dictionary:
+	for zone in MOOD_ZONES:
+		if mood >= zone.min and mood < zone.max:
+			return zone
+	# Если mood == 100, попадает в последнюю зону
+	return MOOD_ZONES[MOOD_ZONES.size() - 1]
+
+func get_mood_zone_name() -> String:
+	return tr(get_mood_zone().name)
+
+func get_mood_multiplier() -> float:
+	return get_mood_zone().multiplier
+
+# === NATURAL TARGET: куда дрейфует mood ===
+func get_mood_natural_target() -> float:
+	var target = MOOD_BASE_TARGET
+
+	# Трейты
+	for t in traits:
+		if MOOD_TRAIT_TARGET_MODIFIERS.has(t):
+			target += MOOD_TRAIT_TARGET_MODIFIERS[t]
+
+	# Ситуация: есть стол / нет стола
+	if has_active_desk:
+		target += MOOD_HAS_DESK_BONUS
+	else:
+		target += MOOD_NO_DESK_PENALTY
+
+	return clampf(target, 0.0, 100.0)
+
+# === BREAKDOWN НАСТРОЕНИЯ (для тултипа) ===
+func get_mood_breakdown() -> Dictionary:
+	var modifiers: Array = []  # [{name, value}]
+	var target = MOOD_BASE_TARGET
+
+	# Трейты
+	for t in traits:
+		if MOOD_TRAIT_TARGET_MODIFIERS.has(t) and MOOD_TRAIT_TARGET_MODIFIERS[t] != 0.0:
+			var val = MOOD_TRAIT_TARGET_MODIFIERS[t]
+			var trait_name_key = EmployeeData.TRAIT_NAMES.get(t, t)
+			modifiers.append({"name": tr(trait_name_key), "value": val})
+			target += val
+
+	# Стол / нет стола
+	if has_active_desk:
+		modifiers.append({"name": tr("MOOD_MOD_HAS_DESK"), "value": MOOD_HAS_DESK_BONUS})
+		target += MOOD_HAS_DESK_BONUS
+	else:
+		modifiers.append({"name": tr("MOOD_MOD_NO_DESK"), "value": MOOD_NO_DESK_PENALTY})
+		target += MOOD_NO_DESK_PENALTY
+
+	target = clampf(target, 0.0, 100.0)
+
+	return {
+		"base": MOOD_BASE_TARGET,
+		"modifiers": modifiers,
+		"natural_target": target,
+		"current_mood": mood,
+	}
+
 # === СИСТЕМА УРОВНЕЙ ===
 @export var employee_level: int = 0
 @export var employee_xp: int = 0
@@ -28,7 +136,7 @@ const GRADE_NAMES = {
 # Базовые навыки по уровням (без рандома)
 const SKILL_TABLE = [80, 100, 120, 145, 170, 200, 225, 250, 270, 285, 300]
 
-# Прибавка навыка при левел-��пе [min, max]
+# Прибавка навыка при левел-апе [min, max]
 const SKILL_GAIN_PER_LEVEL = [
 	[17, 23],  # 0 → 1
 	[17, 23],  # 1 → 2
@@ -66,13 +174,11 @@ func get_xp_for_next_level() -> int:
 	return XP_PER_LEVEL[employee_level]
 
 func get_xp_progress() -> Array:
-	# Возвращает [current_xp_in_level, xp_needed_for_level]
 	if employee_level >= MAX_LEVEL:
 		return [0, 0]
 	return [employee_xp, XP_PER_LEVEL[employee_level]]
 
 func add_employee_xp(amount: int) -> Dictionary:
-	# Возвращает {"leveled_up": bool, "new_level": int, "skill_gain": int, "new_trait": String}
 	var result = {"leveled_up": false, "new_level": employee_level, "skill_gain": 0, "new_trait": ""}
 
 	if employee_level >= MAX_LEVEL:
@@ -86,13 +192,11 @@ func add_employee_xp(amount: int) -> Dictionary:
 		result["leveled_up"] = true
 		result["new_level"] = employee_level
 
-		# Прибавка навыка
 		var gain_range = SKILL_GAIN_PER_LEVEL[employee_level - 1]
 		var gain = randi_range(gain_range[0], gain_range[1])
 		result["skill_gain"] += gain
 		_apply_skill_gain(gain)
 
-		# Шанс получить трейт
 		if traits.size() < MAX_TRAITS and randf() < TRAIT_ON_LEVELUP_CHANCE:
 			var new_trait = _roll_random_trait()
 			if new_trait != "":
@@ -117,7 +221,6 @@ func _apply_skill_gain(amount: int):
 			skill_qa += amount
 
 func _roll_random_trait() -> String:
-	# 50/50 положительный или отрицательный
 	var pool: Array
 	if randf() < 0.5:
 		pool = POSITIVE_TRAITS.duplicate()
@@ -139,7 +242,6 @@ func _roll_random_trait() -> String:
 		if not has_conflict:
 			return candidate_trait
 
-	# Попробовать другой пул если первый не дал результат
 	if randf() < 0.5:
 		pool = NEGATIVE_TRAITS.duplicate()
 	else:
@@ -173,21 +275,17 @@ func get_primary_skill_value() -> int:
 @export var traits: Array[String] = []
 @export var trait_text: String = ""
 
-# Полный словарь трейтов (заменили тексты на ключи из CSV)
 const TRAIT_NAMES = {
-	# Положительные
 	"fast_learner": "TRAIT_FAST_LEARNER",
 	"energizer": "TRAIT_ENERGIZER",
 	"early_bird": "TRAIT_EARLY_BIRD",
 	"cheap_hire": "TRAIT_CHEAP_HIRE",
-	# Отрицательные
 	"toilet_lover": "TRAIT_TOILET_LOVER",
 	"coffee_lover": "TRAIT_COFFEE_LOVER",
 	"slowpoke": "TRAIT_SLOWPOKE",
 	"expensive": "TRAIT_EXPENSIVE",
 }
 
-# Описания для тултипов (заменили тексты на ключи из CSV)
 const TRAIT_DESCRIPTIONS = {
 	"fast_learner": "TRAIT_DESC_FAST_LEARNER",
 	"energizer": "TRAIT_DESC_ENERGIZER",
@@ -199,11 +297,9 @@ const TRAIT_DESCRIPTIONS = {
 	"expensive": "TRAIT_DESC_EXPENSIVE",
 }
 
-# Какие трейты положительные
 const POSITIVE_TRAITS = ["fast_learner", "energizer", "early_bird", "cheap_hire"]
 const NEGATIVE_TRAITS = ["toilet_lover", "coffee_lover", "slowpoke", "expensive"]
 
-# Пары-антагонисты (не могут быть вместе)
 const CONFLICTING_PAIRS = [
 	["fast_learner", "slowpoke"],
 	["cheap_hire", "expensive"],
@@ -234,27 +330,25 @@ func get_trait_description(trait_id: String) -> String:
 		return tr(TRAIT_DESCRIPTIONS[trait_id])
 	return ""
 
-# --- Модификатор скорости работы (учитывает fast_learner, slowpoke, мотивацию И ивент-эффекты) ---
+# --- ЭНЕРГИЯ: множитель от энергии (ступенчатый) ---
+func _get_energy_factor() -> float:
+	if current_energy >= 70.0:
+		return 1.0
+	elif current_energy >= 50.0:
+		return 0.85
+	elif current_energy >= 30.0:
+		return 0.65
+	else:
+		return 0.4
+
+# --- Модификатор скорости работы (МУЛЬТИПЛИКАТИВНЫЙ через mood) ---
 func get_work_speed_multiplier() -> float:
-	var mult = 1.0
-	if has_trait("fast_learner"):
-		mult += 0.2
-	if has_trait("slowpoke"):
-		mult -= 0.2
-	# === БОНУС МОТИВАЦИИ ===
-	mult += motivation_bonus
-	# === EVENT SYSTEM: Баффы/дебаффы от ивентов ===
-	var em = Engine.get_singleton("EventManager") if Engine.has_singleton("EventManager") else null
-	if em == null:
-		em = _get_event_manager()
-	if em:
-		mult += em.get_employee_efficiency_modifier(employee_name)
-	return mult
+	return get_efficiency_multiplier()
 
 # --- Модификатор расхода энергии (учитывает energizer) ---
 func get_energy_drain_multiplier() -> float:
 	if has_trait("energizer"):
-		return 0.7  # На 30% медленнее
+		return 0.7
 	return 1.0
 
 var daily_salary: int:
@@ -272,32 +366,87 @@ var hourly_rate: int:
 
 @export var avatar: Texture2D
 
-# --- Эффективность: энергия + мотивация + ивент-эффекты (для отображения в ростере) ---
+# --- ЭФФЕКТИВНОСТЬ: МУЛЬТИПЛИКАТИВНАЯ ФОРМУЛА (Mood System v1) ---
 func get_efficiency_multiplier() -> float:
-	var base: float
-	if current_energy >= 70.0:
-		base = 1.0
-	elif current_energy >= 50.0:
-		base = 0.8
-	elif current_energy >= 30.0:
-		base = 0.5
-	else:
-		base = 0.2
-	
-	# Добавляем бонус мотивации
-	base += motivation_bonus
-	# === EVENT SYSTEM: Баффы/дебаффы от ивентов ===
+	# 1. Множитель зоны настроения
+	var mood_mult = get_mood_multiplier()
+
+	# 2. Множитель энергии
+	var energy_factor = _get_energy_factor()
+
+	# 3. Сумма постоянных трейт-модификаторов эффективности
+	var trait_sum: float = 0.0
+	for t in traits:
+		if MOOD_TRAIT_EFFICIENCY_MODIFIERS.has(t):
+			trait_sum += MOOD_TRAIT_EFFICIENCY_MODIFIERS[t]
+
+	# 4. Мотивация PM
+	var motivation_mod = motivation_bonus
+
+	# 5. Ивент-модификатор
+	var event_mod: float = 0.0
 	var em = _get_event_manager()
 	if em:
-		base += em.get_employee_efficiency_modifier(employee_name)
-	return base
+		event_mod = em.get_employee_efficiency_modifier(employee_name)
+
+	# Итоговая форму��а
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod)
+	return result
+
+# --- РАЗБИВКА ЭФФЕКТИВНОСТИ (для тултипа в ростере) ---
+func get_efficiency_breakdown() -> Dictionary:
+	var mood_mult = get_mood_multiplier()
+	var energy_factor = _get_energy_factor()
+
+	var trait_sum: float = 0.0
+	for t in traits:
+		if MOOD_TRAIT_EFFICIENCY_MODIFIERS.has(t):
+			trait_sum += MOOD_TRAIT_EFFICIENCY_MODIFIERS[t]
+
+	var motivation_mod = motivation_bonus
+
+	var event_mod: float = 0.0
+	var em = _get_event_manager()
+	if em:
+		event_mod = em.get_employee_efficiency_modifier(employee_name)
+
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod)
+
+	return {
+		"mood_zone_name": get_mood_zone_name(),
+		"mood_value": mood,
+		"mood_mult": mood_mult,
+		"energy_value": current_energy,
+		"energy_factor": energy_factor,
+		"trait_sum": trait_sum,
+		"motivation_mod": motivation_mod,
+		"event_mod": event_mod,
+		"total": total,
+	}
+
+# --- Д��ейф настроения к ДИНАМИЧЕСКОМУ natural target ---
+func tick_mood_drift():
+	var target = get_mood_natural_target()
+	if absf(mood - target) < 0.01:
+		mood = target
+		return
+	var direction = sign(target - mood)
+	mood += direction * MOOD_DRIFT_SPEED
+	# Не перепрыгиваем через цель
+	if direction > 0 and mood > target:
+		mood = target
+	elif direction < 0 and mood < target:
+		mood = target
+	mood = clampf(mood, 0.0, 100.0)
+
+# --- Изменение mood извне (кофе, ивенты, PM-действия и т.д.) ---
+func change_mood(delta: float):
+	mood = clampf(mood + delta, 0.0, 100.0)
 
 # === EVENT SYSTEM: Безопасный доступ к EventManager из Resource ===
 func _get_event_manager():
-	# Resource не имеет доступа к дереву сцены, поэтому ищем через autoload
 	if Engine.has_singleton("EventManager"):
 		return Engine.get_singleton("EventManager")
-	# Fallback: получаем через MainLoop → root
 	var main_loop = Engine.get_main_loop()
 	if main_loop and main_loop is SceneTree:
 		return main_loop.root.get_node_or_null("/root/EventManager")

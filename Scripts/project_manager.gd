@@ -11,11 +11,9 @@ func _ready():
 
 func add_project(proj: ProjectData):
 	if count_active_projects() >= PMData.get_max_projects():
-		# Используем tr() для сообщения в консоли (по желанию можно добавить в CSV)
 		print(tr("LOG_MAX_PROJECTS") % PMData.get_max_projects())
 		return false
 	active_projects.append(proj)
-	# Переводим название проекта при выводе в лог
 	print(tr("LOG_PROJECT_ADDED") % [tr(proj.title), active_projects.size()])
 	return true
 
@@ -79,9 +77,12 @@ func _physics_process(delta):
 					var worker_node = _get_employee_node(worker_data)
 					if worker_node and worker_node.current_state == worker_node.State.WORKING:
 						var skill = _get_skill_for_stage(active_stage.type, worker_data)
+						# === MOOD SYSTEM: Единая формула эффективности ===
+						# get_efficiency_multiplier() уже содержит ВСЁ:
+						# mood_zone × energy × (1+traits) × (1+motivation) × (1+events)
+						# Убрали отдельный get_work_speed_multiplier() чтобы не было двойного множителя
 						var efficiency = worker_data.get_efficiency_multiplier()
-						var speed_mult = worker_data.get_work_speed_multiplier()
-						var speed_per_second = (float(skill) * efficiency * speed_mult) / 60.0
+						var speed_per_second = (float(skill) * efficiency) / 60.0
 						var progress_this_tick = speed_per_second * delta
 						active_stage.progress += progress_this_tick
 
@@ -111,7 +112,6 @@ func _award_stage_xp(stage: Dictionary, project: ProjectData):
 	for worker_data in stage.workers:
 		if worker_data is EmployeeData:
 			var result = worker_data.add_employee_xp(base_xp)
-			# Локализованный лог опыта
 			print(tr("LOG_XP_GAIN") % [worker_data.employee_name, base_xp, tr("STAGE_" + stage.type)])
 			if result["leveled_up"]:
 				emit_signal("employee_leveled_up", worker_data, result["new_level"], result["skill_gain"], result["new_trait"])
@@ -151,7 +151,6 @@ func _fail_project(project: ProjectData):
 	var client = project.get_client()
 	if client:
 		client.record_project_failed()
-		# Вывод через get_display_name (там уже есть tr())
 		print("💔 %s: лояльность %d (провал проекта)" % [client.get_display_name(), client.loyalty])
 
 	emit_signal("project_failed", project)

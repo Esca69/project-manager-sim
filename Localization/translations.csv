@@ -458,3 +458,22 @@ ROSTER_STATUS_BUFF,💚 Мотивирован,💚 Motivated
 ROSTER_STATUS_DEBUFF,😤 Раздражён,😤 Irritated
 EMP_ACTION_SICK_LEAVE,🤒 На больничном,🤒 Sick leave
 EMP_ACTION_DAY_OFF,🏠 В отгуле,🏠 Day off
+MOOD_ZONE_MISERABLE,Подавлен,Miserable
+MOOD_ZONE_SAD,Грустит,Sad
+MOOD_ZONE_NORMAL,Нормально,Normal
+MOOD_ZONE_GOOD,Хорошо,Good
+MOOD_ZONE_HAPPY,Счастлив,Happy
+ROSTER_MOOD,🎭 Настроение: %d (%s),🎭 Mood: %d (%s)
+ROSTER_EFF_BREAKDOWN_TITLE,⚙️ Из чего складывается:,⚙️ Efficiency breakdown:
+ROSTER_EFF_BREAKDOWN_MOOD,🎭 Настроение: %s (%d) → %s,🎭 Mood: %s (%d) → %s
+ROSTER_EFF_BREAKDOWN_ENERGY,⚡ Энергия: %d%% → %s,⚡ Energy: %d%% → %s
+ROSTER_EFF_BREAKDOWN_TRAITS,🧬 Трейты: %s,🧬 Traits: %s
+ROSTER_EFF_BREAKDOWN_MOTIVATION,🔥 Мотивация: %s,🔥 Motivation: %s
+ROSTER_EFF_BREAKDOWN_EVENTS,🎲 Ивенты: %s,🎲 Events: %s
+ROSTER_EFF_BREAKDOWN_TOTAL,📊 Итого: %s,📊 Total: %s
+MOOD_MOD_HAS_DESK,Есть рабочее задание,Has work assignment
+MOOD_MOD_NO_DESK,Нет рабочего задания,No work assignment
+ROSTER_MOOD_BREAKDOWN_TITLE,🎭 Из чего складывается настроение:,🎭 Mood breakdown:
+ROSTER_MOOD_BREAKDOWN_BASE,База: %d,Base: %d
+ROSTER_MOOD_BREAKDOWN_TARGET,🎯 Естественный уровень: %d,🎯 Natural target: %d
+ROSTER_MOOD_BREAKDOWN_CURRENT,📍 Текущее: %d,📍 Current mood: %d
