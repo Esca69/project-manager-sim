@@ -17,9 +17,14 @@ const WINDOW_WIDTH = 520
 const WINDOW_HEIGHT_MIN = 280
 
 # Заголовки и эмодзи по типу ивента
+# Заголовки и эмодзи по типу ивента
 const EVENT_HEADERS = {
 	"sick_leave": {"emoji": "🤒", "title_key": "EVENT_SICK_TITLE"},
 	"day_off": {"emoji": "🙏", "title_key": "EVENT_DAYOFF_TITLE"},
+	"scope_expansion": {"emoji": "📦", "title_key": "EVENT_SCOPE_TITLE"},
+	"client_review": {"emoji": "⭐", "title_key": "EVENT_REVIEW_TITLE"},
+	"contract_cancel": {"emoji": "💔", "title_key": "EVENT_CANCEL_TITLE"},
+	"junior_mistake": {"emoji": "🤦", "title_key": "EVENT_JUNIOR_TITLE"},
 }
 
 var _overlay: ColorRect
@@ -184,6 +189,15 @@ func _get_event_description(event_data: Dictionary) -> String:
 			return tr("EVENT_SICK_DESC") % event_data["employee_name"]
 		"day_off":
 			return tr("EVENT_DAYOFF_DESC") % event_data["employee_name"]
+		"scope_expansion":
+			return tr("EVENT_SCOPE_DESC") % [event_data["client_name"], event_data["project_title"]]
+		"client_review":
+			var review = event_data["review"]
+			return tr("EVENT_REVIEW_DESC") % [review["client_name"], tr(review["project_title"])]
+		"contract_cancel":
+			return tr("EVENT_CANCEL_DESC") % [event_data["client_name"], event_data["project_title"]]
+		"junior_mistake":
+			return tr("EVENT_JUNIOR_DESC") % [event_data["worker_name"], event_data["stage_type_name"], event_data["project_title"]]
 	return ""
 
 # =============================================

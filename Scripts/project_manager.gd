@@ -102,10 +102,20 @@ func _award_stage_xp(stage: Dictionary, project: ProjectData):
 	var xp_range = EmployeeData.STAGE_XP_REWARD.get(category, [20, 35])
 	var base_xp = randi_range(xp_range[0], xp_range[1])
 
+	# === ПРОЕКТНЫЙ ИВЕНТ: XP бонус за junior_mistake (помощь) ===
+	var xp_multiplier = stage.get("xp_bonus_multiplier", 1.0)
+	var xp_bonus_employee = stage.get("xp_bonus_employee", "")
+
 	for worker_data in stage.workers:
 		if worker_data is EmployeeData:
-			var result = worker_data.add_employee_xp(base_xp)
-			print(tr("LOG_XP_GAIN") % [worker_data.employee_name, base_xp, tr("STAGE_" + stage.type)])
+			var final_xp = base_xp
+			# Применяем бонусный множитель только к конкретному сотруднику
+			if xp_multiplier != 1.0 and worker_data.employee_name == xp_bonus_employee:
+				final_xp = int(base_xp * xp_multiplier)
+				print("🤝 %s получает ×%.1f XP за этап (помощь с ошибкой)" % [worker_data.employee_name, xp_multiplier])
+
+			var result = worker_data.add_employee_xp(final_xp)
+			print(tr("LOG_XP_GAIN") % [worker_data.employee_name, final_xp, tr("STAGE_" + stage.type)])
 
 			# === MOOD SYSTEM v2: Завершил этап → +5 на 8 часов (480 мин) ===
 			worker_data.add_mood_modifier("stage_complete", "MOOD_MOD_STAGE_COMPLETE", 5.0, 1440.0)
@@ -199,8 +209,12 @@ func _finish_project(project: ProjectData):
 			client.record_project_late()
 			print("💛 %s: лояльность %d (просрочка софт, +%d)" % [client.get_display_name(), client.loyalty, ClientData.LOYALTY_LATE])
 
-	# Бонус XP за вовремя
+		# Бонус XP за вовремя
 	_award_on_time_bonus(project)
+	# === ПРОЕКТНЫЙ ИВЕНТ: регистрация для отзыва ===
+	var em = get_node_or_null("/root/EventManager")
+	if em:
+		em.register_finished_project(project)
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):

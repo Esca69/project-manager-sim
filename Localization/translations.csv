@@ -508,3 +508,28 @@ MOOD_MOD_SLEEPYHEAD_ACTIVE,😴 Соня (после 14:00),😴 Sleepyhead (aft
 MOOD_MOD_SLEEPYHEAD_INACTIVE,😴 Соня (неактивен),😴 Sleepyhead (inactive)
 MOOD_MOD_DAYOFF_ALLOW,Благодарен за отгул,Grateful for day off
 MOOD_MOD_DAYOFF_DENY,Обижен за отказ в отгуле,Upset about denied day off
+EVENT_SCOPE_TITLE,Расширение скоупа,Scope Expansion
+EVENT_SCOPE_DESC,Клиент %s просит добавить функционал в проект «%s».,"Client %s asks to add features to project ""%s""."
+EVENT_SCOPE_CHOICE_ACCEPT,Согласиться,Accept
+EVENT_SCOPE_ACCEPT_DESC,"+%d%% работы на текущем этапе, +%d%% бюджета. Дедлайн без изменений.","+%d%% work on current stage, +%d%% budget. Deadline unchanged."
+EVENT_SCOPE_CHOICE_DECLINE,Отказать,Decline
+EVENT_SCOPE_DECLINE_DESC,Лояльность клиента снизится на 1.,Client loyalty will decrease by 1.
+EVENT_REVIEW_TITLE,Отзыв клиента,Client Review
+EVENT_REVIEW_DESC,Клиент %s доволен работой над «%s» и готов оставить отзыв.,"Client %s is satisfied with ""%s"" and is ready to leave a review."
+EVENT_REVIEW_CHOICE_REVIEW,Попросить отзыв,Ask for Review
+EVENT_REVIEW_REVIEW_DESC,+2 лояльности клиента.,+2 client loyalty.
+EVENT_REVIEW_CHOICE_BONUS,Попросить бонус,Ask for Bonus
+EVENT_REVIEW_BONUS_DESC,Получить +$%d (10%% бюджета проекта).,Receive +$%d (10%% of project budget).
+EVENT_CANCEL_TITLE,Разрыв контракта,Contract Cancelled
+EVENT_CANCEL_DESC,"Клиент %s сообщил, что больше не нуждается в проект�� «%s». Контракт расторгнут.","Client %s has informed that project ""%s"" is no longer needed. Contract terminated."
+EVENT_CANCEL_CHOICE_OK,Понятно,Understood
+EVENT_CANCEL_OK_DESC,Получить $%d неустойку (30%% бюджета).,Receive $%d penalty fee (30%% of budget).
+EVENT_JUNIOR_TITLE,Ошибка джуниора,Junior's Mistake
+EVENT_JUNIOR_DESC,%s допустил ошибку на этапе «%s» проекта «%s». Нужно переделывать часть работы.,"%s made a mistake on stage ""%s"" of project ""%s"". Part of the work needs to be redone."
+EVENT_JUNIOR_CHOICE_SCOLD,Отчитать при всех,Scold publicly
+EVENT_JUNIOR_SCOLD_DESC,"+%d%% доп. работы (вдвое меньше), но -10 настроения на 2 суток.","+%d%% extra work (halved), but -10 mood for 2 days."
+EVENT_JUNIOR_CHOICE_HELP,Помочь разобраться,Help out
+EVENT_JUNIOR_HELP_DESC,"+%d%% доп. работы, +5 настроения, ×1.5 XP за этап.","+%d%% extra work, +5 mood, ×1.5 XP for this stage."
+EVENT_UNKNOWN_CLIENT,Неизвестный клиент,Unknown client
+MOOD_MOD_SCOLDED,Отчитан при всех,Scolded publicly
+MOOD_MOD_HELPED,Помощь от PM,Help from PM

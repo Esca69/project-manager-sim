@@ -227,6 +227,9 @@ func _serialize_projects() -> Array:
 				"plan_duration": stage.get("plan_duration", 0.0),
 				"worker_names": [],
 				"completed_worker_names": stage.get("completed_worker_names", []),
+				# === ПРОЕКТНЫЕ ИВЕНТЫ: XP бонус ===
+				"xp_bonus_multiplier": stage.get("xp_bonus_multiplier", 1.0),
+				"xp_bonus_employee": stage.get("xp_bonus_employee", ""),
 			}
 			for w in stage.get("workers", []):
 				if w is EmployeeData:
@@ -291,6 +294,9 @@ func _serialize_single_project(proj: ProjectData) -> Dictionary:
 			"plan_duration": stage.get("plan_duration", 0.0),
 			"worker_names": [],
 			"completed_worker_names": stage.get("completed_worker_names", []),
+			# === ПРОЕКТНЫЕ ИВЕНТЫ: XP бонус ===
+			"xp_bonus_multiplier": stage.get("xp_bonus_multiplier", 1.0),
+			"xp_bonus_employee": stage.get("xp_bonus_employee", ""),
 		})
 	return proj_dict
 
@@ -485,6 +491,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				"plan_duration": float(stage_dict.get("plan_duration", 0.0)),
 				"workers": [],
 				"completed_worker_names": [],
+				# === ПРОЕКТНЫЕ ИВЕНТЫ: XP бонус ===
+				"xp_bonus_multiplier": float(stage_dict.get("xp_bonus_multiplier", 1.0)),
+				"xp_bonus_employee": str(stage_dict.get("xp_bonus_employee", "")),
 			}
 
 			var cwn = stage_dict.get("completed_worker_names", [])
