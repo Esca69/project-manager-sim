@@ -263,23 +263,18 @@ position = Vector2(1390, -777)
 
 [node name="Fridge" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2btma")]
 position = Vector2(956, -910)
-script = null
 
 [node name="Kitchen" parent="WorldObjects" groups=["desk"] instance=ExtResource("20_2btma")]
 position = Vector2(754, -911)
-script = null
 
 [node name="foodtable" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_8yipd")]
 position = Vector2(851, -700)
-script = null
 
 [node name="foodtable2" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_8yipd")]
 position = Vector2(756, -551)
-script = null
 
 [node name="foodtable3" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_8yipd")]
 position = Vector2(942, -551)
-script = null
 
 [node name="Safe" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(1765, -969)

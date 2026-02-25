@@ -573,7 +573,7 @@ func _physics_process(delta):
 			if _wander_pause_timer <= 0.0:
 				_pick_next_wander_target()
 
-		# === LUNCH SYSTEM: Навигация к объектам обеда ===
+				# === LUNCH SYSTEM: Навигация к объектам обеда ===
 		State.GOING_LUNCH_FRIDGE, State.GOING_LUNCH_KITCHEN, State.GOING_LUNCH_TABLE:
 			if not _is_work_time():
 				_cancel_lunch()
@@ -581,7 +581,7 @@ func _physics_process(delta):
 				return
 			
 			var dist = global_position.distance_to(nav_agent.target_position)
-			if dist < 100.0:
+			if dist < 30.0:
 				_on_navigation_finished()
 				return
 			_move_along_path(delta)

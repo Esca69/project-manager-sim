@@ -871,6 +871,13 @@ func _get_status_text(npc_node) -> String:
 		10: return tr("ROSTER_STATUS_THINKING")
 		11: return tr("ROSTER_STATUS_SICK") % npc_node.sick_days_left
 		12: return tr("ROSTER_STATUS_DAYOFF")
+		# === LUNCH SYSTEM ===
+		13: return tr("ROSTER_STATUS_GOING_LUNCH")
+		14: return tr("ROSTER_STATUS_LUNCH_FRIDGE")
+		15: return tr("ROSTER_STATUS_GOING_LUNCH")
+		16: return tr("ROSTER_STATUS_LUNCH_KITCHEN")
+		17: return tr("ROSTER_STATUS_GOING_LUNCH")
+		18: return tr("ROSTER_STATUS_LUNCH_EATING")
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
@@ -885,6 +892,8 @@ func _get_status_color(npc_node) -> Color:
 		9, 10: return Color(0.75, 0.6, 0.4, 1)
 		11: return Color(0.85, 0.25, 0.2, 1)
 		12: return Color(0.9, 0.6, 0.1, 1)
+		# === LUNCH SYSTEM ===
+		13, 14, 15, 16, 17, 18: return Color(0.9, 0.55, 0.2, 1)
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _get_event_effect_text(emp_data: EmployeeData) -> String:

@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://dmy8kelrnonaa" path="res://Scripts/kitchen.gd" id="2_kitchen"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wcwar"]
-size = Vector2(267, 50)
+size = Vector2(262, 40)
 
 [node name="Kitchen" type="StaticBody2D"]
 script = ExtResource("2_kitchen")
@@ -14,8 +14,8 @@ texture = ExtResource("1_tdlch")
 offset = Vector2(0, -75)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-1.5, -27)
+position = Vector2(1, -32)
 shape = SubResource("RectangleShape2D_wcwar")
 
 [node name="KitchenSpot" type="Marker2D" parent="."]
-position = Vector2(0, 29)
+position = Vector2(-87, 4)
