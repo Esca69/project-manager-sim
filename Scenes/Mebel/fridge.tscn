@@ -1,11 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://cpot20or6loas"]
+[gd_scene load_steps=4 format=3 uid="uid://cpot20or6loas"]
 
 [ext_resource type="Texture2D" uid="uid://cun2jugsynmi2" path="res://Sprites/Office/fridge.png" id="1_og6nu"]
+[ext_resource type="Script" uid="uid://by35up6smk3lf" path="res://Scripts/fridge.gd" id="2_fridge"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wcwar"]
 size = Vector2(113.5, 93)
 
 [node name="Fridge" type="StaticBody2D"]
+script = ExtResource("2_fridge")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_og6nu")
@@ -14,3 +16,6 @@ offset = Vector2(0, -115)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-0.75, -48.5)
 shape = SubResource("RectangleShape2D_wcwar")
+
+[node name="FridgeSpot" type="Marker2D" parent="."]
+position = Vector2(-1, 27)

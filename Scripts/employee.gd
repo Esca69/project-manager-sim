@@ -16,6 +16,13 @@ enum State {
 	# === EVENT SYSTEM: Новые стейты ===
 	SICK_LEAVE,
 	DAY_OFF,
+	# === LUNCH SYSTEM: Обеденные стейты ===
+	GOING_LUNCH_FRIDGE,
+	LUNCH_AT_FRIDGE,
+	GOING_LUNCH_KITCHEN,
+	LUNCH_AT_KITCHEN,
+	GOING_LUNCH_TABLE,
+	LUNCH_EATING,
 }
 
 var current_state = State.IDLE
@@ -80,6 +87,21 @@ var _toilet_ban_minutes_left: float = 0.0
 # === EVENT SYSTEM: Счётчик дней болезни и флаг отгула ===
 var sick_days_left: int = 0
 var is_on_day_off: bool = false
+
+# === LUNCH SYSTEM ===
+const LUNCH_START_HOUR = 11
+const LUNCH_END_HOUR = 15
+const LUNCH_FRIDGE_MINUTES = 5.0
+const LUNCH_KITCHEN_MINUTES = 5.0
+const LUNCH_EATING_MINUTES = 50.0
+const LUNCH_MOOD_BONUS = 10.0
+const LUNCH_MOOD_DURATION = 240.0  # 4 часа в минутах
+
+var _lunch_done_today: bool = false
+var _lunch_minutes_left: float = 0.0
+var _lunch_fridge_ref = null
+var _lunch_kitchen_ref = null
+var _lunch_table_ref = null
 
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
@@ -212,6 +234,7 @@ func start_sick_leave(days: int):
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
+	_release_all_lunch_resources()
 	
 	visible = false
 	$CollisionShape2D.disabled = true
@@ -251,6 +274,7 @@ func start_day_off():
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
+	_release_all_lunch_resources()
 	
 	velocity = Vector2.ZERO
 	z_index = 0
@@ -355,6 +379,7 @@ func _setup_early_bird():
 func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
 	_setup_early_bird()
+	_lunch_done_today = false
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
@@ -471,6 +496,7 @@ func _physics_process(delta):
 				_leave_desk_to_wander()
 				return
 			
+			_try_start_lunch()
 			_try_start_toilet_break()
 			_try_start_coffee_break()
 			_apply_lean(Vector2.ZERO, delta)
@@ -523,6 +549,8 @@ func _physics_process(delta):
 				move_to_desk(my_desk_position)
 				return
 			
+			_try_start_lunch()
+			
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_wander_arrived()
@@ -538,10 +566,61 @@ func _physics_process(delta):
 				move_to_desk(my_desk_position)
 				return
 			
+			_try_start_lunch()
+			
 			_wander_pause_timer -= delta
 			_apply_lean(Vector2.ZERO, delta)
 			if _wander_pause_timer <= 0.0:
 				_pick_next_wander_target()
+
+		# === LUNCH SYSTEM: Навигация к объектам обеда ===
+		State.GOING_LUNCH_FRIDGE, State.GOING_LUNCH_KITCHEN, State.GOING_LUNCH_TABLE:
+			if not _is_work_time():
+				_cancel_lunch()
+				_force_go_home()
+				return
+			
+			var dist = global_position.distance_to(nav_agent.target_position)
+			if dist < 100.0:
+				_on_navigation_finished()
+				return
+			_move_along_path(delta)
+
+		# === LUNCH SYSTEM: Стоим у холодильника ===
+		State.LUNCH_AT_FRIDGE:
+			if not _is_work_time():
+				_cancel_lunch()
+				_force_go_home()
+				return
+			
+			_lunch_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _lunch_minutes_left <= 0.0:
+				_finish_fridge_phase()
+
+		# === LUNCH SYSTEM: Стоим у кухни ===
+		State.LUNCH_AT_KITCHEN:
+			if not _is_work_time():
+				_cancel_lunch()
+				_force_go_home()
+				return
+			
+			_lunch_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _lunch_minutes_left <= 0.0:
+				_finish_kitchen_phase()
+
+		# === LUNCH SYSTEM: Едим за столиком ===
+		State.LUNCH_EATING:
+			if not _is_work_time():
+				_cancel_lunch()
+				_force_go_home()
+				return
+			
+			_lunch_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _lunch_minutes_left <= 0.0:
+				_finish_lunch()
 
 func _is_my_stage_active() -> bool:
 	if not data:
@@ -557,6 +636,7 @@ func _force_go_home():
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
+	_release_all_lunch_resources()
 	
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
@@ -755,6 +835,125 @@ func _finish_toilet_break():
 	else:
 		_force_go_home()
 
+# =============================================
+# === LUNCH SYSTEM ===
+# =============================================
+
+func _try_start_lunch():
+	if _lunch_done_today:
+		return
+	if GameTime.hour < LUNCH_START_HOUR or GameTime.hour >= LUNCH_END_HOUR:
+		return
+	
+	# Пробуем зарезервировать холодильник
+	var fridge = get_tree().get_first_node_in_group("fridge")
+	if not fridge or not fridge.try_reserve(self):
+		return  # Холодильник занят — попробуем позже
+	
+	_lunch_fridge_ref = fridge
+	current_state = State.GOING_LUNCH_FRIDGE
+	nav_agent.target_position = fridge.get_spot_position()
+	z_index = 0
+	show_thought_bubble("🍽️")
+	if data:
+		print("🍽️ %s идёт на обед" % data.employee_name)
+
+func _start_fridge_phase():
+	current_state = State.LUNCH_AT_FRIDGE
+	velocity = Vector2.ZERO
+	_lunch_minutes_left = LUNCH_FRIDGE_MINUTES
+
+func _finish_fridge_phase():
+	# Освобождаем холодильник
+	if _lunch_fridge_ref:
+		_lunch_fridge_ref.release(self)
+		_lunch_fridge_ref = null
+	
+	# Пробуем зарезервировать кухню
+	var kitchen = get_tree().get_first_node_in_group("kitchen")
+	if kitchen and kitchen.try_reserve(self):
+		_lunch_kitchen_ref = kitchen
+		current_state = State.GOING_LUNCH_KITCHEN
+		nav_agent.target_position = kitchen.get_spot_position()
+		z_index = 0
+	else:
+		# Кухня занята — ждём, остаёмся у холодильника
+		_lunch_minutes_left = 0.5  # Проверяем каждые пол-минуты
+
+func _start_kitchen_phase():
+	current_state = State.LUNCH_AT_KITCHEN
+	velocity = Vector2.ZERO
+	_lunch_minutes_left = LUNCH_KITCHEN_MINUTES
+
+func _finish_kitchen_phase():
+	# Освобождаем кухню
+	if _lunch_kitchen_ref:
+		_lunch_kitchen_ref.release(self)
+		_lunch_kitchen_ref = null
+	
+	# Ищем свободный столик
+	var table = _find_free_food_table()
+	if table:
+		_lunch_table_ref = table
+		current_state = State.GOING_LUNCH_TABLE
+		nav_agent.target_position = table.get_spot_position()
+		z_index = 0
+	else:
+		# Все столики заняты — ждём, остаёмся у кухни
+		_lunch_minutes_left = 0.5  # Проверяем каждые пол-минуты
+
+func _find_free_food_table():
+	var tables = get_tree().get_nodes_in_group("food_table")
+	for table in tables:
+		if table.try_reserve(self):
+			return table
+	return null
+
+func _start_eating_phase():
+	current_state = State.LUNCH_EATING
+	velocity = Vector2.ZERO
+	_lunch_minutes_left = LUNCH_EATING_MINUTES
+
+func _finish_lunch():
+	# Освобождаем столик
+	if _lunch_table_ref:
+		_lunch_table_ref.release(self)
+		_lunch_table_ref = null
+	
+	_lunch_done_today = true
+	
+	# +10 mood на 4 часа
+	if data:
+		data.add_mood_modifier("lunch_boost", "MOOD_MOD_LUNCH", LUNCH_MOOD_BONUS, LUNCH_MOOD_DURATION)
+		print("🍽️ %s пообедал! +%.0f mood на %.0f мин." % [data.employee_name, LUNCH_MOOD_BONUS, LUNCH_MOOD_DURATION])
+	
+	# Возврат к нужному состоянию
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		move_to_desk(my_desk_position)
+	elif _is_work_time():
+		_start_wandering()
+	else:
+		_force_go_home()
+
+func _cancel_lunch():
+	_release_all_lunch_resources()
+	# Обед не засчитан — можно попробовать снова
+	if data:
+		print("🍽️ %s: обед прерван" % data.employee_name)
+
+func _release_all_lunch_resources():
+	if _lunch_fridge_ref:
+		_lunch_fridge_ref.release(self)
+		_lunch_fridge_ref = null
+	if _lunch_kitchen_ref:
+		_lunch_kitchen_ref.release(self)
+		_lunch_kitchen_ref = null
+	if _lunch_table_ref:
+		_lunch_table_ref.release(self)
+		_lunch_table_ref = null
+
+# =============================================
+
 func _on_wander_arrived():
 	velocity = Vector2.ZERO
 	current_state = State.WANDER_PAUSE
@@ -805,6 +1004,17 @@ func _on_navigation_finished():
 		_start_toilet_break()
 		return
 	
+	# === LUNCH SYSTEM: Навигация завершена ===
+	if current_state == State.GOING_LUNCH_FRIDGE:
+		_start_fridge_phase()
+		return
+	if current_state == State.GOING_LUNCH_KITCHEN:
+		_start_kitchen_phase()
+		return
+	if current_state == State.GOING_LUNCH_TABLE:
+		_start_eating_phase()
+		return
+	
 	if not _is_work_time():
 		_force_go_home()
 		return
@@ -831,6 +1041,7 @@ func _on_work_started():
 		data.current_energy = 100.0
 		_setup_toilet_schedule()
 		_should_go_home = false
+		_lunch_done_today = false
 		return
 	
 	if data:
@@ -838,6 +1049,7 @@ func _on_work_started():
 		
 	_setup_toilet_schedule()
 	_should_go_home = false
+	_lunch_done_today = false
 	
 	if my_desk_position == Vector2.ZERO:
 		visible = true
@@ -881,6 +1093,7 @@ func _go_to_sleep_instant():
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
+	_release_all_lunch_resources()
 	
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
@@ -936,6 +1149,13 @@ func get_human_state_name() -> String:
 		State.WANDER_PAUSE: return tr("EMP_ACTION_WANDER_PAUSE")
 		State.SICK_LEAVE: return tr("EMP_ACTION_SICK_LEAVE")
 		State.DAY_OFF: return tr("EMP_ACTION_DAY_OFF")
+		# === LUNCH SYSTEM ===
+		State.GOING_LUNCH_FRIDGE: return tr("EMP_ACTION_GOING_LUNCH")
+		State.LUNCH_AT_FRIDGE: return tr("EMP_ACTION_LUNCH_FRIDGE")
+		State.GOING_LUNCH_KITCHEN: return tr("EMP_ACTION_GOING_LUNCH")
+		State.LUNCH_AT_KITCHEN: return tr("EMP_ACTION_LUNCH_KITCHEN")
+		State.GOING_LUNCH_TABLE: return tr("EMP_ACTION_GOING_LUNCH")
+		State.LUNCH_EATING: return tr("EMP_ACTION_LUNCH_EATING")
 	return "..."
 
 func update_status_label():

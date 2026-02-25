@@ -533,3 +533,8 @@ EVENT_JUNIOR_HELP_DESC,"+%d%% доп. работы, +5 настроения, ×1
 EVENT_UNKNOWN_CLIENT,Неизвестный клиент,Unknown client
 MOOD_MOD_SCOLDED,Отчитан при всех,Scolded publicly
 MOOD_MOD_HELPED,Помощь от PM,Help from PM
+EMP_ACTION_GOING_LUNCH,Идёт на обед,Going to lunch
+EMP_ACTION_LUNCH_FRIDGE,Берёт еду,Getting food
+EMP_ACTION_LUNCH_KITCHEN,Готовит,Cooking
+EMP_ACTION_LUNCH_EATING,Обедает,Having lunch
+MOOD_MOD_LUNCH,Пообедал,Had lunch

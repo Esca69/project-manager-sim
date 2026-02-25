@@ -174,6 +174,7 @@ func _serialize_employees() -> Array:
 			# === EVENT SYSTEM: Сохраняем состояние болезни/отгула ===
 			"sick_days_left": npc.sick_days_left,
 			"is_on_day_off": npc.is_on_day_off,
+			"lunch_done_today": npc._lunch_done_today if "_lunch_done_today" in npc else false,
 			"current_state": npc.current_state,
 		})
 	return result
@@ -443,6 +444,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === EVENT SYSTEM: Восстанавливаем состояние болезни/отгула ===
 			npc.sick_days_left = int(emp_dict.get("sick_days_left", 0))
 			npc.is_on_day_off = emp_dict.get("is_on_day_off", false)
+			npc._lunch_done_today = emp_dict.get("lunch_done_today", false)  # <<< ДОБАВИТЬ
 			var saved_state = int(emp_dict.get("current_state", 0))
 			if saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false

@@ -1,11 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://bmmnhia48sjd"]
+[gd_scene load_steps=4 format=3 uid="uid://bmmnhia48sjd"]
 
 [ext_resource type="Texture2D" uid="uid://d0mw7tbw15pmp" path="res://Sprites/Office/foodtable.png" id="1_duuk6"]
+[ext_resource type="Script" uid="uid://b6lrbpqglscws" path="res://Scripts/food_table.gd" id="2_foodtable"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_4dgc6"]
 radius = 28.160255
 
 [node name="foodtable" type="StaticBody2D"]
+script = ExtResource("2_foodtable")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_duuk6")
@@ -14,3 +16,6 @@ offset = Vector2(0, -50)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(1, -26)
 shape = SubResource("CircleShape2D_4dgc6")
+
+[node name="EatSpot" type="Marker2D" parent="."]
+position = Vector2(-53, -25)
