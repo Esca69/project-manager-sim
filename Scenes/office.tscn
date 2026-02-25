@@ -1,4 +1,4 @@
-[gd_scene load_steps=42 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=45 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
@@ -24,6 +24,9 @@
 [ext_resource type="PackedScene" uid="uid://37g45wjt4sq4" path="res://Scenes/Mebel/kitchen.tscn" id="20_2btma"]
 [ext_resource type="PackedScene" uid="uid://dguf0rohhwl1p" path="res://Scenes/Mebel/lamp.tscn" id="21_2uc8b"]
 [ext_resource type="PackedScene" uid="uid://bmmnhia48sjd" path="res://Scenes/Mebel/foodtable.tscn" id="21_8yipd"]
+[ext_resource type="Texture2D" uid="uid://defopj84yd54i" path="res://Sprites/Office/lunchroom_sign.png" id="22_ss1ob"]
+[ext_resource type="Texture2D" uid="uid://b3r4erxeb0cct" path="res://Sprites/Office/safe.png" id="22_vjyg3"]
+[ext_resource type="PackedScene" uid="uid://becgae6wunow2" path="res://Scenes/Mebel/Sofa_back.tscn" id="23_ss1ob"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_o84nh"]
 vertices = PackedVector2Array(1752.2188, 677, 1481, 677, 455.5, 593, 455.5, 547, -320.96094, 884.9531, -320.77344, 837.97656, -318.1172, 848.59375, -320.67188, 810.9922, -319.7422, 570.14844, -315.1172, 588.59375, -317.34375, 799.28125, -319.6875, 558.09375, -318.7422, 311.17188, -313.1172, 333.59375, -314.34375, 539.28125, -312.34375, 284.28125, -318.71875, 306.70313, -317.03125, -129.00781, -295.35156, 351.90625, -296.02344, 521.5, -297.35156, 606.90625, -299.02344, 781.5, 323.02344, 353.5, 338.5, 338.46875, 338.5, 340, 330.35156, 520.09375, 307.1172, 513.46094, 329.02344, 605.5, 344.5, 590.46875, 344.5, 593, 330.35156, 785.09375, 307.1172, 778.46094, 329.02344, 870.5, 344.5, 855.46875, 344.5, 856, -294.02344, 266.5, -300.35156, 866.90625, -272.1172, 358.53906, -272.5703, 515.6172, -274.1172, 613.53906, -275.5703, 775.6172, 934, -115, 1756.3281, -29, 449.5, 340, 449.5, 294, 791, -115, 2774.3125, -129.86719, 3316.4531, -131.95313, 3293.0234, -29, 2725.7734, -129.67969, -270.5703, 260.6172, -298, -67.5, 2832.5313, -578.25, 2838.3984, -474.3125, 2769.8672, -476.29688, 2675.9219, -582.6797, 2695.9297, -350.15625, 1756.8828, -125.96094, -91.42969, 361.3828, -91.88281, 518.46094, 455.5, 856, 1481, 745, 1751.8203, 745, 1751.0469, 876.03906, 305.5703, 876.3828, 455.5, 810, 934, -131.39063, 1756.9219, -132.97656, -93.42969, 616.3828, -94.88281, 778.46094, -298, -129.04688, -26, -67.5, -89.88281, 263.46094, -26, -129.5625, 791, -131.13281, 324.35156, 268.09375, 301.1172, 261.46094, 349.77344, 810, 348.1172, 803.40625, 305.5703, 611.3828, 126.42969, 775.6172, 124.88281, 608.53906, 102.97656, 781.5, 350.27344, 547, 348.1172, 538.40625, 299.5703, 359.3828, 126.42969, 510.6172, 118.88281, 356.53906, 102.97656, 516.5, -66.64844, 270.09375, 95.64844, 349.90625, 84.65625, 534.28125, 101.64844, 601.90625, 84.65625, 799.28125, 344.02344, 294, 342.1172, 286.40625, -67.97656, 355.5, -68.64844, 525.09375, -69.97656, 610.5, -71.64844, 785.09375, -277.1172, 873.53906, -48.882813, 288.40625, 120.42969, 258.6172, 96.97656, 264.5, -49.65625, 337.71875, -42.671875, 313.17188, 77.88281, 331.59375, 77.671875, 558.8281, -50.882813, 543.40625, -51.65625, 592.71875, -44.671875, 568.1719, 83.88281, 583.59375, 77.671875, 823.8281, -53.882813, 803.40625, 78.65625, 282.28125, 71.671875, 306.82813, -47.671875, 828.1719, 83.88281, 848.59375, -54.65625, 852.71875, 101.64844, 866.90625, -72.97656, 870.5, 124.88281, 873.53906, -96.42969, 876.3828)
@@ -51,16 +54,16 @@ size = Vector2(707.25, 331)
 size = Vector2(68, 1018.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_v47wj"]
-size = Vector2(501, 264)
+size = Vector2(501, 288)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_s31ab"]
-size = Vector2(1504, 68)
+size = Vector2(1504, 90)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_oaeid"]
 size = Vector2(71, 928)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kn5q7"]
-size = Vector2(558, 261.5)
+size = Vector2(558, 290)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lsk72"]
 size = Vector2(71, 525)
@@ -78,7 +81,7 @@ size = Vector2(1439.5, 321)
 size = Vector2(83, 813)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8yipd"]
-size = Vector2(957.5, 261)
+size = Vector2(957.5, 292)
 
 [node name="Office" type="Node2D"]
 z_as_relative = false
@@ -129,11 +132,11 @@ position = Vector2(1111, -602)
 shape = SubResource("RectangleShape2D_o2cca")
 
 [node name="CollisionShape2D9" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(623.5, -225)
+position = Vector2(623.5, -237)
 shape = SubResource("RectangleShape2D_v47wj")
 
 [node name="CollisionShape2D10" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(1126, 137)
+position = Vector2(1126, 126)
 shape = SubResource("RectangleShape2D_s31ab")
 
 [node name="CollisionShape2D11" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
@@ -141,7 +144,7 @@ position = Vector2(342, 568)
 shape = SubResource("RectangleShape2D_oaeid")
 
 [node name="CollisionShape2D12" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(1598, -221.75)
+position = Vector2(1598, -236)
 shape = SubResource("RectangleShape2D_kn5q7")
 
 [node name="CollisionShape2D13" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
@@ -165,7 +168,7 @@ position = Vector2(-1920.5, -760.5)
 shape = SubResource("RectangleShape2D_2btma")
 
 [node name="CollisionShape2D18" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-373.75, -220.5)
+position = Vector2(-373.75, -236)
 shape = SubResource("RectangleShape2D_8yipd")
 
 [node name="WorldObjects" type="Node2D" parent="." groups=["world_layer"]]
@@ -178,7 +181,7 @@ position = Vector2(-183, 51)
 position = Vector2(-162, -75)
 
 [node name="BossDesk" parent="WorldObjects" instance=ExtResource("8_o84nh")]
-position = Vector2(1632, -852)
+position = Vector2(1650, -702)
 
 [node name="HrDesk" parent="WorldObjects" instance=ExtResource("10_4luf0")]
 position = Vector2(2384, -684)
@@ -208,6 +211,11 @@ position = Vector2(862, -120)
 position = Vector2(-169, -336)
 texture = ExtResource("9_rs1ao")
 
+[node name="Plant" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(1159.5, -528.2691)
+scale = Vector2(0.5506339, 0.5506339)
+texture = ExtResource("10_o2cca")
+
 [node name="Plant2" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(-329, -142)
 scale = Vector2(0.47151896, 0.47151905)
@@ -217,24 +225,12 @@ texture = ExtResource("10_o2cca")
 position = Vector2(1644, -1103)
 texture = ExtResource("9_rs1ao")
 
-[node name="Plant" type="Sprite2D" parent="WorldObjects"]
-position = Vector2(1204, -585)
-texture = ExtResource("10_o2cca")
-
-[node name="Plant" type="Sprite2D" parent="WorldObjects/Plant"]
-position = Vector2(545, 1451.0001)
-scale = Vector2(0.664557, 0.664557)
-texture = ExtResource("10_o2cca")
-
 [node name="Board2" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(3250, -2124)
 texture = ExtResource("9_rs1ao")
 
 [node name="Flipchart" parent="WorldObjects" instance=ExtResource("12_s31ab")]
 position = Vector2(700, -124)
-
-[node name="Flipchart" parent="WorldObjects/Flipchart" instance=ExtResource("12_s31ab")]
-position = Vector2(473, -788)
 
 [node name="Toilet" parent="WorldObjects" instance=ExtResource("13_kn5q7")]
 position = Vector2(2720, -544)
@@ -263,7 +259,7 @@ position = Vector2(1619, 722)
 position = Vector2(1774, 723)
 
 [node name="Boss2" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2uc8b")]
-position = Vector2(1380, -763)
+position = Vector2(1390, -777)
 
 [node name="Fridge" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2btma")]
 position = Vector2(956, -910)
@@ -279,6 +275,17 @@ position = Vector2(756, -551)
 
 [node name="foodtable3" parent="WorldObjects" instance=ExtResource("21_8yipd")]
 position = Vector2(942, -551)
+
+[node name="Safe" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(1765, -969)
+texture = ExtResource("22_vjyg3")
+
+[node name="SofaBack" parent="WorldObjects" instance=ExtResource("23_ss1ob")]
+position = Vector2(1366, -462)
+
+[node name="LunchroomSign" type="Sprite2D" parent="WorldObjects"]
+position = Vector2(303, -380)
+texture = ExtResource("22_ss1ob")
 
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
 
