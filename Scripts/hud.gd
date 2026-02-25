@@ -51,6 +51,9 @@ var _search_total_minutes: float = 0.0
 const HR_SEARCH_HOURS: int = 2
 const HR_CUTOFF_HOUR: int = 16
 
+# === АВТО-ЗАВЕРШЕНИЕ ДНЯ ===
+const AUTO_END_DAY_HOUR: int = 21
+
 # === ЭКРАН ВЫБОРА РОЛИ (HR) ===
 var _hr_role_screen: Control
 
@@ -521,6 +524,12 @@ func update_time_label(_hour, _minute):
 	else:
 		time_label.modulate = Color.WHITE
 
+	# === АВТО-ЗАВЕРШЕНИЕ ДНЯ В 21:00 ===
+	if GameTime.hour == AUTO_END_DAY_HOUR and GameTime.minute == 0:
+		if end_day_button.visible and not GameTime.is_night_skip:
+			print("⏰ 21:00 — автоматическое завершение дня!")
+			_on_end_day_pressed()
+
 func update_balance_ui(amount):
 	balance_label.text = tr("HUD_BALANCE") % amount
 
@@ -629,6 +638,15 @@ func _on_bottom_tab_pressed(tab_name: String):
 				client_panel.visible = false
 				_boss_panel.open()
 
+# === ПРИНУДИТЕЛЬНАЯ ОТПРАВКА ВСЕХ СОТРУДНИКОВ ДОМОЙ ===
+func _dismiss_all_employees():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.current_state == npc.State.HOME or npc.current_state == npc.State.SICK_LEAVE or npc.current_state == npc.State.DAY_OFF:
+			continue
+		npc._go_to_sleep_instant()
+	print("🏠 Все сотрудники отправлены домой принудительно")
+
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
 	if _is_discussing:
@@ -638,6 +656,9 @@ func _on_end_day_pressed():
 		print("Нельзя закончить день: PM ищет кандидатов!")
 		return
 	end_day_button.visible = false
+
+	# === ПРИНУДИТЕЛЬНО УБИРАЕМ ВСЕХ СОТРУДНИКОВ ИЗ ОФИСА ===
+	_dismiss_all_employees()
 
 	GameState.pay_daily_salaries()
 
