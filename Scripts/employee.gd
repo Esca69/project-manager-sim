@@ -38,7 +38,7 @@ const COFFEE_MAX_MINUTES = 15.0
 
 const COFFEE_LOVER_DURATION_MULT = 2.0
 
-const TOILET_VISITS_PER_DAY = 2
+const TOILET_COOLDOWN_MINUTES = 240 # 4 часа кулдаун
 const TOILET_BREAK_MINUTES = 15.0
 const TOILET_LOVER_DURATION_MULT = 2.0
 
@@ -67,6 +67,10 @@ var toilet_visits_done := 0
 
 var _wander_pause_timer := 0.0
 var _wander_origin: Vector2 = Vector2.ZERO
+
+# Переменные для защиты от застревания в WANDERING
+var _stuck_timer := 0.0
+var _last_stuck_pos := Vector2.ZERO
 
 var _should_go_home: bool = false
 
@@ -506,7 +510,7 @@ func _physics_process(delta):
 				_show_random_work_thought()
 				_work_bubble_cooldown = randf_range(15.0, 25.0)
 			
-		State.MOVING, State.GOING_COFFEE, State.GOING_TOILET:
+		State.MOVING, State.GOING_COFFEE:
 			if not _is_work_time():
 				_force_go_home()
 				return
@@ -516,6 +520,18 @@ func _physics_process(delta):
 				_on_navigation_finished()
 				return
 			_move_along_path(delta)
+
+		State.GOING_TOILET:
+			if not _is_work_time():
+				_force_go_home()
+				return
+			
+			var dist = global_position.distance_to(nav_agent.target_position)
+			if dist < 100.0:
+				_on_navigation_finished()
+				return
+			# Бежим в туалет со спринтом
+			_move_along_path_fast(delta)
 
 		State.GOING_HOME:
 			var dist = global_position.distance_to(nav_agent.target_position)
@@ -551,6 +567,14 @@ func _physics_process(delta):
 			
 			_try_start_lunch()
 			
+			# Детектор застревания
+			_stuck_timer -= delta
+			if _stuck_timer <= 0.0:
+				_stuck_timer = 2.0
+				if global_position.distance_to(_last_stuck_pos) < 5.0:
+					_pick_next_wander_target()
+				_last_stuck_pos = global_position
+			
 			var dist = global_position.distance_to(nav_agent.target_position)
 			if dist < 100.0:
 				_on_wander_arrived()
@@ -573,7 +597,7 @@ func _physics_process(delta):
 			if _wander_pause_timer <= 0.0:
 				_pick_next_wander_target()
 
-				# === LUNCH SYSTEM: Навигация к объектам обеда ===
+		# === LUNCH SYSTEM: Навигация к объектам обеда ===
 		State.GOING_LUNCH_FRIDGE, State.GOING_LUNCH_KITCHEN, State.GOING_LUNCH_TABLE:
 			if not _is_work_time():
 				_cancel_lunch()
@@ -675,6 +699,14 @@ func _move_along_path(delta):
 	move_and_slide()
 	_apply_lean(direction, delta)
 
+func _move_along_path_fast(delta):
+	var next_path_position = nav_agent.get_next_path_position()
+	var direction = global_position.direction_to(next_path_position)
+	var new_velocity = direction * movement_speed * 1.5 # Бежит с ускорением х1.5
+	velocity = new_velocity
+	move_and_slide()
+	_apply_lean(direction, delta)
+
 func _move_along_path_slow(delta):
 	var next_path_position = nav_agent.get_next_path_position()
 	var direction = global_position.direction_to(next_path_position)
@@ -702,6 +734,8 @@ func _is_work_time() -> bool:
 
 func _start_wandering():
 	_wander_origin = global_position
+	_stuck_timer = 2.0
+	_last_stuck_pos = global_position
 	_pick_next_wander_target()
 
 func _pick_next_wander_target():
@@ -778,17 +812,26 @@ func _setup_toilet_schedule():
 	toilet_visits_done = 0
 	
 	var work_minutes = (GameTime.END_HOUR - GameTime.START_HOUR) * 60
-	for i in range(TOILET_VISITS_PER_DAY):
-		var t = randi_range(30, work_minutes - int(TOILET_BREAK_MINUTES) - 30)
-		toilet_visit_times.append(t)
+	var min_time = 30
+	var max_time = work_minutes - int(TOILET_BREAK_MINUTES) - 30
 	
-	toilet_visit_times.sort()
+	# Кто-то сходит 1 раз, кто-то 2 раза
+	var visits = randi_range(1, 2)
+	
+	if visits == 1:
+		toilet_visit_times.append(randi_range(min_time, max_time))
+	else:
+		# Гарантируем перерыв минимум в 4 часа (240 минут)
+		var t1 = randi_range(min_time, max_time - TOILET_COOLDOWN_MINUTES)
+		var t2 = randi_range(t1 + TOILET_COOLDOWN_MINUTES, max_time)
+		toilet_visit_times.append(t1)
+		toilet_visit_times.append(t2)
 
 func _try_start_toilet_break():
 	if _toilet_ban_minutes_left > 0:
 		return
 	
-	if toilet_visits_done >= TOILET_VISITS_PER_DAY:
+	if toilet_visits_done >= toilet_visit_times.size():
 		return
 	if GameTime.hour < GameTime.START_HOUR or GameTime.hour >= GameTime.END_HOUR:
 		return

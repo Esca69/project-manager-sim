@@ -1,19 +1,52 @@
 extends Node
 
-# === БАЗЫ ИМЁН (РУССКИЕ) ===
-var first_names_ru = ["Олег", "Мария", "Алексей", "Дарья", "Иван", "Елена", "Макс", "Сергей", "Анна"]
-var last_names_ru = ["Петров(а)", "Смирнов(а)", "Кузнецов(а)", "Попов(а)", "Васильев(а)", "Соколов(а)", "Михайлов(а)"]
+# === БАЗЫ ИМЁН (РУССКИЕ - МУЖЧИНЫ) ===
+var first_names_ru_m = [
+	"Александр", "Дмитрий", "Максим", "Сергей", "Андрей", "Алексей", "Артём", "Илья", "Кирилл", "Михаил", 
+	"Никита", "Матвей", "Роман", "Егор", "Арсений", "Иван", "Денис", "Евгений", "Даниил", "Тимофей", 
+	"Владислав", "Игорь", "Владимир", "Павел", "Руслан", "Марк", "Константин", "Тимур", "Олег", "Вадим",
+	"Антон", "Виктор", "Григорий", "Леонид", "Станислав"
+]
+var last_names_ru_m = [
+	"Смирнов", "Иванов", "Кузнецов", "Соколов", "Попов", "Лебедев", "Козлов", "Новиков", "Морозов", "Петров", 
+	"Волков", "Соловьёв", "Васильев", "Зайцев", "Павлов", "Семёнов", "Голубев", "Виноградов", "Богданов", "Воробьёв", 
+	"Фёдоров", "Михайлов", "Беляев", "Тарасов", "Белов", "Комаров", "Орлов", "Киселёв", "Макаров", "Андреев",
+	"Ильин", "Гусев", "Титов", "Кузьмин", "Николаев"
+]
 
-# === БАЗЫ ИМЁН (АНГЛИЙСКИЕ) ===
-var first_names_en = ["John", "Emma", "Michael", "Sarah", "David", "Laura", "Alex", "James", "Emily"]
-var last_names_en = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis"]
+# === БАЗЫ ИМЁН (РУССКИЕ - ЖЕНЩИНЫ) ===
+var first_names_ru_f = [
+	"Анастасия", "Мария", "Дарья", "Анна", "Виктория", "Полина", "Елизавета", "Екатерина", "Ксения", "Валерия", 
+	"Варвара", "Александра", "Вероника", "Арина", "Алиса", "Алина", "Милана", "Маргарита", "Диана", "Ульяна", 
+	"София", "Елена", "Татьяна", "Наталья", "Ольга", "Светлана", "Надежда", "Марина", "Ирина", "Людмила",
+	"Юлия", "Евгения", "Алёна", "Кристина", "Ангелина"
+]
+var last_names_ru_f = [
+	"Смирнова", "Иванова", "Кузнецова", "Соколова", "Попова", "Лебедева", "Козлова", "Новикова", "Морозова", "Петрова", 
+	"Волкова", "Соловьёва", "Васильева", "Зайцева", "Павлова", "Семёнова", "Голубева", "Виноградова", "Богданова", "Воробьёва", 
+	"Фёдорова", "Михайлова", "Беляева", "Тарасова", "Белова", "Комарова", "Орлова", "Киселёва", "Макарова", "Андреева",
+	"Ильина", "Гусева", "Титова", "Кузьмина", "Николаева"
+]
+
+# === БАЗЫ ИМЁН (АНГЛИЙСКИЕ - ОБЩИЙ ПУЛ) ===
+var first_names_en = [
+	"John", "Emma", "Michael", "Sarah", "David", "Laura", "Alex", "James", "Emily", "Robert",
+	"Patricia", "Jennifer", "Linda", "Elizabeth", "William", "Barbara", "Richard", "Susan", "Joseph", "Jessica",
+	"Thomas", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony",
+	"Margaret", "Mark", "Sandra", "Steven", "Ashley", "Paul", "Kimberly", "Andrew", "Donna"
+]
+var last_names_en = [
+	"Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez", "Wilson",
+	"Martinez", "Anderson", "Taylor", "Thomas", "Hernandez", "Moore", "Martin", "Jackson", "Thompson", "White",
+	"Lopez", "Lee", "Gonzalez", "Harris", "Clark", "Lewis", "Robinson", "Walker", "Perez", "Hall",
+	"Young", "Allen", "Sanchez", "Wright", "King", "Scott", "Green", "Baker", "Adams"
+]
 
 var roles = ["Business Analyst", "Backend Developer", "QA Engineer"]
 
 var all_traits = ["fast_learner", "energizer", "early_bird", "cheap_hire", "toilet_lover", "coffee_lover", "slowpoke", "expensive"]
 
 # === ЗАРПЛАТЫ ПО РОЛЯМ ===
-# Формула: base + skill × multiplier ± rand
 const SALARY_CONFIG = {
 	"QA Engineer":        { "base": 800,  "mult": 8,  "rand": 200 },
 	"Business Analyst":   { "base": 1000, "mult": 12, "rand": 200 },
@@ -21,18 +54,17 @@ const SALARY_CONFIG = {
 }
 
 # === РАСПРЕДЕЛЕНИЕ ГРЕЙДОВ ПО МЕСЯЦУ ИГРЫ (1 мес = 30 дней) ===
-# Каждый элемент: [шанс, min_level, max_level]
 const GRADE_DISTRIBUTION = {
-	"month_1": [   # Первый месяц (Дни 1–30)
+	"month_1": [   
 		[0.65, 0, 2],   # Junior (65%)
 		[0.35, 3, 4],   # Middle (35%)
 	],
-	"month_2": [   # Второй месяц (Дни 31–60)
+	"month_2": [   
 		[0.60, 0, 2],   # Junior (60%)
 		[0.35, 3, 4],   # Middle (35%)
 		[0.05, 5, 6],   # Senior (5%)
 	],
-	"month_3": [   # Третий месяц и далее (Дни 61+)
+	"month_3": [   
 		[0.50, 0, 2],   # Junior (50%)
 		[0.35, 3, 4],   # Middle (35%)
 		[0.10, 5, 6],   # Senior (10%)
@@ -44,18 +76,22 @@ func generate_random_candidate() -> EmployeeData:
 	var role = roles.pick_random()
 	return generate_candidate_for_role(role)
 
-# === НОВЫЙ МЕТОД: генерация кандидата конкретной роли ===
 func generate_candidate_for_role(role: String) -> EmployeeData:
 	var new_emp = EmployeeData.new()
 
-	# 1. Имя и Роль (выбираем имена в зависимости от языка игры)
+	# 1. Имя и Роль
 	var locale = TranslationServer.get_locale()
 	var f_name = ""
 	var l_name = ""
 	
 	if locale.begins_with("ru"):
-		f_name = first_names_ru.pick_random()
-		l_name = last_names_ru.pick_random()
+		# С вероятностью 50% генерируем мужчину или женщину
+		if randf() > 0.5:
+			f_name = first_names_ru_m.pick_random()
+			l_name = last_names_ru_m.pick_random()
+		else:
+			f_name = first_names_ru_f.pick_random()
+			l_name = last_names_ru_f.pick_random()
 	else:
 		f_name = first_names_en.pick_random()
 		l_name = last_names_en.pick_random()
@@ -68,7 +104,7 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	new_emp.employee_level = level
 	new_emp.employee_xp = 0
 
-	# 3. Рассчитываем навык из уровня (с рандомом прибавок)
+	# 3. Рассчитываем навык из уровня
 	new_emp.skill_business_analysis = 0
 	new_emp.skill_backend = 0
 	new_emp.skill_qa = 0
@@ -83,11 +119,11 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 		"QA Engineer":
 			new_emp.skill_qa = primary_skill_value
 
-	# 4. Зарплата ПО РОЛИ (разная для BA, DEV, QA)
+	# 4. Зарплата ПО РОЛИ
 	var cfg = SALARY_CONFIG[role]
 	var raw_salary = cfg["base"] + (primary_skill_value * cfg["mult"]) + randi_range(-cfg["rand"], cfg["rand"])
 
-	# 5. Генерация трейтов (0-3)
+	# 5. Генерация трейтов
 	new_emp.traits.clear()
 	var trait_count = _pick_trait_count()
 
@@ -136,13 +172,11 @@ func _roll_level() -> int:
 		if roll <= cumulative:
 			return randi_range(int(entry[1]), int(entry[2]))
 
-	# Fallback на всякий случай
 	var last = distribution[distribution.size() - 1]
 	return randi_range(int(last[1]), int(last[2]))
 
 func _calculate_skill_for_level(level: int) -> int:
-	# Начинаем с базы 0-го уровня, затем добавляем рандомные прибавки за каждый уровень
-	var skill = EmployeeData.SKILL_TABLE[0]  # 80
+	var skill = EmployeeData.SKILL_TABLE[0]
 
 	for i in range(level):
 		var gain_range = EmployeeData.SKILL_GAIN_PER_LEVEL[i]
