@@ -100,7 +100,6 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
-text = "Найм сотрудников"
 horizontal_alignment = 1
 
 [node name="CloseButton" type="Button" parent="Window/MainVBox/HeaderPanel"]

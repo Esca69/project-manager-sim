@@ -5,6 +5,7 @@ signal project_opened(proj: ProjectData)
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var empty_label = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer/EmptyLabel
+@onready var title_label = $Window/MainVBox/HeaderPanel/TitleLabel
 
 var _current_tab: String = "active"
 var _tab_container: HBoxContainer
@@ -30,6 +31,11 @@ func _ready():
 	z_index = 90
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_force_fullscreen_size()
+	
+	if title_label:
+		title_label.text = tr("TITLE_MY_PROJECTS")
+		
+	# ... остальной код _ready()
 	
 	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (OVERLAY) ===
 	_overlay = ColorRect.new()

@@ -5,6 +5,7 @@ extends Control
 @onready var card3 = %Card3
 
 @onready var close_btn = find_child("CloseButton", true, false)
+@onready var title_label = $Window/MainVBox/HeaderPanel/TitleLabel # <--- Добавь эту строку
 
 var generator_script = preload("res://Scripts/candidate_generator.gd").new()
 var candidates = []
@@ -47,6 +48,9 @@ func _ready():
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
 	else:
 		print("ОШИБКА: Не найдена кнопка CloseButton!")
+	
+	if title_label:
+		title_label.text = tr("TITLE_HIRING_MENU") # <--- Добавь это
 
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)

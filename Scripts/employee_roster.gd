@@ -5,6 +5,7 @@ signal employee_fired(emp_data: EmployeeData)
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var empty_label = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer/EmptyLabel
+@onready var title_label = $Window/MainVBox/HeaderPanel/TitleLabel
 
 var card_style_normal: StyleBoxFlat
 var card_style_hover: StyleBoxFlat
@@ -26,6 +27,11 @@ func _ready():
 	visible = false
 	z_index = 90
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	if title_label:
+		title_label.text = tr("TAB_EMPLOYEES")
+		
+	
 
 	_force_fullscreen_size()
 
