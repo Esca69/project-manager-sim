@@ -214,6 +214,7 @@ func _serialize_projects() -> Array:
 			"soft_deadline_penalty_percent": proj.soft_deadline_penalty_percent,
 			"state": proj.state,
 			"stages": [],
+			"total_labor_cost": proj.total_labor_cost,
 		}
 
 		for stage in proj.stages:
@@ -478,6 +479,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		proj.budget = int(proj_dict.get("budget", 5000))
 		proj.soft_deadline_penalty_percent = int(proj_dict.get("soft_deadline_penalty_percent", 10))
 		proj.state = int(proj_dict.get("state", 0))
+		proj.total_labor_cost = float(proj_dict.get("total_labor_cost", 0.0))
 
 		proj.stages.clear()
 		var saved_stages = proj_dict.get("stages", [])

@@ -8,6 +8,12 @@ signal employee_leveled_up(emp: EmployeeData, new_level: int, skill_gain: int, n
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Подписываемся на начало рабочего дня для сброса daily_labor_cost
+	GameTime.work_started.connect(_on_work_started)
+
+func _on_work_started():
+	for project in active_projects:
+		project.daily_labor_cost = 0.0
 
 func add_project(proj: ProjectData):
 	if count_active_projects() >= PMData.get_max_projects():
@@ -84,6 +90,11 @@ func _physics_process(delta):
 						worker_data.set_meta("daily_work_minutes", old_work + minutes_this_tick)
 						var old_prog = worker_data.get_meta("daily_progress", 0.0) if worker_data.has_meta("daily_progress") else 0.0
 						worker_data.set_meta("daily_progress", old_prog + progress_this_tick)
+
+						# === АНАЛИТИКА: Считаем затраты на рабочую силу ===
+						var cost_this_tick = minutes_this_tick * (float(worker_data.hourly_rate) / 60.0)
+						project.daily_labor_cost += cost_this_tick
+						project.total_labor_cost += cost_this_tick
 
 			if active_stage.progress >= active_stage.amount:
 				active_stage.progress = active_stage.amount
@@ -190,6 +201,7 @@ func _finish_project(project: ProjectData):
 		if stage.get("is_completed", false) and not stage.has("completed_worker_names"):
 			_freeze_stage_workers(stage)
 	GameState.add_income(payout)
+	GameState.daily_income_details.append({"reason": tr("INCOME_PROJECT") % tr(project.title), "amount": payout})
 	GameState.projects_finished_today.append({"project": project, "payout": payout})
 
 	# === MOOD SYSTEM v2: Проект завершён → +8 на 24 часа всем участникам ===

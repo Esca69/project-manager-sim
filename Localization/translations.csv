@@ -544,3 +544,61 @@ ROSTER_STATUS_LUNCH_KITCHEN,🍽️ Готовит,🍽️ Cooking
 ROSTER_STATUS_LUNCH_EATING,🍽️ Обедает,🍽️ Having lunch
 TITLE_MY_PROJECTS,Мои проекты ,My Projects 
 TITLE_HIRING_MENU,Найм сотрудников ,Hiring 
+PROJ_FIX_BUG,Исправление бага,Fix Bug
+PROJ_TEST_FORM,Тестирование формы,Test Form
+PROJ_WRITE_TZ,Написание ТЗ,Write Spec
+PROJ_FIX_LAYOUT,Правка верстки,Fix Layout
+PROJ_TEST_AUTH,Тест авторизации,Test Auth
+PROJ_COMPETITOR_ANALYSIS,Анализ конкурентов,Competitor Analysis
+PROJ_UPDATE_PLUGINS,Обновление плагинов,Update Plugins
+PROJ_SMOKE_TEST,Смок-тестирование,Smoke Testing
+PROJ_USER_STORY,Написание User Story,Write User Story
+PROJ_OPTIMIZE_DB,Оптимизация БД,Optimize DB
+PROJ_TEST_API_ENDPOINT,Тестирование API,Test API Endpoint
+PROJ_GATHER_REQ,Сбор требований,Gather Requirements
+PROJ_REFACTOR_CODE,Рефакторинг кода,Refactor Code
+PROJ_REGRESSION_TEST,Регрессионный тест,Regression Test
+PROJ_CUSTDEV,Проведение CustDev,CustDev
+PROJ_FAQ,Страница FAQ,FAQ Page
+PROJ_API,Разработка REST API,REST API
+PROJ_FORM_DESC,Проектирование формы,Form Design
+PROJ_FILTERS,Фильтры поиска,Search Filters
+PROJ_MODULE_TEST,Тест требований модуля,Test Module Reqs
+PROJ_REPORT,Система отчетов,Report System
+PROJ_PAYMENT_GATEWAY,Платежный шлюз,Payment Gateway
+PROJ_USER_ROLES,Ролевая модель,User Roles
+PROJ_EMAIL_NOTIF,Email-уведомления,Email Notifications
+PROJ_DATA_EXPORT,Экспорт данных,Data Export
+PROJ_LOAD_TEST_PLAN,План нагрузочного теста,Load Test Plan
+PROJ_PUSH_NOTIF,Push-уведомления,Push Notifications
+PROJ_ONBOARDING,Онбординг пользователей,User Onboarding
+PROJ_SECURITY_AUDIT,Аудит безопасности,Security Audit
+PROJ_ANALYTICS_SETUP,Настройка аналитики,Analytics Setup
+PROJ_LANDING,Landing Page,Landing Page
+PROJ_SITE_CARD,Сайт-визитка,Business Card Site
+PROJ_CRM_TAXI,CRM для такси,Taxi CRM
+PROJ_AUTH_MODULE,Модуль авторизации,Auth Module
+PROJ_SHOP,Интернет-магазин,Online Store
+PROJ_ORDERS,Система заказов,Order System
+PROJ_CHAT,Онлайн-чат,Live Chat
+PROJ_DASHBOARD,Админ-панель,Admin Dashboard
+PROJ_FORUM,Форум пользователей,User Forum
+PROJ_BLOG,Корпоративный блог,Corporate Blog
+PROJ_PORTFOLIO,Платформа портфолио,Portfolio Platform
+PROJ_SUPPORT_TICKETS,Система тикетов,Support Ticketing
+PROJ_INVENTORY,Система склада,Inventory System
+PROJ_BOOKING,Система бронирования,Booking System
+PROJ_MOBILE_APP,MVP моб. приложения,Mobile App MVP
+DAY_SUMMARY_PROJ_COST_INFO, · Затраты: $%d / Прибыль: $%d, · Cost: $%d / Profit: $%d
+DAY_SUMMARY_PROJ_COST_LOST, · Потеряно на ЗП: $%d, · Salary lost: $%d
+INCOME_PROJECT,Проект: %s,Project: %s
+INCOME_CLIENT_BONUS,Бонус от %s,Bonus from %s
+INCOME_CONTRACT_CANCEL,Неустойка: %s,Penalty: %s
+EXPENSE_CURE,Лечение: %s,Treatment: %s
+DAY_SUMMARY_INCOME_DETAILS,Детализация доходов:,Income details:
+DAY_SUMMARY_EVENT_EXPENSES,Прочие расходы:,Other expenses:
+DAY_SUMMARY_EMP_STATS_FULL,Всего: %d · Работали: %d · Простой: %d · Отсутствуют: %d,Total: %d · Worked: %d · Idle: %d · Absent: %d
+DAY_SUMMARY_EMP_SICK,На больничном,On sick leave
+DAY_SUMMARY_EMP_DAYOFF,В отгуле,On day off
+DAY_SUMMARY_EMP_ON_SICK,больничный,sick leave
+DAY_SUMMARY_EMP_ON_DAYOFF,отгул,day off

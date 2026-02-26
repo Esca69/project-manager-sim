@@ -13,7 +13,9 @@ const MARGIN_MULTIPLIER = 1.4
 
 # === ШАБЛОНЫ ПРОЕКТОВ (используем ключи из CSV) ===
 
-# MICRO — 1 вид работ
+
+
+# MICRO — 1 вид работ (15 вариантов)
 const MICRO_TEMPLATES = [
 	{ "name": "PROJ_FIX_BUG",            "stages": ["DEV"],  "difficulty": 1 },
 	{ "name": "PROJ_TEST_FORM",           "stages": ["QA"],   "difficulty": 1 },
@@ -21,28 +23,53 @@ const MICRO_TEMPLATES = [
 	{ "name": "PROJ_FIX_LAYOUT",         "stages": ["DEV"],  "difficulty": 1 },
 	{ "name": "PROJ_TEST_AUTH",          "stages": ["QA"],   "difficulty": 1 },
 	{ "name": "PROJ_COMPETITOR_ANALYSIS", "stages": ["BA"],   "difficulty": 1 },
+	{ "name": "PROJ_UPDATE_PLUGINS",     "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "PROJ_SMOKE_TEST",         "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "PROJ_USER_STORY",         "stages": ["BA"],   "difficulty": 1 },
+	{ "name": "PROJ_OPTIMIZE_DB",        "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "PROJ_TEST_API_ENDPOINT",  "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "PROJ_GATHER_REQ",         "stages": ["BA"],   "difficulty": 1 },
+	{ "name": "PROJ_REFACTOR_CODE",      "stages": ["DEV"],  "difficulty": 1 },
+	{ "name": "PROJ_REGRESSION_TEST",    "stages": ["QA"],   "difficulty": 1 },
+	{ "name": "PROJ_CUSTDEV",            "stages": ["BA"],   "difficulty": 1 },
 ]
 
-# SIMPLE — 2 вида работ
+# SIMPLE — 2 вида работ (15 вариантов)
 const SIMPLE_TEMPLATES = [
-	{ "name": "PROJ_FAQ",             "stages": ["BA", "DEV"],  "difficulty": 2 },
-	{ "name": "PROJ_API",             "stages": ["DEV", "QA"],  "difficulty": 2 },
-	{ "name": "PROJ_FORM_DESC",       "stages": ["BA", "DEV"],  "difficulty": 2 },
-	{ "name": "PROJ_FILTERS",         "stages": ["DEV", "QA"],  "difficulty": 2 },
-	{ "name": "PROJ_MODULE_TEST",     "stages": ["BA", "QA"],   "difficulty": 2 },
-	{ "name": "PROJ_REPORT",          "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_FAQ",                "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_API",                "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_FORM_DESC",          "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_FILTERS",            "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_MODULE_TEST",        "stages": ["BA", "QA"],   "difficulty": 2 },
+	{ "name": "PROJ_REPORT",             "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_PAYMENT_GATEWAY",    "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_USER_ROLES",         "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_EMAIL_NOTIF",        "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_DATA_EXPORT",        "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_LOAD_TEST_PLAN",     "stages": ["BA", "QA"],   "difficulty": 2 },
+	{ "name": "PROJ_PUSH_NOTIF",         "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_ONBOARDING",         "stages": ["BA", "DEV"],  "difficulty": 2 },
+	{ "name": "PROJ_SECURITY_AUDIT",     "stages": ["DEV", "QA"],  "difficulty": 2 },
+	{ "name": "PROJ_ANALYTICS_SETUP",    "stages": ["BA", "DEV"],  "difficulty": 2 },
 ]
 
-# EASY — 3 вида работ (полный цикл BA→DEV→QA)
+# EASY — 3 вида работ (полный цикл BA→DEV→QA) (15 вариантов)
 const EASY_TEMPLATES = [
-	{ "name": "PROJ_LANDING",      "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_SITE_CARD",    "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_CRM_TAXI",     "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_AUTH_MODULE",  "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_SHOP",         "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_ORDERS",       "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_CHAT",         "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
-	{ "name": "PROJ_DASHBOARD",    "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_LANDING",            "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_SITE_CARD",          "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_CRM_TAXI",           "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_AUTH_MODULE",        "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_SHOP",               "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_ORDERS",             "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_CHAT",               "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_DASHBOARD",          "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_FORUM",              "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_BLOG",               "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_PORTFOLIO",          "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_SUPPORT_TICKETS",    "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_INVENTORY",          "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_BOOKING",            "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
+	{ "name": "PROJ_MOBILE_APP",         "stages": ["BA", "DEV", "QA"], "difficulty": 3 },
 ]
 
 # WORK_UNITS: micro увеличены x1.5

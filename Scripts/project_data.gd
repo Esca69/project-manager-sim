@@ -22,7 +22,7 @@ var elapsed_days: float = 0.0
 @export var hard_days_budget: int = 0
 @export var soft_days_budget: int = 0
 
-# --- СТРУКТУРА ЭТАПОВ ---
+# --- СТРУКТУРА ЭТ��ПОВ ---
 @export var stages: Array = []
 
 # --- ФИНАНСЫ ---
@@ -31,24 +31,34 @@ var elapsed_days: float = 0.0
 # Штраф за просрочку софт-дедлайна (процент от бюджета: 10, 20 или 30)
 @export var soft_deadline_penalty_percent: int = 10
 
+# --- АНАЛИТИКА: ЗАТРАТЫ НА РАБОЧУЮ СИЛУ ---
+# Суммарные затраты за всё время проекта (накопительно)
+var total_labor_cost: float = 0.0
+# Затраты за сегодняшний день (сбрасывается в начале рабочего дня)
+var daily_labor_cost: float = 0.0
+
 enum State { DRAFTING, IN_PROGRESS, FINISHED, FAILED }
 var state = State.DRAFTING
 
 # Вычисляем итоговую выплату при завершении
 func get_final_payout(finish_day: int) -> int:
 	# Провал хард-дедлайна — $0
-	if finish_day > deadline_day:
+	if finish_day >= deadline_day:
 		return 0
 	# Просрочка софт-дедлайна — штраф
-	if finish_day > soft_deadline_day:
+	if finish_day >= soft_deadline_day:
 		var penalty = int(budget * soft_deadline_penalty_percent / 100.0)
 		return budget - penalty
-	# Успели в софт — полный бюджет
+	# Успели до софта — полный бюджет
 	return budget
 
 # Проверка: завершён ли вовремя (до софт-дедлайна)
 func is_finished_on_time(finish_day: int) -> bool:
-	return finish_day <= soft_deadline_day
+	return finish_day < soft_deadline_day
+
+# Прибыль/убыток: выплата минус затраты на рабочую силу
+func get_profit(finish_day: int) -> int:
+	return get_final_payout(finish_day) - int(total_labor_cost)
 
 # Получить данные клиента
 func get_client():

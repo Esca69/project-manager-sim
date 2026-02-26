@@ -11,6 +11,8 @@ var balance_at_day_start: int = 10000
 var daily_income: int = 0
 var daily_expenses: int = 0
 var daily_salary_details: Array = []  # [{name: String, amount: int}]
+var daily_income_details: Array = []  # [{reason: String, amount: int}]
+var daily_event_expenses: Array = []  # [{reason: String, amount: int}]
 var projects_finished_today: Array = []  # [{project: ProjectData, payout: int}]
 var projects_failed_today: Array = []    # [ProjectData]
 var tutorial_completed: bool = false
@@ -30,6 +32,8 @@ func reset_daily_stats():
 	projects_failed_today.clear()
 	levelups_today.clear()
 	loyalty_changes_today.clear()
+	daily_income_details.clear()
+	daily_event_expenses.clear()
 
 # Функция изменения баланса
 func change_balance(amount: int):

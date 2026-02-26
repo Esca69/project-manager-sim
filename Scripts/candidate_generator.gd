@@ -16,7 +16,7 @@ var last_names_ru_m = [
 
 # === БАЗЫ ИМЁН (РУССКИЕ - ЖЕНЩИНЫ) ===
 var first_names_ru_f = [
-	"Анастасия", "Мария", "Дарья", "Анна", "Виктория", "Полина", "Елизавета", "Екатерина", "Ксения", "Валерия", 
+	"Анастасия", "Мария", "Дарья", "Анна", "Виктория", "Полина", "Елизавета", "Ека��ерина", "Ксения", "Валерия", 
 	"Варвара", "Александра", "Вероника", "Арина", "Алиса", "Алина", "Милана", "Маргарита", "Диана", "Ульяна", 
 	"София", "Елена", "Татьяна", "Наталья", "Ольга", "Светлана", "Надежда", "Марина", "Ирина", "Людмила",
 	"Юлия", "Евгения", "Алёна", "Кристина", "Ангелина"
@@ -72,20 +72,23 @@ const GRADE_DISTRIBUTION = {
 	],
 }
 
-func generate_random_candidate() -> EmployeeData:
-	var role = roles.pick_random()
-	return generate_candidate_for_role(role)
+# === ГЕНЕРАЦИЯ УНИКАЛЬНОГО ИМЕНИ ===
+func _get_existing_employee_names() -> Array[String]:
+	var names: Array[String] = []
+	var tree = get_tree()
+	if tree == null:
+		return names
+	for npc in tree.get_nodes_in_group("npc"):
+		if npc.data and npc.data is EmployeeData:
+			names.append(npc.data.employee_name)
+	return names
 
-func generate_candidate_for_role(role: String) -> EmployeeData:
-	var new_emp = EmployeeData.new()
-
-	# 1. Имя и Роль
+func _generate_random_name() -> String:
 	var locale = TranslationServer.get_locale()
 	var f_name = ""
 	var l_name = ""
 	
 	if locale.begins_with("ru"):
-		# С вероятностью 50% генерируем мужчину или женщину
 		if randf() > 0.5:
 			f_name = first_names_ru_m.pick_random()
 			l_name = last_names_ru_m.pick_random()
@@ -95,8 +98,34 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	else:
 		f_name = first_names_en.pick_random()
 		l_name = last_names_en.pick_random()
+	
+	return f_name + " " + l_name
 
-	new_emp.employee_name = f_name + " " + l_name
+func _generate_unique_name() -> String:
+	var existing = _get_existing_employee_names()
+	
+	# Попытка найти уникальное имя (50 попыток)
+	for attempt in range(50):
+		var name = _generate_random_name()
+		if name not in existing:
+			return name
+	
+	# Фоллбэк: добавляем номер, если совсем не повезло
+	var base_name = _generate_random_name()
+	var counter = 2
+	while (base_name + " " + str(counter)) in existing:
+		counter += 1
+	return base_name + " " + str(counter)
+
+func generate_random_candidate() -> EmployeeData:
+	var role = roles.pick_random()
+	return generate_candidate_for_role(role)
+
+func generate_candidate_for_role(role: String) -> EmployeeData:
+	var new_emp = EmployeeData.new()
+
+	# 1. Уникальное имя и роль
+	new_emp.employee_name = _generate_unique_name()
 	new_emp.job_title = role
 
 	# 2. Определяем уровень на основе дня игры

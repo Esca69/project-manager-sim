@@ -268,6 +268,23 @@ func _build_finance_section():
 
 	_add_finance_row(grid, tr("DAY_SUMMARY_BALANCE_START"), "$%d" % balance_start, COLOR_DARK)
 	_add_finance_row(grid, tr("DAY_SUMMARY_INCOME"), "+$%d" % income, COLOR_GREEN)
+
+	# === ДЕТАЛИЗАЦИЯ ДОХОДОВ ===
+	if PMData.can_see_expense_details() and GameState.daily_income_details.size() > 0:
+		var income_header = Label.new()
+		income_header.text = "    " + tr("DAY_SUMMARY_INCOME_DETAILS")
+		income_header.add_theme_color_override("font_color", COLOR_GRAY)
+		income_header.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(income_header, "regular")
+		_content_vbox.add_child(income_header)
+		for entry in GameState.daily_income_details:
+			var det_lbl = Label.new()
+			det_lbl.text = "      +$%d — %s" % [entry["amount"], entry["reason"]]
+			det_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+			det_lbl.add_theme_font_size_override("font_size", 12)
+			if UITheme: UITheme.apply_font(det_lbl, "regular")
+			_content_vbox.add_child(det_lbl)
+
 	_add_finance_row(grid, tr("DAY_SUMMARY_EXPENSES"), "-$%d" % expenses, COLOR_RED)
 
 	if PMData.can_see_expense_details():
@@ -285,6 +302,21 @@ func _build_finance_section():
 				var det_lbl = Label.new()
 				det_lbl.text = tr("DAY_SUMMARY_EMP_SALARY") % [emp_name, amount]
 				det_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+				det_lbl.add_theme_font_size_override("font_size", 12)
+				if UITheme: UITheme.apply_font(det_lbl, "regular")
+				_content_vbox.add_child(det_lbl)
+		# === ДЕТАЛИЗАЦИЯ ИВЕНТ-РАСХОДОВ ===
+		if GameState.daily_event_expenses.size() > 0:
+			var event_header = Label.new()
+			event_header.text = "    " + tr("DAY_SUMMARY_EVENT_EXPENSES")
+			event_header.add_theme_color_override("font_color", COLOR_GRAY)
+			event_header.add_theme_font_size_override("font_size", 12)
+			if UITheme: UITheme.apply_font(event_header, "regular")
+			_content_vbox.add_child(event_header)
+			for entry in GameState.daily_event_expenses:
+				var det_lbl = Label.new()
+				det_lbl.text = "      -$%d — %s" % [entry["amount"], entry["reason"]]
+				det_lbl.add_theme_color_override("font_color", COLOR_RED)
 				det_lbl.add_theme_font_size_override("font_size", 12)
 				if UITheme: UITheme.apply_font(det_lbl, "regular")
 				_content_vbox.add_child(det_lbl)
@@ -332,6 +364,11 @@ func _build_projects_section():
 				if payout < proj.budget:
 					var penalty = proj.budget - payout
 					text += tr("DAY_SUMMARY_PROJ_PENALTY") % penalty
+				# === АНАЛИТИКА: Затраты на рабочую силу ===
+				var labor = int(proj.total_labor_cost)
+				if labor > 0:
+					var profit = payout - labor
+					text += tr("DAY_SUMMARY_PROJ_COST_INFO") % [labor, profit]
 			else:
 				text = tr("DAY_SUMMARY_PROJ_COMPLETED") % [proj.category.to_upper(), proj.title]
 			var lbl = Label.new()
@@ -348,6 +385,10 @@ func _build_projects_section():
 			var text: String
 			if has_analytics:
 				text = tr("DAY_SUMMARY_PROJ_FAILED_DETAIL") % [proj.category.to_upper(), proj.title]
+				# === АНАЛИТИКА: Показать потери ===
+				var labor = int(proj.total_labor_cost)
+				if labor > 0:
+					text += tr("DAY_SUMMARY_PROJ_COST_LOST") % labor
 			else:
 				text = tr("DAY_SUMMARY_PROJ_FAILED_SHORT") % [proj.category.to_upper(), proj.title]
 			var lbl = Label.new()
@@ -377,6 +418,11 @@ func _build_projects_section():
 				text = tr("DAY_SUMMARY_PROJ_ACTIVE_DETAIL") % [
 					proj.category.to_upper(), proj.title, stage_info, soft_days, hard_days
 				]
+				# === АНАЛИТИКА: Затраты на рабочую силу ===
+				var labor = int(proj.total_labor_cost)
+				var expected_payout = proj.get_final_payout(GameTime.day)
+				if labor > 0:
+					text += tr("DAY_SUMMARY_PROJ_COST_INFO") % [labor, expected_payout - labor]
 			else:
 				text = tr("DAY_SUMMARY_PROJ_ACTIVE_SHORT") % [proj.category.to_upper(), proj.title]
 
@@ -452,9 +498,18 @@ func _build_employees_section():
 
 	var worked_list = []
 	var idle_list = []
+	var sick_list = []
+	var dayoff_list = []
 
 	for npc in npcs:
 		if not npc.data:
+			continue
+		# Сначала проверяем статус: болезнь / отгул
+		if npc.current_state == npc.State.SICK_LEAVE:
+			sick_list.append(npc.data)
+			continue
+		if npc.current_state == npc.State.DAY_OFF:
+			dayoff_list.append(npc.data)
 			continue
 		var work_minutes = npc.data.get_meta("daily_work_minutes", 0.0) if npc.data.has_meta("daily_work_minutes") else 0.0
 		var progress = npc.data.get_meta("daily_progress", 0.0) if npc.data.has_meta("daily_progress") else 0.0
@@ -464,7 +519,11 @@ func _build_employees_section():
 			idle_list.append(npc.data)
 
 	var summary_lbl = Label.new()
-	summary_lbl.text = tr("DAY_SUMMARY_EMP_STATS") % [total_count, worked_list.size(), idle_list.size()]
+	var absent_count = sick_list.size() + dayoff_list.size()
+	if absent_count > 0:
+		summary_lbl.text = tr("DAY_SUMMARY_EMP_STATS_FULL") % [total_count, worked_list.size(), idle_list.size(), absent_count]
+	else:
+		summary_lbl.text = tr("DAY_SUMMARY_EMP_STATS") % [total_count, worked_list.size(), idle_list.size()]
 	summary_lbl.add_theme_color_override("font_color", COLOR_DARK)
 	summary_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(summary_lbl, "semibold")
@@ -489,6 +548,28 @@ func _build_employees_section():
 		for emp in idle_list:
 			var card = _create_employee_card_idle(emp)
 			_content_vbox.add_child(card)
+
+	if sick_list.size() > 0:
+		var sub = _create_subsection_label("🤒 " + tr("DAY_SUMMARY_EMP_SICK"))
+		_content_vbox.add_child(sub)
+		for emp in sick_list:
+			var lbl = Label.new()
+			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_SICK")]
+			lbl.add_theme_color_override("font_color", COLOR_RED)
+			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
+			_content_vbox.add_child(lbl)
+
+	if dayoff_list.size() > 0:
+		var sub = _create_subsection_label("🏠 " + tr("DAY_SUMMARY_EMP_DAYOFF"))
+		_content_vbox.add_child(sub)
+		for emp in dayoff_list:
+			var lbl = Label.new()
+			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_DAYOFF")]
+			lbl.add_theme_color_override("font_color", COLOR_GRAY)
+			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
+			_content_vbox.add_child(lbl)
 
 	var low_energy = []
 	for npc in npcs:

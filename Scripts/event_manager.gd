@@ -697,6 +697,7 @@ func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 		"express_cure":
 			# Списать деньги
 			GameState.add_expense(event_data["cure_cost"])
+			GameState.daily_event_expenses.append({"reason": tr("EXPENSE_CURE") % emp_name_real, "amount": event_data["cure_cost"]})
 			# Болеет 1 день
 			emp_node.start_sick_leave(1)
 			print("🏥 %s: экспресс-лечение за $%d, вернётся завтра" % [emp_name_real, event_data["cure_cost"]])
@@ -792,6 +793,7 @@ func _apply_client_review(event_data: Dictionary, choice_id: String):
 			# +10% бюджета как доход
 			var bonus = event_data["bonus_amount"]
 			GameState.add_income(bonus)
+			GameState.daily_income_details.append({"reason": tr("INCOME_CLIENT_BONUS") % review["client_name"], "amount": bonus})
 			print("💰 Бонус от клиента: +$%d" % bonus)
 
 # === ПРИМЕНЕНИЕ: РАЗРЫВ КОНТРАКТА ===
@@ -801,6 +803,7 @@ func _apply_contract_cancel(event_data: Dictionary, _choice_id: String):
 
 	# Начисляем неустойку
 	GameState.add_income(payout)
+	GameState.daily_income_details.append({"reason": tr("INCOME_CONTRACT_CANCEL") % tr(project.title), "amount": payout})
 	print("💔 Контракт расторгнут: '%s', неустойка +$%d" % [tr(project.title), payout])
 
 	# Снимаем всех сотрудников с этапов
