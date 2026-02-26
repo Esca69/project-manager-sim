@@ -243,8 +243,11 @@ func _try_scope_expansion() -> bool:
 func _trigger_scope_expansion(project: ProjectData, stage: Dictionary):
 	var client = project.get_client()
 	var client_name = ""
+	var display_title = tr(project.title)
+	
 	if client:
 		client_name = client.get_display_name()
+		display_title = client.emoji + " " + client.client_name + " — " + display_title
 	else:
 		client_name = tr("EVENT_UNKNOWN_CLIENT")
 
@@ -257,7 +260,7 @@ func _trigger_scope_expansion(project: ProjectData, stage: Dictionary):
 		"project": project,
 		"stage": stage,
 		"client_name": client_name,
-		"project_title": tr(project.title),
+		"project_title": display_title,
 		"extra_percent": extra_percent,
 		"choices": [
 			{
@@ -330,10 +333,20 @@ func _try_client_review() -> bool:
 
 func _trigger_client_review(review: Dictionary):
 	var bonus_amount = int(review["budget"] * 0.10)
+	
+	# Формируем красивое название с эмодзи клиента
+	var display_title = tr(review["project_title"])
+	var client = ClientManager.get_client_by_id(review["client_id"])
+	if client:
+		display_title = client.emoji + " " + client.client_name + " — " + display_title
+		
+	# Делаем копию, чтобы не ломать оригинал в массиве (хотя он удаляется ниже)
+	var review_for_event = review.duplicate()
+	review_for_event["project_title"] = display_title
 
 	var event_data = {
 		"id": "client_review",
-		"review": review,
+		"review": review_for_event,
 		"bonus_amount": bonus_amount,
 		"choices": [
 			{
@@ -389,8 +402,11 @@ func _try_contract_cancel() -> bool:
 func _trigger_contract_cancel(project: ProjectData):
 	var client = project.get_client()
 	var client_name = ""
+	var display_title = tr(project.title)
+	
 	if client:
 		client_name = client.get_display_name()
+		display_title = client.emoji + " " + client.client_name + " — " + display_title
 	else:
 		client_name = tr("EVENT_UNKNOWN_CLIENT")
 
@@ -400,7 +416,7 @@ func _trigger_contract_cancel(project: ProjectData):
 		"id": "contract_cancel",
 		"project": project,
 		"client_name": client_name,
-		"project_title": tr(project.title),
+		"project_title": display_title,
 		"payout": payout,
 		"choices": [
 			{
@@ -461,6 +477,15 @@ func _trigger_junior_mistake(info: Dictionary):
 	var extra_percent = randi_range(10, 30)
 
 	var stage_type_name = tr("STAGE_" + stage.type)
+	
+	# Форматируем имя проекта с клиентом
+	var client = project.get_client()
+	var display_title = tr(project.title)
+	if client:
+		display_title = client.emoji + " " + client.client_name + " — " + display_title
+		
+	# Форматируем имя сотрудника с ролью
+	var display_worker_name = worker.employee_name + " (" + tr(worker.job_title) + ")"
 
 	var event_data = {
 		"id": "junior_mistake",
@@ -468,8 +493,8 @@ func _trigger_junior_mistake(info: Dictionary):
 		"stage": stage,
 		"stage_index": stage_index,
 		"worker": worker,
-		"worker_name": worker.employee_name,
-		"project_title": tr(project.title),
+		"worker_name": display_worker_name,
+		"project_title": display_title,
 		"stage_type_name": stage_type_name,
 		"extra_percent": extra_percent,
 		"choices": [
@@ -482,7 +507,7 @@ func _trigger_junior_mistake(info: Dictionary):
 			{
 				"id": "help",
 				"label": tr("EVENT_JUNIOR_CHOICE_HELP"),
-				"description": tr("EVENT_JUNIOR_HELP_DESC") % extra_percent,
+				"description": tr("EVENT_JUNIOR_HELP_DESC") % (extra_percent * 2), # Увеличиваем штраф в 2 раза для баланса
 				"emoji": "🤝",
 			},
 		],
@@ -578,7 +603,8 @@ func _pick_dayoff_candidate():
 # ТРИГГЕР ИВЕНТОВ (болезнь / отгул)
 # =============================================
 func _trigger_sick_event(employee_node):
-	var emp_name = employee_node.data.employee_name
+	var emp_name_raw = employee_node.data.employee_name
+	var display_name = emp_name_raw + " (" + tr(employee_node.data.job_title) + ")"
 	var cure_cost = randi_range(EXPRESS_CURE_MIN, EXPRESS_CURE_MAX)
 	# Округляем до 50
 	cure_cost = int(round(float(cure_cost) / 50.0)) * 50
@@ -587,7 +613,7 @@ func _trigger_sick_event(employee_node):
 	var event_data = {
 		"id": "sick_leave",
 		"employee_node": employee_node,
-		"employee_name": emp_name,
+		"employee_name": display_name,
 		"cure_cost": cure_cost,
 		"sick_days": sick_days,
 		"choices": [
@@ -608,17 +634,18 @@ func _trigger_sick_event(employee_node):
 
 	last_event_day = GameTime.day
 	last_sick_day = GameTime.day
-	_record_cooldown(emp_name, "last_sick_day")
+	_record_cooldown(emp_name_raw, "last_sick_day")
 
 	_show_event_popup(event_data)
 
 func _trigger_dayoff_event(employee_node):
-	var emp_name = employee_node.data.employee_name
+	var emp_name_raw = employee_node.data.employee_name
+	var display_name = emp_name_raw + " (" + tr(employee_node.data.job_title) + ")"
 
 	var event_data = {
 		"id": "day_off",
 		"employee_node": employee_node,
-		"employee_name": emp_name,
+		"employee_name": display_name,
 		"choices": [
 			{
 				"id": "allow",
@@ -637,7 +664,7 @@ func _trigger_dayoff_event(employee_node):
 
 	last_event_day = GameTime.day
 	last_dayoff_day = GameTime.day
-	_record_cooldown(emp_name, "last_dayoff_day")
+	_record_cooldown(emp_name_raw, "last_dayoff_day")
 
 	_show_event_popup(event_data)
 
@@ -663,6 +690,8 @@ func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
 	if not is_instance_valid(emp_node):
 		return
+		
+	var emp_name_real = emp_node.data.employee_name
 
 	match choice_id:
 		"express_cure":
@@ -670,17 +699,19 @@ func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 			GameState.add_expense(event_data["cure_cost"])
 			# Болеет 1 день
 			emp_node.start_sick_leave(1)
-			print("🏥 %s: экспресс-лечение за $%d, вернётся завтра" % [event_data["employee_name"], event_data["cure_cost"]])
+			print("🏥 %s: экспресс-лечение за $%d, вернётся завтра" % [emp_name_real, event_data["cure_cost"]])
 
 		"sick_leave":
 			# Болеет 2-3 дня
 			emp_node.start_sick_leave(event_data["sick_days"])
-			print("🤒 %s: больничный на %d дней" % [event_data["employee_name"], event_data["sick_days"]])
+			print("🤒 %s: больничный на %d дней" % [emp_name_real, event_data["sick_days"]])
 
 func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
 	if not is_instance_valid(emp_node):
 		return
+		
+	var emp_name_real = emp_node.data.employee_name
 
 	match choice_id:
 		"allow":
@@ -688,7 +719,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 			emp_node.start_day_off()
 			add_effect({
 				"type": "efficiency_buff",
-				"employee_name": event_data["employee_name"],
+				"employee_name": emp_name_real, # Обязательно реальное имя для поиска эффекта
 				"value": 0.10,
 				"days_left": 2,  # Переживёт полночь, отработает полный следующий рабочий день
 				"emoji": "💚",
@@ -701,15 +732,15 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_ALLOW_MOOD_VALUE,
 					DAYOFF_ALLOW_MOOD_DURATION
 				)
-			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [event_data["employee_name"], int(DAYOFF_ALLOW_MOOD_VALUE)])
+			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [emp_name_real, int(DAYOFF_ALLOW_MOOD_VALUE)])
 
 		"deny":
 			# Не отпустить — дебафф efficiency до конца дня
 			add_effect({
 				"type": "efficiency_debuff",
-				"employee_name": event_data["employee_name"],
+				"employee_name": emp_name_real, # Обязательно реальное имя для поиска эффекта
 				"value": -0.20,
-				"days_left": 0,  # 0 = д�� конца текущего дня
+				"days_left": 0,  # 0 = д конца текущего дня
 				"emoji": "😤",
 			})
 			# Mood: обижен, -10 на 2 суток
@@ -720,7 +751,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_DENY_MOOD_VALUE,
 					DAYOFF_DENY_MOOD_DURATION
 				)
-			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [event_data["employee_name"], int(DAYOFF_DENY_MOOD_VALUE)])
+			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [emp_name_real, int(DAYOFF_DENY_MOOD_VALUE)])
 
 # === ПРИМЕНЕНИЕ: РАСШИРЕНИЕ СКОУПА ===
 func _apply_scope_expansion(event_data: Dictionary, choice_id: String):
@@ -782,7 +813,7 @@ func _apply_contract_cancel(event_data: Dictionary, _choice_id: String):
 	# НЕ вызываем GameState.projects_failed_today.append() — не считаем как провал
 	# НЕ меняем лояльность клиента
 
-# === ПРИМЕ��ЕНИЕ: ОШИБКА ДЖУНИОРА ===
+# === ПРИМЕЕНИЕ: ОШИБКА ДЖУНИОРА ===
 func _apply_junior_mistake(event_data: Dictionary, choice_id: String):
 	var stage = event_data["stage"]
 	var worker = event_data["worker"]
@@ -805,8 +836,9 @@ func _apply_junior_mistake(event_data: Dictionary, choice_id: String):
 			print("🤦 %s отчитан. +%d%% работы, -10 mood" % [worker.employee_name, actual_percent])
 
 		"help":
-			# Доп. работа полностью
-			var extra_work = stage.amount * (float(extra_percent) / 100.0)
+			# Доп. работа увеличена в 2 раза из-за помощи
+			var actual_percent = extra_percent * 2
+			var extra_work = stage.amount * (float(actual_percent) / 100.0)
 			stage.amount += extra_work
 			# +5 mood на 24 часа
 			if worker is EmployeeData:
@@ -819,7 +851,7 @@ func _apply_junior_mistake(event_data: Dictionary, choice_id: String):
 			# XP бонус ×1.5 за этот этап
 			stage["xp_bonus_multiplier"] = 1.5
 			stage["xp_bonus_employee"] = worker.employee_name
-			print("🤦 %s получил помощь. +%d%% работы, +5 mood, ×1.5 XP" % [worker.employee_name, extra_percent])
+			print("🤦 %s получил помощь. +%d%% работы, +5 mood, ×1.5 XP" % [worker.employee_name, actual_percent])
 
 # =============================================
 # СИСТЕМА ЭФФЕКТОВ
@@ -890,7 +922,7 @@ func _record_cooldown(employee_name: String, field: String):
 	employee_cooldowns[employee_name][field] = GameTime.day
 
 # =============================================
-# УТИЛИТЫ Д��Я ПРОЕКТНЫХ ИВЕНТОВ
+# УТИЛИТЫ ДЛЯ ПРОЕКТНЫХ ИВЕНТОВ
 # =============================================
 func _get_active_stage(project: ProjectData):
 	for i in range(project.stages.size()):
