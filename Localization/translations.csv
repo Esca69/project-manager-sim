@@ -602,3 +602,6 @@ DAY_SUMMARY_EMP_SICK,На больничном,On sick leave
 DAY_SUMMARY_EMP_DAYOFF,В отгуле,On day off
 DAY_SUMMARY_EMP_ON_SICK,больничный,sick leave
 DAY_SUMMARY_EMP_ON_DAYOFF,отгул,day off
+MOOD_MOD_MOTIVATED,🔥 Замотивирован,🔥 Motivated
+MOOD_MOD_LOW_ENERGY,⚡ Мало энергии,⚡ Low energy
+MOOD_MOD_VERY_LOW_ENERGY,⚡ Критически мало энергии,⚡ Very low energy

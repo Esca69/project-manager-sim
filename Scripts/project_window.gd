@@ -20,6 +20,7 @@ const MIN_TIMELINE_DAYS = 7.0
 var current_time_line: ColorRect
 var soft_deadline_line: ColorRect
 var hard_deadline_line: ColorRect
+var _bg_overlay: ColorRect
 
 # Красивый зелёный цвет для кнопки СТАРТ
 var color_green_main = Color(0.29803923, 0.6862745, 0.3137255, 1)
@@ -91,6 +92,21 @@ func setup(data: ProjectData, selector_node):
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# === Растягиваем на весь экран (как client_panel / pm_skill_tree) ===
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_force_fullscreen_size()
+	
+	# === Затемнённый фон-оверлей ===
+	# Вставляем на индекс 0 — ПОД MainLayout, чтобы кнопки трэков/старта оставались кликабельны
+	_bg_overlay = ColorRect.new()
+	_bg_overlay.color = Color(0, 0, 0, 0.45)
+	_bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_bg_overlay)
+	move_child(_bg_overlay, 0)
+	
 	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	
 	var cancel_node = $MainLayout/ContentWrapper/Body/Footer/CancelButton
@@ -100,12 +116,7 @@ func _ready():
 	start_btn.pressed.connect(_on_start_pressed)
 	start_btn.text = tr("PROJ_WIN_BTN_START")
 	
-	close_window_btn.pressed.connect(func():
-		if UITheme:
-			UITheme.fade_out(self, 0.15)
-		else:
-			visible = false
-	)
+	close_window_btn.pressed.connect(close)
 
 	var start_style_normal = StyleBoxFlat.new()
 	start_style_normal.bg_color = Color(1, 1, 1, 1)
@@ -159,6 +170,25 @@ func _ready():
 		UITheme.apply_font(budget_label, "bold")
 		UITheme.apply_font(start_btn, "semibold")
 		UITheme.apply_font(close_window_btn, "semibold")
+
+# === Растяжка на весь экран ===
+func _force_fullscreen_size():
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
+
+# === Закрытие окна (кнопка X + ESC) ===
+func close():
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
+
+# === Обработка ESC ===
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		close()
+		get_viewport().set_input_as_handled()
 
 func _update_budget_display():
 	if not project: return

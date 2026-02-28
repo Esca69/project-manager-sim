@@ -300,7 +300,6 @@ position = Vector2(303, -380)
 texture = ExtResource("22_ss1ob")
 
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
-visible = false
 
 [node name="SpawnPoint" type="Marker2D" parent="."]
 position = Vector2(1281, 831)
