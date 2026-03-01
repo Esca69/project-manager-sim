@@ -1,6 +1,6 @@
 extends Panel
 
-# Сигнал: "Я выбрал вот этого человека"
+# Сигнал: "Я выбра�� вот этого человека"
 signal employee_selected(data: EmployeeData)
 
 @onready var item_list = $MainVBox/ContentMargin/VBoxContainer/ItemList
@@ -12,7 +12,7 @@ var color_main = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _ready():
 	visible = false
-	z_index = 10
+	z_index = 100  # ИСПРАВЛЕНО: было 10, теперь 100 — поверх project_window (z_index=90)
 	
 	# === УМНОЕ УДАЛЕНИЕ КНОПОК ===
 	var all_buttons = find_children("*", "Button", true, false)
@@ -45,25 +45,18 @@ func _ready():
 	item_list.add_theme_stylebox_override("panel", list_style)
 	
 	# === ИСПРАВЛЕНИЕ БАГА С ФОКУСОМ И ВЫДЕЛЕНИЕМ ===
-	# 1. Убираем системную рамку (фокус), чтобы не выделялся весь контейнер ItemList
 	item_list.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	
-	# 2. Возвращаем синеватую подсветку строки, как было задумано
 	var selected_style = StyleBoxFlat.new()
-	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1) # Тот самый светло-синий фон
+	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1)
 	selected_style.corner_radius_top_left = 4
 	selected_style.corner_radius_top_right = 4
 	selected_style.corner_radius_bottom_right = 4
 	selected_style.corner_radius_bottom_left = 4
 	
-	# Применяем этот синеватый фон для клика (selected) и клика с фокусом
 	item_list.add_theme_stylebox_override("selected", selected_style)
 	item_list.add_theme_stylebox_override("selected_focus", selected_style)
-	
-	# Добавляем для состояния наведения мыши (hovered)
 	item_list.add_theme_stylebox_override("hovered", selected_style)
-	
-	# 3. Убрано переопределение font_selected_color, чтобы шрифт не казался черным.
 
 func open_list(stage_type: String = ""):
 	_filter_stage_type = stage_type
@@ -74,11 +67,9 @@ func open_list(stage_type: String = ""):
 	
 	for npc in npcs:
 		if npc.data:
-			# Фильтрация по роли
 			if _filter_stage_type != "" and not _matches_stage_type(npc.data, _filter_stage_type):
 				continue
 			
-			# --- Проверяем, занят ли сотрудник на ЛЮБОМ проекте ---
 			var is_busy = _is_employee_assigned_to_any_project(npc.data)
 			var display_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
 			

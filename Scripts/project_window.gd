@@ -92,22 +92,11 @@ func setup(data: ProjectData, selector_node):
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# === Растягиваем на весь экран (как client_panel / pm_skill_tree) ===
-	z_index = 90
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_force_fullscreen_size()
-	
-	# === Затемнённый фон-оверлей ===
-	# Вставляем на индекс 0 — ПОД MainLayout, чтобы кнопки трэков/старта оставались кликабельны
-	_bg_overlay = ColorRect.new()
-	_bg_overlay.color = Color(0, 0, 0, 0.45)
-	_bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(_bg_overlay)
-	move_child(_bg_overlay, 0)
-	
 	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
+	
+	# === Overlay: вставляем в РОДИТЕЛЯ, ПОД project_window ===
+	# Так окно остаётся 1500×900 по центру (как в .tscn), а overlay затемняет весь экран
+	call_deferred("_create_overlay")
 	
 	var cancel_node = $MainLayout/ContentWrapper/Body/Footer/CancelButton
 	if cancel_node:
@@ -171,11 +160,34 @@ func _ready():
 		UITheme.apply_font(start_btn, "semibold")
 		UITheme.apply_font(close_window_btn, "semibold")
 
-# === Растяжка на весь экран ===
-func _force_fullscreen_size():
-	var vp_size = get_viewport().get_visible_rect().size
-	position = Vector2.ZERO
-	size = vp_size
+# === Создаём overlay в РОДИТЕЛЕ (HUD), прямо перед нами ===
+func _create_overlay():
+	var parent = get_parent()
+	if not parent:
+		return
+	
+	_bg_overlay = ColorRect.new()
+	_bg_overlay.name = "ProjectWindowOverlay"
+	_bg_overlay.color = Color(0, 0, 0, 0.45)
+	_bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_bg_overlay.visible = false
+	
+	# Добавляем в родителя
+	parent.add_child(_bg_overlay)
+	
+	# Растягиваем на весь экран
+	if _bg_overlay is Control:
+		_bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	
+	# Ставим прямо перед project_window, чтобы был ПОД нами
+	var my_index = get_index()
+	parent.move_child(_bg_overlay, my_index)
+
+# === Показ/скрытие overlay вместе с окном ===
+func _notification(what):
+	if what == NOTIFICATION_VISIBILITY_CHANGED:
+		if _bg_overlay:
+			_bg_overlay.visible = visible
 
 # === Закрытие окна (кнопка X + ESC) ===
 func close():
@@ -183,6 +195,8 @@ func close():
 		UITheme.fade_out(self, 0.15)
 	else:
 		visible = false
+	if _bg_overlay:
+		_bg_overlay.visible = false
 
 # === Обработка ESC ===
 func _input(event: InputEvent) -> void:
@@ -264,7 +278,6 @@ func _process(delta):
 	var origin_time = _get_origin_time()
 	var is_done = (project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED)
 
-	# Рассчитываем высоту линий: высота хедера + высота контейнера с треками + отступы
 	var line_height = timeline_header.size.y + tracks_container.size.y + 10
 
 	if project.state == ProjectData.State.DRAFTING:
@@ -390,7 +403,6 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 		if child == hard_deadline_line: continue
 		child.queue_free()
 
-	# Динамическая высота для фоновых линий сетки
 	var line_height = timeline_header.size.y + tracks_container.size.y + 10
 	var prev_month = -1
 

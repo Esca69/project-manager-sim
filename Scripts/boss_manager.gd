@@ -103,6 +103,7 @@ func generate_quest_for_month(month: int) -> Dictionary:
 	var objectives = []
 
 	# === ОБЯЗАТЕЛЬНОЕ: ПРИБЫЛЬ ===
+	# Мес.1: 1000, Мес.2: 3000, Мес.3+: 5000 + (month-3)*2000
 	var profit_target: int
 	var profit_trust: int
 	if month == 1:
@@ -112,7 +113,7 @@ func generate_quest_for_month(month: int) -> Dictionary:
 		profit_target = 3000
 		profit_trust = 3
 	else:
-		profit_target = 15000 + (month - 3) * 5000
+		profit_target = 5000 + (month - 3) * 2000
 		profit_trust = 4
 
 	objectives.append({
@@ -124,6 +125,7 @@ func generate_quest_for_month(month: int) -> Dictionary:
 	})
 
 	# === ОБЯЗАТЕЛЬНОЕ: ПРОЕКТЫ ===
+	# Мес.1: 10, Мес.2: 14, Мес.3+: 14 + (month-2)*2
 	var projects_target: int
 	var projects_trust: int
 	if month == 1:
@@ -133,7 +135,7 @@ func generate_quest_for_month(month: int) -> Dictionary:
 		projects_target = 14
 		projects_trust = 3
 	else:
-		projects_target = 8 + (month - 3)
+		projects_target = 14 + (month - 2) * 2
 		projects_trust = 3
 
 	objectives.append({
@@ -173,13 +175,14 @@ func _get_random_objectives_pool(month: int) -> Array:
 	var pool = []
 
 	# Нанять сотрудников
+	# Мес.1: 3, Мес.2: 5, Мес.3+: 5 + (month-2)*2
 	var hire_target: int
 	if month == 1:
 		hire_target = 3
 	elif month == 2:
 		hire_target = 5
 	else:
-		hire_target = 5 + (month - 3)
+		hire_target = 5 + (month - 2) * 2
 	pool.append({
 		"id": "hires",
 		"type": "hires",
@@ -188,7 +191,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 		"trust_reward": 2,
 	})
 
-	# Лояльность клиентов
+	# Лояльность клиентов (без изменений)
 	var loyalty_target: int
 	if month == 1:
 		loyalty_target = 20
@@ -204,7 +207,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 		"trust_reward": 2,
 	})
 
-	# Без провалов
+	# Без провалов (без изменений)
 	pool.append({
 		"id": "no_fails",
 		"type": "no_fails",
@@ -214,13 +217,14 @@ func _get_random_objectives_pool(month: int) -> Array:
 	})
 
 	# Минимум расходов
+	# Мес.1: 8000, Мес.2: 10000, Мес.3+: 10000 + (month-2)*3000
 	var expense_target: int
 	if month == 1:
 		expense_target = 8000
 	elif month == 2:
 		expense_target = 10000
 	else:
-		expense_target = 12000 + (month - 3) * 2000
+		expense_target = 10000 + (month - 2) * 3000
 	pool.append({
 		"id": "low_expenses",
 		"type": "max_expenses",
@@ -230,13 +234,14 @@ func _get_random_objectives_pool(month: int) -> Array:
 	})
 
 	# PM уровень
+	# Мес.1: 5, Мес.2: 8, Мес.3+: 8 + (month-2)*3
 	var pm_level_target: int
 	if month == 1:
 		pm_level_target = 5
 	elif month == 2:
 		pm_level_target = 8
 	else:
-		pm_level_target = 9 + (month - 3)
+		pm_level_target = 8 + (month - 2) * 3
 	pool.append({
 		"id": "pm_level",
 		"type": "pm_level",
@@ -246,13 +251,14 @@ func _get_random_objectives_pool(month: int) -> Array:
 	})
 
 	# Левел-апы сотрудников
+	# Мес.1: 2, Мес.2: 5, Мес.3+: 5 + (month-2)*3
 	var levelup_target: int
 	if month == 1:
 		levelup_target = 2
 	elif month == 2:
 		levelup_target = 5
 	else:
-		levelup_target = 6 + (month - 3)
+		levelup_target = 5 + (month - 2) * 3
 	pool.append({
 		"id": "employee_levelups",
 		"type": "employee_levelups",
