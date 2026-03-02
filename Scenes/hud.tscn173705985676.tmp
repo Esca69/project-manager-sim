@@ -78,6 +78,11 @@ layout_mode = 2
 focus_mode = 0
 text = "5х"
 
+[node name="Speed10Btn" type="Button" parent="TopBar/MarginContainer/HBoxContainer/SpeedControls"]
+layout_mode = 2
+focus_mode = 0
+text = "10х"
+
 [node name="Panel" type="Panel" parent="."]
 anchors_preset = 8
 anchor_left = 0.5

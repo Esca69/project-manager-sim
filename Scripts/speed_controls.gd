@@ -35,7 +35,7 @@ func _ready():
 	_active_style.corner_radius_bottom_left = 12
 	
 	# Применяем стиль ко всем кнопкам
-	for btn in [$PauseBtn, $Speed1Btn, $Speed2Btn, $Speed5Btn]:
+	for btn in [$PauseBtn, $Speed1Btn, $Speed2Btn, $Speed5Btn, $Speed10Btn]:
 		btn.custom_minimum_size = Vector2(44, 30)
 		btn.focus_mode = Control.FOCUS_NONE
 		btn.add_theme_font_size_override("font_size", 13)
@@ -50,6 +50,7 @@ func _ready():
 	$Speed1Btn.pressed.connect(_on_1x_pressed)
 	$Speed2Btn.pressed.connect(_on_2x_pressed)
 	$Speed5Btn.pressed.connect(_on_5x_pressed)
+	$Speed10Btn.pressed.connect(_on_10x_pressed)
 
 func _on_pause_pressed():
 	GameTime.set_speed(0)
@@ -63,6 +64,9 @@ func _on_2x_pressed():
 func _on_5x_pressed():
 	GameTime.speed_5x()
 
+func _on_10x_pressed():
+	GameTime.speed_10x()
+
 # --- ОБРАБОТКА НАЖАТИЙ КЛАВИАТУРЫ ---
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("speed_pause"):
@@ -73,6 +77,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_2x_pressed()
 	elif event.is_action_pressed("speed_5x"):
 		_on_5x_pressed()
+	elif event.is_action_pressed("speed_10x"):
+		_on_10x_pressed()
 
 func _process(_delta):
 	var current = GameTime.current_speed_scale
@@ -82,6 +88,7 @@ func _process(_delta):
 	_update_btn_style($Speed1Btn, current == 1)
 	_update_btn_style($Speed2Btn, current == 2)
 	_update_btn_style($Speed5Btn, current == 5)
+	_update_btn_style($Speed10Btn, current == 10)
 
 func _update_btn_style(btn: Button, is_active: bool):
 	if is_active:
