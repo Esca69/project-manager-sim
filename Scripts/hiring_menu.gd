@@ -485,11 +485,15 @@ func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
 		style.border_color = Color(0.9, 0.55, 0.2, 1)
 		text_color = Color(0.9, 0.55, 0.2, 1)
 		lbl_text = tr("EMPLOYMENT_TYPE_FREELANCER")
+		panel.tooltip_text = tr("TOOLTIP_FREELANCER")
 	else:
 		style.bg_color = Color(0.9, 0.93, 1.0, 1)
 		style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 		text_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 		lbl_text = tr("EMPLOYMENT_TYPE_CONTRACTOR")
+		var sev_min = int(data.monthly_salary * EmployeeData.SEVERANCE_MIN_MULTIPLIER)
+		var sev_max = int(data.monthly_salary * EmployeeData.SEVERANCE_MAX_MULTIPLIER)
+		panel.tooltip_text = tr("TOOLTIP_CONTRACTOR") % [sev_min, sev_max]
 
 	panel.add_theme_stylebox_override("panel", style)
 
