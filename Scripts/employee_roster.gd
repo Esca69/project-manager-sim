@@ -160,7 +160,7 @@ func _update_live_data():
 
 		if eff_lbl:
 			var eff_val = emp_data.get_efficiency_multiplier()
-			if emp_data.motivation_bonus > 0:
+			if emp_data.aura_bonus > 0 or emp_data.motivation_bonus > 0:
 				eff_lbl.text = tr("ROSTER_EFFICIENCY_MOTIVATED") % eff_val
 				eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
 			else:
@@ -534,7 +534,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var eff_lbl = Label.new()
 	var eff_val = emp.get_efficiency_multiplier()
-	if emp.motivation_bonus > 0:
+	if emp.aura_bonus > 0 or emp.motivation_bonus > 0:
 		eff_lbl.text = tr("ROSTER_EFFICIENCY_MOTIVATED") % eff_val
 		eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
 	else:
@@ -762,6 +762,7 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_ENERGY") % [int(bd.energy_value), _format_mult(bd.energy_factor)])
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_TRAITS") % _format_mod(bd.trait_sum))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _format_mod(bd.motivation_mod))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % _format_mod(bd.aura_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _format_mod(bd.event_mod))
 	lines.append("")
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _format_mult(bd.total))

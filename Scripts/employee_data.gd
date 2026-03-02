@@ -23,6 +23,9 @@ var current_energy: float = 100.0
 # === БОНУС МОТИВАЦИИ ОТ PM ===
 var motivation_bonus: float = 0.0
 
+# === БОНУС АУРЫ PM (I'm Watching You) ===
+var aura_bonus: float = 0.0
+
 # === MOOD SYSTEM v2 ===
 # mood вычисляется как: BASE + постоянные + временные, clamp(0..100)
 # Никакого дрейфа. Полная прозрачность для игрока.
@@ -534,7 +537,9 @@ func get_efficiency_multiplier() -> float:
 	if em:
 		event_mod = em.get_employee_efficiency_modifier(employee_name)
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod)
+	var aura_mod = aura_bonus
+
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -551,13 +556,14 @@ func get_efficiency_breakdown() -> Dictionary:
 	trait_sum += _get_time_based_efficiency_mod()
 
 	var motivation_mod = motivation_bonus
+	var aura_mod = aura_bonus
 
 	var event_mod: float = 0.0
 	var em = _get_event_manager()
 	if em:
 		event_mod = em.get_employee_efficiency_modifier(employee_name)
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod)
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -567,6 +573,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"energy_factor": energy_factor,
 		"trait_sum": trait_sum,
 		"motivation_mod": motivation_mod,
+		"aura_mod": aura_mod,
 		"event_mod": event_mod,
 		"total": total,
 	}
