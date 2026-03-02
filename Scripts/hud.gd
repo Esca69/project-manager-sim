@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var btn_1x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed1Btn
 @onready var btn_2x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed2Btn
 @onready var btn_5x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed5Btn
+@onready var btn_10x = $TopBar/MarginContainer/HBoxContainer/SpeedControls/Speed10Btn
 
 @onready var info_panel = $Panel
 @onready var name_label = $Panel/VBoxContainer/NameLabel
@@ -147,6 +148,7 @@ func _ready():
 	btn_1x.pressed.connect(func(): GameTime.speed_1x())
 	btn_2x.pressed.connect(func(): GameTime.speed_2x())
 	btn_5x.pressed.connect(func(): GameTime.speed_5x())
+	btn_10x.pressed.connect(func(): GameTime.speed_10x())
 
 	update_balance_ui(GameState.company_balance)
 	update_time_label(GameTime.hour, GameTime.minute)
@@ -195,6 +197,7 @@ func _apply_fonts():
 	UITheme.apply_font(btn_1x, "semibold")
 	UITheme.apply_font(btn_2x, "semibold")
 	UITheme.apply_font(btn_5x, "semibold")
+	UITheme.apply_font(btn_10x, "semibold")
 	if _pm_level_label:
 		UITheme.apply_font(_pm_level_label, "semibold")
 	if _pm_xp_label:
