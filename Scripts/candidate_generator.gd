@@ -174,6 +174,17 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	if new_emp.has_trait("expensive"):
 		raw_salary = int(raw_salary * 1.20)
 
+	# 7. Тип занятости (50/50)
+	if randf() < 0.5:
+		new_emp.employment_type = "freelancer"
+	else:
+		new_emp.employment_type = "contractor"
+
+	# 8. Наценка фрилансера (10%-30% к зарплате)
+	if new_emp.employment_type == "freelancer":
+		var freelance_mult = randf_range(1.1, 1.3)
+		raw_salary = int(raw_salary * freelance_mult)
+
 	new_emp.monthly_salary = int(round(raw_salary / 50.0)) * 50
 
 	new_emp.current_energy = 100.0

@@ -99,6 +99,12 @@ func _process(delta):
 		
 		emit_signal("time_tick", hour, minute)
 
+		# === 09:05: счётчик дней и проверка ухода фрилансеров ===
+		if hour == 9 and minute == 5 and not is_weekend():
+			_increment_days_in_company()
+			if FreelancerManager:
+				FreelancerManager.check_freelancer_departures()
+
 # === СБРОС ДНЕВНОЙ СТАТИСТИКИ СОТРУДНИКОВ ===
 func _reset_employee_daily_stats():
 	var npcs = get_tree().get_nodes_in_group("npc")
@@ -106,6 +112,12 @@ func _reset_employee_daily_stats():
 		if npc.data:
 			npc.data.set_meta("daily_work_minutes", 0.0)
 			npc.data.set_meta("daily_progress", 0.0)
+
+# === ИНКРЕМЕНТ ДНЕЙ В КОМПАНИИ (09:05) ===
+func _increment_days_in_company():
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if npc.data:
+			npc.data.days_in_company += 1
 
 # === ФУНКЦИИ КАЛЕНДАРЯ ===
 

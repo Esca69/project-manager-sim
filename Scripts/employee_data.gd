@@ -5,6 +5,19 @@ class_name EmployeeData
 @export var job_title: String = "Junior Developer"
 @export var monthly_salary: int = 3000
 
+# === ТИП ЗАНЯТОСТИ ===
+@export var employment_type: String = "contractor"  # "contractor" или "freelancer"
+var days_in_company: int = 0  # Инкрементируется каждый рабочий день
+
+const SEVERANCE_MIN_MULTIPLIER: float = 0.5
+const SEVERANCE_MAX_MULTIPLIER: float = 1.5
+
+func get_severance_pay() -> int:
+	if employment_type != "contractor":
+		return 0
+	var mult = randf_range(SEVERANCE_MIN_MULTIPLIER, SEVERANCE_MAX_MULTIPLIER)
+	return int(monthly_salary * mult)
+
 var current_energy: float = 100.0
 
 # === БОНУС МОТИВАЦИИ ОТ PM ===
@@ -291,6 +304,10 @@ func get_xp_progress() -> Array:
 
 func add_employee_xp(amount: int) -> Dictionary:
 	var result = {"leveled_up": false, "new_level": employee_level, "skill_gain": 0, "new_trait": ""}
+
+	# Фрилансеры не получают XP
+	if employment_type == "freelancer":
+		return result
 
 	if employee_level >= MAX_LEVEL:
 		return result

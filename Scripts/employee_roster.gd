@@ -16,6 +16,7 @@ var _dialog_layer: Control
 var _confirm_label: Label
 var _pending_fire_data: EmployeeData = null
 var _pending_fire_node = null
+var _pending_severance: int = 0
 
 var _body_texture: Texture2D
 var _head_texture: Texture2D
@@ -311,6 +312,10 @@ func _create_card(npc_node) -> PanelContainer:
 	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
 	gm.add_child(grade_lbl)
 	level_hbox.add_child(grade_panel)
+
+	# Чип типа занятости
+	var type_badge = _create_employment_type_badge(emp)
+	level_hbox.add_child(type_badge)
 
 	if emp.employee_level < EmployeeData.MAX_LEVEL:
 		var xp_progress = emp.get_xp_progress()
@@ -616,6 +621,51 @@ func _create_help_button() -> Button:
 	btn.add_theme_stylebox_override("hover", hover_style)
 
 	return btn
+
+# === ЧИП ТИПА ЗАНЯТОСТИ ===
+func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
+	var panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+
+	var lbl_text = ""
+	var text_color: Color
+
+	if emp.employment_type == "freelancer":
+		style.bg_color = Color(1.0, 0.95, 0.88, 1)
+		style.border_color = Color(0.9, 0.55, 0.2, 1)
+		text_color = Color(0.9, 0.55, 0.2, 1)
+		lbl_text = tr("EMPLOYMENT_TYPE_FREELANCER")
+	else:
+		style.bg_color = Color(0.9, 0.93, 1.0, 1)
+		style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		text_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		lbl_text = tr("EMPLOYMENT_TYPE_CONTRACTOR")
+
+	panel.add_theme_stylebox_override("panel", style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_bottom", 2)
+	panel.add_child(margin)
+
+	var lbl = Label.new()
+	lbl.text = lbl_text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", text_color)
+	if UITheme: UITheme.apply_font(lbl, "semibold")
+	margin.add_child(lbl)
+
+	return panel
 
 # === Рекурсивный поиск Label внутри тултипа для live-обновления ===
 func _find_label_in_tooltip(tooltip_node: Control) -> Label:
@@ -935,9 +985,20 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 	_pending_fire_data = emp_data
 	_pending_fire_node = npc_node
 
+	# Рассчитываем severance один раз и сохраняем
+	_pending_severance = emp_data.get_severance_pay()
+
 	var projects_list = _get_assigned_projects(emp_data)
 
 	var text = tr("ROSTER_FIRE_CONFIRM_NAME") % emp_data.employee_name
+
+	# Показать компенсацию для контрактника
+	if emp_data.employment_type == "contractor" and _pending_severance > 0:
+		text += "\n\n" + tr("ROSTER_FIRE_SEVERANCE") % _pending_severance
+		var gs = get_node_or_null("/root/GameState")
+		if gs and gs.budget < _pending_severance:
+			text += "\n" + tr("ROSTER_FIRE_SEVERANCE_WARNING") % (gs.budget - _pending_severance)
+
 	if projects_list.size() > 0:
 		var proj_names = []
 		for p in projects_list:
@@ -994,10 +1055,41 @@ func _confirm_fire():
 		_pending_fire_node.queue_free()
 		print("🔥 Уволен: ", _pending_fire_data.employee_name)
 
+	# Списать компенсацию
+	if _pending_severance > 0:
+		var gs = get_node_or_null("/root/GameState")
+		if gs:
+			gs.budget -= _pending_severance
+			if EventLog:
+				EventLog.add(tr("LOG_SEVERANCE_PAID") % [_pending_fire_data.employee_name, _pending_severance])
+
+	# Лог увольнения
+	if EventLog:
+		if _pending_fire_data.employment_type == "contractor":
+			EventLog.add(tr("LOG_FIRE_CONTRACTOR") % [_pending_fire_data.employee_name, _pending_severance])
+		else:
+			EventLog.add(tr("LOG_FIRE_FREELANCER") % _pending_fire_data.employee_name)
+
+	# Штраф морали остальным контрактникам
+	if _pending_fire_data.employment_type == "contractor":
+		for other_npc in get_tree().get_nodes_in_group("npc"):
+			if not other_npc.data:
+				continue
+			if other_npc.data == _pending_fire_data:
+				continue
+			if other_npc.data.employment_type == "contractor":
+				other_npc.data.add_mood_modifier(
+					"colleague_fired",
+					"MOOD_MOD_COLLEAGUE_FIRED",
+					-8.0,
+					480.0
+				)
+
 	emit_signal("employee_fired", _pending_fire_data)
 
 	_pending_fire_data = null
 	_pending_fire_node = null
+	_pending_severance = 0
 	_dialog_layer.visible = false
 
 	_rebuild_cards()
