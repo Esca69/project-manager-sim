@@ -104,6 +104,7 @@ func _physics_process(delta):
 				# === НАЧИСЛЕНИЕ XP СОТРУДНИКАМ ===
 				_award_stage_xp(active_stage, project)
 				_freeze_stage_workers(active_stage)
+				EventLog.log(tr("LOG_STAGE_COMPLETED") % [tr("STAGE_SHORT_" + active_stage.type), tr(project.title)], EventLog.LogType.PROGRESS)
 		else:
 			_finish_project(project)
 
@@ -162,6 +163,7 @@ func _fail_project(project: ProjectData):
 	if project.state == ProjectData.State.FAILED:
 		return
 	print(tr("LOG_PROJECT_FAILED") % tr(project.title))
+	EventLog.log(tr("LOG_PROJECT_FAILED") % tr(project.title), EventLog.LogType.ALERT)
 	project.state = ProjectData.State.FAILED
 
 	# === MOOD SYSTEM v2: Провал → -10 на 24 часа всем участникам ===
@@ -195,6 +197,7 @@ func _finish_project(project: ProjectData):
 		print(tr("LOG_PROJECT_FINISHED_LATE") % [tr(project.title), penalty, payout])
 	else:
 		print(tr("LOG_PROJECT_FINISHED_ON_TIME") % [tr(project.title), payout])
+	EventLog.log(tr("LOG_PROJECT_FINISHED") % tr(project.title), EventLog.LogType.PROGRESS)
 	
 	project.state = ProjectData.State.FINISHED
 	for stage in project.stages:

@@ -66,6 +66,9 @@ var _tutorial: Control
 # === EVENT SYSTEM: Попап ивентов ===
 var _event_popup: Control
 
+# === EVENT LOG: Журнал событий ===
+var _event_log_panel: Control
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -176,6 +179,9 @@ func _ready():
 
 	# === EVENT SYSTEM: Создаём ивент-попап ===
 	_build_event_popup()
+
+	# === EVENT LOG: Создаём журнал событий ===
+	_build_event_log()
 
 func _apply_fonts():
 	if UITheme == null:
@@ -308,6 +314,7 @@ func _finish_search():
 		player.hide_discuss_bar()
 
 	print("✅ Поиск завершён! Роль: ", _search_role)
+	EventLog.log(tr("LOG_HR_SEARCH_DONE") % tr(_search_role), EventLog.LogType.PROGRESS)
 
 	# Открываем HiringMenu с результатами
 	var hiring_menu = get_node_or_null("HiringMenu")
@@ -409,6 +416,7 @@ func _start_discussion(proj_data: ProjectData):
 		player.show_discuss_bar(_discuss_total_minutes)
 
 	print("🤝 Обсуждение начато: %s (%d мин.)" % [proj_data.title, int(_discuss_total_minutes)])
+	EventLog.log(tr("LOG_DISCUSSION_STARTED") % tr(proj_data.title), EventLog.LogType.ROUTINE)
 
 func _on_discuss_time_tick(_h, _m):
 	if not _is_discussing:
@@ -446,6 +454,7 @@ func _finish_discussion():
 		return
 
 	print("✅ Обсуждение завершено: ", _discuss_project.title)
+	EventLog.log(tr("LOG_DISCUSSION_FINISHED") % tr(_discuss_project.title), EventLog.LogType.PROGRESS)
 
 	# === Вычисляем абсолютные дедлайны от ТЕКУЩЕГО дня, пропуская выходные ===
 	var today = GameTime.day
@@ -717,6 +726,18 @@ func _build_event_popup():
 	_event_popup.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_event_popup.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_event_popup)
+
+# === EVENT LOG: Построение журнала событий ===
+func _build_event_log():
+	var script = load("res://Scripts/event_log_panel.gd")
+	if script == null:
+		push_warning("event_log_panel.gd не найден — журнал событий не будет работать")
+		return
+	_event_log_panel = Control.new()
+	_event_log_panel.set_script(script)
+	_event_log_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_event_log_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_event_log_panel)
 
 # === EVENT SYSTEM: Открыть попап ивента (вызывается из EventManager) ===
 func show_event_popup(event_data: Dictionary):
