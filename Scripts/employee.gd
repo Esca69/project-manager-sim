@@ -23,6 +23,9 @@ enum State {
 	LUNCH_AT_KITCHEN,
 	GOING_LUNCH_TABLE,
 	LUNCH_EATING,
+	# === RELATIONSHIP SYSTEM: Стейты чата ===
+	GOING_TO_CHAT,
+	CHATTING,
 	# === VACATION SYSTEM ===
 	ON_VACATION,
 }
@@ -123,6 +126,17 @@ var _lunch_minutes_left: float = 0.0
 var _lunch_fridge_ref = null
 var _lunch_kitchen_ref = null
 var _lunch_table_ref = null
+
+# === RELATIONSHIP SYSTEM ===
+var _chat_partner = null          # Ссылка на NPC-ноду партнёра по чату
+var _chat_minutes_left: float = 0.0
+var _chat_initiator: bool = false  # Я инициатор чата?
+const CHAT_DURATION_MIN: float = 10.0   # Минимальная длительность чата (игровых минут)
+const CHAT_DURATION_MAX: float = 20.0   # Максимальная длительность чата
+const CHAT_TRIGGER_RADIUS: float = 200.0 # Радиус обнаружения для начала чата
+const CHAT_TRIGGER_CHANCE: float = 0.03  # Шанс за тик (каждую игровую минуту)
+const CHAT_TOXIC_CHANCE_MULT: float = 2.0  # Toxic инициирует чаще
+const CHAT_INTROVERT_CHANCE_MULT: float = 0.3  # Introvert инициирует реже
 
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
@@ -481,6 +495,9 @@ func _on_day_started(_day_number: int):
 	_in_pm_aura = false
 	if data:
 		data.aura_bonus = 0.0
+	_chat_partner = null
+	_chat_initiator = false
+	_chat_minutes_left = 0.0
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
@@ -527,6 +544,9 @@ func _on_time_tick(_hour, _minute):
 		if _toilet_ban_minutes_left <= 0:
 			remove_toilet_ban()
 			print("🚽 Запрет туалета закончился у %s" % data.employee_name)
+
+	# === RELATIONSHIP SYSTEM: Попытка начать чат ===
+	_try_initiate_chat()
 
 	# --- Early bird логика ---
 	if not data.has_trait("early_bird"): return
@@ -721,6 +741,39 @@ func _physics_process(delta):
 			if _wander_pause_timer <= 0.0:
 				_pick_next_wander_target()
 
+		# === RELATIONSHIP SYSTEM: Идём к партнёру по чату ===
+		State.GOING_TO_CHAT:
+			if not _is_work_time():
+				_cancel_chat()
+				_force_go_home()
+				return
+			# Проверяем, что партнёр ещё валиден
+			if not is_instance_valid(_chat_partner) or _chat_partner.current_state == State.HOME:
+				_cancel_chat()
+				if _is_work_time():
+					_start_wandering()
+				return
+			if _chat_initiator:
+				# Идём к партнёру
+				var dist = global_position.distance_to(_chat_partner.global_position)
+				if dist < 80.0:
+					_start_chatting_phase()
+					return
+				_move_along_path_slow(delta)
+			else:
+				# Ждём инициатора (стоим на месте)
+				_apply_lean(Vector2.ZERO, delta)
+
+		State.CHATTING:
+			if not _is_work_time():
+				_cancel_chat()
+				_force_go_home()
+				return
+			_chat_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _chat_minutes_left <= 0.0:
+				_finish_chat()
+
 		# === LUNCH SYSTEM: Навигация к объектам обеда ===
 		State.GOING_LUNCH_FRIDGE, State.GOING_LUNCH_KITCHEN, State.GOING_LUNCH_TABLE:
 			if not _is_work_time():
@@ -776,6 +829,7 @@ func _is_my_stage_active() -> bool:
 	return ProjectManager.is_employee_on_active_stage(data)
 
 func _force_go_home():
+	_cancel_chat()
 	coffee_cup_holder.visible = false
 	
 	if coffee_machine_ref:
@@ -1120,6 +1174,147 @@ func _release_all_lunch_resources():
 		_lunch_table_ref = null
 
 # =============================================
+# === RELATIONSHIP SYSTEM: CHATTING ===
+# =============================================
+
+func _try_initiate_chat():
+	if not data:
+		return
+	# Чатим только во время wandering/wander_pause
+	if current_state != State.WANDERING and current_state != State.WANDER_PAUSE:
+		return
+	# Проверяем лимит чатов
+	if not RelationshipManager.can_chat(data.employee_name):
+		return
+	# Шанс инициации зависит от personality
+	var chance = CHAT_TRIGGER_CHANCE
+	if "extrovert" in data.personality or "toxic" in data.personality:
+		chance *= CHAT_TOXIC_CHANCE_MULT
+	elif "introvert" in data.personality:
+		chance *= CHAT_INTROVERT_CHANCE_MULT
+	if randf() > chance:
+		return
+	# Ищем ближайшего NPC для чата
+	var partner = _find_chat_partner()
+	if partner == null:
+		return
+	# Начинаем чат!
+	_start_chat_with(partner)
+
+func _find_chat_partner():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	var candidates = []
+	for npc in npcs:
+		if npc == self:
+			continue
+		if not npc.data:
+			continue
+		# Партнёр должен быть в wandering/wander_pause
+		if npc.current_state != State.WANDERING and npc.current_state != State.WANDER_PAUSE:
+			continue
+		# Партнёр не в чате
+		if npc.current_state == State.GOING_TO_CHAT or npc.current_state == State.CHATTING:
+			continue
+		# Партнёр может чатить
+		if not RelationshipManager.can_chat(npc.data.employee_name):
+			continue
+		# Проверяем расстояние
+		var dist = global_position.distance_to(npc.global_position)
+		if dist <= CHAT_TRIGGER_RADIUS:
+			candidates.append(npc)
+	if candidates.is_empty():
+		return null
+	return candidates.pick_random()
+
+func _start_chat_with(partner):
+	# Инициатор идёт к партнёру
+	_chat_partner = partner
+	_chat_initiator = true
+	current_state = State.GOING_TO_CHAT
+	nav_agent.target_position = partner.global_position
+	show_thought_bubble("💬", 3.0)
+
+	# Партнёр ждёт
+	partner._chat_partner = self
+	partner._chat_initiator = false
+	partner.current_state = State.GOING_TO_CHAT
+	partner.velocity = Vector2.ZERO
+	partner.show_thought_bubble("💬", 3.0)
+
+func _start_chatting_phase():
+	var duration = randf_range(CHAT_DURATION_MIN, CHAT_DURATION_MAX)
+	_chat_minutes_left = duration
+	current_state = State.CHATTING
+	velocity = Vector2.ZERO
+
+	if _chat_partner and is_instance_valid(_chat_partner):
+		_chat_partner._chat_minutes_left = duration
+		_chat_partner.current_state = State.CHATTING
+		_chat_partner.velocity = Vector2.ZERO
+
+func _finish_chat():
+	if _chat_initiator and _chat_partner and is_instance_valid(_chat_partner) and data and _chat_partner.data:
+		# Бросаем кубик и обрабатываем результат
+		var result = RelationshipManager.process_chat_result(data, _chat_partner.data)
+
+		# Thought bubbles
+		if result.is_positive:
+			show_thought_bubble("👍", 3.0)
+			if is_instance_valid(_chat_partner):
+				_chat_partner.show_thought_bubble("👍", 3.0)
+		else:
+			show_thought_bubble("💢", 3.0)
+			if is_instance_valid(_chat_partner):
+				_chat_partner.show_thought_bubble("💢", 3.0)
+
+		# Лог
+		var rel_val = RelationshipManager.get_relationship(data.employee_name, _chat_partner.data.employee_name)
+		var level_name = tr(RelationshipManager.get_rel_level_name(data.employee_name, _chat_partner.data.employee_name))
+		if result.is_positive:
+			EventLog.add(tr("LOG_CHAT_POSITIVE") % [data.employee_name, _chat_partner.data.employee_name, rel_val, level_name])
+		else:
+			EventLog.add(tr("LOG_CHAT_NEGATIVE") % [data.employee_name, _chat_partner.data.employee_name, rel_val, level_name])
+
+	# Партнёр тоже завершает чат
+	if _chat_partner and is_instance_valid(_chat_partner):
+		_chat_partner._chat_partner = null
+		_chat_partner._chat_initiator = false
+		_chat_partner._chat_minutes_left = 0.0
+		if _chat_partner._is_work_time():
+			if _chat_partner.my_desk_position != Vector2.ZERO and _chat_partner._is_my_stage_active():
+				_chat_partner.move_to_desk(_chat_partner.my_desk_position)
+			else:
+				_chat_partner._start_wandering()
+		else:
+			_chat_partner._force_go_home()
+
+	# Сбрасываю себя
+	_chat_partner = null
+	_chat_initiator = false
+	_chat_minutes_left = 0.0
+	if _is_work_time():
+		if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+			move_to_desk(my_desk_position)
+		else:
+			_start_wandering()
+	else:
+		_force_go_home()
+
+func _cancel_chat():
+	if _chat_partner and is_instance_valid(_chat_partner):
+		_chat_partner._chat_partner = null
+		_chat_partner._chat_initiator = false
+		_chat_partner._chat_minutes_left = 0.0
+		if _chat_partner.current_state == State.GOING_TO_CHAT or _chat_partner.current_state == State.CHATTING:
+			if _chat_partner._is_work_time():
+				_chat_partner._start_wandering()
+			else:
+				_chat_partner._force_go_home()
+	_chat_partner = null
+	_chat_initiator = false
+	_chat_minutes_left = 0.0
+
+# =============================================
 
 func _on_wander_arrived():
 	velocity = Vector2.ZERO
@@ -1258,6 +1453,7 @@ func _on_work_started():
 func _on_work_ended():
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
+	_cancel_chat()
 	_should_go_home = true
 
 func _on_arrived_home():
@@ -1267,6 +1463,7 @@ func _on_arrived_home():
 	velocity = Vector2.ZERO
 
 func _go_to_sleep_instant():
+	_cancel_chat()
 	coffee_cup_holder.visible = false
 	if toilet_ref:
 		toilet_ref.release(self)
@@ -1334,6 +1531,9 @@ func get_human_state_name() -> String:
 		State.LUNCH_AT_KITCHEN: return tr("EMP_ACTION_LUNCH_KITCHEN")
 		State.GOING_LUNCH_TABLE: return tr("EMP_ACTION_GOING_LUNCH")
 		State.LUNCH_EATING: return tr("EMP_ACTION_LUNCH_EATING")
+		# === RELATIONSHIP SYSTEM ===
+		State.GOING_TO_CHAT: return tr("EMP_ACTION_GOING_CHAT")
+		State.CHATTING: return tr("EMP_ACTION_CHATTING")
 		# === VACATION SYSTEM ===
 		State.ON_VACATION: return tr("EMP_ACTION_ON_VACATION")
 	return "..."

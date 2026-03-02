@@ -57,6 +57,9 @@ func save_game():
 
 		# === EVENT SYSTEM: Сохраняем состояние EventManager ===
 		"event_manager": _serialize_event_manager(),
+
+		# === RELATIONSHIP SYSTEM ===
+		"relationship_manager": _serialize_relationship_manager(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -324,6 +327,13 @@ func _serialize_event_manager() -> Dictionary:
 		return {}
 	return em.serialize()
 
+# === RELATIONSHIP SYSTEM: Сериализация RelationshipManager ===
+func _serialize_relationship_manager() -> Dictionary:
+	var rm = get_node_or_null("/root/RelationshipManager")
+	if rm == null:
+		return {}
+	return rm.serialize()
+
 # ============================================================
 #                        ЗАГРУЗКА
 # ============================================================
@@ -364,6 +374,9 @@ func load_game() -> bool:
 
 	# === EVENT SYSTEM: Восстанавливаем EventManager ===
 	_load_event_manager(data.get("event_manager", {}))
+
+	# === RELATIONSHIP SYSTEM: Восстанавливаем RelationshipManager ===
+	_load_relationship_manager(data.get("relationship_manager", {}))
 
 	print("📂 Данные синглтонов восстановлены")
 	pending_restore = true
@@ -494,11 +507,13 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
 				npc.current_state = 12
-			elif saved_state == 19:  # State.ON_VACATION
+			elif saved_state == 19 or saved_state == 20:  # GOING_TO_CHAT / CHATTING — прерваны
+				pass  # Будет обработано в _rebind_employees_to_desks как обычный NPC
+			elif saved_state == 21:  # State.ON_VACATION (сдвинулось из-за новых стейтов)
 				npc.visible = false
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
-				npc.current_state = 19
+				npc.current_state = 21
 			# Инициализация таймера для сотрудников из старых сохранений
 			if npc.data.vacation_days_until_request == -1 and npc.data.employment_type == "contractor" and npc.data.days_in_company >= 10:
 				npc.data.init_vacation_timer()
@@ -648,7 +663,7 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 func _rebind_employees_to_desks():
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
-		if npc.current_state == 11 or npc.current_state == 12:
+		if npc.current_state == 11 or npc.current_state == 12 or npc.current_state == 21:
 			continue
 		if npc.my_desk_position != Vector2.ZERO:
 			if ProjectManager.is_employee_on_active_stage(npc.data):
@@ -790,6 +805,12 @@ func _load_event_manager(d: Dictionary):
 	if d.is_empty():
 		return
 	em.deserialize(d)
+
+func _load_relationship_manager(rm_data: Dictionary):
+	var rm = get_node_or_null("/root/RelationshipManager")
+	if rm == null:
+		return
+	rm.deserialize(rm_data)
 
 # ============================================================
 #                        УТИЛИТЫ
