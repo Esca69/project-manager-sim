@@ -947,6 +947,12 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 func _get_status_text(npc_node) -> String:
 	if not npc_node or not is_instance_valid(npc_node):
 		return "—"
+	# === RAISES: Показываем статус запроса ЗП ===
+	if npc_node.data and npc_node.data.is_requesting_raise:
+		return tr("ROSTER_STATUS_RAISE_REQUEST")
+	# === HUNTING: Показываем статус увольнения ===
+	if npc_node.data and npc_node.data.is_quitting:
+		return tr("ROSTER_STATUS_QUITTING") % npc_node.data.quit_days_left
 	var state = npc_node.current_state
 	match state:
 		0: return tr("ROSTER_STATUS_IDLE")
@@ -976,6 +982,12 @@ func _get_status_text(npc_node) -> String:
 func _get_status_color(npc_node) -> Color:
 	if not npc_node or not is_instance_valid(npc_node):
 		return Color(0.5, 0.5, 0.5, 1)
+	# === RAISES: Оранжевый для запроса ЗП ===
+	if npc_node.data and npc_node.data.is_requesting_raise:
+		return Color(0.9, 0.55, 0.2, 1)
+	# === HUNTING: Красный для увольнения ===
+	if npc_node.data and npc_node.data.is_quitting:
+		return Color(0.85, 0.25, 0.2, 1)
 	var state = npc_node.current_state
 	match state:
 		2: return Color(0.29, 0.69, 0.31, 1)
