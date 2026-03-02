@@ -7,6 +7,7 @@ class_name EmployeeData
 
 # === ТИП ЗАНЯТОСТИ ===
 @export var employment_type: String = "contractor"  # "contractor" или "freelancer"
+@export var gender: String = "male"  # "male" или "female"
 var days_in_company: int = 0  # Инкрементируется каждый рабочий день
 
 const SEVERANCE_MIN_MULTIPLIER: float = 0.5
@@ -17,6 +18,11 @@ func get_severance_pay() -> int:
 		return 0
 	var mult = randf_range(SEVERANCE_MIN_MULTIPLIER, SEVERANCE_MAX_MULTIPLIER)
 	return int(monthly_salary * mult)
+
+func get_gender_icon() -> String:
+	if gender == "female":
+		return "♀"
+	return "♂"
 
 var current_energy: float = 100.0
 
@@ -433,6 +439,7 @@ func get_primary_skill_value() -> int:
 # --- СИСТЕМА ТРЕЙТОВ ---
 @export var traits: Array[String] = []
 @export var trait_text: String = ""
+@export var personality: Array[String] = []
 
 const TRAIT_NAMES = {
 	"fast_learner": "TRAIT_FAST_LEARNER",
@@ -473,6 +480,79 @@ const CONFLICTING_PAIRS = [
 	["optimist", "pessimist"],
 	["athletic", "sleepyhead"],
 ]
+
+# === СИСТЕМА ХАРАКТЕРА (PERSONALITY) ===
+# Категория A: Социальная батарейка (1 из списка, всегда)
+const PERSONALITY_SOCIAL = ["extrovert", "introvert", "toxic"]
+
+# Категория B: Интересы (0-2 из списка)
+const PERSONALITY_INTERESTS = ["geek", "jock", "finance_bro", "parent", "informal", "furry"]
+
+# Категория C: Раздражители (0-1 из списка)
+const PERSONALITY_IRRITANTS = ["smelly", "sexist", "man_hater", "flirt"]
+
+# Раздражители, ограниченные полом при генерации
+const IRRITANT_GENDER_LOCK = {
+	"sexist": "male",
+	"man_hater": "female",
+}
+
+# Названия personality-тегов (ключи локализации)
+const PERSONALITY_NAMES = {
+	"extrovert": "PERSONALITY_EXTROVERT",
+	"introvert": "PERSONALITY_INTROVERT",
+	"toxic": "PERSONALITY_TOXIC",
+	"geek": "PERSONALITY_GEEK",
+	"jock": "PERSONALITY_JOCK",
+	"finance_bro": "PERSONALITY_FINANCE_BRO",
+	"parent": "PERSONALITY_PARENT",
+	"informal": "PERSONALITY_INFORMAL",
+	"furry": "PERSONALITY_FURRY",
+	"smelly": "PERSONALITY_SMELLY",
+	"sexist": "PERSONALITY_SEXIST",
+	"man_hater": "PERSONALITY_MAN_HATER",
+	"flirt": "PERSONALITY_FLIRT",
+}
+
+# Описания personality-тегов (ключи локализации)
+const PERSONALITY_DESCRIPTIONS = {
+	"extrovert": "PERSONALITY_DESC_EXTROVERT",
+	"introvert": "PERSONALITY_DESC_INTROVERT",
+	"toxic": "PERSONALITY_DESC_TOXIC",
+	"geek": "PERSONALITY_DESC_GEEK",
+	"jock": "PERSONALITY_DESC_JOCK",
+	"finance_bro": "PERSONALITY_DESC_FINANCE_BRO",
+	"parent": "PERSONALITY_DESC_PARENT",
+	"informal": "PERSONALITY_DESC_INFORMAL",
+	"furry": "PERSONALITY_DESC_FURRY",
+	"smelly": "PERSONALITY_DESC_SMELLY",
+	"sexist": "PERSONALITY_DESC_SEXIST",
+	"man_hater": "PERSONALITY_DESC_MAN_HATER",
+	"flirt": "PERSONALITY_DESC_FLIRT",
+}
+
+# Какие personality-теги считаются "негативными" (раздражители — красный цвет)
+const PERSONALITY_NEGATIVE = ["toxic", "smelly", "sexist", "man_hater"]
+
+# Какие personality-теги считаются "нейтральными" (социальная батарейка — синий цвет)
+const PERSONALITY_NEUTRAL = ["extrovert", "introvert"]
+
+# Всё остальное = позитивное (интересы — зелёный цвет)
+# flirt — особый случай: оранжевый цвет
+
+func get_personality_color(tag_id: String) -> Color:
+	if tag_id in PERSONALITY_NEGATIVE:
+		return Color(0.8980392, 0.22352941, 0.20784314, 1)  # Красный
+	if tag_id in PERSONALITY_NEUTRAL:
+		return Color(0.17254902, 0.30980393, 0.5686275, 1)  # Синий
+	if tag_id == "flirt":
+		return Color(0.9, 0.55, 0.2, 1)  # Оранжевый
+	return Color(0.29803923, 0.6862745, 0.3137255, 1)  # Зелёный (интересы)
+
+func get_personality_description(tag_id: String) -> String:
+	if PERSONALITY_DESCRIPTIONS.has(tag_id):
+		return tr(PERSONALITY_DESCRIPTIONS[tag_id])
+	return ""
 
 func is_positive_trait(trait_id: String) -> bool:
 	return trait_id in POSITIVE_TRAITS

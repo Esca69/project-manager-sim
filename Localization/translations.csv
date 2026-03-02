@@ -700,3 +700,29 @@ ROSTER_STATUS_VACATION_PENDING,✈️ Отпуск через %d дн.,✈️ Va
 EMP_SELECT_ON_VACATION,В отпуске,On vacation
 DAY_SUMMARY_EMP_VACATION,В отпуске,On vacation
 DAY_SUMMARY_EMP_ON_VACATION,в отпуске,on vacation
+PERSONALITY_EXTROVERT,🗣 Экстраверт,🗣 Extrovert
+PERSONALITY_INTROVERT,🤫 Интроверт,🤫 Introvert
+PERSONALITY_TOXIC,☠ Токсик,☠ Toxic
+PERSONALITY_GEEK,🎮 Гик,🎮 Geek
+PERSONALITY_JOCK,💪 Спортсмен,💪 Jock
+PERSONALITY_FINANCE_BRO,📈 Финанс-бро,📈 Finance Bro
+PERSONALITY_PARENT,👶 Родитель,👶 Parent
+PERSONALITY_INFORMAL,🤘 Неформал,🤘 Informal
+PERSONALITY_FURRY,🐾 Фурри,🐾 Furry
+PERSONALITY_SMELLY,🦨 Неопрятный,🦨 Smelly
+PERSONALITY_SEXIST,🚫 Сексист,🚫 Sexist
+PERSONALITY_MAN_HATER,🚫 Мужененавистница,🚫 Man Hater
+PERSONALITY_FLIRT,😏 Бабник,😏 Flirt
+PERSONALITY_DESC_EXTROVERT,Инициирует разговоры. Восстанавливает настроение от общения.,Initiates conversations. Recovers mood from socializing.
+PERSONALITY_DESC_INTROVERT,Теряет энергию при долгих беседах. Работает лучше в тишине.,Loses energy during long conversations. Works better in quiet.
+PERSONALITY_DESC_TOXIC,"Любой разговор с ним имеет высокий шанс закончиться плохо для собеседника.","Any conversation with them has a high chance of ending badly for the other person."
+PERSONALITY_DESC_GEEK,"Любит видеоигры, аниме и технологии. Легко находит общий язык с другими гиками.","Loves video games, anime and tech. Gets along easily with other geeks."
+PERSONALITY_DESC_JOCK,"Любит спорт и здоровый образ жизни. Дружит со спортсменами и финансистами.","Loves sports and healthy lifestyle. Gets along with jocks and finance bros."
+PERSONALITY_DESC_FINANCE_BRO,"Говорит о крипте, инвестициях и бизнесе. Дружит с финансистами и спортсменами.","Talks about crypto, investments and business. Gets along with finance bros and jocks."
+PERSONALITY_DESC_PARENT,"Обсуждает детей и семейные темы. Не понимает неформалов.","Discusses kids and family topics. Doesn't understand informals."
+PERSONALITY_DESC_INFORMAL,"Фанат панка, альтернативной культуры. Конфликтует с родителями.","Fan of punk, alternative culture. Conflicts with parents."
+PERSONALITY_DESC_FURRY,"Увлекается фурри-культурой. Дружит с гиками, но раздражает спортсменов и финансистов.","Into furry culture. Gets along with geeks, but annoys jocks and finance bros."
+PERSONALITY_DESC_SMELLY,"Не следит за гигиеной. Раздражает всех соседей по столам.","Poor hygiene. Annoys all nearby desk neighbors."
+PERSONALITY_DESC_SEXIST,"Негативно относится к женщинам-коллегам. Штраф к общению и работе рядом с ними.","Negative attitude towards female colleagues. Penalty to interactions and working near them."
+PERSONALITY_DESC_MAN_HATER,"Негативно относится к мужчинам-коллегам. Штраф к общению и работе рядом с ними.","Negative attitude towards male colleagues. Penalty to interactions and working near them."
+PERSONALITY_DESC_FLIRT,"Постоянно флиртует с коллегами противоположного пола. Повышает им настроение, но отвлекает.","Constantly flirts with opposite gender colleagues. Boosts their mood but distracts them."
