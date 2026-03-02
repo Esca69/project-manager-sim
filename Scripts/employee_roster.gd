@@ -643,11 +643,15 @@ func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 		style.border_color = Color(0.9, 0.55, 0.2, 1)
 		text_color = Color(0.9, 0.55, 0.2, 1)
 		lbl_text = tr("EMPLOYMENT_TYPE_FREELANCER")
+		panel.tooltip_text = tr("TOOLTIP_FREELANCER")
 	else:
 		style.bg_color = Color(0.9, 0.93, 1.0, 1)
 		style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 		text_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 		lbl_text = tr("EMPLOYMENT_TYPE_CONTRACTOR")
+		var sev_min = int(emp.monthly_salary * EmployeeData.SEVERANCE_MIN_MULTIPLIER)
+		var sev_max = int(emp.monthly_salary * EmployeeData.SEVERANCE_MAX_MULTIPLIER)
+		panel.tooltip_text = tr("TOOLTIP_CONTRACTOR") % [sev_min, sev_max]
 
 	panel.add_theme_stylebox_override("panel", style)
 
@@ -996,8 +1000,8 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 	if emp_data.employment_type == "contractor" and _pending_severance > 0:
 		text += "\n\n" + tr("ROSTER_FIRE_SEVERANCE") % _pending_severance
 		var gs = get_node_or_null("/root/GameState")
-		if gs and gs.budget < _pending_severance:
-			text += "\n" + tr("ROSTER_FIRE_SEVERANCE_WARNING") % (gs.budget - _pending_severance)
+		if gs and gs.company_balance < _pending_severance:
+			text += "\n" + tr("ROSTER_FIRE_SEVERANCE_WARNING") % (gs.company_balance - _pending_severance)
 
 	if projects_list.size() > 0:
 		var proj_names = []
@@ -1057,11 +1061,13 @@ func _confirm_fire():
 
 	# Списать компенсацию
 	if _pending_severance > 0:
-		var gs = get_node_or_null("/root/GameState")
-		if gs:
-			gs.budget -= _pending_severance
-			if EventLog:
-				EventLog.add(tr("LOG_SEVERANCE_PAID") % [_pending_fire_data.employee_name, _pending_severance])
+		GameState.add_expense(_pending_severance)
+		GameState.daily_event_expenses.append({
+			"reason": tr("EXPENSE_SEVERANCE") % _pending_fire_data.employee_name,
+			"amount": _pending_severance
+		})
+		if EventLog:
+			EventLog.add(tr("LOG_SEVERANCE_PAID") % [_pending_fire_data.employee_name, _pending_severance])
 
 	# Лог увольнения
 	if EventLog:
