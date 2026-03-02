@@ -246,6 +246,12 @@ func _physics_process(delta):
 			if hud and hud.has_method("show_free_camera_hint"):
 				hud.show_free_camera_hint()
 
+		# Если открыто UI-меню — не двигаем камеру, стоим
+		if _is_ui_blocking():
+			velocity = Vector2.ZERO
+			move_and_slide()
+			return
+
 		# Движение камеры (НЕ персонажа)
 		var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 		var zoom_factor = 1.0 / camera.zoom.x
@@ -340,6 +346,8 @@ func _unhandled_input(event):
 
 	# Разрешаем зум во время свободной камеры
 	if _free_camera_mode:
+		if _is_ui_blocking():
+			return  # Блокируем ВСЕ инпуты камеры когда UI открыт
 		if event is InputEventMouseButton and event.pressed:
 			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				_set_zoom(ZOOM_STEP)
@@ -489,10 +497,17 @@ func _update_discuss_bar_position():
 	var bar_size = _discuss_bar_container.size
 	if bar_size.x < 1.0:
 		bar_size = _discuss_bar_container.custom_minimum_size
-	_discuss_bar_container.global_position = Vector2(
-		screen_pos.x - bar_size.x / 2.0,
-		screen_pos.y - bar_size.y
-	)
+	var target_x = screen_pos.x - bar_size.x / 2.0
+	var target_y = screen_pos.y - bar_size.y
+
+	# Clamp: не выше TopBar (~50px) и не ниже BottomBar
+	var vp_size = get_viewport().get_visible_rect().size
+	var top_margin = 50.0    # высота TopBar
+	var bottom_margin = 60.0 # высота BottomBar
+	target_y = clamp(target_y, top_margin, vp_size.y - bottom_margin - bar_size.y)
+	target_x = clamp(target_x, 0.0, vp_size.x - bar_size.x)
+
+	_discuss_bar_container.global_position = Vector2(target_x, target_y)
 
 # ============================
 # === МОТИВАЦИЯ: ЛОГИКА ===

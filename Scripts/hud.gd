@@ -760,7 +760,7 @@ func show_free_camera_hint():
 
 	_free_camera_hint = PanelContainer.new()
 	_free_camera_hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_free_camera_hint.position = Vector2(20, -80)
+	_free_camera_hint.position = Vector2(20, -120)
 	_free_camera_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var style = StyleBoxFlat.new()
