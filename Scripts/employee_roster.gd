@@ -947,6 +947,11 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 func _get_status_text(npc_node) -> String:
 	if not npc_node or not is_instance_valid(npc_node):
 		return "—"
+	# === VACATION ===
+	if npc_node.current_state == npc_node.State.ON_VACATION:
+		return tr("ROSTER_STATUS_ON_VACATION") % npc_node.data.vacation_days_remaining
+	if npc_node.data and npc_node.data.vacation_approved and npc_node.data.vacation_delay_days > 0:
+		return tr("ROSTER_STATUS_VACATION_PENDING") % npc_node.data.vacation_delay_days
 	# === RAISES: Показываем статус запроса ЗП ===
 	if npc_node.data and npc_node.data.is_requesting_raise:
 		return tr("ROSTER_STATUS_RAISE_REQUEST")
@@ -982,6 +987,11 @@ func _get_status_text(npc_node) -> String:
 func _get_status_color(npc_node) -> Color:
 	if not npc_node or not is_instance_valid(npc_node):
 		return Color(0.5, 0.5, 0.5, 1)
+	# === VACATION ===
+	if npc_node.current_state == npc_node.State.ON_VACATION:
+		return Color(0.29, 0.69, 0.31, 1)  # Зелёный
+	if npc_node.data and npc_node.data.vacation_approved:
+		return Color(0.9, 0.55, 0.2, 1)  # Оранжевый
 	# === RAISES: Оранжевый для запроса ЗП ===
 	if npc_node.data and npc_node.data.is_requesting_raise:
 		return Color(0.9, 0.55, 0.2, 1)

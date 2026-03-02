@@ -184,6 +184,11 @@ func _serialize_employees() -> Array:
 			# === HUNTING ===
 			"is_quitting": d.is_quitting,
 			"quit_days_left": d.quit_days_left,
+			# === VACATION ===
+			"vacation_days_until_request": d.vacation_days_until_request,
+			"vacation_approved": d.vacation_approved,
+			"vacation_delay_days": d.vacation_delay_days,
+			"vacation_days_remaining": d.vacation_days_remaining,
 		})
 	return result
 
@@ -462,6 +467,11 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === HUNTING ===
 			npc.data.is_quitting = emp_dict.get("is_quitting", false)
 			npc.data.quit_days_left = int(emp_dict.get("quit_days_left", 0))
+			# === VACATION ===
+			npc.data.vacation_days_until_request = int(emp_dict.get("vacation_days_until_request", -1))
+			npc.data.vacation_approved = emp_dict.get("vacation_approved", false)
+			npc.data.vacation_delay_days = int(emp_dict.get("vacation_delay_days", 0))
+			npc.data.vacation_days_remaining = int(emp_dict.get("vacation_days_remaining", 0))
 			var saved_state = int(emp_dict.get("current_state", 0))
 			if saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false
@@ -473,6 +483,14 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
 				npc.current_state = 12
+			elif saved_state == 19:  # State.ON_VACATION
+				npc.visible = false
+				npc.get_node("CollisionShape2D").disabled = true
+				npc.velocity = Vector2.ZERO
+				npc.current_state = 19
+			# Инициализация таймера для сотрудников из старых сохранений
+			if npc.data.vacation_days_until_request == -1 and npc.data.employment_type == "contractor" and npc.data.days_in_company >= 10:
+				npc.data.init_vacation_timer()
 
 			employee_map[emp_data.employee_name] = emp_data
 			npc_map[emp_data.employee_name] = npc

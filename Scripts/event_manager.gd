@@ -700,6 +700,8 @@ func apply_choice(event_data: Dictionary, choice_id: String):
 			_apply_hunting_choice(event_data, choice_id)
 		"hunting_quit":
 			_apply_hunting_quit(event_data, choice_id)
+		"vacation_request":
+			_apply_vacation_choice(event_data, choice_id)
 
 func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
@@ -1052,6 +1054,28 @@ func _apply_hunting_quit(event_data: Dictionary, _choice_id: String):
 		EventLog.add(tr("LOG_HUNTING_QUIT_STARTED") % [emp_data.employee_name, emp_data.quit_days_left], EventLog.LogType.ALERT)
 	print("🚪 %s уходит через %d дней" % [emp_data.employee_name, emp_data.quit_days_left])
 
+func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
+	var emp_node = event_data.get("employee_node")
+	if not is_instance_valid(emp_node) or not emp_node.data:
+		return
+	var emp_data = emp_node.data
+
+	match choice_id:
+		"approve_vacation":
+			emp_data.vacation_approved = true
+			emp_data.vacation_delay_days = event_data["delay_days"]
+			emp_data.vacation_days_until_request = -1
+			if EventLog:
+				EventLog.add(tr("LOG_VACATION_APPROVED") % [emp_data.employee_name, event_data["delay_days"]], EventLog.LogType.PROGRESS)
+
+		"deny_vacation":
+			emp_data.vacation_approved = false
+			emp_data.vacation_delay_days = 0
+			emp_data.init_vacation_timer()
+			emp_data.add_mood_modifier("vacation_denied", "MOOD_MOD_VACATION_DENIED", -15.0, 4320.0)
+			if EventLog:
+				EventLog.add(tr("LOG_VACATION_DENIED") % emp_data.employee_name, EventLog.LogType.ALERT)
+
 func _on_hunting_check(hour: int, minute: int):
 	# Проверяем хантинг в 11:00 (не утром, чтобы растянуть события по дню)
 	if hour == 11 and minute == 0:
@@ -1109,6 +1133,8 @@ func _update_sick_employees():
 		elif emp.current_state == emp.State.DAY_OFF:
 			# Отгул длится 1 день — возвращаем
 			emp.end_day_off()
+		elif emp.current_state == emp.State.ON_VACATION:
+			emp.tick_vacation_day()
 
 # =============================================
 # КУЛДАУНЫ

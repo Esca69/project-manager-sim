@@ -36,6 +36,17 @@ var last_raise_grade: int = -1              # Грейд, на котором п
 var is_quitting: bool = false         # Сотрудник отрабатывает перед уходом
 var quit_days_left: int = 0           # Дней до увольнения
 
+# === СИСТЕМА ОТПУСКОВ (VACATIONS) ===
+var vacation_days_until_request: int = -1   # Обратный отсчёт до запроса (-1 = не инициализирован)
+var vacation_approved: bool = false          # Отпуск одобрен, ждём начала
+var vacation_delay_days: int = 0            # Дней до начала отпуска (после одобрения)
+var vacation_days_remaining: int = 0        # Дней отпуска осталось (3 рабочих дня)
+
+func init_vacation_timer():
+	if employment_type != "contractor":
+		return
+	vacation_days_until_request = randi_range(20, 25)
+
 # === MOOD SYSTEM v2 ===
 # mood вычисляется как: BASE + постоянные + временные, clamp(0..100)
 # Никакого дрейфа. Полная прозрачность для игрока.
