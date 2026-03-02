@@ -6,6 +6,7 @@ const BOTTOM_BAR_HEIGHT = 50
 const SIDE_MARGIN = 10
 const BOTTOM_MARGIN = 10
 const ICON_SIZE = 36
+const SCROLL_TOLERANCE = 1
 
 var _panel: PanelContainer
 var _scroll: ScrollContainer
@@ -151,7 +152,7 @@ func _get_color_for_type(type: int) -> Color:
 func _on_log_added(entry: Dictionary):
 	_add_message_label(entry)
 	var scrollbar = _scroll.get_v_scroll_bar()
-	var at_bottom = scrollbar.value >= scrollbar.max_value - scrollbar.page - 1
+	var at_bottom = scrollbar.value >= scrollbar.max_value - scrollbar.page - SCROLL_TOLERANCE
 	if at_bottom or scrollbar.max_value <= scrollbar.page:
 		call_deferred("_scroll_to_bottom")
 
