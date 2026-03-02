@@ -618,3 +618,15 @@ LOG_HR_SEARCH_DONE,✅ Поиск завершён: %s,✅ Search complete: %s
 LOG_PROJECT_FINISHED,🎉 Проект завершён: «%s»,🎉 Project finished: "%s"
 LOG_STAGE_COMPLETED,✅ Этап %s завершён: «%s»,✅ Stage %s completed: "%s"
 LOG_PANEL_TITLE,📋 Журнал,📋 Journal
+EMPLOYMENT_TYPE_FREELANCER,Фрилансер,Freelancer
+EMPLOYMENT_TYPE_CONTRACTOR,Контрактник,Contractor
+ROSTER_FIRE_SEVERANCE,💰 Компенсация при увольнении: $%d,💰 Severance pay: $%d
+ROSTER_FIRE_SEVERANCE_WARNING,⚠️ Внимание! Баланс станет: $%d,⚠️ Warning! Balance will be: $%d
+MOOD_MOD_COLLEAGUE_FIRED,Уволили коллегу,Colleague was fired
+LOG_HIRE_EMPLOYEE,📋 Нанят %s: %s (%s $%d/мес),📋 Hired %s: %s (%s $%d/mo)
+LOG_FIRE_CONTRACTOR,🔥 Уволен контрактник %s. Компенсация: $%d,🔥 Contractor %s fired. Severance: $%d
+LOG_FIRE_FREELANCER,🔥 Уволен фрилансер %s (без компенсации),🔥 Freelancer %s fired (no severance)
+LOG_SEVERANCE_PAID,💰 Выплачена компенсация %s: $%d,💰 Severance paid for %s: $%d
+LOG_FREELANCER_SUDDEN_LEAVE,🚪 Фрилансер %s внезапно покинул компанию!,🚪 Freelancer %s suddenly left the company!
+LOG_FREELANCER_WARN_LEAVE,⚠️ Фрилансер %s собирается уйти через %d дн.,⚠️ Freelancer %s is leaving in %d day(s).
+LOG_FREELANCER_DEPARTED,🚪 Фрилансер %s покинул компанию (отработал %d дн.),🚪 Freelancer %s left the company (worked %d day(s))

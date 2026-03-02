@@ -30,6 +30,7 @@ BossManager="*res://Scripts/boss_manager.gd"
 SaveManager="*res://Scripts/save_manager.gd"
 EventManager="*res://Scripts/event_manager.gd"
 EventLog="*res://Scripts/event_log.gd"
+FreelancerManager="*res://Scripts/freelancer_manager.gd"
 
 [display]
 

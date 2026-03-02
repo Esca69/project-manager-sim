@@ -267,6 +267,8 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 		var level_row = _create_level_badge(data)
 		card_vbox.add_child(level_row)
 		_level_containers.append(level_row)
+		var type_badge = _create_employment_type_badge(data)
+		level_row.add_child(type_badge)
 
 	if card_vbox and not data.traits.is_empty():
 		_add_traits_to(card_vbox, data)
@@ -396,6 +398,8 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	var level_row = _create_level_badge(data)
 	card_vbox.add_child(level_row)
 	_level_containers.append(level_row)
+	var type_badge = _create_employment_type_badge(data)
+	level_row.add_child(type_badge)
 
 	# Трейты
 	if not data.traits.is_empty():
@@ -459,6 +463,51 @@ func _create_level_badge(data: EmployeeData) -> HBoxContainer:
 
 	hbox.add_child(grade_panel)
 	return hbox
+
+# === ЧИП ТИПА ЗАНЯТОСТИ ===
+func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
+	var panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+
+	var lbl_text = ""
+	var text_color: Color
+
+	if data.employment_type == "freelancer":
+		style.bg_color = Color(1.0, 0.95, 0.88, 1)
+		style.border_color = Color(0.9, 0.55, 0.2, 1)
+		text_color = Color(0.9, 0.55, 0.2, 1)
+		lbl_text = tr("EMPLOYMENT_TYPE_FREELANCER")
+	else:
+		style.bg_color = Color(0.9, 0.93, 1.0, 1)
+		style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		text_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		lbl_text = tr("EMPLOYMENT_TYPE_CONTRACTOR")
+
+	panel.add_theme_stylebox_override("panel", style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_bottom", 2)
+	panel.add_child(margin)
+
+	var lbl = Label.new()
+	lbl.text = lbl_text
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", text_color)
+	if UITheme: UITheme.apply_font(lbl, "semibold")
+	margin.add_child(lbl)
+
+	return panel
 
 func _on_card_hover_enter(card: PanelContainer):
 	card.add_theme_stylebox_override("panel", _card_style_hover)
@@ -632,6 +681,11 @@ func _on_hire_pressed(index):
 	var bm = get_node_or_null("/root/BossManager")
 	if bm:
 		bm.track_hire()
+
+	# Лог найма
+	if EventLog:
+		var type_text = tr("EMPLOYMENT_TYPE_FREELANCER") if human_to_hire.employment_type == "freelancer" else tr("EMPLOYMENT_TYPE_CONTRACTOR")
+		EventLog.add(tr("LOG_HIRE_EMPLOYEE") % [type_text, human_to_hire.employee_name, human_to_hire.job_title, human_to_hire.monthly_salary])
 
 	candidates[index] = null
 
