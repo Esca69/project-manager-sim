@@ -701,13 +701,13 @@ func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 			# Болеет 1 день
 			emp_node.start_sick_leave(1)
 			print("🏥 %s: экспресс-лечение за $%d, вернётся завтра" % [emp_name_real, event_data["cure_cost"]])
-			EventLog.log(tr("LOG_SICK_EXPRESS_CURE") % [emp_name_real, event_data["cure_cost"]], EventLog.LogType.ALERT)
+			EventLog.add(tr("LOG_SICK_EXPRESS_CURE") % [emp_name_real, event_data["cure_cost"]], EventLog.LogType.ALERT)
 
 		"sick_leave":
 			# Болеет 2-3 дня
 			emp_node.start_sick_leave(event_data["sick_days"])
 			print("🤒 %s: больничный на %d дней" % [emp_name_real, event_data["sick_days"]])
-			EventLog.log(tr("LOG_SICK_LEAVE") % [emp_name_real, event_data["sick_days"]], EventLog.LogType.ALERT)
+			EventLog.add(tr("LOG_SICK_LEAVE") % [emp_name_real, event_data["sick_days"]], EventLog.LogType.ALERT)
 
 func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
@@ -736,7 +736,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_ALLOW_MOOD_DURATION
 				)
 			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [emp_name_real, int(DAYOFF_ALLOW_MOOD_VALUE)])
-			EventLog.log(tr("LOG_DAYOFF_ALLOWED") % emp_name_real, EventLog.LogType.ROUTINE)
+			EventLog.add(tr("LOG_DAYOFF_ALLOWED") % emp_name_real, EventLog.LogType.ROUTINE)
 
 		"deny":
 			# Не отпустить — дебафф efficiency до конца дня
@@ -756,7 +756,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_DENY_MOOD_DURATION
 				)
 			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [emp_name_real, int(DAYOFF_DENY_MOOD_VALUE)])
-			EventLog.log(tr("LOG_DAYOFF_DENIED") % emp_name_real, EventLog.LogType.ROUTINE)
+			EventLog.add(tr("LOG_DAYOFF_DENIED") % emp_name_real, EventLog.LogType.ROUTINE)
 
 # === ПРИМЕНЕНИЕ: РАСШИРЕНИЕ СКОУПА ===
 func _apply_scope_expansion(event_data: Dictionary, choice_id: String):
@@ -773,7 +773,7 @@ func _apply_scope_expansion(event_data: Dictionary, choice_id: String):
 			var extra_budget = int(project.budget * (float(extra_percent) / 100.0))
 			project.budget += extra_budget
 			print("📦 Скоуп расширен: +%d%% работы, +$%d бюджета для '%s'" % [extra_percent, extra_budget, tr(project.title)])
-			EventLog.log(tr("LOG_SCOPE_EXPANDED") % [extra_percent, tr(project.title)], EventLog.LogType.PROGRESS)
+			EventLog.add(tr("LOG_SCOPE_EXPANDED") % [extra_percent, tr(project.title)], EventLog.LogType.PROGRESS)
 
 		"decline":
 			# -1 лояльность клиента
@@ -810,7 +810,7 @@ func _apply_contract_cancel(event_data: Dictionary, _choice_id: String):
 	GameState.add_income(payout)
 	GameState.daily_income_details.append({"reason": tr("INCOME_CONTRACT_CANCEL") % tr(project.title), "amount": payout})
 	print("💔 Контракт расторгнут: '%s', неустойка +$%d" % [tr(project.title), payout])
-	EventLog.log(tr("LOG_CONTRACT_CANCELLED") % tr(project.title), EventLog.LogType.ALERT)
+	EventLog.add(tr("LOG_CONTRACT_CANCELLED") % tr(project.title), EventLog.LogType.ALERT)
 
 	# Снимаем всех сотрудников с этапов
 	for stage in project.stages:

@@ -314,7 +314,7 @@ func _finish_search():
 		player.hide_discuss_bar()
 
 	print("✅ Поиск завершён! Роль: ", _search_role)
-	EventLog.log(tr("LOG_HR_SEARCH_DONE") % tr(_search_role), EventLog.LogType.PROGRESS)
+	EventLog.add(tr("LOG_HR_SEARCH_DONE") % tr(_search_role), EventLog.LogType.PROGRESS)
 
 	# Открываем HiringMenu с результатами
 	var hiring_menu = get_node_or_null("HiringMenu")
@@ -416,7 +416,7 @@ func _start_discussion(proj_data: ProjectData):
 		player.show_discuss_bar(_discuss_total_minutes)
 
 	print("🤝 Обсуждение начато: %s (%d мин.)" % [proj_data.title, int(_discuss_total_minutes)])
-	EventLog.log(tr("LOG_DISCUSSION_STARTED") % tr(proj_data.title), EventLog.LogType.ROUTINE)
+	EventLog.add(tr("LOG_DISCUSSION_STARTED") % tr(proj_data.title), EventLog.LogType.ROUTINE)
 
 func _on_discuss_time_tick(_h, _m):
 	if not _is_discussing:
@@ -454,7 +454,7 @@ func _finish_discussion():
 		return
 
 	print("✅ Обсуждение завершено: ", _discuss_project.title)
-	EventLog.log(tr("LOG_DISCUSSION_FINISHED") % tr(_discuss_project.title), EventLog.LogType.PROGRESS)
+	EventLog.add(tr("LOG_DISCUSSION_FINISHED") % tr(_discuss_project.title), EventLog.LogType.PROGRESS)
 
 	# === Вычисляем абсолютные дедлайны от ТЕКУЩЕГО дня, пропуская выходные ===
 	var today = GameTime.day
