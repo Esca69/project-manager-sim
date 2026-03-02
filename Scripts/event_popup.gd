@@ -25,6 +25,9 @@ const EVENT_HEADERS = {
 	"client_review": {"emoji": "⭐", "title_key": "EVENT_REVIEW_TITLE"},
 	"contract_cancel": {"emoji": "💔", "title_key": "EVENT_CANCEL_TITLE"},
 	"junior_mistake": {"emoji": "🤦", "title_key": "EVENT_JUNIOR_TITLE"},
+	"raise_request": {"emoji": "💰", "title_key": "EVENT_RAISE_TITLE"},
+	"hunting_offer": {"emoji": "🏹", "title_key": "EVENT_HUNTING_TITLE"},
+	"hunting_quit": {"emoji": "🚪", "title_key": "EVENT_HUNTING_QUIT_TITLE"},
 }
 
 var _overlay: ColorRect
@@ -198,6 +201,12 @@ func _get_event_description(event_data: Dictionary) -> String:
 			return tr("EVENT_CANCEL_DESC") % [event_data["client_name"], event_data["project_title"]]
 		"junior_mistake":
 			return tr("EVENT_JUNIOR_DESC") % [event_data["worker_name"], event_data["stage_type_name"], event_data["project_title"]]
+		"raise_request":
+			return tr("EVENT_RAISE_DESC") % [event_data["employee_name"], event_data["grade_name"], event_data["current_salary"], event_data["requested_salary"]]
+		"hunting_offer":
+			return tr("EVENT_HUNTING_DESC") % [event_data["employee_name"], event_data["current_salary"], event_data["requested_salary"]]
+		"hunting_quit":
+			return tr("EVENT_HUNTING_QUIT_DESC") % [event_data["employee_name"], event_data["quit_days"]]
 	return ""
 
 # =============================================

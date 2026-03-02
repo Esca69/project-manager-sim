@@ -88,6 +88,9 @@ var _motivation_anim_tween: Tween = null
 # === ЗАПРЕТ ТУАЛЕТА ОТ PM ===
 var _toilet_ban_minutes_left: float = 0.0
 
+# === RAISES: Иконка ❗ над головой ===
+var _raise_bubble: Node2D = null
+
 # === АУРА PM: "ПОД ПРИСМОТРОМ" ===
 var _in_pm_aura: bool = false
 var _pm_aura_annoyance_timer: float = 0.0  # Игровые минуты непрерывного нахождения в ауре
@@ -492,6 +495,10 @@ func _on_time_tick(_hour, _minute):
 	# === АУРА PM: обновление каждый тик ===
 	_update_pm_aura()
 
+	# === RAISES: Эскалация в 10:00 каждый рабочий день ===
+	if _hour == 10 and _minute == 0:
+		_check_raise_escalation()
+
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
 		_motivation_minutes_left -= 1.0
@@ -561,7 +568,15 @@ func _process(delta):
 
 func _physics_process(delta):
 	update_status_label()
-	
+
+	# === RAISES: Показывать/скрывать иконку ❗ ===
+	if data and data.is_requesting_raise:
+		if not is_instance_valid(_raise_bubble):
+			_show_raise_bubble()
+	else:
+		if is_instance_valid(_raise_bubble):
+			_hide_raise_bubble()
+
 	if _should_go_home:
 		_should_go_home = false
 		_force_go_home()
@@ -1333,6 +1348,9 @@ func _show_random_work_thought():
 	show_thought_bubble(emoji, 3.0)
 
 func show_thought_bubble(emoji_text: String, duration: float = 9.0):
+	# Если активен рейз — не показываем обычные баблы, ❗ важнее
+	if data and data.is_requesting_raise:
+		return
 	if is_instance_valid(current_bubble):
 		current_bubble.queue_free()
 
@@ -1388,3 +1406,180 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	tween.tween_property(current_bubble, "modulate:a", 0.0, 0.5)
 	tween.parallel().tween_property(current_bubble, "position:y", current_bubble.position.y - 30, 0.5)
 	tween.tween_callback(current_bubble.queue_free)
+
+# === RAISES: Показать постоянную иконку ❗ ===
+func _show_raise_bubble():
+	if is_instance_valid(_raise_bubble):
+		return  # Уже показана
+
+	# Убиваем текущий thought_bubble, чтобы не было конфликта
+	if is_instance_valid(current_bubble):
+		current_bubble.queue_free()
+		current_bubble = null
+
+	_raise_bubble = Node2D.new()
+	add_child(_raise_bubble)
+	_raise_bubble.position = Vector2(0, -210)
+	_raise_bubble.z_index = 100
+
+	var panel = Panel.new()
+	_raise_bubble.add_child(panel)
+	panel.custom_minimum_size = Vector2(72, 72)
+	panel.size = Vector2(72, 72)
+	panel.position = Vector2(-36, -36)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
+	style.border_width_bottom = 2
+	style.border_width_top = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_color = Color(0.2, 0.2, 0.2, 1.0)
+	style.corner_radius_bottom_left = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.shadow_color = Color(0, 0, 0, 0.1)
+	style.shadow_size = 4
+	panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	panel.add_child(label)
+	label.custom_minimum_size = Vector2(72, 72)
+	label.size = Vector2(72, 72)
+	label.position = Vector2.ZERO
+	label.text = "❗"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var label_settings = LabelSettings.new()
+	label_settings.font_size = 42
+	label.label_settings = label_settings
+
+# === RAISES: Скрыть иконку ❗ ===
+func _hide_raise_bubble():
+	if is_instance_valid(_raise_bubble):
+		_raise_bubble.queue_free()
+		_raise_bubble = null
+
+# === RAISES: Можно ли обсудить рейз? ===
+func can_discuss_raise() -> bool:
+	if not data:
+		return false
+	if not data.is_requesting_raise:
+		return false
+	# Разрешаем только когда NPC НЕ за столом
+	if current_state == State.WORKING:
+		return false
+	return true
+
+# === RAISES: Открыть диалог рейза через event_popup ===
+func open_raise_dialog():
+	if not data or not data.is_requesting_raise:
+		return
+
+	var display_name = data.employee_name + " (" + tr(data.job_title) + ")"
+
+	var event_data = {
+		"id": "raise_request",
+		"employee_node": self,
+		"employee_name": display_name,
+		"employee_data": data,
+		"current_salary": data.monthly_salary,
+		"requested_salary": data.raise_requested_salary,
+		"grade_name": data.get_grade_name(),
+		"choices": [
+			{
+				"id": "accept_raise",
+				"label": tr("EVENT_RAISE_CHOICE_ACCEPT"),
+				"description": tr("EVENT_RAISE_ACCEPT_DESC") % data.raise_requested_salary,
+				"emoji": "✅",
+			},
+			{
+				"id": "deny_raise",
+				"label": tr("EVENT_RAISE_CHOICE_DENY"),
+				"description": tr("EVENT_RAISE_DENY_DESC"),
+				"emoji": "❌",
+			},
+		],
+	}
+
+	EventManager._show_event_popup(event_data)
+
+# === RAISES: Проверка эскалации каждый рабочий день в 10:00 ===
+func _check_raise_escalation():
+	if not data:
+		return
+	if not data.is_requesting_raise:
+		return
+	if data.employment_type != "contractor":
+		return
+
+	# Инкрементируем счётчик игнорирования
+	data.raise_ignored_days += 1
+
+	if data.raise_ignored_days == 1:
+		# День 1 — первое напоминание
+		data.add_mood_modifier("raise_ignored", "MOOD_MOD_RAISE_IGNORED", -7.0, 2880.0)  # 48 часов
+		if EventLog:
+			EventLog.add(tr("LOG_RAISE_IGNORED_1") % data.employee_name, EventLog.LogType.ALERT)
+
+	elif data.raise_ignored_days == 3:
+		# День 3 — жёсткое напоминание
+		data.add_mood_modifier("raise_ignored", "MOOD_MOD_RAISE_IGNORED_HARD", -15.0, 2880.0)
+		if EventLog:
+			EventLog.add(tr("LOG_RAISE_IGNORED_3") % data.employee_name, EventLog.LogType.ALERT)
+
+	elif data.raise_ignored_days >= 5:
+		# День 5 — увольнение
+		_fire_self_raise_ignored()
+
+# === RAISES: Увольнение из-за игнорирования ===
+func _fire_self_raise_ignored():
+	if not data:
+		return
+
+	data.is_requesting_raise = false
+	_hide_raise_bubble()
+
+	if EventLog:
+		EventLog.add(tr("LOG_RAISE_QUIT") % data.employee_name, EventLog.LogType.ALERT)
+
+	# Штраф морали остальным контрактникам
+	for other_npc in get_tree().get_nodes_in_group("npc"):
+		if not other_npc.data:
+			continue
+		if other_npc.data == data:
+			continue
+		if other_npc.data.employment_type == "contractor":
+			other_npc.data.add_mood_modifier(
+				"colleague_quit_ignored",
+				"MOOD_MOD_COLLEAGUE_QUIT_IGNORED",
+				-5.0,
+				480.0  # 8 часов
+			)
+
+	# Снимаем со всех проектов
+	for project in ProjectManager.active_projects:
+		for stage in project.stages:
+			var idx = -1
+			for i in range(stage.workers.size()):
+				if stage.workers[i] == data:
+					idx = i
+					break
+			if idx != -1:
+				stage.workers.remove_at(idx)
+
+	# Освобождаем стол
+	for desk in get_tree().get_nodes_in_group("desk"):
+		if not desk.has_method("unassign_employee"):
+			continue
+		if not ("assigned_employee" in desk):
+			continue
+		if desk.assigned_employee == data:
+			desk.unassign_employee()
+			break
+
+	# Удаляем NPC
+	release_from_desk()
+	remove_from_group("npc")
+	queue_free()
