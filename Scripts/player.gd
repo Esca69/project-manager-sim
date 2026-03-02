@@ -30,6 +30,21 @@ var _no_toilet_cooldown_left: float = 0.0
 
 var target_zoom: Vector2 = Vector2.ONE
 
+# === СВОБОДНАЯ КАМЕРА ===
+var _free_camera_mode: bool = false
+var _free_camera_offset: Vector2 = Vector2.ZERO
+var _free_camera_returning: bool = false  # Камера возвращается к игроку
+const FREE_CAMERA_BASE_SPEED: float = 450.0
+const FREE_CAMERA_RETURN_SPEED: float = 5.0  # Скорость lerp при возврате
+const FREE_CAMERA_RETURN_THRESHOLD: float = 1.0  # Порог длины смещения для завершения возврата
+const FREE_CAMERA_MIN_TIME_SCALE: float = 0.001  # Защита от деления на ноль при нулевом time_scale
+
+# Границы офиса для ограничения камеры.
+# Вычислены из office.tscn: NavigationPolygon outlines покрывают область примерно от (-350, -1200) до (3350, 900).
+# Используем эти значения с небольшим запасом.
+const OFFICE_BOUNDS: Rect2 = Rect2(-400, -1200, 3800, 2200)
+# Это означает: X от -400 до 3400, Y от -1200 до 1000
+
 # --- ПОДСКАЗКА ВЗАИМОДЕЙСТВИЯ [E] ---
 var _interact_hint: PanelContainer = null
 var _interact_hint_label: Label = null
@@ -212,6 +227,67 @@ func _physics_process(delta):
 		_hide_interact_hint()
 		return
 
+	# === ПРОВЕРКА LONG ACTION ===
+	var hud = get_tree().get_first_node_in_group("ui")
+	var long_action = hud and hud.has_method("is_long_action_active") and hud.is_long_action_active()
+
+	# === РЕЖИМ СВОБОДНОЙ КАМЕРЫ ===
+	if long_action:
+		if not _free_camera_mode:
+			# Вход в режим свободной камеры
+			_free_camera_mode = true
+			_free_camera_returning = false
+			_free_camera_offset = Vector2.ZERO
+			_hide_interact_hint()
+			# Показать индикатор
+			if hud and hud.has_method("show_free_camera_hint"):
+				hud.show_free_camera_hint()
+
+		# Движение камеры (НЕ персонажа)
+		var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+		var zoom_factor = 1.0 / camera.zoom.x
+		# Делим на Engine.time_scale чтобы скорость камеры была одинаковой при 1x/2x/5x
+		var effective_delta = delta / maxf(Engine.time_scale, FREE_CAMERA_MIN_TIME_SCALE)
+		_free_camera_offset += direction * FREE_CAMERA_BASE_SPEED * zoom_factor * effective_delta
+
+		# Clamping к границам офиса
+		var cam_global = global_position + _free_camera_offset
+		cam_global.x = clamp(cam_global.x, OFFICE_BOUNDS.position.x, OFFICE_BOUNDS.position.x + OFFICE_BOUNDS.size.x)
+		cam_global.y = clamp(cam_global.y, OFFICE_BOUNDS.position.y, OFFICE_BOUNDS.position.y + OFFICE_BOUNDS.size.y)
+		_free_camera_offset = cam_global - global_position
+
+		camera.position = _free_camera_offset
+
+		# Персонаж стоит на месте
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+
+	# === ВОЗВРАТ КАМЕРЫ (long action завершился, камера ещё не вернулась) ===
+	if _free_camera_mode:
+		if not _free_camera_returning:
+			_free_camera_returning = true
+			# Скрыть индикатор
+			if hud and hud.has_method("hide_free_camera_hint"):
+				hud.hide_free_camera_hint()
+
+		# Делим на Engine.time_scale чтобы скорость возврата была одинаковой
+		var effective_delta = delta / maxf(Engine.time_scale, FREE_CAMERA_MIN_TIME_SCALE)
+		_free_camera_offset = _free_camera_offset.lerp(Vector2.ZERO, FREE_CAMERA_RETURN_SPEED * effective_delta)
+		camera.position = _free_camera_offset
+
+		if _free_camera_offset.length() < FREE_CAMERA_RETURN_THRESHOLD:
+			_free_camera_offset = Vector2.ZERO
+			camera.position = Vector2.ZERO
+			_free_camera_mode = false
+			_free_camera_returning = false
+
+		# Персонаж стоит пока камера возвращается
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+
+	# === ОБЫЧНЫЙ РЕЖИМ (существующий код без изменений) ===
 	if _is_ui_blocking():
 		velocity = Vector2.ZERO
 		move_and_slide()
@@ -254,6 +330,17 @@ func _process(delta):
 func _unhandled_input(event):
 	if GameTime.is_night_skip:
 		return
+
+	# Разрешаем зум во время свободной камеры
+	if _free_camera_mode:
+		if event is InputEventMouseButton and event.pressed:
+			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				_set_zoom(ZOOM_STEP)
+				return
+			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				_set_zoom(-ZOOM_STEP)
+				return
+		return  # Все остальные инпуты блокируем в свободном режиме
 
 	if _is_ui_blocking():
 		return

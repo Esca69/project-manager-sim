@@ -69,6 +69,9 @@ var _event_popup: Control
 # === EVENT LOG: Журнал событий ===
 var _event_log_panel: Control
 
+# === ИНДИКАТОР СВОБОДНОЙ КАМЕРЫ ===
+var _free_camera_hint: PanelContainer = null
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -475,10 +478,12 @@ func _finish_discussion():
 func is_pm_busy() -> bool:
 	return _is_discussing or _is_searching
 
+# === ПРОВЕРКА: АКТИВЕН ЛИ ДЛИТЕЛЬНЫЙ ПРОЦЕСС (для свободной камеры) ===
+func is_long_action_active() -> bool:
+	return _is_discussing or _is_searching
+
 # --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
 func is_any_menu_open() -> bool:
-	if _is_discussing: return true
-	if _is_searching: return true
 	if info_panel.visible: return true
 	if selection_ui.visible: return true
 	if project_window.visible: return true
@@ -743,3 +748,50 @@ func _build_event_log():
 func show_event_popup(event_data: Dictionary):
 	if _event_popup and _event_popup.has_method("open"):
 		_event_popup.open(event_data)
+
+# === СВОБОДНАЯ КАМЕРА: ПОКАЗАТЬ ИНДИКАТОР ===
+func show_free_camera_hint():
+	if _free_camera_hint and is_instance_valid(_free_camera_hint):
+		_free_camera_hint.visible = true
+		if UITheme:
+			_free_camera_hint.modulate.a = 0.0
+			UITheme.fade_in(_free_camera_hint, 0.3)
+		return
+
+	_free_camera_hint = PanelContainer.new()
+	_free_camera_hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_free_camera_hint.position = Vector2(20, -80)
+	_free_camera_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 0.85)
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_right = 12
+	style.corner_radius_bottom_left = 12
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	_free_camera_hint.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	label.text = "📷  " + tr("FREE_CAMERA_HINT")
+	label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	label.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(label, "semibold")
+	_free_camera_hint.add_child(label)
+
+	add_child(_free_camera_hint)
+
+	if UITheme:
+		_free_camera_hint.modulate.a = 0.0
+		UITheme.fade_in(_free_camera_hint, 0.3)
+
+# === СВОБОДНАЯ КАМЕРА: СКРЫТЬ ИНДИКАТОР ===
+func hide_free_camera_hint():
+	if _free_camera_hint and is_instance_valid(_free_camera_hint):
+		if UITheme:
+			UITheme.fade_out(_free_camera_hint, 0.3)
+		else:
+			_free_camera_hint.visible = false
