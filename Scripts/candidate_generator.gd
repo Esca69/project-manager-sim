@@ -28,12 +28,19 @@ var last_names_ru_f = [
 	"Ильина", "Гусева", "Титова", "Кузьмина", "Николаева"
 ]
 
-# === БАЗЫ ИМЁН (АНГЛИЙСКИЕ - ОБЩИЙ ПУЛ) ===
-var first_names_en = [
-	"John", "Emma", "Michael", "Sarah", "David", "Laura", "Alex", "James", "Emily", "Robert",
-	"Patricia", "Jennifer", "Linda", "Elizabeth", "William", "Barbara", "Richard", "Susan", "Joseph", "Jessica",
-	"Thomas", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony",
-	"Margaret", "Mark", "Sandra", "Steven", "Ashley", "Paul", "Kimberly", "Andrew", "Donna"
+# === БАЗЫ ИМЁН (АНГЛИЙСКИЕ - МУЖЧИНЫ) ===
+var first_names_en_m = [
+	"John", "Michael", "David", "Alex", "James", "Robert",
+	"William", "Richard", "Joseph", "Thomas", "Charles",
+	"Christopher", "Daniel", "Matthew", "Anthony",
+	"Mark", "Steven", "Paul", "Andrew"
+]
+# === БАЗЫ ИМЁН (АНГЛИЙСКИЕ - ЖЕНЩИНЫ) ===
+var first_names_en_f = [
+	"Emma", "Sarah", "Laura", "Emily", "Patricia",
+	"Jennifer", "Linda", "Elizabeth", "Barbara", "Susan",
+	"Jessica", "Karen", "Nancy", "Lisa", "Betty",
+	"Margaret", "Sandra", "Ashley", "Kimberly", "Donna"
 ]
 var last_names_en = [
 	"Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez", "Wilson",
@@ -83,39 +90,75 @@ func _get_existing_employee_names() -> Array[String]:
 			names.append(npc.data.employee_name)
 	return names
 
-func _generate_random_name() -> String:
+func _generate_random_name_and_gender() -> Dictionary:
 	var locale = TranslationServer.get_locale()
 	var f_name = ""
 	var l_name = ""
+	var gender = "male"
 	
 	if locale.begins_with("ru"):
 		if randf() > 0.5:
 			f_name = first_names_ru_m.pick_random()
 			l_name = last_names_ru_m.pick_random()
+			gender = "male"
 		else:
 			f_name = first_names_ru_f.pick_random()
 			l_name = last_names_ru_f.pick_random()
+			gender = "female"
 	else:
-		f_name = first_names_en.pick_random()
+		# EN-имена: разделены на male/female
+		if randf() > 0.5:
+			f_name = first_names_en_m.pick_random()
+			gender = "male"
+		else:
+			f_name = first_names_en_f.pick_random()
+			gender = "female"
 		l_name = last_names_en.pick_random()
 	
-	return f_name + " " + l_name
+	return {"name": f_name + " " + l_name, "gender": gender}
 
-func _generate_unique_name() -> String:
+func _generate_unique_name_and_gender() -> Dictionary:
 	var existing = _get_existing_employee_names()
 	
-	# Попытка найти уникальное имя (50 попыток)
 	for attempt in range(50):
-		var name = _generate_random_name()
-		if name not in existing:
-			return name
+		var result = _generate_random_name_and_gender()
+		if result.name not in existing:
+			return result
 	
-	# Фоллбэк: добавляем номер, если совсем не повезло
-	var base_name = _generate_random_name()
+	var result = _generate_random_name_and_gender()
 	var counter = 2
-	while (base_name + " " + str(counter)) in existing:
+	while (result.name + " " + str(counter)) in existing:
 		counter += 1
-	return base_name + " " + str(counter)
+	result.name = result.name + " " + str(counter)
+	return result
+
+func _generate_personality(gender: String) -> Array[String]:
+	var result: Array[String] = []
+	
+	# Категория A: Социальная батарейка (ВСЕГДА 1)
+	result.append(EmployeeData.PERSONALITY_SOCIAL.pick_random())
+	
+	# Категория B: Интересы (60% шанс первого, 30% шанс второго)
+	var available_interests = EmployeeData.PERSONALITY_INTERESTS.duplicate()
+	available_interests.shuffle()
+	if randf() < 0.60 and available_interests.size() > 0:
+		result.append(available_interests.pop_front())
+		if randf() < 0.30 and available_interests.size() > 0:
+			result.append(available_interests.pop_front())
+	
+	# Категория C: Раздражители (15-20% шанс)
+	if randf() < 0.18:
+		var available_irritants = EmployeeData.PERSONALITY_IRRITANTS.duplicate()
+		available_irritants.shuffle()
+		for irritant in available_irritants:
+			# Проверяем гендерную привязку
+			if EmployeeData.IRRITANT_GENDER_LOCK.has(irritant):
+				if EmployeeData.IRRITANT_GENDER_LOCK[irritant] != gender:
+					continue
+			result.append(irritant)
+			break  # Максимум 1 раздражитель
+	
+	return result
 
 func generate_random_candidate() -> EmployeeData:
 	var role = roles.pick_random()
@@ -125,7 +168,9 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	var new_emp = EmployeeData.new()
 
 	# 1. Уникальное имя и роль
-	new_emp.employee_name = _generate_unique_name()
+	var name_data = _generate_unique_name_and_gender()
+	new_emp.employee_name = name_data.name
+	new_emp.gender = name_data.gender
 	new_emp.job_title = role
 
 	# 2. Определяем уровень на основе дня игры
@@ -189,6 +234,9 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 
 	new_emp.current_energy = 100.0
 	new_emp.trait_text = new_emp.build_trait_text()
+
+	# Генерация personality
+	new_emp.personality = _generate_personality(new_emp.gender)
 
 	return new_emp
 

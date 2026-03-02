@@ -254,7 +254,7 @@ func _create_card(npc_node) -> PanelContainer:
 	main_hbox.add_child(info_vbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	name_lbl.text = emp.get_gender_icon() + " " + emp.employee_name + "  —  " + emp.job_title
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
@@ -412,6 +412,10 @@ func _create_card(npc_node) -> PanelContainer:
 					flow.add_child(item)
 
 			info_vbox.add_child(flow)
+
+	# === PERSONALITY ===
+	if not emp.personality.is_empty():
+		_add_personality_to(info_vbox, emp)
 
 	# === ПРАВАЯ КОЛОНКА ===
 	var right_vbox = VBoxContainer.new()
@@ -702,6 +706,78 @@ func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 	)
 
 	return panel
+
+# === PERSONALITY UI ===
+func _add_personality_to(card_vbox: VBoxContainer, emp: EmployeeData):
+	if emp.personality.is_empty():
+		return
+	
+	var flow = HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 12)
+	flow.add_theme_constant_override("v_separation", 4)
+	
+	for tag_id in emp.personality:
+		var item = _create_personality_item(tag_id, emp)
+		flow.add_child(item)
+	
+	card_vbox.add_child(flow)
+
+func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	
+	var color = emp.get_personality_color(tag_id)
+	
+	var name_text = EmployeeData.PERSONALITY_NAMES.get(tag_id, tag_id)
+	var lbl = Label.new()
+	lbl.text = tr(name_text)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(lbl, "regular")
+	hbox.add_child(lbl)
+	
+	var help_btn = Button.new()
+	help_btn.text = "?"
+	help_btn.custom_minimum_size = Vector2(22, 22)
+	help_btn.focus_mode = Control.FOCUS_NONE
+	help_btn.add_theme_font_size_override("font_size", 11)
+	help_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(1, 1, 1, 1)
+	btn_style.border_width_left = 2
+	btn_style.border_width_top = 2
+	btn_style.border_width_right = 2
+	btn_style.border_width_bottom = 2
+	btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	btn_style.corner_radius_top_left = 11
+	btn_style.corner_radius_top_right = 11
+	btn_style.corner_radius_bottom_right = 11
+	btn_style.corner_radius_bottom_left = 11
+	help_btn.add_theme_stylebox_override("normal", btn_style)
+	
+	var description = emp.get_personality_description(tag_id)
+	var tooltip_ref: Array = [null]
+	var parent_ref = self
+	
+	help_btn.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip(description, color)
+		parent_ref.add_child(tp)
+		var btn_global = help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		tooltip_ref[0] = tp
+	)
+	
+	help_btn.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+	
+	hbox.add_child(help_btn)
+	return hbox
 
 # === Рекурсивный поиск Label внутри тултипа для live-обновления ===
 func _find_label_in_tooltip(tooltip_node: Control) -> Label:

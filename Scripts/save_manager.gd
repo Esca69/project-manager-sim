@@ -160,6 +160,8 @@ func _serialize_employees() -> Array:
 			"skill_qa": d.skill_qa,
 			"skill_business_analysis": d.skill_business_analysis,
 			"traits": d.traits.duplicate(),
+			"gender": d.gender,
+			"personality": d.personality.duplicate(),
 			"current_energy": d.current_energy,
 			"motivation_bonus": d.motivation_bonus,
 			# === MOOD SYSTEM v2: Сохраняем mood + модификаторы ===
@@ -426,6 +428,15 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		for t in saved_traits:
 			emp_data.traits.append(str(t))
 		emp_data.trait_text = emp_data.build_trait_text()
+
+		# Gender
+		emp_data.gender = str(emp_dict.get("gender", "male"))
+
+		# Personality
+		var saved_personality = emp_dict.get("personality", [])
+		emp_data.personality.clear()
+		for p in saved_personality:
+			emp_data.personality.append(str(p))
 
 		var npc = _spawn_employee_in_office_proper(office, world_layer, emp_data)
 		if npc:

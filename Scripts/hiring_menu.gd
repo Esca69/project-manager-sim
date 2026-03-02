@@ -240,7 +240,7 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 		card.mouse_exited.connect(_on_card_hover_exit.bind(card))
 
 	if name_lbl:
-		name_lbl.text = data.employee_name
+		name_lbl.text = data.get_gender_icon() + " " + data.employee_name
 		if UITheme: UITheme.apply_font(name_lbl, "bold")
 	if role_lbl:
 		role_lbl.text = tr(data.job_title)
@@ -276,6 +276,9 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 	if card_vbox and not data.traits.is_empty():
 		_add_traits_to(card_vbox, data)
 
+	if card_vbox and not data.personality.is_empty():
+		_add_personality_to(card_vbox, data)
+
 	call_deferred("_set_children_pass_filter", card)
 
 # === ДОБАВИТЬ ТРЕЙТЫ ===
@@ -302,6 +305,78 @@ func _add_traits_to(card_vbox: VBoxContainer, data: EmployeeData):
 
 		card_vbox.add_child(flow)
 		_trait_containers.append(flow)
+
+# === ДОБАВИТЬ PERSONALITY ===
+func _add_personality_to(card_vbox: VBoxContainer, data: EmployeeData):
+	if data.personality.is_empty():
+		return
+	
+	var flow = HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 12)
+	flow.add_theme_constant_override("v_separation", 4)
+	
+	for tag_id in data.personality:
+		var item = _create_personality_item(tag_id, data, self)
+		flow.add_child(item)
+	
+	card_vbox.add_child(flow)
+	_trait_containers.append(flow)
+
+func _create_personality_item(tag_id: String, data: EmployeeData, parent: Control) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+	
+	var color = data.get_personality_color(tag_id)
+	
+	var name_text = EmployeeData.PERSONALITY_NAMES.get(tag_id, tag_id)
+	var lbl = Label.new()
+	lbl.text = tr(name_text)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(lbl, "regular")
+	hbox.add_child(lbl)
+	
+	var help_btn = Button.new()
+	help_btn.text = "?"
+	help_btn.custom_minimum_size = Vector2(22, 22)
+	help_btn.focus_mode = Control.FOCUS_NONE
+	help_btn.add_theme_font_size_override("font_size", 11)
+	help_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = COLOR_WHITE
+	btn_style.border_width_left = 2
+	btn_style.border_width_top = 2
+	btn_style.border_width_right = 2
+	btn_style.border_width_bottom = 2
+	btn_style.border_color = COLOR_BLUE
+	btn_style.corner_radius_top_left = 11
+	btn_style.corner_radius_top_right = 11
+	btn_style.corner_radius_bottom_right = 11
+	btn_style.corner_radius_bottom_left = 11
+	help_btn.add_theme_stylebox_override("normal", btn_style)
+	
+	var description = data.get_personality_description(tag_id)
+	var tooltip_ref: Array = [null]
+	
+	help_btn.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip(description, color)
+		parent.add_child(tp)
+		var btn_global = help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		tooltip_ref[0] = tp
+	)
+	
+	help_btn.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+	
+	hbox.add_child(help_btn)
+	return hbox
 
 # === СОЗДАТЬ ЭКСТРА-КАРТОЧКУ (4-я, 5-я...) ===
 func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
@@ -337,7 +412,7 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	top_hbox.add_child(left_info)
 
 	var name_lbl = Label.new()
-	name_lbl.text = data.employee_name
+	name_lbl.text = data.get_gender_icon() + " " + data.employee_name
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
@@ -407,6 +482,9 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	# Трейты
 	if not data.traits.is_empty():
 		_add_traits_to(card_vbox, data)
+
+	if not data.personality.is_empty():
+		_add_personality_to(card_vbox, data)
 
 	call_deferred("_set_children_pass_filter", card)
 	return card
