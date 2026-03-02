@@ -35,6 +35,20 @@ const CHAT_MOOD_POSITIVE_VALUE: float = 5.0
 const CHAT_MOOD_NEGATIVE_VALUE: float = -5.0
 const CHAT_MOOD_DURATION: float = 480.0  # 8 игровых часов = 480 минут
 
+# --- БОНУС СОСЕДСТВА (NEIGHBOR) ---
+const NEIGHBOR_BESTIES_MOD: float = 0.08     # +8% эффективности для Besties
+const NEIGHBOR_FRIENDLY_MOD: float = 0.04    # +4% для Friendly
+const NEIGHBOR_NEUTRAL_MOD: float = 0.0      # 0% для Neutral
+const NEIGHBOR_DISLIKE_MOD: float = -0.04    # -4% для Dislike
+const NEIGHBOR_NEMESIS_MOD: float = -0.08    # -8% для Nemesis
+
+# --- MOOD-МОДИФИКАТОРЫ СОСЕДСТВА ---
+const NEIGHBOR_BESTIES_MOOD: float = 5.0
+const NEIGHBOR_FRIENDLY_MOOD: float = 2.0
+const NEIGHBOR_DISLIKE_MOOD: float = -3.0
+const NEIGHBOR_NEMESIS_MOOD: float = -6.0
+const NEIGHBOR_MOOD_DURATION: float = 480.0   # 8 игровых часов
+
 # --- ДАННЫЕ ---
 # Словарь отношений. Ключ = "Name1::Name2" (имена отсортированы), значение = int
 var relationships: Dictionary = {}
@@ -235,5 +249,71 @@ func get_non_neutral_relationships(employee_name: String) -> Array:
 			var level = get_rel_level(employee_name, other_name)
 			result.append({"name": other_name, "value": val, "level": level})
 	# Сортируем по value (от лучшего к худшему)
+	result.sort_custom(func(a, b): return a.value > b.value)
+	return result
+
+# === NEIGHBOR SYSTEM: Получить модификатор эффективности от соседей ===
+func get_neighbor_efficiency_mod(employee_name: String, neighbor_names: Array) -> float:
+	if neighbor_names.is_empty():
+		return 0.0
+	var total_mod: float = 0.0
+	for neighbor_name in neighbor_names:
+		var level = get_rel_level(employee_name, neighbor_name)
+		match level:
+			RelLevel.BESTIES:
+				total_mod += NEIGHBOR_BESTIES_MOD
+			RelLevel.FRIENDLY:
+				total_mod += NEIGHBOR_FRIENDLY_MOD
+			RelLevel.DISLIKE:
+				total_mod += NEIGHBOR_DISLIKE_MOD
+			RelLevel.NEMESIS:
+				total_mod += NEIGHBOR_NEMESIS_MOD
+			_:
+				total_mod += NEIGHBOR_NEUTRAL_MOD
+	return total_mod
+
+# === NEIGHBOR SYSTEM: Применить mood-модификатор от соседа ===
+func apply_neighbor_mood(emp_data: EmployeeData, neighbor_name: String):
+	var level = get_rel_level(emp_data.employee_name, neighbor_name)
+	var mood_value: float = 0.0
+	match level:
+		RelLevel.BESTIES:
+			mood_value = NEIGHBOR_BESTIES_MOOD
+		RelLevel.FRIENDLY:
+			mood_value = NEIGHBOR_FRIENDLY_MOOD
+		RelLevel.DISLIKE:
+			mood_value = NEIGHBOR_DISLIKE_MOOD
+		RelLevel.NEMESIS:
+			mood_value = NEIGHBOR_NEMESIS_MOOD
+	if mood_value != 0.0:
+		emp_data.add_mood_modifier(
+			"neighbor_" + neighbor_name,
+			"MOOD_MOD_NEIGHBOR_GOOD" if mood_value > 0 else "MOOD_MOD_NEIGHBOR_BAD",
+			mood_value,
+			NEIGHBOR_MOOD_DURATION
+		)
+	else:
+		emp_data.remove_mood_modifier("neighbor_" + neighbor_name)
+
+# === NEIGHBOR SYSTEM: Получить описание связей для UI ===
+func get_relationship_summary(employee_name: String) -> Array:
+	# Возвращает [{name, value, level_key}] — ВСЕ связи (не только non-neutral)
+	var result = []
+	for key in relationships.keys():
+		var parts = key.split("::")
+		if parts.size() != 2:
+			continue
+		var other_name = ""
+		if parts[0] == employee_name:
+			other_name = parts[1]
+		elif parts[1] == employee_name:
+			other_name = parts[0]
+		else:
+			continue
+		var val = relationships[key]
+		if val == 0:
+			continue
+		var level_key = get_rel_level_name(employee_name, other_name)
+		result.append({"name": other_name, "value": val, "level_key": level_key})
 	result.sort_custom(func(a, b): return a.value > b.value)
 	return result

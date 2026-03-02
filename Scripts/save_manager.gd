@@ -194,6 +194,8 @@ func _serialize_employees() -> Array:
 			"vacation_approved": d.vacation_approved,
 			"vacation_delay_days": d.vacation_delay_days,
 			"vacation_days_remaining": d.vacation_days_remaining,
+			# === RELATIONSHIP SYSTEM ===
+			"neighbor_mod": d.neighbor_mod,
 		})
 	return result
 
@@ -496,6 +498,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.data.vacation_approved = emp_dict.get("vacation_approved", false)
 			npc.data.vacation_delay_days = int(emp_dict.get("vacation_delay_days", 0))
 			npc.data.vacation_days_remaining = int(emp_dict.get("vacation_days_remaining", 0))
+			# === RELATIONSHIP SYSTEM ===
+			if emp_dict.has("neighbor_mod"):
+				npc.data.neighbor_mod = float(emp_dict["neighbor_mod"])
 			var saved_state = int(emp_dict.get("current_state", 0))
 			if saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false

@@ -548,6 +548,9 @@ func _on_time_tick(_hour, _minute):
 	# === RELATIONSHIP SYSTEM: Попытка начать чат ===
 	_try_initiate_chat()
 
+	# === RELATIONSHIP SYSTEM: Обновление бонуса от соседей ===
+	_update_neighbor_bonus()
+
 	# --- Early bird логика ---
 	if not data.has_trait("early_bird"): return
 	if _early_bird_start_hour < 0: return
@@ -843,6 +846,9 @@ func _force_go_home():
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
 	
+	if data:
+		data.neighbor_mod = 0.0
+	
 	velocity = Vector2.ZERO
 	z_index = 0
 	
@@ -861,6 +867,9 @@ func _leave_desk_to_wander():
 	if toilet_ref:
 		toilet_ref.release(self)
 		toilet_ref = null
+	
+	if data:
+		data.neighbor_mod = 0.0
 	
 	velocity = Vector2.ZERO
 	
@@ -1314,6 +1323,44 @@ func _cancel_chat():
 	_chat_initiator = false
 	_chat_minutes_left = 0.0
 
+# === RELATIONSHIP SYSTEM: Обновление бонуса от соседей ===
+func _update_neighbor_bonus():
+	if not data:
+		return
+	if my_desk_position == Vector2.ZERO:
+		data.neighbor_mod = 0.0
+		return
+	if current_state != State.WORKING:
+		data.neighbor_mod = 0.0
+		return
+
+	var desks = get_tree().get_nodes_in_group("desk")
+	var my_desk = null
+	for desk in desks:
+		if desk.assigned_npc_node == self:
+			my_desk = desk
+			break
+	if my_desk == null:
+		data.neighbor_mod = 0.0
+		return
+
+	# Ищем соседние столы (в радиусе 300 пикселей)
+	var neighbor_names: Array = []
+	for desk in desks:
+		if desk == my_desk:
+			continue
+		if desk.assigned_employee == null:
+			continue
+		var dist = my_desk.global_position.distance_to(desk.global_position)
+		if dist <= 300.0:
+			neighbor_names.append(desk.assigned_employee.employee_name)
+
+	data.neighbor_mod = RelationshipManager.get_neighbor_efficiency_mod(data.employee_name, neighbor_names)
+
+	# Mood-модификаторы от соседей
+	for neighbor_name in neighbor_names:
+		RelationshipManager.apply_neighbor_mood(data, neighbor_name)
+
 # =============================================
 
 func _on_wander_arrived():
@@ -1343,6 +1390,9 @@ func move_to_desk(target_point: Vector2):
 
 func release_from_desk():
 	my_desk_position = Vector2.ZERO
+	
+	if data:
+		data.neighbor_mod = 0.0
 	
 	coffee_cup_holder.visible = false
 	if coffee_machine_ref:

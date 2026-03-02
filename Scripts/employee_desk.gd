@@ -11,6 +11,7 @@ var assigned_npc_node = null
 @onready var seat_point = $SeatPosition # Точка, куда мы направляем человека
 
 func _ready():
+	add_to_group("desk")
 	update_desk_visuals()
 
 # Эту функцию вызывает Игрок через interact()
