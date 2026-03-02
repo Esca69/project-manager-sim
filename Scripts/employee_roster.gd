@@ -417,6 +417,9 @@ func _create_card(npc_node) -> PanelContainer:
 	if not emp.personality.is_empty():
 		_add_personality_to(info_vbox, emp)
 
+	# === RELATIONSHIP SYSTEM: Секция отношений ===
+	_add_relationships_to(info_vbox, emp)
+
 	# === ПРАВАЯ КОЛОНКА ===
 	var right_vbox = VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 5)
@@ -779,6 +782,55 @@ func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContaine
 	hbox.add_child(help_btn)
 	return hbox
 
+# === RELATIONSHIP SYSTEM: Секция отношений в карточке ===
+func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
+	var rm = get_node_or_null("/root/RelationshipManager")
+	if rm == null:
+		return
+	var rels = rm.get_relationship_summary(emp.employee_name)
+	if rels.is_empty():
+		return
+
+	var flow = HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 12)
+	flow.add_theme_constant_override("v_separation", 4)
+
+	for rel in rels:
+		var item = _create_relationship_item(rel, emp)
+		flow.add_child(item)
+
+	card_vbox.add_child(flow)
+
+func _create_relationship_item(rel: Dictionary, emp: EmployeeData) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 4)
+
+	var color = _get_relationship_color(rel.value)
+	var level_text = tr(rel.level_key)
+
+	var lbl = Label.new()
+	var emoji = "❤️" if rel.value > 0 else "💔"
+	var sign_str = "+" if rel.value > 0 else ""
+	lbl.text = "%s %s (%s%d, %s)" % [emoji, rel.name, sign_str, rel.value, level_text]
+	lbl.add_theme_color_override("font_color", color)
+	lbl.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(lbl, "regular")
+	hbox.add_child(lbl)
+
+	return hbox
+
+func _get_relationship_color(value: int) -> Color:
+	if value >= 60:
+		return Color(0.29, 0.69, 0.31, 1)       # Зелёный (Besties)
+	elif value >= 25:
+		return Color(0.3, 0.6, 0.85, 1)          # Голубой (Friendly)
+	elif value > -25:
+		return Color(0.5, 0.5, 0.5, 1)           # Серый (Neutral)
+	elif value > -60:
+		return Color(0.9, 0.55, 0.2, 1)          # Оранжевый (Dislike)
+	else:
+		return Color(0.85, 0.25, 0.2, 1)         # Красный (Nemesis)
+
 # === Рекурсивный поиск Label внутри тултипа для live-обновления ===
 func _find_label_in_tooltip(tooltip_node: Control) -> Label:
 	for child in tooltip_node.get_children():
@@ -840,6 +892,9 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _format_mod(bd.motivation_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % _format_mod(bd.aura_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _format_mod(bd.event_mod))
+	# === RELATIONSHIP SYSTEM: Бонус от соседей ===
+	if bd.has("neighbor_mod"):
+		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _format_mod(bd.neighbor_mod))
 	lines.append("")
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _format_mult(bd.total))
 
@@ -1058,6 +1113,11 @@ func _get_status_text(npc_node) -> String:
 		16: return tr("ROSTER_STATUS_LUNCH_KITCHEN")
 		17: return tr("ROSTER_STATUS_GOING_LUNCH")
 		18: return tr("ROSTER_STATUS_LUNCH_EATING")
+		# === RELATIONSHIP SYSTEM: Chat states ===
+		19: return tr("ROSTER_STATUS_GOING_CHAT")
+		20: return tr("ROSTER_STATUS_CHATTING")
+		# === VACATION SYSTEM ===
+		21: return tr("ROSTER_STATUS_ON_VACATION_STATE")
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
@@ -1085,6 +1145,9 @@ func _get_status_color(npc_node) -> Color:
 		12: return Color(0.9, 0.6, 0.1, 1)
 		# === LUNCH SYSTEM ===
 		13, 14, 15, 16, 17, 18: return Color(0.9, 0.55, 0.2, 1)
+		# === RELATIONSHIP SYSTEM ===
+		19, 20: return Color(0.6, 0.3, 0.7, 1)  # Фиолетовый — чат
+		21: return Color(0.29, 0.69, 0.31, 1)    # Зелёный — отпуск
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _get_event_effect_text(emp_data: EmployeeData) -> String:

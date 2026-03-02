@@ -32,6 +32,9 @@ var motivation_bonus: float = 0.0
 # === БОНУС АУРЫ PM (I'm Watching You) ===
 var aura_bonus: float = 0.0
 
+# === RELATIONSHIP SYSTEM: Бонус/штраф от соседей по столу ===
+var neighbor_mod: float = 0.0
+
 # === СИСТЕМА ПОВЫШЕНИЯ ЗП (RAISES) ===
 var is_requesting_raise: bool = false       # Активен ли запрос на повышение ЗП
 var raise_requested_salary: int = 0         # Желаемая ЗП (фиксируется при триггере)
@@ -647,7 +650,7 @@ func get_efficiency_multiplier() -> float:
 
 	var aura_mod = aura_bonus
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod)
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -671,7 +674,7 @@ func get_efficiency_breakdown() -> Dictionary:
 	if em:
 		event_mod = em.get_employee_efficiency_modifier(employee_name)
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod)
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -683,6 +686,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"motivation_mod": motivation_mod,
 		"aura_mod": aura_mod,
 		"event_mod": event_mod,
+		"neighbor_mod": neighbor_mod,
 		"total": total,
 	}
 
