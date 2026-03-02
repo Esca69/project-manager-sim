@@ -176,6 +176,14 @@ func _serialize_employees() -> Array:
 			"is_on_day_off": npc.is_on_day_off,
 			"lunch_done_today": npc._lunch_done_today if "_lunch_done_today" in npc else false,
 			"current_state": npc.current_state,
+			# === RAISES ===
+			"is_requesting_raise": d.is_requesting_raise,
+			"raise_requested_salary": d.raise_requested_salary,
+			"raise_ignored_days": d.raise_ignored_days,
+			"last_raise_grade": d.last_raise_grade,
+			# === HUNTING ===
+			"is_quitting": d.is_quitting,
+			"quit_days_left": d.quit_days_left,
 		})
 	return result
 
@@ -446,6 +454,14 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.sick_days_left = int(emp_dict.get("sick_days_left", 0))
 			npc.is_on_day_off = emp_dict.get("is_on_day_off", false)
 			npc._lunch_done_today = emp_dict.get("lunch_done_today", false)  # <<< ДОБАВИТЬ
+			# === RAISES ===
+			npc.data.is_requesting_raise = emp_dict.get("is_requesting_raise", false)
+			npc.data.raise_requested_salary = int(emp_dict.get("raise_requested_salary", 0))
+			npc.data.raise_ignored_days = int(emp_dict.get("raise_ignored_days", 0))
+			npc.data.last_raise_grade = int(emp_dict.get("last_raise_grade", -1))
+			# === HUNTING ===
+			npc.data.is_quitting = emp_dict.get("is_quitting", false)
+			npc.data.quit_days_left = int(emp_dict.get("quit_days_left", 0))
 			var saved_state = int(emp_dict.get("current_state", 0))
 			if saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false

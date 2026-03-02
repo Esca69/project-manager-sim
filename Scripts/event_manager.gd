@@ -52,10 +52,17 @@ const CONTRACT_CANCEL_PAYOUT_PERCENT: float = 0.3  # 30% неустойка
 const JUNIOR_MISTAKE_CHANCE: float = 0.10        # 10% в день
 const JUNIOR_MAX_LEVEL: int = 2                  # Грейд Junior = уровни 0-2
 
+# === HUNTING: Хантинг конкурентами ===
+const HUNTING_CHANCE: float = 0.10          # 10% шанс за тик проверки
+const MIN_DAYS_BETWEEN_HUNTING: int = 15    # Минимум 15 дней между хантингами
+const HUNTING_FIRST_SAFE_DAYS: int = 20     # Первые 20 дней — без хантинга
+const HUNTING_QUIT_CHANCE: float = 0.30     # 30% шанс ухода при отказе
+
 # === ДАННЫЕ ===
 var last_event_day: int = 0
 var last_sick_day: int = -100
 var last_dayoff_day: int = -100
+var last_hunting_day: int = 0
 
 # Персональные кулдауны: {"Имя": {"last_sick_day": N, "last_dayoff_day": N}}
 var employee_cooldowns: Dictionary = {}
@@ -126,6 +133,8 @@ func _on_time_tick(_hour, _minute):
 	# Отгул проверяем каждую минуту в рабочее время (10:00 — 16:00)
 	if _hour >= 10 and _hour <= 16:
 		_try_trigger_dayoff_event()
+	# Хантинг проверяем в 11:00
+	_on_hunting_check(_hour, _minute)
 
 # =============================================
 # УТРЕННИЙ ИВЕНТ (болезнь)
@@ -687,6 +696,10 @@ func apply_choice(event_data: Dictionary, choice_id: String):
 			_apply_junior_mistake(event_data, choice_id)
 		"raise_request":
 			_apply_raise_choice(event_data, choice_id)
+		"hunting_offer":
+			_apply_hunting_choice(event_data, choice_id)
+		"hunting_quit":
+			_apply_hunting_quit(event_data, choice_id)
 
 func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
@@ -906,6 +919,144 @@ func _apply_raise_choice(event_data: Dictionary, choice_id: String):
 func add_effect(effect: Dictionary):
 	active_effects.append(effect)
 	emit_signal("effect_applied", effect)
+
+# === HUNTING: Попытка хантинга (проверяется в 11:00) ===
+func _try_hunting() -> bool:
+	if GameTime.day < HUNTING_FIRST_SAFE_DAYS:
+		return false
+	if GameTime.day - last_hunting_day < MIN_DAYS_BETWEEN_HUNTING:
+		return false
+	if GameTime.is_weekend():
+		return false
+	if randf() > HUNTING_CHANCE:
+		return false
+
+	# Ищем кандидатов: контрактники, уровень >= 3 (Middle+), не просят рейз, не увольняются
+	var candidates = []
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if not npc.data:
+			continue
+		if npc.data.employment_type != "contractor":
+			continue
+		if npc.data.employee_level < 3:
+			continue
+		if npc.data.is_requesting_raise:
+			continue  # Mutex: нельзя хантить того, кто уже просит рейз
+		if npc.data.is_quitting:
+			continue
+		candidates.append(npc)
+
+	if candidates.is_empty():
+		return false
+
+	var target = candidates[randi() % candidates.size()]
+	_trigger_hunting_event(target)
+	return true
+
+func _trigger_hunting_event(employee_node):
+	var emp_data = employee_node.data
+	var display_name = emp_data.employee_name + " (" + tr(emp_data.job_title) + ")"
+
+	# Случайная прибавка 5-15%
+	var percent = randf_range(0.05, 0.15)
+	var requested_salary = int(emp_data.monthly_salary * (1.0 + percent))
+
+	var event_data = {
+		"id": "hunting_offer",
+		"employee_node": employee_node,
+		"employee_name": display_name,
+		"employee_data": emp_data,
+		"current_salary": emp_data.monthly_salary,
+		"requested_salary": requested_salary,
+		"choices": [
+			{
+				"id": "retain",
+				"label": tr("EVENT_HUNTING_CHOICE_RETAIN"),
+				"description": tr("EVENT_HUNTING_RETAIN_DESC") % requested_salary,
+				"emoji": "🤝",
+			},
+			{
+				"id": "refuse",
+				"label": tr("EVENT_HUNTING_CHOICE_REFUSE"),
+				"description": tr("EVENT_HUNTING_REFUSE_DESC"),
+				"emoji": "👋",
+			},
+		],
+	}
+
+	last_hunting_day = GameTime.day
+	_show_event_popup(event_data)
+
+func _apply_hunting_choice(event_data: Dictionary, choice_id: String):
+	var emp_node = event_data.get("employee_node")
+	if not is_instance_valid(emp_node) or not emp_node.data:
+		return
+
+	var emp_data = emp_node.data
+	var emp_name = emp_data.employee_name
+
+	match choice_id:
+		"retain":
+			var old_salary = emp_data.monthly_salary
+			emp_data.monthly_salary = event_data["requested_salary"]
+
+			# +10 mood на 48 часов (2880 мин)
+			emp_data.add_mood_modifier("hunting_retained", "MOOD_MOD_HUNTING_RETAINED", 10.0, 2880.0)
+
+			if EventLog:
+				EventLog.add(tr("LOG_HUNTING_RETAINED") % [emp_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
+			print("🏹 %s удержан: $%d → $%d" % [emp_name, old_salary, emp_data.monthly_salary])
+
+		"refuse":
+			# -10 mood на 72 часа (4320 мин)
+			emp_data.add_mood_modifier("hunting_refused", "MOOD_MOD_HUNTING_REFUSED", -10.0, 4320.0)
+
+			if EventLog:
+				EventLog.add(tr("LOG_HUNTING_REFUSED") % emp_name, EventLog.LogType.ALERT)
+
+			# 30% шанс ухода
+			if randf() < HUNTING_QUIT_CHANCE:
+				var quit_days = randi_range(1, 3)
+				var quit_event = {
+					"id": "hunting_quit",
+					"employee_node": emp_node,
+					"employee_name": event_data["employee_name"],
+					"employee_data": emp_data,
+					"quit_days": quit_days,
+					"choices": [
+						{
+							"id": "acknowledge_quit",
+							"label": tr("EVENT_HUNTING_QUIT_CHOICE_OK"),
+							"description": tr("EVENT_HUNTING_QUIT_OK_DESC") % quit_days,
+							"emoji": "📋",
+						},
+					],
+				}
+				# Задержка 0.5 сек перед вторым попапом
+				get_tree().create_timer(0.5).timeout.connect(func():
+					_show_event_popup(quit_event)
+				)
+			else:
+				print("🏹 %s остался, несмотря на отказ (70%% удача)" % emp_name)
+
+func _apply_hunting_quit(event_data: Dictionary, _choice_id: String):
+	var emp_node = event_data.get("employee_node")
+	if not is_instance_valid(emp_node) or not emp_node.data:
+		return
+
+	var emp_data = emp_node.data
+	emp_data.is_quitting = true
+	emp_data.quit_days_left = event_data["quit_days"]
+
+	if EventLog:
+		EventLog.add(tr("LOG_HUNTING_QUIT_STARTED") % [emp_data.employee_name, emp_data.quit_days_left], EventLog.LogType.ALERT)
+	print("🚪 %s уходит через %d дней" % [emp_data.employee_name, emp_data.quit_days_left])
+
+func _on_hunting_check(hour: int, minute: int):
+	# Проверяем хантинг в 11:00 (не утром, чтобы растянуть события по дню)
+	if hour == 11 and minute == 0:
+		_try_hunting()
+
 func get_employee_efficiency_modifier(employee_name: String) -> float:
 	var modifier = 0.0
 	for effect in active_effects:
@@ -1027,6 +1178,7 @@ func serialize() -> Dictionary:
 		"last_event_day": last_event_day,
 		"last_sick_day": last_sick_day,
 		"last_dayoff_day": last_dayoff_day,
+		"last_hunting_day": last_hunting_day,
 		"employee_cooldowns": employee_cooldowns.duplicate(true),
 		"active_effects": safe_effects,
 		"first_week_dayoff_done": _first_week_dayoff_done,
@@ -1041,6 +1193,7 @@ func deserialize(data: Dictionary):
 	last_event_day = int(data.get("last_event_day", 0))
 	last_sick_day = int(data.get("last_sick_day", -100))
 	last_dayoff_day = int(data.get("last_dayoff_day", -100))
+	last_hunting_day = int(data.get("last_hunting_day", 0))
 
 	employee_cooldowns.clear()
 	var cd = data.get("employee_cooldowns", {})

@@ -665,3 +665,17 @@ MOOD_MOD_RAISE_DENIED,😞 Отказ в повышении ЗП,😞 Raise deni
 MOOD_MOD_RAISE_IGNORED,😤 Запрос на повышение ЗП игнорируется,😤 Raise request being ignored
 MOOD_MOD_RAISE_IGNORED_HARD,😠 Запрос на повышение ЗП долго игнорируется,😠 Raise request long ignored
 MOOD_MOD_COLLEAGUE_QUIT_IGNORED,😔 Коллега ушёл из-за плохого управления,😔 Colleague left due to poor management
+EVENT_HUNTING_CHOICE_RETAIN,Мы ценим тебя — согласовано,We value you — approved
+EVENT_HUNTING_RETAIN_DESC,Зарплата повысится до $%d. Сотрудник останется.,Salary will increase to $%d. Employee stays.
+EVENT_HUNTING_CHOICE_REFUSE,Бюджет не резиновый — решай сам,Budget isn't infinite — your call
+EVENT_HUNTING_REFUSE_DESC,Зарплата не изменится. Есть шанс 30%% что сотрудник уйдёт.,Salary stays the same. 30%% chance employee leaves.
+EVENT_HUNTING_QUIT_CHOICE_OK,Принять к сведению,Acknowledge
+EVENT_HUNTING_QUIT_OK_DESC,У вас %d дней чтобы найти замену.,You have %d days to find a replacement.
+MOOD_MOD_HUNTING_RETAINED,🤝 Компания ценит меня,🤝 Company values me
+MOOD_MOD_HUNTING_REFUSED,😤 Отказали в удержании,😤 Retention denied
+LOG_HUNTING_RETAINED,🏹 %s удержан от конкурентов: $%d → $%d,🏹 %s retained from competitors: $%d → $%d
+LOG_HUNTING_REFUSED,🏹 %s: отказано в контр-оффере,🏹 %s: counter-offer denied
+LOG_HUNTING_QUIT_STARTED,🚪 %s уходит к конкурентам через %d дн.,🚪 %s is leaving for a competitor in %d days.
+LOG_HUNTING_QUIT_FINAL,🚪 %s ушёл к конкурентам,🚪 %s left for a competitor
+ROSTER_STATUS_QUITTING,🚪 Увольняется через %d дн.,🚪 Leaving in %d days
+ROSTER_STATUS_RAISE_REQUEST,💰 Ждёт обсуждения ЗП,💰 Waiting to discuss salary

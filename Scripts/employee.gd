@@ -499,6 +499,10 @@ func _on_time_tick(_hour, _minute):
 	if _hour == 10 and _minute == 0:
 		_check_raise_escalation()
 
+	# === HUNTING: Тик увольнения в 09:00 каждый рабочий день ===
+	if _hour == 9 and _minute == 0:
+		_check_quit_countdown()
+
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
 		_motivation_minutes_left -= 1.0
@@ -1559,6 +1563,44 @@ func _fire_self_raise_ignored():
 			)
 
 	# Снимаем со всех проектов
+	_remove_from_all_projects()
+
+	# Освобождаем стол
+	_unassign_from_desk()
+
+	# Удаляем NPC
+	release_from_desk()
+	remove_from_group("npc")
+	queue_free()
+
+# === HUNTING: Обратный отсчёт увольнения ===
+func _check_quit_countdown():
+	if not data:
+		return
+	if not data.is_quitting:
+		return
+
+	data.quit_days_left -= 1
+
+	if data.quit_days_left <= 0:
+		_fire_self_hunting()
+
+func _fire_self_hunting():
+	if not data:
+		return
+
+	if EventLog:
+		EventLog.add(tr("LOG_HUNTING_QUIT_FINAL") % data.employee_name, EventLog.LogType.ALERT)
+
+	# Увольнение БЕЗ severance и БЕЗ штрафа морали (ушёл к конкурентам — его выбор)
+	_remove_from_all_projects()
+	_unassign_from_desk()
+	release_from_desk()
+	remove_from_group("npc")
+	queue_free()
+
+# === Хелпер: снять сотрудника со всех проектов ===
+func _remove_from_all_projects():
 	for project in ProjectManager.active_projects:
 		for stage in project.stages:
 			var idx = -1
@@ -1569,7 +1611,8 @@ func _fire_self_raise_ignored():
 			if idx != -1:
 				stage.workers.remove_at(idx)
 
-	# Освобождаем стол
+# === Хелпер: освободить стол (unassign) ===
+func _unassign_from_desk():
 	for desk in get_tree().get_nodes_in_group("desk"):
 		if not desk.has_method("unassign_employee"):
 			continue
@@ -1578,8 +1621,3 @@ func _fire_self_raise_ignored():
 		if desk.assigned_employee == data:
 			desk.unassign_employee()
 			break
-
-	# Удаляем NPC
-	release_from_desk()
-	remove_from_group("npc")
-	queue_free()
