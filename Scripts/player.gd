@@ -378,7 +378,10 @@ func _update_interact_hint():
 	_interact_hint.visible = true
 
 	var target_world_pos: Vector2
-	if target is Node2D:
+	# NPC с рейзом — хинт выше (над иконкой ❗)
+	if target.is_in_group("npc"):
+		target_world_pos = target.global_position + Vector2(0, -160)
+	elif target is Node2D:
 		target_world_pos = target.global_position + Vector2(0, -60)
 	else:
 		target_world_pos = target.global_position + Vector2(0, -60)
@@ -403,18 +406,26 @@ func _hide_interact_hint():
 
 func _get_nearest_interactable():
 	var bodies = interaction_zone.get_overlapping_bodies()
+
+	# === RAISES: Приоритет — NPC с активным запросом рейза, который НЕ работает ===
 	for body in bodies:
 		if body == self:
 			continue
-			
+		if body.is_in_group("npc") and body.has_method("can_discuss_raise") and body.can_discuss_raise():
+			return body
+
+	for body in bodies:
+		if body == self:
+			continue
+
 		# 1. Если это сотрудник (группа npc) — жестко игнорируем!
 		if body.is_in_group("npc"):
 			continue
-			
+
 		# 2. Оставляем взаимодействие ТОЛЬКО для столов (hr_desk, boss_desk и тд)
 		if body.is_in_group("desk") and body.has_method("interact"):
 			return body
-			
+
 	return null
 
 func _world_to_screen(world_pos: Vector2) -> Vector2:
@@ -423,14 +434,23 @@ func _world_to_screen(world_pos: Vector2) -> Vector2:
 
 func interact():
 	var bodies = interaction_zone.get_overlapping_bodies()
+
+	# === RAISES: Приоритет — NPC с рейзом ===
 	for body in bodies:
 		if body == self:
 			continue
-			
+		if body.is_in_group("npc") and body.has_method("can_discuss_raise") and body.can_discuss_raise():
+			body.open_raise_dialog()
+			return
+
+	for body in bodies:
+		if body == self:
+			continue
+
 		# 1. Если это сотрудник — игнорируем нажатие Е
 		if body.is_in_group("npc"):
 			continue
-			
+
 		# 2. Вызываем функцию стола
 		if body.is_in_group("desk") and body.has_method("interact"):
 			AudioManager.play_sfx("interact")

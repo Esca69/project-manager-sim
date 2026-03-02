@@ -26,6 +26,12 @@ var motivation_bonus: float = 0.0
 # === БОНУС АУРЫ PM (I'm Watching You) ===
 var aura_bonus: float = 0.0
 
+# === СИСТЕМА ПОВЫШЕНИЯ ЗП (RAISES) ===
+var is_requesting_raise: bool = false       # Активен ли запрос на повышение ЗП
+var raise_requested_salary: int = 0         # Желаемая ЗП (фиксируется при триггере)
+var raise_ignored_days: int = 0             # Сколько рабочих дней проигнорировали запрос
+var last_raise_grade: int = -1              # Грейд, на котором последний раз был запрос (cooldown)
+
 # === MOOD SYSTEM v2 ===
 # mood вычисляется как: BASE + постоянные + временные, clamp(0..100)
 # Никакого дрейфа. Полная прозрачность для игрока.
@@ -323,6 +329,13 @@ func add_employee_xp(amount: int) -> Dictionary:
 		result["leveled_up"] = true
 		result["new_level"] = employee_level
 
+		# === RAISES: Проверка смены грейда ===
+		var old_grade = GRADE_NAMES.get(employee_level - 1, "")
+		var new_grade = GRADE_NAMES.get(employee_level, "")
+		if old_grade != "" and new_grade != "" and old_grade != new_grade and employment_type == "contractor":
+			if last_raise_grade != employee_level:
+				_trigger_raise_request()
+
 		var gain_range = SKILL_GAIN_PER_LEVEL[employee_level - 1]
 		var gain = randi_range(gain_range[0], gain_range[1])
 		result["skill_gain"] += gain
@@ -586,3 +599,25 @@ func _get_event_manager():
 	if main_loop and main_loop is SceneTree:
 		return main_loop.root.get_node_or_null("/root/EventManager")
 	return null
+
+# === RAISES: Генерация запроса на повышение ЗП ===
+func _trigger_raise_request():
+	if is_requesting_raise:
+		return  # Уже есть активный запрос
+
+	is_requesting_raise = true
+	raise_ignored_days = 0
+	last_raise_grade = employee_level
+
+	# Случайный процент увеличения от 10% до 25%
+	var percent = randf_range(0.10, 0.25)
+	raise_requested_salary = int(monthly_salary * (1.0 + percent))
+
+	# Лог — через EventLog (autoload)
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop is SceneTree:
+		var el = main_loop.root.get_node_or_null("/root/EventLog")
+		if el:
+			el.add(el.tr("LOG_RAISE_REQUEST") % [employee_name, get_grade_name()], 2)  # 2 = LogType.ALERT
+
+	print("💰 %s просит повышение ЗП: $%d → $%d (грейд: %s)" % [employee_name, monthly_salary, raise_requested_salary, get_grade_name()])

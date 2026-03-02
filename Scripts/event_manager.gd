@@ -685,6 +685,8 @@ func apply_choice(event_data: Dictionary, choice_id: String):
 			_apply_contract_cancel(event_data, choice_id)
 		"junior_mistake":
 			_apply_junior_mistake(event_data, choice_id)
+		"raise_request":
+			_apply_raise_choice(event_data, choice_id)
 
 func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
@@ -865,10 +867,45 @@ func _apply_junior_mistake(event_data: Dictionary, choice_id: String):
 # =============================================
 # СИСТЕМА ЭФФЕКТОВ
 # =============================================
+# === RAISES: Применение выбора ===
+func _apply_raise_choice(event_data: Dictionary, choice_id: String):
+	var emp_node = event_data.get("employee_node")
+	if not is_instance_valid(emp_node) or not emp_node.data:
+		return
+
+	var emp_data = emp_node.data
+	var emp_name = emp_data.employee_name
+
+	match choice_id:
+		"accept_raise":
+			var old_salary = emp_data.monthly_salary
+			emp_data.monthly_salary = emp_data.raise_requested_salary
+			emp_data.is_requesting_raise = false
+			emp_data.raise_requested_salary = 0
+			emp_data.raise_ignored_days = 0
+
+			# +10 mood на 120 игровых часов (7200 мин)
+			emp_data.add_mood_modifier("raise_accepted", "MOOD_MOD_RAISE_ACCEPTED", 10.0, 7200.0)
+
+			if EventLog:
+				EventLog.add(tr("LOG_RAISE_ACCEPTED") % [emp_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
+			print("💰 %s: ЗП повышена $%d → $%d" % [emp_name, old_salary, emp_data.monthly_salary])
+
+		"deny_raise":
+			emp_data.is_requesting_raise = false
+			emp_data.raise_requested_salary = 0
+			emp_data.raise_ignored_days = 0
+
+			# -15 mood на 100 игровых часов (6000 мин)
+			emp_data.add_mood_modifier("raise_denied", "MOOD_MOD_RAISE_DENIED", -15.0, 6000.0)
+
+			if EventLog:
+				EventLog.add(tr("LOG_RAISE_DENIED") % emp_name, EventLog.LogType.ALERT)
+			print("💰 %s: запрос ЗП отклонён" % emp_name)
+
 func add_effect(effect: Dictionary):
 	active_effects.append(effect)
 	emit_signal("effect_applied", effect)
-
 func get_employee_efficiency_modifier(employee_name: String) -> float:
 	var modifier = 0.0
 	for effect in active_effects:
