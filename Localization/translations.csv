@@ -605,3 +605,16 @@ DAY_SUMMARY_EMP_ON_DAYOFF,отгул,day off
 MOOD_MOD_MOTIVATED,🔥 Замотивирован,🔥 Motivated
 MOOD_MOD_LOW_ENERGY,⚡ Мало энергии,⚡ Low energy
 MOOD_MOD_VERY_LOW_ENERGY,⚡ Критически мало энергии,⚡ Very low energy
+LOG_NEW_DAY,Начало нового рабочего дня.,Start of a new working day.
+LOG_SICK_EXPRESS_CURE,🏥 %s: экспресс-лечение за $%d,🏥 %s: express treatment for $%d
+LOG_SICK_LEAVE,🤒 %s: больничный на %d дн.,🤒 %s: sick leave for %d days
+LOG_DAYOFF_ALLOWED,🏠 %s отпущен домой,🏠 %s was allowed to leave
+LOG_DAYOFF_DENIED,😤 %s: отгул отклонён,😤 %s: day off denied
+LOG_SCOPE_EXPANDED,📦 Скоуп +%d%% для «%s»,📦 Scope +%d%% for "%s"
+LOG_CONTRACT_CANCELLED,💔 Контракт расторгнут: «%s»,💔 Contract cancelled: "%s"
+LOG_DISCUSSION_STARTED,🤝 Обсуждение начато: %s,🤝 Discussion started: %s
+LOG_DISCUSSION_FINISHED,✅ Проект взят: %s,✅ Project taken: %s
+LOG_HR_SEARCH_DONE,✅ Поиск завершён: %s,✅ Search complete: %s
+LOG_PROJECT_FINISHED,🎉 Проект завершён: «%s»,🎉 Project finished: "%s"
+LOG_STAGE_COMPLETED,✅ Этап %s завершён: «%s»,✅ Stage %s completed: "%s"
+LOG_PANEL_TITLE,📋 Журнал,📋 Journal
