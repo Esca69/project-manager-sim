@@ -500,6 +500,7 @@ func _build_employees_section():
 	var idle_list = []
 	var sick_list = []
 	var dayoff_list = []
+	var vacation_list = []
 
 	for npc in npcs:
 		if not npc.data:
@@ -511,6 +512,9 @@ func _build_employees_section():
 		if npc.current_state == npc.State.DAY_OFF:
 			dayoff_list.append(npc.data)
 			continue
+		if npc.current_state == npc.State.ON_VACATION:
+			vacation_list.append(npc.data)
+			continue
 		var work_minutes = npc.data.get_meta("daily_work_minutes", 0.0) if npc.data.has_meta("daily_work_minutes") else 0.0
 		var progress = npc.data.get_meta("daily_progress", 0.0) if npc.data.has_meta("daily_progress") else 0.0
 		if work_minutes > 0.1:
@@ -519,7 +523,7 @@ func _build_employees_section():
 			idle_list.append(npc.data)
 
 	var summary_lbl = Label.new()
-	var absent_count = sick_list.size() + dayoff_list.size()
+	var absent_count = sick_list.size() + dayoff_list.size() + vacation_list.size()
 	if absent_count > 0:
 		summary_lbl.text = tr("DAY_SUMMARY_EMP_STATS_FULL") % [total_count, worked_list.size(), idle_list.size(), absent_count]
 	else:
@@ -567,6 +571,17 @@ func _build_employees_section():
 			var lbl = Label.new()
 			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_DAYOFF")]
 			lbl.add_theme_color_override("font_color", COLOR_GRAY)
+			lbl.add_theme_font_size_override("font_size", 13)
+			if UITheme: UITheme.apply_font(lbl, "regular")
+			_content_vbox.add_child(lbl)
+
+	if vacation_list.size() > 0:
+		var sub = _create_subsection_label("✈️ " + tr("DAY_SUMMARY_EMP_VACATION"))
+		_content_vbox.add_child(sub)
+		for emp in vacation_list:
+			var lbl = Label.new()
+			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_VACATION")]
+			lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
 			lbl.add_theme_font_size_override("font_size", 13)
 			if UITheme: UITheme.apply_font(lbl, "regular")
 			_content_vbox.add_child(lbl)

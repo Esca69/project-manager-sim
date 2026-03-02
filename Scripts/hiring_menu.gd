@@ -691,6 +691,7 @@ func _on_hire_pressed(index):
 	if office and office.has_method("spawn_new_employee"):
 		print("🟢 [HIRE] Вызываю spawn_new_employee на: ", office)
 		office.spawn_new_employee(human_to_hire)
+		human_to_hire.init_vacation_timer()
 	else:
 		print("🔴 [HIRE] КРИТИЧЕСКАЯ ОШИБКА: Не найден метод spawn_new_employee!")
 		if office:
@@ -706,6 +707,7 @@ func _on_hire_pressed(index):
 		if found:
 			print("🟢 [HIRE] НАЙДЕНО аварийно: ", found, " | Путь: ", found.get_path())
 			found.spawn_new_employee(human_to_hire)
+			human_to_hire.init_vacation_timer()
 		else:
 			print("🔴 [HIRE] Нода со spawn_new_employee НЕ НАЙДЕНА нигде в дереве!")
 			return

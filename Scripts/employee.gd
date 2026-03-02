@@ -23,6 +23,8 @@ enum State {
 	LUNCH_AT_KITCHEN,
 	GOING_LUNCH_TABLE,
 	LUNCH_EATING,
+	# === VACATION SYSTEM ===
+	ON_VACATION,
 }
 
 var current_state = State.IDLE
@@ -105,6 +107,7 @@ const PM_AURA_MAX_STACKS: int = 100  # Максимальный расчётны
 # === EVENT SYSTEM: Счётчик дней болезни и флаг отгула ===
 var sick_days_left: int = 0
 var is_on_day_off: bool = false
+var _vacation_log_sent: bool = false  # Чтобы лог отправился один раз
 
 # === LUNCH SYSTEM ===
 const LUNCH_START_HOUR = 11
@@ -503,6 +506,14 @@ func _on_time_tick(_hour, _minute):
 	if _hour == 9 and _minute == 0:
 		_check_quit_countdown()
 
+	# === VACATION: Проверка в 12:00 каждый рабочий день ===
+	if _hour == 12 and _minute == 0 and not GameTime.is_weekend():
+		_check_vacation_timer()
+
+	# === VACATION: Тик задержки перед отпуском в 08:00 ===
+	if _hour == 8 and _minute == 0 and not GameTime.is_weekend():
+		_tick_vacation_delay()
+
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
 		_motivation_minutes_left -= 1.0
@@ -595,7 +606,7 @@ func _physics_process(delta):
 		State.HOME:
 			_apply_lean(Vector2.ZERO, delta)
 		
-		State.SICK_LEAVE, State.DAY_OFF:
+		State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION:
 			pass
 			
 		State.WORKING:
@@ -775,7 +786,7 @@ func _force_go_home():
 		toilet_ref = null
 	_release_all_lunch_resources()
 	
-	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
 	
 	velocity = Vector2.ZERO
@@ -1186,7 +1197,7 @@ func _on_navigation_finished():
 	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
 func _on_work_started():
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
 	
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
@@ -1245,7 +1256,7 @@ func _on_work_started():
 		_start_wandering()
 
 func _on_work_ended():
-	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
 	_should_go_home = true
 
@@ -1262,7 +1273,7 @@ func _go_to_sleep_instant():
 		toilet_ref = null
 	_release_all_lunch_resources()
 	
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
 	
 	visible = false
@@ -1323,6 +1334,8 @@ func get_human_state_name() -> String:
 		State.LUNCH_AT_KITCHEN: return tr("EMP_ACTION_LUNCH_KITCHEN")
 		State.GOING_LUNCH_TABLE: return tr("EMP_ACTION_GOING_LUNCH")
 		State.LUNCH_EATING: return tr("EMP_ACTION_LUNCH_EATING")
+		# === VACATION SYSTEM ===
+		State.ON_VACATION: return tr("EMP_ACTION_ON_VACATION")
 	return "..."
 
 func update_status_label():
@@ -1598,6 +1611,102 @@ func _fire_self_hunting():
 	release_from_desk()
 	remove_from_group("npc")
 	queue_free()
+
+# === VACATION SYSTEM ===
+func start_vacation():
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	_release_all_lunch_resources()
+	visible = false
+	$CollisionShape2D.disabled = true
+	velocity = Vector2.ZERO
+	current_state = State.ON_VACATION
+	data.vacation_days_remaining = 3
+	if EventLog:
+		EventLog.add(tr("LOG_VACATION_STARTED") % data.employee_name, EventLog.LogType.PROGRESS)
+
+func tick_vacation_day():
+	if current_state != State.ON_VACATION:
+		return
+	data.vacation_days_remaining -= 1
+	if data.vacation_days_remaining <= 0:
+		_return_from_vacation()
+
+func _return_from_vacation():
+	data.vacation_days_remaining = 0
+	data.vacation_approved = false
+	data.vacation_delay_days = 0
+	data.init_vacation_timer()
+	current_state = State.HOME
+	if data:
+		data.current_energy = 100.0
+		data.add_mood_modifier("vacation_rest", "MOOD_MOD_VACATION_REST", 10.0, 4320.0)
+	if EventLog:
+		EventLog.add(tr("LOG_VACATION_ENDED") % data.employee_name, EventLog.LogType.PROGRESS)
+
+func _check_vacation_timer():
+	if not data or data.employment_type != "contractor":
+		return
+	if data.vacation_approved or data.vacation_days_remaining > 0:
+		return
+	if current_state == State.ON_VACATION or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+		return
+	if data.is_requesting_raise or data.is_quitting:
+		return
+	if data.days_in_company < 10:
+		return
+	if data.vacation_days_until_request < 0:
+		data.init_vacation_timer()
+		return
+	data.vacation_days_until_request -= 1
+	if data.vacation_days_until_request <= 0:
+		_trigger_vacation_request()
+
+func _tick_vacation_delay():
+	if not data or not data.vacation_approved:
+		return
+	if data.vacation_delay_days > 0:
+		data.vacation_delay_days -= 1
+	if data.vacation_delay_days <= 0:
+		start_vacation()
+
+func _trigger_vacation_request():
+	var delay = randi_range(1, 3)
+	var display_name = data.employee_name + " (" + tr(data.job_title) + ")"
+	var delay_text = ""
+	match delay:
+		1: delay_text = tr("VACATION_DELAY_TOMORROW")
+		2: delay_text = tr("VACATION_DELAY_2DAYS")
+		3: delay_text = tr("VACATION_DELAY_3DAYS")
+
+	var event_data = {
+		"id": "vacation_request",
+		"employee_node": self,
+		"employee_name": display_name,
+		"employee_data": data,
+		"delay_days": delay,
+		"delay_text": delay_text,
+		"choices": [
+			{
+				"id": "approve_vacation",
+				"label": tr("EVENT_VACATION_CHOICE_APPROVE"),
+				"description": tr("EVENT_VACATION_APPROVE_DESC") % delay_text,
+				"emoji": "✅",
+			},
+			{
+				"id": "deny_vacation",
+				"label": tr("EVENT_VACATION_CHOICE_DENY"),
+				"description": tr("EVENT_VACATION_DENY_DESC"),
+				"emoji": "❌",
+			},
+		],
+	}
+	EventManager._show_event_popup(event_data)
 
 # === Хелпер: снять сотрудника со всех проектов ===
 func _remove_from_all_projects():

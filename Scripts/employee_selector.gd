@@ -69,7 +69,18 @@ func open_list(stage_type: String = ""):
 		if npc.data:
 			if _filter_stage_type != "" and not _matches_stage_type(npc.data, _filter_stage_type):
 				continue
-			
+
+			# Блокируем сотрудников в отпуске
+			if npc.current_state == npc.State.ON_VACATION:
+				var vac_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
+				vac_name += " ✈️ " + tr("EMP_SELECT_ON_VACATION")
+				var vac_index = item_list.add_item(vac_name)
+				item_list.set_item_metadata(vac_index, npc.data)
+				item_list.set_item_disabled(vac_index, true)
+				item_list.set_item_selectable(vac_index, false)
+				item_list.set_item_custom_fg_color(vac_index, Color(0.6, 0.6, 0.6, 1))
+				continue
+
 			var is_busy = _is_employee_assigned_to_any_project(npc.data)
 			var display_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
 			
