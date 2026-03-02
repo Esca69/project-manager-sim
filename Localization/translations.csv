@@ -610,13 +610,13 @@ LOG_SICK_EXPRESS_CURE,🏥 %s: экспресс-лечение за $%d,🏥 %s:
 LOG_SICK_LEAVE,🤒 %s: больничный на %d дн.,🤒 %s: sick leave for %d days
 LOG_DAYOFF_ALLOWED,🏠 %s отпущен домой,🏠 %s was allowed to leave
 LOG_DAYOFF_DENIED,😤 %s: отгул отклонён,😤 %s: day off denied
-LOG_SCOPE_EXPANDED,📦 Скоуп +%d%% для «%s»,📦 Scope +%d%% for "%s"
-LOG_CONTRACT_CANCELLED,💔 Контракт расторгнут: «%s»,💔 Contract cancelled: "%s"
+LOG_SCOPE_EXPANDED,📦 Скоуп +%d%% для «%s»,"📦 Scope +%d%% for ""%s"""
+LOG_CONTRACT_CANCELLED,💔 Контракт расторгнут: «%s»,"💔 Contract cancelled: ""%s"""
 LOG_DISCUSSION_STARTED,🤝 Обсуждение начато: %s,🤝 Discussion started: %s
 LOG_DISCUSSION_FINISHED,✅ Проект взят: %s,✅ Project taken: %s
 LOG_HR_SEARCH_DONE,✅ Поиск завершён: %s,✅ Search complete: %s
-LOG_PROJECT_FINISHED,🎉 Проект завершён: «%s»,🎉 Project finished: "%s"
-LOG_STAGE_COMPLETED,✅ Этап %s завершён: «%s»,✅ Stage %s completed: "%s"
+LOG_PROJECT_FINISHED,🎉 Проект завершён: «%s»,"🎉 Project finished: ""%s"""
+LOG_STAGE_COMPLETED,✅ Этап %s завершён: «%s»,"✅ Stage %s completed: ""%s"""
 LOG_PANEL_TITLE,📋 Журнал,📋 Journal
 EMPLOYMENT_TYPE_FREELANCER,Фрилансер,Freelancer
 EMPLOYMENT_TYPE_CONTRACTOR,Контрактник,Contractor
@@ -632,4 +632,4 @@ LOG_FREELANCER_WARN_LEAVE,⚠️ Фрилансер %s собирается уй
 LOG_FREELANCER_DEPARTED,🚪 Фрилансер %s покинул компанию (отработал %d дн.),🚪 Freelancer %s left the company (worked %d day(s))
 EXPENSE_SEVERANCE,💰 Компенсация: %s,💰 Severance: %s
 TOOLTIP_FREELANCER,"Фрилансер: чуть дороже контрактника, но может уйти в любой момент. Не растёт по опыту (не получает XP). При увольнении не требует компенсации.","Freelancer: slightly more expensive, but may leave at any time. Does not gain experience (no XP). No severance pay when fired."
-TOOLTIP_CONTRACTOR,"Контрактник: стабильный сотрудник, растёт по опыту (получает XP). Не может уйти сам. При увольнении требуется компенсация: $%d–$%d.","Contractor: stable employee, gains experience (earns XP). Cannot leave on their own. Severance pay when fired: $%d–$%d."
+TOOLTIP_CONTRACTOR,"Контрактник: стабильный сотрудник, растёт по опыту (получает XP). При увольнении требуется компенсация: $%d–$%d.","Contractor: stable employee, gains experience (earns XP). Cannot leave on their own. Severance pay when fired: $%d–$%d."

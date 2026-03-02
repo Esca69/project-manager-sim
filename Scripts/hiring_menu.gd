@@ -120,7 +120,10 @@ func _make_card_style(hover: bool) -> StyleBoxFlat:
 func _set_children_pass_filter(node: Node):
 	for child in node.get_children():
 		if child is Control:
-			child.mouse_filter = Control.MOUSE_FILTER_PASS
+			if child.tooltip_text == "":
+				child.mouse_filter = Control.MOUSE_FILTER_PASS
+			else:
+				child.mouse_filter = Control.MOUSE_FILTER_STOP
 		_set_children_pass_filter(child)
 
 # === ОТКРЫТИЕ С КОНКРЕТНОЙ РОЛЬЮ ===
@@ -465,6 +468,7 @@ func _create_level_badge(data: EmployeeData) -> HBoxContainer:
 	return hbox
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
+# === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
 	var panel = PanelContainer.new()
 	var style = StyleBoxFlat.new()
@@ -479,21 +483,25 @@ func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
 
 	var lbl_text = ""
 	var text_color: Color
+	var tooltip_description = ""
+	var tooltip_color: Color
 
 	if data.employment_type == "freelancer":
 		style.bg_color = Color(1.0, 0.95, 0.88, 1)
 		style.border_color = Color(0.9, 0.55, 0.2, 1)
 		text_color = Color(0.9, 0.55, 0.2, 1)
+		tooltip_color = Color(0.9, 0.55, 0.2, 1)
 		lbl_text = tr("EMPLOYMENT_TYPE_FREELANCER")
-		panel.tooltip_text = tr("TOOLTIP_FREELANCER")
+		tooltip_description = tr("TOOLTIP_FREELANCER")
 	else:
 		style.bg_color = Color(0.9, 0.93, 1.0, 1)
 		style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 		text_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+		tooltip_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 		lbl_text = tr("EMPLOYMENT_TYPE_CONTRACTOR")
 		var sev_min = int(data.monthly_salary * EmployeeData.SEVERANCE_MIN_MULTIPLIER)
 		var sev_max = int(data.monthly_salary * EmployeeData.SEVERANCE_MAX_MULTIPLIER)
-		panel.tooltip_text = tr("TOOLTIP_CONTRACTOR") % [sev_min, sev_max]
+		tooltip_description = tr("TOOLTIP_CONTRACTOR") % [sev_min, sev_max]
 
 	panel.add_theme_stylebox_override("panel", style)
 
@@ -510,6 +518,29 @@ func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
 	lbl.add_theme_color_override("font_color", text_color)
 	if UITheme: UITheme.apply_font(lbl, "semibold")
 	margin.add_child(lbl)
+
+	# === КАСТОМНЫЙ ТУЛТИП (как у кнопки "?") ===
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
+	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	var tooltip_ref: Array = [null]
+
+	panel.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
+		self.add_child(tp)
+		var panel_global = panel.global_position
+		tp.global_position = Vector2(panel_global.x + panel.size.x + 10, panel_global.y - 5)
+		tooltip_ref[0] = tp
+	)
+
+	panel.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
 
 	return panel
 
