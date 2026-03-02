@@ -14,7 +14,7 @@ func _ready():
 	if GameTime:
 		GameTime.work_started.connect(clear)
 
-func log(text: String, type: int = LogType.ROUTINE):
+func add(text: String, type: int = LogType.ROUTINE):
 	var time_str = "[%02d:%02d]" % [GameTime.hour, GameTime.minute]
 	var entry = {
 		"text": time_str + " " + text,
@@ -31,4 +31,4 @@ func log(text: String, type: int = LogType.ROUTINE):
 
 func clear():
 	entries.clear()
-	log(tr("LOG_NEW_DAY"))
+	add(tr("LOG_NEW_DAY"))
