@@ -88,6 +88,17 @@ var _motivation_anim_tween: Tween = null
 # === ЗАПРЕТ ТУАЛЕТА ОТ PM ===
 var _toilet_ban_minutes_left: float = 0.0
 
+# === АУРА PM: "ПОД ПРИСМОТРОМ" ===
+var _in_pm_aura: bool = false
+var _pm_aura_annoyance_timer: float = 0.0  # Игровые минуты непрерывного нахождения в ауре
+var _pm_aura_stacks: int = 0  # Количество стаков микроменеджмента
+const PM_AURA_RADIUS: float = 250.0
+const PM_AURA_EFFICIENCY_BONUS: float = 0.20  # +20%
+const PM_AURA_ANNOYANCE_THRESHOLD: float = 30.0  # 30 игровых минут до первого дебаффа
+const PM_AURA_MOOD_PENALTY_PER_STACK: float = -5.0  # Каждый стак = -5 к настроению
+const PM_AURA_MOOD_DURATION: float = 120.0  # Дебафф длится 120 игровых минут
+const PM_AURA_MAX_STACKS: int = 100  # Максимальный расчётный лимит стаков
+
 # === EVENT SYSTEM: Счётчик дней болезни и флаг отгула ===
 var sick_days_left: int = 0
 var is_on_day_off: bool = false
@@ -223,6 +234,81 @@ func apply_toilet_ban(duration_minutes: float):
 
 func remove_toilet_ban():
 	_toilet_ban_minutes_left = 0.0
+
+# === АУРА PM: Обновление каждый тик (вызывается из _on_time_tick) ===
+func _update_pm_aura():
+	if not data:
+		return
+	
+	# Аура работает ТОЛЬКО на сотрудников в состоянии WORKING
+	if current_state != State.WORKING:
+		# Если вышел из WORKING — сбрасываем ауру
+		if _in_pm_aura:
+			_exit_pm_aura()
+		return
+	
+	# Находим игрока
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		if _in_pm_aura:
+			_exit_pm_aura()
+		return
+	
+	var dist = global_position.distance_to(player.global_position)
+	
+	if dist <= PM_AURA_RADIUS:
+		if not _in_pm_aura:
+			_enter_pm_aura()
+		
+		# Тикаем таймер раздражения (1 минута за тик)
+		_pm_aura_annoyance_timer += 1.0
+		
+		# Проверяем порог раздражения
+		if _pm_aura_annoyance_timer >= PM_AURA_ANNOYANCE_THRESHOLD:
+			_pm_aura_annoyance_timer -= PM_AURA_ANNOYANCE_THRESHOLD
+			_apply_micromanagement_stack()
+	else:
+		if _in_pm_aura:
+			_exit_pm_aura()
+
+func _enter_pm_aura():
+	_in_pm_aura = true
+	_pm_aura_annoyance_timer = 0.0
+	data.aura_bonus = PM_AURA_EFFICIENCY_BONUS
+	
+	# Бабл: 100% при входе в ауру
+	show_thought_bubble("👁️", 2.5)
+	
+	# Коротко показать кольцо радиуса (на игроке)
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("show_aura_ring"):
+		player.show_aura_ring()
+
+func _exit_pm_aura():
+	_in_pm_aura = false
+	_pm_aura_annoyance_timer = 0.0
+	data.aura_bonus = 0.0
+	# Стаки НЕ сбрасываются — дебаффы настроения остаются и рассасываются по таймеру
+
+func _apply_micromanagement_stack():
+	_pm_aura_stacks += 1
+	var penalty = PM_AURA_MOOD_PENALTY_PER_STACK * _pm_aura_stacks
+	
+	# Используем add_mood_modifier с id "micromanagement" —
+	# он обновит существующий модификатор (не дублирует), увеличит силу и обновит таймер.
+	data.add_mood_modifier(
+		"micromanagement",
+		"MOOD_MOD_MICROMANAGEMENT",
+		penalty,
+		PM_AURA_MOOD_DURATION
+	)
+	data.recalculate_mood()
+	
+	# Бабл 100% при дебаффе
+	var angry_emojis = ["😠", "💢", "💨"]
+	show_thought_bubble(angry_emojis[randi() % angry_emojis.size()], 3.0)
+	
+	print("😠 %s: микроменеджмент! Стак %d, штраф настроения: %d" % [data.employee_name, _pm_aura_stacks, int(penalty)])
 
 # =============================================
 # === EVENT SYSTEM: БОЛЕЗНЬ ===
@@ -384,6 +470,11 @@ func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
 	_setup_early_bird()
 	_lunch_done_today = false
+	_pm_aura_stacks = 0
+	_pm_aura_annoyance_timer = 0.0
+	_in_pm_aura = false
+	if data:
+		data.aura_bonus = 0.0
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
@@ -397,6 +488,9 @@ func _on_time_tick(_hour, _minute):
 
 	# === MOOD SYSTEM v2: Тикаем временные модификаторы + пересчёт mood ===
 	data.tick_mood_modifiers()
+
+	# === АУРА PM: обновление каждый тик ===
+	_update_pm_aura()
 
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
@@ -1085,6 +1179,11 @@ func _on_work_started():
 		_setup_toilet_schedule()
 		_should_go_home = false
 		_lunch_done_today = false
+		# Сброс стаков ауры на новый день
+		_pm_aura_stacks = 0
+		_pm_aura_annoyance_timer = 0.0
+		_in_pm_aura = false
+		data.aura_bonus = 0.0
 		return
 	
 	if data:
@@ -1093,6 +1192,12 @@ func _on_work_started():
 	_setup_toilet_schedule()
 	_should_go_home = false
 	_lunch_done_today = false
+	# Сброс стаков ауры на новый день
+	_pm_aura_stacks = 0
+	_pm_aura_annoyance_timer = 0.0
+	_in_pm_aura = false
+	if data:
+		data.aura_bonus = 0.0
 	
 	if my_desk_position == Vector2.ZERO:
 		visible = true

@@ -634,3 +634,5 @@ EXPENSE_SEVERANCE,💰 Компенсация: %s,💰 Severance: %s
 TOOLTIP_FREELANCER,"Фрилансер: чуть дороже контрактника, но может уйти в любой момент. Не растёт по опыту (не получает XP). При увольнении не требует компенсации.","Freelancer: slightly more expensive, but may leave at any time. Does not gain experience (no XP). No severance pay when fired."
 TOOLTIP_CONTRACTOR,"Контрактник: стабильный сотрудник, растёт по опыту (получает XP). При увольнении требуется компенсация: $%d–$%d.","Contractor: stable employee, gains experience (earns XP). Cannot leave on their own. Severance pay when fired: $%d–$%d."
 FREE_CAMERA_HINT,Свободная камера — WASD для обзора,Free camera — WASD to look around
+ROSTER_EFF_BREAKDOWN_AURA,👁️ Аура PM: %s,👁️ PM Aura: %s
+MOOD_MOD_MICROMANAGEMENT,😠 Микроменеджмент,😠 Micromanagement

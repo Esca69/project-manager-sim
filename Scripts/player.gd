@@ -67,6 +67,9 @@ var _no_toilet_btn: Button = null
 var _no_toilet_cooldown_label: Label = null
 var _no_toilet_container: VBoxContainer = null
 
+# === КОЛЬЦО АУРЫ PM ===
+var _aura_ring_cooldown: float = 0.0  # Чтобы не спамить кольцами
+
 func _ready():
 	add_to_group("player")
 	target_zoom = camera.zoom
@@ -326,6 +329,10 @@ func _physics_process(delta):
 func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 	_update_discuss_bar_position()
+
+	# Кулдаун кольца ауры
+	if _aura_ring_cooldown > 0:
+		_aura_ring_cooldown -= delta
 
 func _unhandled_input(event):
 	if GameTime.is_night_skip:
@@ -671,6 +678,27 @@ func _show_radius_circle(radius: float, color: Color):
 	tween.tween_property(ring, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_interval(2.0)
 	tween.tween_property(ring, "modulate:a", 0.0, 0.7)
+	tween.tween_callback(ring.queue_free)
+
+# === АУРА PM: Показать кольцо (вызывается из employee.gd) ===
+func show_aura_ring():
+	# Не показываем чаще, чем раз в 5 секунд реального времени
+	if _aura_ring_cooldown > 0:
+		return
+	_aura_ring_cooldown = 5.0
+	
+	var ring = _MotivateRing.new()
+	ring.radius = 250.0  # PM_AURA_RADIUS
+	ring.ring_color = Color(0.2, 0.6, 0.9, 0.5)  # Синеватый, полупрозрачный
+	ring.ring_width = 2.0
+	ring.z_index = 40
+	add_child(ring)
+	
+	ring.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(ring, "modulate:a", 0.6, 0.15)
+	tween.tween_interval(0.7)
+	tween.tween_property(ring, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(ring.queue_free)
 
 # Вспомогательный класс для рисования кольца через _draw
