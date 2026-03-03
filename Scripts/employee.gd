@@ -1305,7 +1305,7 @@ func _update_neighbor_bonus():
 		for desk in desks:
 			if desk == my_desk:
 				continue
-			if desk.assigned_employee == null:
+			if not ("assigned_employee" in desk) or desk.assigned_employee == null:
 				continue
 			if not is_instance_valid(desk.assigned_npc_node):
 				continue
