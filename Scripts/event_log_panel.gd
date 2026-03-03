@@ -28,6 +28,13 @@ func _ready():
 		_add_message_label(entry)
 	call_deferred("_scroll_to_top")
 
+func _process(_delta):
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_any_menu_open"):
+		var menu_open = hud.is_any_menu_open()
+		if _panel: _panel.visible = not menu_open and not _is_collapsed
+		if _icon_btn: _icon_btn.visible = not menu_open and _is_collapsed
+
 func _build_ui():
 	# === FULL PANEL ===
 	_panel = PanelContainer.new()

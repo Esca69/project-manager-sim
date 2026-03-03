@@ -60,6 +60,9 @@ func save_game():
 
 		# === RELATIONSHIP SYSTEM ===
 		"relationship_manager": _serialize_relationship_manager(),
+
+		# === FREELANCER SYSTEM: Сохраняем предупреждения об уходе ===
+		"freelancer_manager": _serialize_freelancer_manager(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -157,6 +160,8 @@ func _serialize_employees() -> Array:
 			"employee_name": d.employee_name,
 			"job_title": d.job_title,
 			"monthly_salary": d.monthly_salary,
+			"employment_type": d.employment_type,
+			"days_in_company": d.days_in_company,
 			"employee_level": d.employee_level,
 			"employee_xp": d.employee_xp,
 			"skill_backend": d.skill_backend,
@@ -340,6 +345,15 @@ func _serialize_relationship_manager() -> Dictionary:
 		return {}
 	return rm.serialize()
 
+# === FREELANCER SYSTEM: Сериализация FreelancerManager ===
+func _serialize_freelancer_manager() -> Dictionary:
+	var fm = get_node_or_null("/root/FreelancerManager")
+	if fm == null:
+		return {}
+	return {
+		"warned_freelancers": fm._warned_freelancers.duplicate(),
+	}
+
 # ============================================================
 #                        ЗАГРУЗКА
 # ============================================================
@@ -383,6 +397,9 @@ func load_game() -> bool:
 
 	# === RELATIONSHIP SYSTEM: Восстанавливаем RelationshipManager ===
 	_load_relationship_manager(data.get("relationship_manager", {}))
+
+	# === FREELANCER SYSTEM: Восстанавливаем FreelancerManager ===
+	_load_freelancer_manager(data.get("freelancer_manager", {}))
 
 	print("📂 Данные синглтонов восстановлены")
 	pending_restore = true
@@ -433,6 +450,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		emp_data.employee_name = emp_dict.get("employee_name", "???")
 		emp_data.job_title = emp_dict.get("job_title", "Junior Developer")
 		emp_data.monthly_salary = int(emp_dict.get("monthly_salary", 3000))
+		emp_data.employment_type = str(emp_dict.get("employment_type", "contractor"))
+		emp_data.days_in_company = int(emp_dict.get("days_in_company", 0))
 		emp_data.employee_level = int(emp_dict.get("employee_level", 0))
 		emp_data.employee_xp = int(emp_dict.get("employee_xp", 0))
 		emp_data.skill_backend = int(emp_dict.get("skill_backend", 10))
@@ -490,7 +509,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === EVENT SYSTEM: Восстанавливаем состояние болезни/отгула ===
 			npc.sick_days_left = int(emp_dict.get("sick_days_left", 0))
 			npc.is_on_day_off = emp_dict.get("is_on_day_off", false)
-			npc._lunch_done_today = emp_dict.get("lunch_done_today", false)  # <<< ДОБАВИТЬ
+			npc._lunch_done_today = emp_dict.get("lunch_done_today", false)
 			# === RAISES ===
 			npc.data.is_requesting_raise = emp_dict.get("is_requesting_raise", false)
 			npc.data.raise_requested_salary = int(emp_dict.get("raise_requested_salary", 0))
@@ -827,6 +846,18 @@ func _load_relationship_manager(rm_data: Dictionary):
 	if rm == null:
 		return
 	rm.deserialize(rm_data)
+
+# === FREELANCER SYSTEM: Восстановление FreelancerManager ===
+func _load_freelancer_manager(d: Dictionary):
+	var fm = get_node_or_null("/root/FreelancerManager")
+	if fm == null:
+		return
+	if d.is_empty():
+		return
+	fm._warned_freelancers.clear()
+	var saved = d.get("warned_freelancers", {})
+	for emp_name in saved:
+		fm._warned_freelancers[str(emp_name)] = int(saved[emp_name])
 
 # ============================================================
 #                        УТИЛИТЫ
