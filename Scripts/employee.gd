@@ -155,6 +155,8 @@ var _chat_pair_cooldowns: Dictionary = {}  # Ключ = имя партнёра,
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
 var skin_color: Color = Color.WHITE
+var hair_type: int = 0
+var hair_color: Color = Color.WHITE
 
 const CLOTHING_PALETTE: Array[Color] = [
 	Color("#FFADAD"), Color("#FFD6A5"), Color("#FDFFB6"), Color("#CAFFBF"),
@@ -176,6 +178,29 @@ const SKIN_DARK: Array[Color] = [
 	Color("#61412A"), Color("#4A2E1B"), Color("#311A0E")
 ]
 
+const HAIR_PALETTE: Array[Color] = [
+	Color("#F5DEB3"),  # Блонд
+	Color("#C8A882"),  # Русый
+	Color("#C45232"),  # Рыжий
+	Color("#6B3A2A"),  # Коричневый
+	Color("#1A1A1A"),  # Чёрный
+]
+
+const HAIR_OFFSET_X: float = 0.0
+const HAIR_OFFSET_Y: float = -10.0
+
+const MALE_HAIR_PATHS: Array[String] = [
+	"res://Sprites/hairs/man_hair1.png",
+	"res://Sprites/hairs/man_hair2.png",
+	"res://Sprites/hairs/man_hair3.png",
+]
+
+const FEMALE_HAIR_PATHS: Array[String] = [
+	"res://Sprites/hairs/woman_hair1.png",
+	"res://Sprites/hairs/woman_hair2.png",
+	"res://Sprites/hairs/woman_hair3.png",
+]
+
 @export var data: EmployeeData
 
 @onready var body_sprite = $Visuals/Body
@@ -183,6 +208,8 @@ const SKIN_DARK: Array[Color] = [
 @onready var nav_agent = $NavigationAgent2D 
 @onready var debug_label = $DebugLabel
 @onready var coffee_cup_holder = $CoffeeCupHolder
+
+var hair_sprite: Sprite2D = null
 
 func _ready():
 	add_to_group("npc")
@@ -488,6 +515,9 @@ func _assign_random_color():
 		skin_color = SKIN_MEDIUM.pick_random()
 	else:
 		skin_color = SKIN_DARK.pick_random()
+
+	hair_type = randi_range(0, MALE_HAIR_PATHS.size() - 1)
+	hair_color = HAIR_PALETTE.pick_random()
 
 func _setup_early_bird():
 	if not data or not data.has_trait("early_bird"):
@@ -1524,6 +1554,25 @@ func update_visuals():
 		body_sprite.self_modulate = personal_color
 	if head_sprite:
 		head_sprite.self_modulate = skin_color
+	_create_hair_sprite()
+
+func _create_hair_sprite():
+	if hair_sprite and is_instance_valid(hair_sprite):
+		hair_sprite.queue_free()
+
+	hair_sprite = Sprite2D.new()
+	hair_sprite.name = "Hair"
+	hair_sprite.position = Vector2(HAIR_OFFSET_X, HAIR_OFFSET_Y)
+
+	var paths = FEMALE_HAIR_PATHS if data and data.gender == "female" else MALE_HAIR_PATHS
+	if paths.size() == 0:
+		return
+	var idx = clampi(hair_type, 0, paths.size() - 1)
+	hair_sprite.texture = load(paths[idx])
+	hair_sprite.self_modulate = hair_color
+
+	if head_sprite:
+		head_sprite.add_child(hair_sprite)
 
 func interact():
 	var hud = get_tree().get_first_node_in_group("ui")

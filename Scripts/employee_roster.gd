@@ -20,6 +20,11 @@ var _pending_severance: int = 0
 
 var _body_texture: Texture2D
 var _head_texture: Texture2D
+var _hair_textures_male: Array = []
+var _hair_textures_female: Array = []
+
+const ROSTER_HAIR_OFFSET_X: float = 0.0
+const ROSTER_HAIR_OFFSET_Y: float = -8.0
 
 var _overlay: ColorRect
 
@@ -45,6 +50,16 @@ func _ready():
 
 	_body_texture = load("res://Sprites/body2.png")
 	_head_texture = load("res://Sprites/head2.png")
+	_hair_textures_male = [
+		load("res://Sprites/hairs/man_hair1.png"),
+		load("res://Sprites/hairs/man_hair2.png"),
+		load("res://Sprites/hairs/man_hair3.png"),
+	]
+	_hair_textures_female = [
+		load("res://Sprites/hairs/woman_hair1.png"),
+		load("res://Sprites/hairs/woman_hair2.png"),
+		load("res://Sprites/hairs/woman_hair3.png"),
+	]
 
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
@@ -1122,6 +1137,32 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 	head_tex.position = Vector2(6, 0) 
 	head_tex.self_modulate = head_color
 	inner.add_child(head_tex)
+
+	var hair_color_val = Color.WHITE
+	var hair_type_val = 0
+	var hair_gender = "male"
+
+	if npc_node:
+		if "hair_color" in npc_node:
+			hair_color_val = npc_node.hair_color
+		if "hair_type" in npc_node:
+			hair_type_val = npc_node.hair_type
+		if npc_node.data and "gender" in npc_node.data:
+			hair_gender = npc_node.data.gender
+
+	var hair_textures = _hair_textures_female if hair_gender == "female" else _hair_textures_male
+	if hair_textures.size() > 0:
+		var hair_idx = clampi(hair_type_val, 0, hair_textures.size() - 1)
+		if hair_textures[hair_idx] != null:
+			var hair_tex = TextureRect.new()
+			hair_tex.texture = hair_textures[hair_idx]
+			hair_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			hair_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			hair_tex.custom_minimum_size = Vector2(24, 24)
+			hair_tex.size = Vector2(24, 24)
+			hair_tex.position = Vector2(head_tex.position.x + ROSTER_HAIR_OFFSET_X, head_tex.position.y + ROSTER_HAIR_OFFSET_Y)
+			hair_tex.self_modulate = hair_color_val
+			inner.add_child(hair_tex)
 
 	return center
 
