@@ -128,7 +128,7 @@ var _lunch_kitchen_ref = null
 var _lunch_table_ref = null
 
 # === PROXIMITY CHAT SYSTEM ===
-const PROX_CHAT_RADIUS: float = 300.0       # Радиус обнаружения для мгновенного чата
+const PROX_CHAT_RADIUS: float = 500.0       # Радиус обнаружения для мгновенного чата
 const PROX_CHAT_BASE_CHANCE: float = 0.10    # 10% шанс за тик при нахождении в радиусе
 const PROX_CHAT_EXTROVERT_MULT: float = 2.0  # Экстраверт/toxic чатит чаще
 const PROX_CHAT_INTROVERT_MULT: float = 0.3  # Интроверт чатит реже
@@ -1263,9 +1263,11 @@ func _update_neighbor_bonus():
 		return
 	if my_desk_position == Vector2.ZERO:
 		data.neighbor_mod = 0.0
+		_clear_smelly_neighbor_mods()
 		return
 	if current_state != State.WORKING:
 		data.neighbor_mod = 0.0
+		_clear_smelly_neighbor_mods()
 		return
 
 	var desks = get_tree().get_nodes_in_group("desk")
@@ -1276,6 +1278,7 @@ func _update_neighbor_bonus():
 			break
 	if my_desk == null:
 		data.neighbor_mod = 0.0
+		_clear_smelly_neighbor_mods()
 		return
 
 	# Ищем соседние столы (в радиусе 300 пикселей)
@@ -1294,6 +1297,43 @@ func _update_neighbor_bonus():
 	# Mood-модификаторы от соседей
 	for neighbor_name in neighbor_names:
 		RelationshipManager.apply_neighbor_mood(data, neighbor_name)
+
+	# === Пассивный штраф от smelly-соседей ===
+	# Smelly раздражает всех соседей просто своим присутствием,
+	# независимо от уровня отношений. Smelly не раздражают друг друга.
+	if "smelly" not in data.personality:
+		for desk in desks:
+			if desk == my_desk:
+				continue
+			if desk.assigned_employee == null:
+				continue
+			if not is_instance_valid(desk.assigned_npc_node):
+				continue
+			if not desk.assigned_npc_node.data:
+				continue
+			var dist_to_desk = my_desk.global_position.distance_to(desk.global_position)
+			if dist_to_desk > 300.0:
+				continue
+			if "smelly" in desk.assigned_npc_node.data.personality:
+				# Mood-модификатор уникален для каждого smelly-соседа (480 с ≈ 8 игровых минут)
+				data.add_mood_modifier(
+					"smelly_neighbor_" + desk.assigned_employee.employee_name,
+					"MOOD_MOD_NEIGHBOR_BAD",
+					-3.0,
+					480.0
+				)
+				# Штраф эффективности накапливается: каждый smelly-сосед добавляет -0.03
+				data.neighbor_mod -= 0.03
+
+func _clear_smelly_neighbor_mods():
+	if not data:
+		return
+	var to_remove = []
+	for mod in data.mood_modifiers:
+		if mod.id.begins_with("smelly_neighbor_"):
+			to_remove.append(mod.id)
+	for mod_id in to_remove:
+		data.remove_mood_modifier(mod_id)
 
 # =============================================
 
