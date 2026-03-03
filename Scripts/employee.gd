@@ -128,7 +128,7 @@ var _lunch_kitchen_ref = null
 var _lunch_table_ref = null
 
 # === PROXIMITY CHAT SYSTEM ===
-const PROX_CHAT_RADIUS: float = 500.0       # Радиус обнаружения для мгновенного чата
+const PROX_CHAT_RADIUS: float = 700.0       # Радиус обнаружения для мгновенного чата
 const PROX_CHAT_BASE_CHANCE: float = 0.10    # 10% шанс за тик при нахождении в радиусе
 const PROX_CHAT_EXTROVERT_MULT: float = 2.0  # Экстраверт/toxic чатит чаще
 const PROX_CHAT_INTROVERT_MULT: float = 0.3  # Интроверт чатит реже
