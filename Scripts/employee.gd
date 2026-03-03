@@ -1312,7 +1312,7 @@ func _update_neighbor_bonus():
 			if not desk.assigned_npc_node.data:
 				continue
 			var dist_to_desk = my_desk.global_position.distance_to(desk.global_position)
-			if dist_to_desk > 300.0:
+			if dist_to_desk > 500.0:
 				continue
 			if "smelly" in desk.assigned_npc_node.data.personality:
 				# Mood-модификатор уникален для каждого smelly-соседа (480 с ≈ 8 игровых минут)
