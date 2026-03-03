@@ -1,7 +1,7 @@
 extends Control
 
-const PANEL_WIDTH = 350
-const PANEL_HEIGHT = 250
+const PANEL_WIDTH = 455
+const PANEL_HEIGHT = 325
 const BOTTOM_BAR_HEIGHT = 50
 const SIDE_MARGIN = 10
 const BOTTOM_MARGIN = 10
@@ -26,7 +26,7 @@ func _ready():
 	EventLog.alert_added.connect(_on_alert_added)
 	for entry in EventLog.entries:
 		_add_message_label(entry)
-	call_deferred("_scroll_to_bottom")
+	call_deferred("_scroll_to_top")
 
 func _build_ui():
 	# === FULL PANEL ===
@@ -138,8 +138,11 @@ func _add_message_label(entry: Dictionary):
 	if UITheme:
 		UITheme.apply_font(lbl, "regular")
 	_messages_vbox.add_child(lbl)
+	_messages_vbox.move_child(lbl, 0)
+	# Удаляем старые записи С КОНЦА (самые старые теперь внизу)
 	while _messages_vbox.get_child_count() > EventLog.MAX_ENTRIES:
-		_messages_vbox.get_child(0).queue_free()
+		var last_child = _messages_vbox.get_child(_messages_vbox.get_child_count() - 1)
+		last_child.queue_free()
 
 func _get_color_for_type(type: int) -> Color:
 	match type:
@@ -151,14 +154,16 @@ func _get_color_for_type(type: int) -> Color:
 
 func _on_log_added(entry: Dictionary):
 	_add_message_label(entry)
-	var scrollbar = _scroll.get_v_scroll_bar()
-	var at_bottom = scrollbar.value >= scrollbar.max_value - scrollbar.page - SCROLL_TOLERANCE
-	if at_bottom or scrollbar.max_value <= scrollbar.page:
-		call_deferred("_scroll_to_bottom")
+	# Автоскролл наверх — новые сообщения всегда видны
+	call_deferred("_scroll_to_top")
 
 func _scroll_to_bottom():
 	if _scroll:
 		_scroll.scroll_vertical = int(_scroll.get_v_scroll_bar().max_value)
+
+func _scroll_to_top():
+	if _scroll:
+		_scroll.scroll_vertical = 0
 
 func _on_alert_added():
 	if _is_collapsed:
@@ -174,7 +179,7 @@ func _expand():
 	_panel.visible = true
 	_icon_btn.visible = false
 	_stop_pulse()
-	call_deferred("_scroll_to_bottom")
+	call_deferred("_scroll_to_top")
 
 func _start_pulse():
 	if _pulse_tween and _pulse_tween.is_running():

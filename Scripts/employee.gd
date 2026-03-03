@@ -1225,12 +1225,16 @@ func _execute_proximity_chat(partner_npc):
 	# Записываем в EventLog
 	var rel_val = RelationshipManager.get_relationship(data.employee_name, partner_npc.data.employee_name)
 	var level_name = tr(RelationshipManager.get_rel_level_name(data.employee_name, partner_npc.data.employee_name))
+	# Собираем debug-строку с деталями броска
+	var debug_parts: String = "🎲%d" % result.base_roll
+	if result.factors.size() > 0:
+		debug_parts += " " + ", ".join(result.factors)
 	if result.is_positive:
-		EventLog.add(tr("LOG_CHAT_POSITIVE") % [data.employee_name, partner_npc.data.employee_name, rel_val, level_name])
+		EventLog.add(tr("LOG_CHAT_POSITIVE") % [data.employee_name, partner_npc.data.employee_name, rel_val, level_name] + " | Δ%+d (%s)" % [result.delta, debug_parts])
 	else:
-		EventLog.add(tr("LOG_CHAT_NEGATIVE") % [data.employee_name, partner_npc.data.employee_name, rel_val, level_name])
+		EventLog.add(tr("LOG_CHAT_NEGATIVE") % [data.employee_name, partner_npc.data.employee_name, rel_val, level_name] + " | Δ%+d (%s)" % [result.delta, debug_parts])
 
-	print("💬 Proximity chat: %s ↔ %s, delta=%d, rel=%d (%s)" % [data.employee_name, partner_npc.data.employee_name, result.delta, rel_val, level_name])
+	print("💬 Proximity chat: %s ↔ %s, delta=%d, rel=%d (%s) | %s" % [data.employee_name, partner_npc.data.employee_name, result.delta, rel_val, level_name, debug_parts])
 
 func _show_chat_reaction(is_positive: bool):
 	show_thought_bubble("💬", 1.0)
