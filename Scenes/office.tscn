@@ -242,7 +242,7 @@ position = Vector2(3250, -2124)
 texture = ExtResource("9_rs1ao")
 
 [node name="Flipchart" parent="WorldObjects" instance=ExtResource("12_s31ab")]
-position = Vector2(700, -124)
+position = Vector2(1201, -165)
 
 [node name="Toilet" parent="WorldObjects" instance=ExtResource("13_kn5q7")]
 position = Vector2(2720, -544)
