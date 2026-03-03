@@ -1329,7 +1329,7 @@ func _clear_smelly_neighbor_mods():
 	if not data:
 		return
 	var to_remove = []
-	for mod in data.mood_modifiers:
+	for mod in data.mood_temp_modifiers:
 		if mod.id.begins_with("smelly_neighbor_"):
 			to_remove.append(mod.id)
 	for mod_id in to_remove:
