@@ -29,6 +29,7 @@ const EVENT_HEADERS = {
 	"hunting_offer": {"emoji": "🏹", "title_key": "EVENT_HUNTING_TITLE"},
 	"hunting_quit": {"emoji": "🚪", "title_key": "EVENT_HUNTING_QUIT_TITLE"},
 	"vacation_request": {"emoji": "✈️", "title_key": "EVENT_VACATION_TITLE"},
+	"freelancer_leave": {"emoji": "🚪", "title_key": "EVENT_FREELANCER_LEAVE_TITLE"},
 }
 
 var _overlay: ColorRect
@@ -210,6 +211,8 @@ func _get_event_description(event_data: Dictionary) -> String:
 			return tr("EVENT_HUNTING_QUIT_DESC") % [event_data["employee_name"], event_data["quit_days"]]
 		"vacation_request":
 			return tr("EVENT_VACATION_DESC") % [event_data["employee_name"], event_data["delay_text"]]
+		"freelancer_leave":
+			return event_data["description_text"]
 	return ""
 
 # =============================================
