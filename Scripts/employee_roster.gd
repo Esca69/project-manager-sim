@@ -784,52 +784,94 @@ func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContaine
 
 # === RELATIONSHIP SYSTEM: Секция отношений в карточке ===
 func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
-	var rm = get_node_or_null("/root/RelationshipManager")
-	if rm == null:
-		return
-	var rels = rm.get_relationship_summary(emp.employee_name)
-	if rels.is_empty():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	if npcs.size() <= 1:
 		return
 
-	var flow = HFlowContainer.new()
-	flow.add_theme_constant_override("h_separation", 12)
-	flow.add_theme_constant_override("v_separation", 4)
-
-	for rel in rels:
-		var item = _create_relationship_item(rel, emp)
-		flow.add_child(item)
-
-	card_vbox.add_child(flow)
-
-func _create_relationship_item(rel: Dictionary, emp: EmployeeData) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 4)
+	hbox.add_theme_constant_override("separation", 6)
 
-	var color = _get_relationship_color(rel.value)
-	var level_text = tr(rel.level_key)
+	var header_lbl = Label.new()
+	header_lbl.text = tr("ROSTER_RELATIONSHIPS")
+	header_lbl.add_theme_font_size_override("font_size", 13)
+	header_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	if UITheme: UITheme.apply_font(header_lbl, "semibold")
+	hbox.add_child(header_lbl)
 
-	var lbl = Label.new()
-	var emoji = "❤️" if rel.value > 0 else "💔"
-	var sign_str = "+" if rel.value > 0 else ""
-	lbl.text = "%s %s (%s%d, %s)" % [emoji, rel.name, sign_str, rel.value, level_text]
-	lbl.add_theme_color_override("font_color", color)
-	lbl.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(lbl, "regular")
-	hbox.add_child(lbl)
+	var help_btn = _create_help_button()
+	var tooltip_ref: Array = [null]
+	var emp_ref = emp
+	var parent_ref = self
 
-	return hbox
+	help_btn.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tooltip_text = _build_relationships_tooltip_text(emp_ref)
+		var tp = TraitUIHelper._create_tooltip(tooltip_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+		parent_ref.add_child(tp)
+		var btn_global = help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		tooltip_ref[0] = tp
+	)
+	help_btn.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+	hbox.add_child(help_btn)
+
+	card_vbox.add_child(hbox)
+
+func _build_relationships_tooltip_text(emp: EmployeeData) -> String:
+	var npcs = get_tree().get_nodes_in_group("npc")
+	var entries = []
+	for npc in npcs:
+		if not npc.data:
+			continue
+		if npc.data.employee_name == emp.employee_name:
+			continue
+		var other_name = npc.data.employee_name
+		var value = RelationshipManager.get_relationship(emp.employee_name, other_name)
+		var level = RelationshipManager.get_rel_level(emp.employee_name, other_name)
+		var level_name = tr(RelationshipManager.get_rel_level_name(emp.employee_name, other_name))
+		entries.append({"name": other_name, "value": value, "level": level, "level_name": level_name})
+
+	if entries.is_empty():
+		return tr("ROSTER_NO_COLLEAGUES")
+
+	# Сортируем от лучшего к худшему
+	entries.sort_custom(func(a, b): return a.value > b.value)
+
+	var lines: Array[String] = []
+	for entry in entries:
+		var marker = ""
+		match entry.level:
+			RelationshipManager.RelLevel.BESTIES:
+				marker = "🟢"
+			RelationshipManager.RelLevel.FRIENDLY:
+				marker = "🟢"
+			RelationshipManager.RelLevel.NEUTRAL:
+				marker = "⚪"
+			RelationshipManager.RelLevel.DISLIKE:
+				marker = "🟡"
+			RelationshipManager.RelLevel.NEMESIS:
+				marker = "🔴"
+		var sign_str = "+" if entry.value >= 0 else ""
+		lines.append("%s %s: %s (%s%d)" % [marker, entry.name, entry.level_name, sign_str, entry.value])
+
+	return "\n".join(lines)
 
 func _get_relationship_color(value: int) -> Color:
 	if value >= 60:
-		return Color(0.29, 0.69, 0.31, 1)       # Зелёный (Besties)
+		return Color(0.18, 0.8, 0.25, 1)         # Besties — ярко-зелёный
 	elif value >= 25:
-		return Color(0.3, 0.6, 0.85, 1)          # Голубой (Friendly)
+		return Color(0.29, 0.69, 0.31, 1)         # Friendly — зелёный
 	elif value > -25:
-		return Color(0.5, 0.5, 0.5, 1)           # Серый (Neutral)
+		return Color(0.5, 0.5, 0.5, 1)            # Neutral — серый
 	elif value > -60:
-		return Color(0.9, 0.55, 0.2, 1)          # Оранжевый (Dislike)
+		return Color(0.9, 0.7, 0.1, 1)            # Dislike — жёлтый
 	else:
-		return Color(0.85, 0.25, 0.2, 1)         # Красный (Nemesis)
+		return Color(0.85, 0.25, 0.2, 1)          # Nemesis — красный
 
 # === Рекурсивный поиск Label внутри тултипа для live-обновления ===
 func _find_label_in_tooltip(tooltip_node: Control) -> Label:
@@ -1113,9 +1155,9 @@ func _get_status_text(npc_node) -> String:
 		16: return tr("ROSTER_STATUS_LUNCH_KITCHEN")
 		17: return tr("ROSTER_STATUS_GOING_LUNCH")
 		18: return tr("ROSTER_STATUS_LUNCH_EATING")
-		# === RELATIONSHIP SYSTEM: Chat states ===
-		19: return tr("ROSTER_STATUS_GOING_CHAT")
-		20: return tr("ROSTER_STATUS_CHATTING")
+		# === RELATIONSHIP SYSTEM: DEPRECATED chat states ===
+		19: return tr("ROSTER_STATUS_IDLE")  # DEPRECATED state
+		20: return tr("ROSTER_STATUS_IDLE")  # DEPRECATED state
 		# === VACATION SYSTEM ===
 		21: return tr("ROSTER_STATUS_ON_VACATION_STATE")
 	return "—"
