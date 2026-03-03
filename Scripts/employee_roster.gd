@@ -633,7 +633,6 @@ func _create_help_button() -> Button:
 	return btn
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
-# === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 	var panel = PanelContainer.new()
 	var style = StyleBoxFlat.new()
@@ -808,6 +807,10 @@ func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
 			tooltip_ref[0].queue_free()
 		var tooltip_text = _build_relationships_tooltip_text(emp_ref)
 		var tp = TraitUIHelper._create_tooltip(tooltip_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+		
+		# РАСШИРЯЕМ ТУЛТИП НА ~30%
+		tp.custom_minimum_size = Vector2(350, 0)
+		
 		parent_ref.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
@@ -831,10 +834,14 @@ func _build_relationships_tooltip_text(emp: EmployeeData) -> String:
 		if npc.data.employee_name == emp.employee_name:
 			continue
 		var other_name = npc.data.employee_name
+		
+		# --- ИСПРАВЛЕНО ТУТ ---
+		var other_role = tr(npc.data.job_title) 
+		
 		var value = RelationshipManager.get_relationship(emp.employee_name, other_name)
 		var level = RelationshipManager.get_rel_level(emp.employee_name, other_name)
 		var level_name = tr(RelationshipManager.get_rel_level_name(emp.employee_name, other_name))
-		entries.append({"name": other_name, "value": value, "level": level, "level_name": level_name})
+		entries.append({"name": other_name, "role": other_role, "value": value, "level": level, "level_name": level_name})
 
 	if entries.is_empty():
 		return tr("ROSTER_NO_COLLEAGUES")
@@ -857,7 +864,8 @@ func _build_relationships_tooltip_text(emp: EmployeeData) -> String:
 			RelationshipManager.RelLevel.NEMESIS:
 				marker = "🔴"
 		var sign_str = "+" if entry.value >= 0 else ""
-		lines.append("%s %s: %s (%s%d)" % [marker, entry.name, entry.level_name, sign_str, entry.value])
+		# ВСТАВЛЯЕМ РОЛЬ В СКОБКАХ ПОСЛЕ ИМЕНИ
+		lines.append("%s %s (%s): %s (%s%d)" % [marker, entry.name, entry.role, entry.level_name, sign_str, entry.value])
 
 	return "\n".join(lines)
 
@@ -867,11 +875,11 @@ func _get_relationship_color(value: int) -> Color:
 	elif value >= 25:
 		return Color(0.29, 0.69, 0.31, 1)         # Friendly — зелёный
 	elif value > -25:
-		return Color(0.5, 0.5, 0.5, 1)            # Neutral — серый
+		return Color(0.5, 0.5, 0.5, 1)             # Neutral — серый
 	elif value > -60:
-		return Color(0.9, 0.7, 0.1, 1)            # Dislike — жёлтый
+		return Color(0.9, 0.7, 0.1, 1)             # Dislike — жёлтый
 	else:
-		return Color(0.85, 0.25, 0.2, 1)          # Nemesis — красный
+		return Color(0.85, 0.25, 0.2, 1)           # Nemesis — красный
 
 # === Рекурсивный поиск Label внутри тултипа для live-обновления ===
 func _find_label_in_tooltip(tooltip_node: Control) -> Label:
