@@ -702,6 +702,8 @@ func apply_choice(event_data: Dictionary, choice_id: String):
 			_apply_hunting_quit(event_data, choice_id)
 		"vacation_request":
 			_apply_vacation_choice(event_data, choice_id)
+		"freelancer_leave":
+			_apply_freelancer_leave(event_data, choice_id)
 
 func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
@@ -1075,6 +1077,18 @@ func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
 			emp_data.add_mood_modifier("vacation_denied", "MOOD_MOD_VACATION_DENIED", -15.0, 4320.0)
 			if EventLog:
 				EventLog.add(tr("LOG_VACATION_DENIED") % emp_data.employee_name, EventLog.LogType.ALERT)
+
+func _apply_freelancer_leave(event_data: Dictionary, _choice_id: String):
+	var leave_type = event_data.get("leave_type", "hard")
+	var emp_name = event_data.get("employee_name", "")
+
+	if leave_type == "soft":
+		var warning_days = event_data.get("warning_days", 1)
+		FreelancerManager.register_warned_freelancer(emp_name, warning_days)
+	else:
+		var npc_node = event_data.get("npc_node")
+		if is_instance_valid(npc_node):
+			FreelancerManager._execute_departure(npc_node)
 
 func _on_hunting_check(hour: int, minute: int):
 	# Проверяем хантинг в 11:00 (не утром, чтобы растянуть события по дню)

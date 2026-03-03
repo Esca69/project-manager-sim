@@ -627,6 +627,32 @@ LOG_HIRE_EMPLOYEE,📋 Нанят %s: %s (%s $%d/мес),📋 Hired %s: %s (%s $
 LOG_FIRE_CONTRACTOR,🔥 Уволен контрактник %s. Компенсация: $%d,🔥 Contractor %s fired. Severance: $%d
 LOG_FIRE_FREELANCER,🔥 Уволен фрилансер %s (без компенсации),🔥 Freelancer %s fired (no severance)
 LOG_SEVERANCE_PAID,💰 Выплачена компенсация %s: $%d,💰 Severance paid for %s: $%d
+EVENT_FREELANCER_LEAVE_TITLE,Фрилансер уходит,Freelancer Leaving
+EVENT_FREELANCER_SOFT_DESC,"%s (%s) подходит к вам:
+
+«%s»
+
+Планирует уйти через %d дн.","%s (%s) approaches you:
+
+""%s""
+
+Planning to leave in %d day(s)."
+EVENT_FREELANCER_HARD_DESC,"%s (%s) подходит к вам:
+
+«%s»
+
+Уходит прямо сейчас!","%s (%s) approaches you:
+
+""%s""
+
+Leaving right now!"
+EVENT_FREELANCER_LEAVE_OK,Понятно,Got it
+EVENT_FREELANCER_LEAVE_OK_DESC,,
+FREELANCER_REASON_1,Нашёл более интересный проект на стороне.,Found a more interesting project elsewhere.
+FREELANCER_REASON_2,Устал от рутины — хочу попробовать что-то новое.,Tired of routine — want to try something new.
+FREELANCER_REASON_3,Получил предложение с лучшими условиями.,Got an offer with better terms.
+FREELANCER_REASON_4,Мне нужен перерыв — выгорание подкралось незаметно.,I need a break — burnout crept up on me.
+FREELANCER_REASON_5,Решил сменить направление в карьере.,Decided to change my career direction.
 LOG_FREELANCER_SUDDEN_LEAVE,🚪 Фрилансер %s внезапно покинул компанию!,🚪 Freelancer %s suddenly left the company!
 LOG_FREELANCER_WARN_LEAVE,⚠️ Фрилансер %s собирается уйти через %d дн.,⚠️ Freelancer %s is leaving in %d day(s).
 LOG_FREELANCER_DEPARTED,🚪 Фрилансер %s покинул компанию (отработал %d дн.),🚪 Freelancer %s left the company (worked %d day(s))
