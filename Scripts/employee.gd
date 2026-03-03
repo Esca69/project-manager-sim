@@ -1271,7 +1271,7 @@ func _update_neighbor_bonus():
 	var desks = get_tree().get_nodes_in_group("desk")
 	var my_desk = null
 	for desk in desks:
-		if desk.assigned_npc_node == self:
+		if "assigned_npc_node" in desk and desk.assigned_npc_node == self:
 			my_desk = desk
 			break
 	if my_desk == null:
@@ -1283,7 +1283,7 @@ func _update_neighbor_bonus():
 	for desk in desks:
 		if desk == my_desk:
 			continue
-		if desk.assigned_employee == null:
+		if not ("assigned_employee" in desk) or desk.assigned_employee == null:
 			continue
 		var dist = my_desk.global_position.distance_to(desk.global_position)
 		if dist <= 300.0:
