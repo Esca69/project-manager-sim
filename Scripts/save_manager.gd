@@ -196,6 +196,8 @@ func _serialize_employees() -> Array:
 			"vacation_days_remaining": d.vacation_days_remaining,
 			# === RELATIONSHIP SYSTEM ===
 			"neighbor_mod": d.neighbor_mod,
+			# === PROXIMITY CHAT: Кулдауны пар ===
+			"chat_pair_cooldowns": npc._chat_pair_cooldowns.duplicate(),
 		})
 	return result
 
@@ -501,6 +503,11 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === RELATIONSHIP SYSTEM ===
 			if emp_dict.has("neighbor_mod"):
 				npc.data.neighbor_mod = float(emp_dict["neighbor_mod"])
+			# === PROXIMITY CHAT: Восстанавливаем кулдауны пар ===
+			var saved_cooldowns = emp_dict.get("chat_pair_cooldowns", {})
+			npc._chat_pair_cooldowns.clear()
+			for partner_name in saved_cooldowns:
+				npc._chat_pair_cooldowns[str(partner_name)] = float(saved_cooldowns[partner_name])
 			var saved_state = int(emp_dict.get("current_state", 0))
 			if saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false
@@ -512,8 +519,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
 				npc.current_state = 12
-			elif saved_state == 19 or saved_state == 20:  # GOING_TO_CHAT / CHATTING — прерваны
-				pass  # Будет обработано в _rebind_employees_to_desks как обычный NPC
+			elif saved_state == 19 or saved_state == 20:  # GOING_TO_CHAT / CHATTING — DEPRECATED, заменяем на WANDERING
+				npc.current_state = 9  # State.WANDERING
 			elif saved_state == 21:  # State.ON_VACATION (сдвинулось из-за новых стейтов)
 				npc.visible = false
 				npc.get_node("CollisionShape2D").disabled = true
