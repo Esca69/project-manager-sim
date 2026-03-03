@@ -267,8 +267,8 @@ func add_xp(amount: int):
 			break
 		if xp >= XP_THRESHOLDS[next_index]:
 			_last_threshold_index = next_index
-			skill_points += 1
-			print("🎯 PM получил очко навыка! (всего: ", skill_points, ")")
+			skill_points += 2
+			print("🎯 PM получил очки навыков! (всего: ", skill_points, ")")
 		else:
 			break
 	emit_signal("xp_changed", xp, skill_points)
@@ -346,9 +346,9 @@ func get_skill_read_level() -> int:
 # === НОВЫЕ ХЕЛПЕРЫ ===
 
 func get_max_projects() -> int:
-	if has_skill("project_limit_2"): return 5
-	if has_skill("project_limit_1"): return 3
-	return 2
+	if has_skill("project_limit_2"): return 7
+	if has_skill("project_limit_1"): return 5
+	return 3
 
 func get_candidate_count() -> int:
 	if has_skill("candidate_count_2"): return 5

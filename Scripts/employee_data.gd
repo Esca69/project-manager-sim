@@ -191,6 +191,7 @@ func add_mood_modifier(id: String, name_key: String, value: float, duration_minu
 		if mod.id == id:
 			mod.minutes_left = duration_minutes
 			mod.value = value
+			mod.name_key = name_key
 			recalculate_mood()
 			return
 

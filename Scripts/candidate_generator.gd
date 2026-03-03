@@ -136,7 +136,14 @@ func _generate_personality(gender: String) -> Array[String]:
 	var result: Array[String] = []
 	
 	# Категория A: Социальная батарейка (ВСЕГДА 1)
-	result.append(EmployeeData.PERSONALITY_SOCIAL.pick_random())
+	# toxic — 20%, extrovert и introvert — по 40%
+	var social_roll = randf()
+	if social_roll < 0.40:
+		result.append("extrovert")
+	elif social_roll < 0.80:
+		result.append("introvert")
+	else:
+		result.append("toxic")
 	
 	# Категория B: Интересы (60% шанс первого, 30% шанс второго)
 	var available_interests = EmployeeData.PERSONALITY_INTERESTS.duplicate()

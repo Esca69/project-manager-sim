@@ -59,12 +59,12 @@ func get_total_loyalty() -> int:
 func get_weekly_project_count() -> int:
 	var total = get_total_loyalty()
 	if total >= 50:
-		return 8
+		return 13
 	elif total >= 30:
-		return 7
+		return 11
 	elif total >= 15:
-		return 6
+		return 9
 	elif total >= 5:
-		return 5
+		return 7
 	else:
-		return 4
+		return 5
