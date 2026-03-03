@@ -105,55 +105,78 @@ func get_rel_level_name(name_a: String, name_b: String) -> String:
 
 # === МАТРИЦА СОВМЕСТИМОСТИ ===
 
-# Бросок кубика при чате. Возвращает delta отношений.
-func roll_compatibility(emp_a: EmployeeData, emp_b: EmployeeData) -> int:
-	var result: int = randi_range(BASE_ROLL_MIN, BASE_ROLL_MAX)
+# Бросок кубика при чате. Возвращает Dictionary с подробностями.
+func roll_compatibility_detailed(emp_a: EmployeeData, emp_b: EmployeeData) -> Dictionary:
+	var base_roll: int = randi_range(BASE_ROLL_MIN, BASE_ROLL_MAX)
+	var total: int = base_roll
+	var factors: Array = []
 
 	# Общие интересы (из PERSONALITY_INTERESTS)
-	var shared_interests: int = 0
+	var shared: Array = []
 	for tag in emp_a.personality:
 		if tag in EmployeeData.PERSONALITY_INTERESTS and tag in emp_b.personality:
-			shared_interests += 1
-	result += shared_interests * SHARED_INTEREST_BONUS
+			shared.append(tag)
+	if shared.size() > 0:
+		var bonus = shared.size() * SHARED_INTEREST_BONUS
+		total += bonus
+		factors.append("+%d общ.интересы (%s)" % [bonus, ", ".join(shared)])
 
 	# Конфликты раздражителей
 	# sexist мужчина + женщина → конфликт
 	if "sexist" in emp_a.personality and emp_b.gender == "female":
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d sexist→♀" % CONFLICT_PENALTY)
 	if "sexist" in emp_b.personality and emp_a.gender == "female":
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d sexist→♀" % CONFLICT_PENALTY)
 
 	# man_hater женщина + мужчина → конфликт
 	if "man_hater" in emp_a.personality and emp_b.gender == "male":
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d man_hater→♂" % CONFLICT_PENALTY)
 	if "man_hater" in emp_b.personality and emp_a.gender == "male":
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d man_hater→♂" % CONFLICT_PENALTY)
 
 	# smelly → штраф всем (кроме другого smelly)
 	if "smelly" in emp_a.personality and "smelly" not in emp_b.personality:
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d smelly(%s)" % [CONFLICT_PENALTY, emp_a.employee_name])
 	if "smelly" in emp_b.personality and "smelly" not in emp_a.personality:
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d smelly(%s)" % [CONFLICT_PENALTY, emp_b.employee_name])
 
 	# toxic → штраф introvert'ам
 	if "toxic" in emp_a.personality and "introvert" in emp_b.personality:
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d toxic→introvert" % CONFLICT_PENALTY)
 	if "toxic" in emp_b.personality and "introvert" in emp_a.personality:
-		result += CONFLICT_PENALTY
+		total += CONFLICT_PENALTY
+		factors.append("%d toxic→introvert" % CONFLICT_PENALTY)
 
 	# flirt + противоположный пол → бонус (вместо штрафа)
 	if "flirt" in emp_a.personality and emp_a.gender != emp_b.gender:
-		result += 2
+		total += 2
+		factors.append("+2 flirt")
 	if "flirt" in emp_b.personality and emp_b.gender != emp_a.gender:
-		result += 2
+		total += 2
+		factors.append("+2 flirt")
 
-	return result
+	return {
+		"total": total,
+		"base_roll": base_roll,
+		"factors": factors,
+	}
+
+# Обёртка для обратной совместимости
+func roll_compatibility(emp_a: EmployeeData, emp_b: EmployeeData) -> int:
+	return roll_compatibility_detailed(emp_a, emp_b).total
 
 # === ОБРАБОТКА РЕЗУЛЬТАТА ЧАТА ===
 
 func process_chat_result(emp_a: EmployeeData, emp_b: EmployeeData) -> Dictionary:
-	# Возвращает {delta: int, is_positive: bool} для UI
-	var delta = roll_compatibility(emp_a, emp_b)
+	var roll_result = roll_compatibility_detailed(emp_a, emp_b)
+	var delta = roll_result.total
 	change_relationship(emp_a.employee_name, emp_b.employee_name, delta)
 
 	# Лимит чатов
@@ -169,7 +192,12 @@ func process_chat_result(emp_a: EmployeeData, emp_b: EmployeeData) -> Dictionary
 		emp_a.add_mood_modifier("chat_" + emp_b.employee_name, "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
 		emp_b.add_mood_modifier("chat_" + emp_a.employee_name, "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
 
-	return {"delta": delta, "is_positive": is_positive}
+	return {
+		"delta": delta,
+		"is_positive": is_positive,
+		"base_roll": roll_result.base_roll,
+		"factors": roll_result.factors,
+	}
 
 func can_chat(employee_name: String) -> bool:
 	return daily_chat_counts.get(employee_name, 0) < MAX_CHATS_PER_DAY

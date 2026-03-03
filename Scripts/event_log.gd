@@ -21,9 +21,9 @@ func add(text: String, type: int = LogType.ROUTINE):
 		"type": type,
 		"time_str": time_str
 	}
-	entries.append(entry)
+	entries.push_front(entry)
 	while entries.size() > MAX_ENTRIES:
-		entries.pop_front()
+		entries.pop_back()
 	emit_signal("log_added", entry)
 	if type == LogType.ALERT:
 		emit_signal("alert_added")
