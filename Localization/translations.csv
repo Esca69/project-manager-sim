@@ -647,7 +647,7 @@ EVENT_FREELANCER_HARD_DESC,"%s (%s) подходит к вам:
 
 Leaving right now!"
 EVENT_FREELANCER_LEAVE_OK,Понятно,Got it
-EVENT_FREELANCER_LEAVE_OK_DESC,,
+EVENT_FREELANCER_LEAVE_OK_DESC,Принять к сведению. ,Duly noted. 
 FREELANCER_REASON_1,Нашёл более интересный проект на стороне.,Found a more interesting project elsewhere.
 FREELANCER_REASON_2,Устал от рутины — хочу попробовать что-то новое.,Tired of routine — want to try something new.
 FREELANCER_REASON_3,Получил предложение с лучшими условиями.,Got an offer with better terms.

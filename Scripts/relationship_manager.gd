@@ -26,7 +26,7 @@ const MAX_CHATS_PER_DAY: int = 3      # Макс. чатов на сотрудн
 
 # --- КУБИК СОВМЕСТИМОСТИ ---
 const BASE_ROLL_MIN: int = -3
-const BASE_ROLL_MAX: int = 3
+const BASE_ROLL_MAX: int = 4
 const SHARED_INTEREST_BONUS: int = 3   # За каждый общий интерес
 const CONFLICT_PENALTY: int = -4       # За каждый конфликт
 
