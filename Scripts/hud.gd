@@ -762,9 +762,8 @@ func show_free_camera_hint():
 		return
 
 	_free_camera_hint = PanelContainer.new()
-	_free_camera_hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_free_camera_hint.position = Vector2(20, -120)
-	_free_camera_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_free_camera_hint.set_anchors_preset(Control.PRESET_TOP_LEFT) # Меняем якорь на верх-влево
+	_free_camera_hint.position = Vector2(20, 120) # Отступ 20 вправо, 120 вниз от верха
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 0.85)

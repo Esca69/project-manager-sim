@@ -183,14 +183,16 @@ func process_chat_result(emp_a: EmployeeData, emp_b: EmployeeData) -> Dictionary
 	daily_chat_counts[emp_a.employee_name] = daily_chat_counts.get(emp_a.employee_name, 0) + 1
 	daily_chat_counts[emp_b.employee_name] = daily_chat_counts.get(emp_b.employee_name, 0) + 1
 
-	# Mood-эффект
+	# === ПЕРЕЗАПИСЫВАЕМЫЙ MOOD-ЭФФЕКТ ===
+	# Используем единый ID "recent_chat" для всех. 
+	# Функция add_mood_modifier сама найдет старый бафф/дебафф с этим ID и заменит его на новый.
 	var is_positive = delta >= 0
 	if is_positive:
-		emp_a.add_mood_modifier("chat_" + emp_b.employee_name, "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
-		emp_b.add_mood_modifier("chat_" + emp_a.employee_name, "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
+		emp_a.add_mood_modifier("recent_chat", "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
+		emp_b.add_mood_modifier("recent_chat", "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
 	else:
-		emp_a.add_mood_modifier("chat_" + emp_b.employee_name, "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
-		emp_b.add_mood_modifier("chat_" + emp_a.employee_name, "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
+		emp_a.add_mood_modifier("recent_chat", "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
+		emp_b.add_mood_modifier("recent_chat", "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
 
 	return {
 		"delta": delta,

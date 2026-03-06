@@ -128,11 +128,13 @@ var _lunch_kitchen_ref = null
 var _lunch_table_ref = null
 
 # === PROXIMITY CHAT SYSTEM ===
-const PROX_CHAT_RADIUS: float = 700.0       # Радиус обнаружения для мгновенного чата
-const PROX_CHAT_BASE_CHANCE: float = 0.10    # 10% шанс за тик при нахождении в радиусе
+const PROX_CHAT_RADIUS: float = 700.0        # Радиус обнаружения для мгновенного чата
+const PROX_CHAT_BASE_CHANCE: float = 0.02    # 2% шанс за тик при нахождении в радиусе (Изменено с 10%)
 const PROX_CHAT_EXTROVERT_MULT: float = 2.0  # Экстраверт/toxic чатит чаще
 const PROX_CHAT_INTROVERT_MULT: float = 0.3  # Интроверт чатит реже
-const PROX_CHAT_COOLDOWN: float = 60.0       # Кулдаун на пару A↔B, игровых минут
+const PROX_CHAT_COOLDOWN: float = 60.0       # Кулдаун на пару A<->B, игровых минут
+const PERSONAL_CHAT_COOLDOWN: float = 60.0   # Личный кулдаун (не общается ни с кем 60 минут после любого разговора)
+
 const CHAT_ALLOWED_STATES: Array = [
 	State.WORKING,
 	State.WANDERING,
@@ -151,6 +153,7 @@ const CHAT_ALLOWED_STATES: Array = [
 ]
 
 var _chat_pair_cooldowns: Dictionary = {}  # Ключ = имя партнёра, значение = оставшиеся минуты кулдауна
+var _personal_chat_cooldown: float = 0.0   # Текущий личный кулдаун в минутах
 
 # Уникальный цвет одежды и кожи для персонализации
 var personal_color: Color = Color.WHITE
@@ -540,6 +543,7 @@ func _on_day_started(_day_number: int):
 	if data:
 		data.aura_bonus = 0.0
 	_chat_pair_cooldowns.clear()
+	_personal_chat_cooldown = 0.0  # Сброс личного кулдауна утром
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
@@ -1138,7 +1142,7 @@ func _finish_kitchen_phase():
 		nav_agent.target_position = table.get_spot_position()
 		z_index = 0
 	else:
-		# Все столики заняты — ждём, остаёмся у кухни
+		# Все столики заняты — ждём, остаёмся у кухи
 		_lunch_minutes_left = 0.5  # Проверяем каждые пол-минуты
 
 func _find_free_food_table():
@@ -1198,6 +1202,10 @@ func _release_all_lunch_resources():
 func _try_proximity_chat():
 	if not data:
 		return
+	# === ПРОВЕРКА ЛИЧНОГО КУЛДАУНА ===
+	if _personal_chat_cooldown > 0:
+		return
+	
 	# Проверяем, что текущий стейт разрешает чат
 	if current_state not in CHAT_ALLOWED_STATES:
 		return
@@ -1228,6 +1236,9 @@ func _find_proximity_partner():
 			continue
 		if not npc.data:
 			continue
+		# === ПРОВЕРКА ЛИЧНОГО КУЛДАУНА ПАРТНЁРА ===
+		if npc._personal_chat_cooldown > 0:
+			continue
 		if npc.current_state not in CHAT_ALLOWED_STATES:
 			continue
 		if not RelationshipManager.can_chat(npc.data.employee_name):
@@ -1246,6 +1257,11 @@ func _execute_proximity_chat(partner_npc):
 	# Ставим кулдаун на пару — на ОБОИХ
 	_set_pair_cooldown(partner_npc.data.employee_name, PROX_CHAT_COOLDOWN)
 	partner_npc._set_pair_cooldown(data.employee_name, PROX_CHAT_COOLDOWN)
+
+# === ДОБАВЛЕНО: Случайный личный кулдаун (от 1 до 2 часов) ===
+	var random_cd = randf_range(60.0, 120.0)
+	_personal_chat_cooldown = random_cd
+	partner_npc._personal_chat_cooldown = random_cd
 
 	# Показываем эмодзи над обоими
 	_show_chat_reaction(result.is_positive)
@@ -1283,6 +1299,11 @@ func _set_pair_cooldown(partner_name: String, minutes: float):
 	_chat_pair_cooldowns[partner_name] = minutes
 
 func _tick_chat_cooldowns():
+	# Обновляем личный кулдаун
+	if _personal_chat_cooldown > 0:
+		_personal_chat_cooldown -= 1.0
+
+	# Обновляем парные кулдауны
 	var to_remove = []
 	for key in _chat_pair_cooldowns:
 		_chat_pair_cooldowns[key] -= 1.0

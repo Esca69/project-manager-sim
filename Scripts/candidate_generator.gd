@@ -1,5 +1,12 @@
 extends Node
 
+# === НАСТРОЙКИ ПСЕВДОРАНДОМА ===
+# Шаг изменения вероятности при выпадении одного и того же пола подряд (по умолчанию 0.02 = 2%)
+@export_range(0.0, 0.5) var gender_chance_step: float = 0.05
+
+# Текущий шанс того, что следующим выпадет мужчина
+var _current_male_chance: float = 0.5
+
 # === БАЗЫ ИМЁН (РУССКИЕ - МУЖЧИНЫ) ===
 var first_names_ru_m = [
 	"Александр", "Дмитрий", "Максим", "Сергей", "Андрей", "Алексей", "Артём", "Илья", "Кирилл", "Михаил", 
@@ -16,7 +23,7 @@ var last_names_ru_m = [
 
 # === БАЗЫ ИМЁН (РУССКИЕ - ЖЕНЩИНЫ) ===
 var first_names_ru_f = [
-	"Анастасия", "Мария", "Дарья", "Анна", "Виктория", "Полина", "Елизавета", "Ека��ерина", "Ксения", "Валерия", 
+	"Анастасия", "Мария", "Дарья", "Анна", "Виктория", "Полина", "Елизавета", "Екатерина", "Ксения", "Валерия", 
 	"Варвара", "Александра", "Вероника", "Арина", "Алиса", "Алина", "Милана", "Маргарита", "Диана", "Ульяна", 
 	"София", "Елена", "Татьяна", "Наталья", "Ольга", "Светлана", "Надежда", "Марина", "Ирина", "Людмила",
 	"Юлия", "Евгения", "Алёна", "Кристина", "Ангелина"
@@ -90,47 +97,70 @@ func _get_existing_employee_names() -> Array[String]:
 			names.append(npc.data.employee_name)
 	return names
 
-func _generate_random_name_and_gender() -> Dictionary:
+# Функция умной генерации пола (с защитой от длинных серий)
+func _roll_gender() -> String:
+	var gender = "male"
+	var roll = randf()
+	
+	if roll < _current_male_chance:
+		# Выпал Мужчина
+		gender = "male"
+		if _current_male_chance > 0.5:
+			# Если до этого была серия женщин, сбрасываем шанс к 50/50
+			_current_male_chance = 0.5
+		# Уменьшаем шанс выпадения следующего мужчины
+		_current_male_chance -= gender_chance_step
+	else:
+		# Выпала Женщина
+		gender = "female"
+		if _current_male_chance < 0.5:
+			# Если до этого была серия мужчин, сбрасываем шанс к 50/50
+			_current_male_chance = 0.5
+		# Увеличиваем шанс на мужчину (тем самым уменьшая шанс на женщину)
+		_current_male_chance += gender_chance_step
+		
+	# Защита от выхода за пределы 0-1 (на случай если поставите шаг в 20%)
+	_current_male_chance = clamp(_current_male_chance, 0.0, 1.0)
+	
+	return gender
+
+# Функция генерации случайного имени по уже заданному полу
+func _generate_random_name(gender: String) -> String:
 	var locale = TranslationServer.get_locale()
 	var f_name = ""
 	var l_name = ""
-	var gender = "male"
 	
 	if locale.begins_with("ru"):
-		if randf() > 0.5:
+		if gender == "male":
 			f_name = first_names_ru_m.pick_random()
 			l_name = last_names_ru_m.pick_random()
-			gender = "male"
 		else:
 			f_name = first_names_ru_f.pick_random()
 			l_name = last_names_ru_f.pick_random()
-			gender = "female"
 	else:
-		# EN-имена: разделены на male/female
-		if randf() > 0.5:
+		if gender == "male":
 			f_name = first_names_en_m.pick_random()
-			gender = "male"
 		else:
 			f_name = first_names_en_f.pick_random()
-			gender = "female"
 		l_name = last_names_en.pick_random()
-	
-	return {"name": f_name + " " + l_name, "gender": gender}
+		
+	return f_name + " " + l_name
 
 func _generate_unique_name_and_gender() -> Dictionary:
 	var existing = _get_existing_employee_names()
+	var chosen_gender = _roll_gender()
 	
 	for attempt in range(50):
-		var result = _generate_random_name_and_gender()
-		if result.name not in existing:
-			return result
+		var new_name = _generate_random_name(chosen_gender)
+		if new_name not in existing:
+			return {"name": new_name, "gender": chosen_gender}
 	
-	var result = _generate_random_name_and_gender()
+	var fallback_name = _generate_random_name(chosen_gender)
 	var counter = 2
-	while (result.name + " " + str(counter)) in existing:
+	while (fallback_name + " " + str(counter)) in existing:
 		counter += 1
-	result.name = result.name + " " + str(counter)
-	return result
+	fallback_name = fallback_name + " " + str(counter)
+	return {"name": fallback_name, "gender": chosen_gender}
 
 func _generate_personality(gender: String) -> Array[String]:
 	var result: Array[String] = []
