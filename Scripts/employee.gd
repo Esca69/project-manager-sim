@@ -1090,6 +1090,8 @@ func _finish_toilet_break():
 # =============================================
 
 func _try_start_lunch():
+	if BossEventSystem.is_boss_event_active("boss_event_no_lunch"):
+		return
 	if _lunch_done_today:
 		return
 	if GameTime.hour < LUNCH_START_HOUR or GameTime.hour >= LUNCH_END_HOUR:
@@ -1190,6 +1192,23 @@ func _cancel_lunch():
 	# Обед не засчитан — можно попробовать снова
 	if data:
 		print("🍽️ %s: обед прерван" % data.employee_name)
+
+func force_cancel_lunch():
+	var lunch_states = [
+		State.GOING_LUNCH_FRIDGE, State.LUNCH_AT_FRIDGE,
+		State.GOING_LUNCH_KITCHEN, State.LUNCH_AT_KITCHEN,
+		State.GOING_LUNCH_TABLE, State.LUNCH_EATING,
+	]
+	if current_state not in lunch_states:
+		return
+	_cancel_lunch()
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		move_to_desk(my_desk_position)
+	elif _is_work_time():
+		_start_wandering()
+	else:
+		current_state = State.IDLE
+		velocity = Vector2.ZERO
 
 func _release_all_lunch_resources():
 	if _lunch_fridge_ref:

@@ -22,13 +22,13 @@ const BOSS_EVENTS = {
 		"trust_ignore": -20,
 	},
 	"boss_event_no_lunch": {
-		"title_key": "BOSS_EVENT_NO_LUNCH_TITLE",
-		"desc_key": "BOSS_EVENT_NO_LUNCH_DESC",
+		"title_key": "EVENT_NO_LUNCH_TITLE",
+		"desc_key": "EVENT_NO_LUNCH_DESC",
 		"emoji": "🍽️",
-		"min_days": 1,
-		"max_days": 3,
-		"trust_accept": 2,
-		"trust_reject": -1,
+		"min_days": 7,
+		"max_days": 14,
+		"trust_accept": 0,
+		"trust_reject": -10,
 		"trust_ignore": -20,
 	},
 	"boss_event_total_communication": {
@@ -224,7 +224,8 @@ func _add_to_recent(event_id: String):
 func _apply_event_effects(event_id: String) -> void:
 	match event_id:
 		"boss_event_daily_reports": pass  # PR #6
-		"boss_event_no_lunch": pass       # PR #5
+		"boss_event_no_lunch":
+			_apply_no_lunch()
 		"boss_event_total_communication":
 			_apply_total_communication()
 		"boss_event_overtime": pass       # PR #3
@@ -243,10 +244,18 @@ func _apply_we_are_family():
 func _apply_no_hiring():
 	EventLog.add(tr("LOG_NO_HIRING_EVENT_START"), EventLog.LogType.ALERT)
 
+func _apply_no_lunch():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.has_method("force_cancel_lunch"):
+			npc.force_cancel_lunch()
+	EventLog.add(tr("LOG_NO_LUNCH_EVENT_START"), EventLog.LogType.ALERT)
+
 func _remove_event_effects(event_id: String) -> void:
 	match event_id:
 		"boss_event_daily_reports": pass
-		"boss_event_no_lunch": pass
+		"boss_event_no_lunch":
+			_remove_no_lunch()
 		"boss_event_total_communication":
 			_remove_total_communication()
 		"boss_event_overtime": pass
@@ -271,6 +280,9 @@ func _remove_we_are_family():
 func _remove_no_hiring():
 	EventLog.add(tr("LOG_NO_HIRING_EVENT_SUCCESS"), EventLog.LogType.PROGRESS)
 
+func _remove_no_lunch():
+	EventLog.add(tr("LOG_NO_LUNCH_ENDED"), EventLog.LogType.PROGRESS)
+
 func _on_reject_custom_log(event_id: String):
 	match event_id:
 		"boss_event_total_communication":
@@ -279,6 +291,8 @@ func _on_reject_custom_log(event_id: String):
 			EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_REJECT"), EventLog.LogType.PROGRESS)
 		"boss_event_no_hiring":
 			EventLog.add(tr("LOG_NO_HIRING_EVENT_REJECTED"), EventLog.LogType.PROGRESS)
+		"boss_event_no_lunch":
+			EventLog.add(tr("LOG_NO_LUNCH_REJECTED"), EventLog.LogType.PROGRESS)
 
 # === УНИВЕРСАЛЬНОЕ ПРЕРЫВАНИЕ ИВЕНТА ИЗВНЕ ===
 func abort_active_event(penalty: int, log_message: String):
