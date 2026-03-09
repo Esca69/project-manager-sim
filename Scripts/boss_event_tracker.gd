@@ -33,7 +33,7 @@ func _ready():
 
 func _build_ui():
 	_tracker = PanelContainer.new()
-	_tracker.custom_minimum_size = Vector2(PANEL_WIDTH, TRACKER_HEIGHT)
+	_tracker.custom_minimum_size = Vector2(PANEL_WIDTH, 0)
 	_tracker.anchor_left = 1.0
 	_tracker.anchor_top = 1.0
 	_tracker.anchor_right = 1.0
@@ -79,6 +79,7 @@ func _build_ui():
 	_text_label.add_theme_font_size_override("font_size", 13)
 	_text_label.add_theme_color_override("font_color", Color.WHITE)
 	_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if UITheme:
 		UITheme.apply_font(_text_label, "semibold")
 	hbox.add_child(_text_label)
@@ -137,7 +138,7 @@ func _update_position():
 		icon_bottom_offset = -(ICON_SIZE + BOTTOM_BAR_HEIGHT + BOTTOM_MARGIN + GAP)
 
 	_tracker.offset_bottom = icon_bottom_offset
-	_tracker.offset_top = icon_bottom_offset - TRACKER_HEIGHT
+	_tracker.offset_top = icon_bottom_offset - max(_tracker.size.y, TRACKER_HEIGHT)
 
 func _find_log_nodes():
 	var hud = get_tree().get_first_node_in_group("ui")
