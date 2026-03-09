@@ -210,7 +210,7 @@ func reject_event():
 #                     ТИК ДНЯ
 # ============================================================
 
-func _on_day_started():
+func _on_day_started(_day_number: int = 0):
 	# Кулдаун тикает КАЖДЫЙ день (включая выходные) — календарные дни
 	if cooldown_days > 0:
 		cooldown_days -= 1
