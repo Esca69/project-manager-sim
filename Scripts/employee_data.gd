@@ -175,6 +175,11 @@ func recalculate_mood():
 		elif "introvert" in personality:
 			result -= 15.0
 
+	# === BOSS EVENT: Мы — одна семья → mood ===
+	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
+		if "parent" in personality:
+			result += 10.0
+
 	# Временные модификаторы
 	for mod in mood_temp_modifiers:
 		result += mod.value
@@ -281,12 +286,17 @@ func get_mood_breakdown() -> Dictionary:
 		permanent_mods.append({"name": tr("MOOD_MOD_MOTIVATED"), "value": MOOD_MOTIVATION_BONUS})
 
 	# === BOSS EVENT: Тотальная коммуникация ===
-	var bes2 = _get_boss_event_system()
-	if bes2 and bes2.is_boss_event_active("boss_event_total_communication"):
+	var bes = _get_boss_event_system()
+	if bes and bes.is_boss_event_active("boss_event_total_communication"):
 		if "extrovert" in personality:
 			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_EXTROVERT"), "value": 10.0})
 		elif "introvert" in personality:
 			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_INTROVERT"), "value": -15.0})
+
+	# === BOSS EVENT: Мы — одна семья ===
+	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
+		if "parent" in personality:
+			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_FAMILY_PARENT"), "value": 10.0})
 
 	# Временные
 	for mod in mood_temp_modifiers:

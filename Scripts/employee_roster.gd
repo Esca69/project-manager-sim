@@ -1302,6 +1302,11 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 		text += "\n\n" + tr("ROSTER_FIRE_WARN_PROJECTS") + "\n" + ", ".join(proj_names)
 		text += "\n\n" + tr("ROSTER_FIRE_WARN_STAGES")
 
+	# === BOSS EVENT: Предупреждение при "Мы — одна семья" ===
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
+		text += "\n\n" + tr("WARNING_FIRE_DURING_FAMILY")
+
 	_confirm_label.text = text
 	_dialog_layer.visible = true
 
@@ -1384,6 +1389,11 @@ func _confirm_fire():
 				)
 
 	emit_signal("employee_fired", _pending_fire_data)
+
+	# === BOSS EVENT: Прерывание "Мы — одна семья" при увольнении ===
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
+		bes.abort_active_event(-20, tr("LOG_FAMILY_EVENT_FAILED"))
 
 	_pending_fire_data = null
 	_pending_fire_node = null
