@@ -774,3 +774,30 @@ ROSTER_NO_COLLEAGUES,Нет коллег,No colleagues
 EFF_MOD_ONBOARDING,🏢 Адаптация в компании ,🏢 Company onboarding 
 EFF_MOD_PROJECT_ADAPT,📚 Погружение в проект ,📚 Project adaptation 
 LOG_PROJECT_ADAPTATION,📚 %s вникает в новый проект (-20%% эффективности) ,📚 %s is learning the new project (-20%% efficiency) 
+BOSS_EVENT_DAILY_REPORTS_TITLE,Ежедневные отчёты,Daily Reports
+BOSS_EVENT_DAILY_REPORTS_DESC,"Босс хочет, чтобы каждый сотрудник тратил время на написание дневных отчётов. Скорость работы снизится.","The boss wants every employee to spend time writing daily reports. Work speed will decrease."
+BOSS_EVENT_NO_LUNCH_TITLE,Отмена обедов,No Lunch Break
+BOSS_EVENT_NO_LUNCH_DESC,"Босс считает, что обеды — пустая трата времени. Сотрудники не смогут ходить на обед, но будут недовольны.","The boss thinks lunch breaks are a waste of time. Employees won't be able to have lunch, but they'll be unhappy."
+BOSS_EVENT_TOTAL_COMM_TITLE,Тотальная коммуникация,Total Communication
+BOSS_EVENT_TOTAL_COMM_DESC,"Босс требует, чтобы все общались друг с другом. Сотрудники периодически будут отвлекаться на ""обязательные митинги"".","The boss demands everyone communicates with each other. Employees will periodically be distracted by ""mandatory meetings""."
+BOSS_EVENT_OVERTIME_TITLE,Сверхурочные,Overtime
+BOSS_EVENT_OVERTIME_DESC,"Босс решил, что рабочий день теперь длится до 21:00. Сотрудники работают дольше, но их настроение падает.","The boss decided the work day now extends to 21:00. Employees work longer, but their mood drops."
+BOSS_EVENT_RESHUFFLE_TITLE,Пересадка,Office Reshuffle
+BOSS_EVENT_RESHUFFLE_DESC,Босс решил пересадить всех сотрудников на случайные места. Все привязки к столам будут сброшены.,The boss decided to reshuffle all employees to random desks. All desk assignments will be reset.
+BOSS_EVENT_LOG_GENERATED,🏢 У босса новая идея: %s,🏢 Boss has a new idea: %s
+BOSS_EVENT_LOG_ACCEPTED,✅ Ивент босса принят: %s,✅ Boss event accepted: %s
+BOSS_EVENT_LOG_REJECTED,❌ Ивент босса отклонён: %s,❌ Boss event rejected: %s
+BOSS_EVENT_LOG_IGNORED,⚠️ Ивент босса проигнорирован! Доверие снижено.,⚠️ Boss event ignored! Trust decreased.
+BOSS_EVENT_LOG_ENDED,📋 Ивент босса завершён: %s,📋 Boss event ended: %s
+BOSS_EVENT_POPUP_TITLE,🏢 Идея босса,🏢 Boss's Idea
+BOSS_EVENT_POPUP_ACCEPT,✅ Принять,✅ Accept
+BOSS_EVENT_POPUP_REJECT,❌ Отклонить,❌ Reject
+BOSS_EVENT_POPUP_OK,Понятно,Got it
+BOSS_EVENT_POPUP_DURATION,Длительность: %d-%d дн.,Duration: %d-%d days
+BOSS_EVENT_POPUP_DURATION_INSTANT,Мгновенный эффект,Instant effect
+BOSS_EVENT_POPUP_TRUST_ACCEPT,Доверие за принятие: +%d 🤝,Trust for accepting: +%d 🤝
+BOSS_EVENT_POPUP_TRUST_REJECT,Доверие за отказ: %d 🤝,Trust for rejecting: %d 🤝
+BOSS_EVENT_POPUP_ACTIVE_TITLE,🏢 Активный ивент босса,🏢 Active Boss Event
+BOSS_EVENT_POPUP_DAYS_LEFT,Осталось: %d дн.,Remaining: %d days
+BOSS_EVENT_TRACKER_PENDING,❗ У босса идея!,❗ Boss has an idea!
+BOSS_EVENT_TRACKER_DAYS_LEFT,Ост.: %d дн.,Left: %d d.

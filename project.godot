@@ -32,6 +32,7 @@ EventManager="*res://Scripts/event_manager.gd"
 EventLog="*res://Scripts/event_log.gd"
 RelationshipManager="*res://Scripts/relationship_manager.gd"
 FreelancerManager="*res://Scripts/freelancer_manager.gd"
+BossEventSystem="*res://Scripts/boss_event_system.gd"
 
 [display]
 
