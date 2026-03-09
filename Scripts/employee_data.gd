@@ -180,6 +180,11 @@ func recalculate_mood():
 		if "parent" in personality:
 			result += 10.0
 
+	# === BOSS EVENT: Никакого найма → mood ===
+	if bes and bes.is_boss_event_active("boss_event_no_hiring"):
+		if "introvert" in personality:
+			result += 10.0
+
 	# Временные модификаторы
 	for mod in mood_temp_modifiers:
 		result += mod.value
@@ -297,6 +302,11 @@ func get_mood_breakdown() -> Dictionary:
 	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
 		if "parent" in personality:
 			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_FAMILY_PARENT"), "value": 10.0})
+
+	# === BOSS EVENT: Никакого найма ===
+	if bes and bes.is_boss_event_active("boss_event_no_hiring"):
+		if "introvert" in personality:
+			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_NO_HIRING_INTROVERT"), "value": 10.0})
 
 	# Временные
 	for mod in mood_temp_modifiers:

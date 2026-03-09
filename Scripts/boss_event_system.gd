@@ -71,6 +71,16 @@ const BOSS_EVENTS = {
 		"trust_reject": -10,
 		"trust_ignore": -20,
 	},
+	"boss_event_no_hiring": {
+		"title_key": "EVENT_NO_HIRING_TITLE",
+		"desc_key": "EVENT_NO_HIRING_DESC",
+		"emoji": "🚫",
+		"min_days": 7,
+		"max_days": 14,
+		"trust_accept": 0,
+		"trust_reject": -10,
+		"trust_ignore": -10,
+	},
 }
 
 # === СИГНАЛЫ ===
@@ -221,12 +231,17 @@ func _apply_event_effects(event_id: String) -> void:
 		"boss_event_reshuffle": pass      # PR #2
 		"boss_event_we_are_family":
 			_apply_we_are_family()
+		"boss_event_no_hiring":
+			_apply_no_hiring()
 
 func _apply_total_communication():
 	EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_START"), EventLog.LogType.ALERT)
 
 func _apply_we_are_family():
 	EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_START"), EventLog.LogType.ALERT)
+
+func _apply_no_hiring():
+	EventLog.add(tr("LOG_NO_HIRING_EVENT_START"), EventLog.LogType.ALERT)
 
 func _remove_event_effects(event_id: String) -> void:
 	match event_id:
@@ -238,6 +253,8 @@ func _remove_event_effects(event_id: String) -> void:
 		"boss_event_reshuffle": pass
 		"boss_event_we_are_family":
 			_remove_we_are_family()
+		"boss_event_no_hiring":
+			_remove_no_hiring()
 
 func _remove_total_communication():
 	# Убрать mood-модификаторы у всех сотрудников
@@ -251,12 +268,17 @@ func _remove_total_communication():
 func _remove_we_are_family():
 	EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_END"), EventLog.LogType.PROGRESS)
 
+func _remove_no_hiring():
+	EventLog.add(tr("LOG_NO_HIRING_EVENT_SUCCESS"), EventLog.LogType.PROGRESS)
+
 func _on_reject_custom_log(event_id: String):
 	match event_id:
 		"boss_event_total_communication":
 			EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_REJECT"), EventLog.LogType.ALERT)
 		"boss_event_we_are_family":
 			EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_REJECT"), EventLog.LogType.PROGRESS)
+		"boss_event_no_hiring":
+			EventLog.add(tr("LOG_NO_HIRING_EVENT_REJECTED"), EventLog.LogType.PROGRESS)
 
 # === УНИВЕРСАЛЬНОЕ ПРЕРЫВАНИЕ ИВЕНТА ИЗВНЕ ===
 func abort_active_event(penalty: int, log_message: String):
