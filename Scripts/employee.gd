@@ -28,6 +28,9 @@ enum State {
 	CHATTING,        # DEPRECATED
 	# === VACATION SYSTEM ===
 	ON_VACATION,
+	# === DAILY REPORTS SYSTEM ===
+	GOING_TO_REPORT,
+	WRITING_REPORT,
 }
 
 var current_state = State.IDLE
@@ -83,6 +86,9 @@ var _should_go_home: bool = false
 var current_bubble: Node2D = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
+
+# === DAILY REPORTS SYSTEM: Таймер баблов во время написания отчёта ===
+var _report_bubble_cooldown := 0.0
 
 # === МОТИВАЦИЯ ОТ PM ===
 var _motivation_minutes_left: float = 0.0
@@ -847,6 +853,36 @@ func _physics_process(delta):
 			if _lunch_minutes_left <= 0.0:
 				_finish_lunch()
 
+		# === DAILY REPORTS SYSTEM: Идём к столу писать отчёт ===
+		State.GOING_TO_REPORT:
+			if not _is_work_time():
+				_force_go_home()
+				return
+			var dist = global_position.distance_to(nav_agent.target_position)
+			if dist < 100.0:
+				_on_report_arrived()
+				return
+			_move_along_path(delta)
+
+		# === DAILY REPORTS SYSTEM: Пишем отчёт ===
+		State.WRITING_REPORT:
+			if not _is_work_time():
+				_force_go_home()
+				return
+			# Energy drain (same as WORKING)
+			var drain_mult = data.get_energy_drain_multiplier()
+			var loss_speed = (ENERGY_LOSS_PER_GAME_HOUR / 60.0) * GameTime.MINUTES_PER_REAL_SECOND * drain_mult
+			data.current_energy -= loss_speed * delta
+			if data.current_energy < 0:
+				data.current_energy = 0
+			_apply_lean(Vector2.ZERO, delta)
+			# Periodic thought bubbles
+			_report_bubble_cooldown -= delta
+			if _report_bubble_cooldown <= 0.0:
+				var emojis = ["🤬", "📝"]
+				show_thought_bubble(emojis[randi() % emojis.size()], 3.0)
+				_report_bubble_cooldown = randf_range(15.0, 25.0)
+
 func _is_my_stage_active() -> bool:
 	if not data:
 		return false
@@ -971,6 +1007,8 @@ func _pick_next_wander_target():
 	z_index = 0
 
 func _try_start_coffee_break():
+	if current_state == State.WRITING_REPORT:
+		return
 	if data.current_energy > COFFEE_THRESHOLD:
 		return
 	
@@ -1035,6 +1073,8 @@ func _setup_toilet_schedule():
 		toilet_visit_times.append(t2)
 
 func _try_start_toilet_break():
+	if current_state == State.WRITING_REPORT:
+		return
 	if _toilet_ban_minutes_left > 0:
 		return
 	
@@ -1091,6 +1131,8 @@ func _finish_toilet_break():
 
 func _try_start_lunch():
 	if BossEventSystem.is_boss_event_active("boss_event_no_lunch"):
+		return
+	if current_state == State.WRITING_REPORT or current_state == State.GOING_TO_REPORT:
 		return
 	if _lunch_done_today:
 		return
@@ -1220,6 +1262,68 @@ func _release_all_lunch_resources():
 	if _lunch_table_ref:
 		_lunch_table_ref.release(self)
 		_lunch_table_ref = null
+
+# =============================================
+# === DAILY REPORTS SYSTEM ===
+# =============================================
+
+func _on_report_arrived():
+	global_position = nav_agent.target_position
+	current_state = State.WRITING_REPORT
+	velocity = Vector2.ZERO
+	_report_bubble_cooldown = randf_range(5.0, 10.0)
+	show_thought_bubble("📝", 3.0)
+
+func force_start_report():
+	if not data:
+		return
+	# Skip if no desk
+	if my_desk_position == Vector2.ZERO:
+		return
+	# Skip if not in office / on leave
+	if current_state in [State.HOME, State.GOING_HOME, State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION]:
+		return
+
+	# If already writing report — no-op
+	if current_state == State.WRITING_REPORT or current_state == State.GOING_TO_REPORT:
+		return
+
+	# If already at desk working — switch instantly
+	if current_state == State.WORKING:
+		current_state = State.WRITING_REPORT
+		velocity = Vector2.ZERO
+		_report_bubble_cooldown = randf_range(3.0, 8.0)
+		show_thought_bubble("📝", 3.0)
+		return
+
+	# Away from desk — interrupt everything and navigate to desk
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	_release_all_lunch_resources()
+
+	velocity = Vector2.ZERO
+	z_index = 0
+	current_state = State.GOING_TO_REPORT
+	nav_agent.target_position = my_desk_position
+	show_thought_bubble("📝", 3.0)
+
+func force_end_report():
+	if current_state != State.GOING_TO_REPORT and current_state != State.WRITING_REPORT:
+		return
+
+	velocity = Vector2.ZERO
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		current_state = State.WORKING
+		_work_bubble_cooldown = randf_range(5.0, 10.0)
+	elif _is_work_time():
+		_start_wandering()
+	else:
+		_force_go_home()
 
 # =============================================
 # === PROXIMITY CHAT SYSTEM ===
@@ -1661,6 +1765,9 @@ func get_human_state_name() -> String:
 		State.CHATTING: return tr("EMP_ACTION_CHATTING")
 		# === VACATION SYSTEM ===
 		State.ON_VACATION: return tr("EMP_ACTION_ON_VACATION")
+		# === DAILY REPORTS SYSTEM ===
+		State.GOING_TO_REPORT: return tr("EMP_ACTION_GOING_REPORT")
+		State.WRITING_REPORT: return tr("EMP_ACTION_WRITING_REPORT")
 	return "..."
 
 func update_status_label():
