@@ -63,6 +63,9 @@ func save_game():
 
 		# === FREELANCER SYSTEM: Сохраняем предупреждения об уходе ===
 		"freelancer_manager": _serialize_freelancer_manager(),
+
+		# === BOSS EVENT SYSTEM ===
+		"boss_event_system": _serialize_boss_event_system(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -360,6 +363,13 @@ func _serialize_freelancer_manager() -> Dictionary:
 		"warned_freelancers": fm._warned_freelancers.duplicate(),
 	}
 
+# === BOSS EVENT SYSTEM: Сериализация BossEventSystem ===
+func _serialize_boss_event_system() -> Dictionary:
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes == null:
+		return {}
+	return bes.serialize()
+
 # ============================================================
 #                        ЗАГРУЗКА
 # ============================================================
@@ -406,6 +416,9 @@ func load_game() -> bool:
 
 	# === FREELANCER SYSTEM: Восстанавливаем FreelancerManager ===
 	_load_freelancer_manager(data.get("freelancer_manager", {}))
+
+	# === BOSS EVENT SYSTEM ===
+	_load_boss_event_system(data.get("boss_event_system", {}))
 
 	print("📂 Данные синглтонов восстановлены")
 	pending_restore = true
@@ -873,6 +886,15 @@ func _load_freelancer_manager(d: Dictionary):
 	var saved = d.get("warned_freelancers", {})
 	for emp_name in saved:
 		fm._warned_freelancers[str(emp_name)] = int(saved[emp_name])
+
+# === BOSS EVENT SYSTEM: Восстановление BossEventSystem ===
+func _load_boss_event_system(d: Dictionary):
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes == null:
+		return
+	if d.is_empty():
+		return
+	bes.deserialize(d)
 
 # ============================================================
 #                        УТИЛИТЫ

@@ -7,7 +7,7 @@ func _ready():
 
 func _process(_delta):
 	if _exclamation_bubble:
-		_exclamation_bubble.visible = BossManager.should_show_quest() or BossManager.should_show_report()
+		_exclamation_bubble.visible = BossManager.should_show_quest() or BossManager.should_show_report() or BossEventSystem.has_pending_event()
 
 func _build_exclamation_mark():
 	# Создаем корневой узел для бабла
@@ -70,11 +70,16 @@ func interact():
 		hud.open_boss_report(last_report)
 		return
 
-	# Приоритет 2: Показать новый квест
+	# Приоритет 2: Ивент босса (pending)
+	if BossEventSystem.has_pending_event():
+		hud.open_boss_event(BossEventSystem.get_pending_event_data())
+		return
+
+	# Приоритет 3: Показать новый квест
 	if BossManager.should_show_quest():
 		var quest = BossManager.generate_quest_for_month(GameTime.get_month())
 		hud.open_boss_quest(quest)
 		return
 
-	# Приоритет 3: Обычное меню проектов
+	# Приоритет 4: Обычное меню проектов
 	hud.open_boss_menu()

@@ -70,6 +70,10 @@ var _event_popup: Control
 # === EVENT LOG: Журнал событий ===
 var _event_log_panel: Control
 
+# === BOSS EVENT SYSTEM ===
+var _boss_event_popup: Control
+var _boss_event_tracker: Control
+
 # === ИНДИКАТОР СВОБОДНОЙ КАМЕРЫ ===
 var _free_camera_hint: PanelContainer = null
 
@@ -187,6 +191,9 @@ func _ready():
 
 	# === EVENT LOG: Создаём журнал событий ===
 	_build_event_log()
+
+	# === BOSS EVENT SYSTEM: Создаём попап и трекер ===
+	_build_boss_event_ui()
 
 func _apply_fonts():
 	if UITheme == null:
@@ -746,6 +753,34 @@ func _build_event_log():
 	_event_log_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_event_log_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_event_log_panel)
+
+# === BOSS EVENT SYSTEM: Построение попапа и трекера ===
+func _build_boss_event_ui():
+	# Попап
+	var popup_script = load("res://Scripts/boss_event_popup.gd")
+	if popup_script:
+		_boss_event_popup = Control.new()
+		_boss_event_popup.set_script(popup_script)
+		_boss_event_popup.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_boss_event_popup.process_mode = Node.PROCESS_MODE_ALWAYS
+		add_child(_boss_event_popup)
+
+	# Трекер
+	var tracker_script = load("res://Scripts/boss_event_tracker.gd")
+	if tracker_script:
+		_boss_event_tracker = Control.new()
+		_boss_event_tracker.set_script(tracker_script)
+		_boss_event_tracker.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_boss_event_tracker.process_mode = Node.PROCESS_MODE_ALWAYS
+		add_child(_boss_event_tracker)
+
+func open_boss_event(event_data: Dictionary):
+	if _boss_event_popup and _boss_event_popup.has_method("open"):
+		_boss_event_popup.open(event_data)
+
+func open_boss_event_info(event_data: Dictionary):
+	if _boss_event_popup and _boss_event_popup.has_method("open_info"):
+		_boss_event_popup.open_info(event_data)
 
 # === EVENT SYSTEM: Открыть попап ивента (вызывается из EventManager) ===
 func show_event_popup(event_data: Dictionary):
