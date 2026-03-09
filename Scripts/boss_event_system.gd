@@ -19,7 +19,7 @@ const BOSS_EVENTS = {
 		"max_days": 4,
 		"trust_accept": 2,
 		"trust_reject": -1,
-		"trust_ignore": -2,
+		"trust_ignore": -20,
 	},
 	"boss_event_no_lunch": {
 		"title_key": "BOSS_EVENT_NO_LUNCH_TITLE",
@@ -29,7 +29,7 @@ const BOSS_EVENTS = {
 		"max_days": 3,
 		"trust_accept": 2,
 		"trust_reject": -1,
-		"trust_ignore": -2,
+		"trust_ignore": -20,
 	},
 	"boss_event_total_communication": {
 		"title_key": "BOSS_EVENT_TOTAL_COMM_TITLE",
@@ -37,9 +37,9 @@ const BOSS_EVENTS = {
 		"emoji": "🗣️",
 		"min_days": 7,
 		"max_days": 14,
-		"trust_accept": 0,     # ВАЖНО: Accept НЕ даёт бонуса к trust!
-		"trust_reject": -10,   # Decline отнимает 10 trust
-		"trust_ignore": -12,   # Игнор — ещё хуже
+		"trust_accept": 0,
+		"trust_reject": -10,
+		"trust_ignore": -20,
 	},
 	"boss_event_overtime": {
 		"title_key": "BOSS_EVENT_OVERTIME_TITLE",
@@ -49,7 +49,7 @@ const BOSS_EVENTS = {
 		"max_days": 5,
 		"trust_accept": 3,
 		"trust_reject": -1,
-		"trust_ignore": -2,
+		"trust_ignore": -20,
 	},
 	"boss_event_reshuffle": {
 		"title_key": "BOSS_EVENT_RESHUFFLE_TITLE",
@@ -59,7 +59,17 @@ const BOSS_EVENTS = {
 		"max_days": 0,
 		"trust_accept": 2,
 		"trust_reject": -2,
-		"trust_ignore": -3,
+		"trust_ignore": -20,
+	},
+	"boss_event_we_are_family": {
+		"title_key": "BOSS_EVENT_FAMILY_TITLE",
+		"desc_key": "BOSS_EVENT_FAMILY_DESC",
+		"emoji": "👨‍👩‍👧‍👦",
+		"min_days": 7,
+		"max_days": 14,
+		"trust_accept": 0,
+		"trust_reject": -10,
+		"trust_ignore": -20,
 	},
 }
 
@@ -209,9 +219,14 @@ func _apply_event_effects(event_id: String) -> void:
 			_apply_total_communication()
 		"boss_event_overtime": pass       # PR #3
 		"boss_event_reshuffle": pass      # PR #2
+		"boss_event_we_are_family":
+			_apply_we_are_family()
 
 func _apply_total_communication():
 	EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_START"), EventLog.LogType.ALERT)
+
+func _apply_we_are_family():
+	EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_START"), EventLog.LogType.ALERT)
 
 func _remove_event_effects(event_id: String) -> void:
 	match event_id:
@@ -221,6 +236,8 @@ func _remove_event_effects(event_id: String) -> void:
 			_remove_total_communication()
 		"boss_event_overtime": pass
 		"boss_event_reshuffle": pass
+		"boss_event_we_are_family":
+			_remove_we_are_family()
 
 func _remove_total_communication():
 	# Убрать mood-модификаторы у всех сотрудников
@@ -231,10 +248,27 @@ func _remove_total_communication():
 			npc.data.remove_mood_modifier("boss_event_comm_introvert")
 	EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_END"), EventLog.LogType.PROGRESS)
 
+func _remove_we_are_family():
+	EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_END"), EventLog.LogType.PROGRESS)
+
 func _on_reject_custom_log(event_id: String):
 	match event_id:
 		"boss_event_total_communication":
 			EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_REJECT"), EventLog.LogType.ALERT)
+		"boss_event_we_are_family":
+			EventLog.add(tr("BOSS_EVENT_FAMILY_LOG_REJECT"), EventLog.LogType.PROGRESS)
+
+# === УНИВЕРСАЛЬНОЕ ПРЕРЫВАНИЕ ИВЕНТА ИЗВНЕ ===
+func abort_active_event(penalty: int, log_message: String):
+	if state != State.ACTIVE or active_event_id == "":
+		return
+	_remove_event_effects(active_event_id)
+	BossManager.change_trust(penalty)
+	EventLog.add(log_message, EventLog.LogType.ALERT)
+	state = State.IDLE
+	active_event_id = ""
+	active_days_remaining = 0
+	cooldown_days = 7
 
 # ============================================================
 #                     ГЕТТЕРЫ
