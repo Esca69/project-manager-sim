@@ -15,6 +15,8 @@ var _level_containers: Array = []
 var _extra_cards: Array = []
 var _all_cards: Array = []
 
+var _freeze_warning_label: Label = null
+
 var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
 
@@ -169,6 +171,20 @@ func update_ui():
 		if is_instance_valid(ec):
 			ec.queue_free()
 	_extra_cards.clear()
+
+	# Удаляем предыдущее предупреждение о заморозке найма
+	if _freeze_warning_label and is_instance_valid(_freeze_warning_label):
+		_freeze_warning_label.queue_free()
+		_freeze_warning_label = null
+
+	# Добавляем предупреждение если активен ивент "Никакого найма!"
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes and bes.is_boss_event_active("boss_event_no_hiring"):
+		_freeze_warning_label = _create_freeze_warning_label()
+		var main_vbox = get_node_or_null("Window/MainVBox")
+		if main_vbox:
+			main_vbox.add_child(_freeze_warning_label)
+			main_vbox.move_child(_freeze_warning_label, 1)
 
 	# Собираем базовые карточки из сцены
 	var scene_cards = [card1, card2, card3]
@@ -804,6 +820,11 @@ func _on_hire_pressed(index):
 
 	candidates[index] = null
 
+	# Прерываем ивент "Никакого найма!" если он активен
+	var bes_check = get_node_or_null("/root/BossEventSystem")
+	if bes_check and bes_check.is_boss_event_active("boss_event_no_hiring"):
+		bes_check.abort_active_event(-20, tr("LOG_NO_HIRING_EVENT_FAILED"))
+
 	# Анимация исчезновения
 	if index < _all_cards.size():
 		var card = _all_cards[index]
@@ -824,6 +845,24 @@ func _find_node_with_method(node: Node, method_name: String) -> Node:
 		if found:
 			return found
 	return null
+
+# === ПРЕДУПРЕЖДЕНИЕ О ЗАМОРОЗКЕ НАЙМА ===
+func _create_freeze_warning_label() -> Label:
+	var lbl = Label.new()
+	lbl.text = tr("WARNING_HIRE_DURING_FREEZE")
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_color_override("font_color", Color(0.9, 0.1, 0.1, 1))
+	lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme:
+		UITheme.apply_font(lbl, "bold")
+	lbl.custom_minimum_size = Vector2(0, 40)
+	# Мигающая анимация
+	var tween = lbl.create_tween()
+	tween.set_loops()
+	tween.tween_property(lbl, "modulate:a", 0.3, 0.5)
+	tween.tween_property(lbl, "modulate:a", 1.0, 0.5)
+	return lbl
 
 func find_node_by_name(root, target_name):
 	if root.name == target_name: return root
