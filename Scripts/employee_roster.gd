@@ -1216,6 +1216,9 @@ func _get_status_text(npc_node) -> String:
 		20: return tr("ROSTER_STATUS_IDLE")  # DEPRECATED state
 		# === VACATION SYSTEM ===
 		21: return tr("ROSTER_STATUS_ON_VACATION_STATE")
+		# === DAILY REPORTS SYSTEM ===
+		22: return tr("EMP_ACTION_GOING_REPORT")
+		23: return tr("EMP_ACTION_WRITING_REPORT")
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
@@ -1246,6 +1249,8 @@ func _get_status_color(npc_node) -> Color:
 		# === RELATIONSHIP SYSTEM ===
 		19, 20: return Color(0.6, 0.3, 0.7, 1)  # Фиолетовый — чат
 		21: return Color(0.29, 0.69, 0.31, 1)    # Зелёный — отпуск
+		# === DAILY REPORTS SYSTEM ===
+		22, 23: return Color(0.9, 0.55, 0.2, 1)  # Оранжевый — ежедневные отчёты
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _get_event_effect_text(emp_data: EmployeeData) -> String:

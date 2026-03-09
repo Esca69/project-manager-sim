@@ -12,13 +12,13 @@ enum State {
 
 const BOSS_EVENTS = {
 	"boss_event_daily_reports": {
-		"title_key": "BOSS_EVENT_DAILY_REPORTS_TITLE",
-		"desc_key": "BOSS_EVENT_DAILY_REPORTS_DESC",
+		"title_key": "EVENT_DAILY_REPORT_TITLE",
+		"desc_key": "EVENT_DAILY_REPORT_DESC",
 		"emoji": "📊",
-		"min_days": 2,
-		"max_days": 4,
-		"trust_accept": 2,
-		"trust_reject": -1,
+		"min_days": 7,
+		"max_days": 14,
+		"trust_accept": 0,
+		"trust_reject": -10,
 		"trust_ignore": -20,
 	},
 	"boss_event_no_lunch": {
@@ -108,7 +108,7 @@ func _ready():
 #                     ГЕНЕРАЦИЯ / ИГНОР
 # ============================================================
 
-func _on_time_tick(hour: int, _minute: int):
+func _on_time_tick(hour: int, minute: int):
 	# Генерация в 10:00 рабочего дня
 	if hour == 10 and state == State.IDLE and cooldown_days == 0:
 		if not GameTime.is_weekend():
@@ -116,6 +116,13 @@ func _on_time_tick(hour: int, _minute: int):
 	# Игнор в 18:00 если ещё ожидается
 	elif hour == 18 and state == State.PENDING:
 		_on_ignore()
+	# Ежедневные отчёты: триггер 17:00
+	if hour == 17 and minute == 0 and state == State.ACTIVE and active_event_id == "boss_event_daily_reports":
+		if not GameTime.is_weekend():
+			_trigger_daily_reports()
+	# Ежедневные отчёты: завершение 17:45
+	if hour == 17 and minute == 45 and state == State.ACTIVE and active_event_id == "boss_event_daily_reports":
+		_end_daily_reports_session()
 
 func _try_generate_event():
 	if randf() > 0.4:
@@ -223,7 +230,8 @@ func _add_to_recent(event_id: String):
 
 func _apply_event_effects(event_id: String) -> void:
 	match event_id:
-		"boss_event_daily_reports": pass  # PR #6
+		"boss_event_daily_reports":
+			_apply_daily_reports()
 		"boss_event_no_lunch":
 			_apply_no_lunch()
 		"boss_event_total_communication":
@@ -234,6 +242,30 @@ func _apply_event_effects(event_id: String) -> void:
 			_apply_we_are_family()
 		"boss_event_no_hiring":
 			_apply_no_hiring()
+
+func _apply_daily_reports():
+	pass  # No immediate effect at accept time — 17:00 trigger handles sessions
+
+func _remove_daily_reports():
+	# Force end any active report sessions when event ends
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.has_method("force_end_report"):
+			npc.force_end_report()
+	EventLog.add(tr("LOG_DAILY_REPORTS_ENDED"), EventLog.LogType.PROGRESS)
+
+func _trigger_daily_reports():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.has_method("force_start_report"):
+			npc.force_start_report()
+	EventLog.add(tr("LOG_DAILY_REPORTS_STARTED"), EventLog.LogType.PROGRESS)
+
+func _end_daily_reports_session():
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.has_method("force_end_report"):
+			npc.force_end_report()
 
 func _apply_total_communication():
 	EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_START"), EventLog.LogType.ALERT)
@@ -253,7 +285,8 @@ func _apply_no_lunch():
 
 func _remove_event_effects(event_id: String) -> void:
 	match event_id:
-		"boss_event_daily_reports": pass
+		"boss_event_daily_reports":
+			_remove_daily_reports()
 		"boss_event_no_lunch":
 			_remove_no_lunch()
 		"boss_event_total_communication":
@@ -285,6 +318,8 @@ func _remove_no_lunch():
 
 func _on_reject_custom_log(event_id: String):
 	match event_id:
+		"boss_event_daily_reports":
+			EventLog.add(tr("LOG_DAILY_REPORTS_REJECTED"), EventLog.LogType.PROGRESS)
 		"boss_event_total_communication":
 			EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_REJECT"), EventLog.LogType.ALERT)
 		"boss_event_we_are_family":

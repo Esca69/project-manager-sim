@@ -828,3 +828,10 @@ MOOD_MOD_NO_LUNCH,🍽️ Нет нормального обеда,🍽️ No pr
 LOG_NO_LUNCH_REJECTED,"🍽️ Вы отстояли право команды на горячий суп. Босс недоволен, но сотрудники сыты.","🍽️ You stood up for the team's right to hot soup. The boss is displeased, but the team is well-fed."
 LOG_NO_LUNCH_ENDED,"🍽️ Запасы смарт-батончиков иссякли, а босса начало тошнить от пиццы. Кухня снова открыта!","🍽️ The smart bar supplies ran out and the boss got sick of pizza. The kitchen is open again!"
 LOG_NO_LUNCH_EVENT_START,"🍽️ Босс запретил обеды! Сотрудники переходят на смарт-батончики. Настроение команды падает.","🍽️ The boss banned lunch breaks! Employees switch to nutrition bars. Team mood is dropping."
+EVENT_DAILY_REPORT_TITLE,"📊 Ежедневные отчёты. Чем вы все тут заняты, бездельники?","📊 Daily Reports. What are you all doing here, slackers?"
+EVENT_DAILY_REPORT_DESC,"Босс посмотрел 15-секундный рилс про продуктивность и запаниковал. Теперь он требует, чтобы каждый вечер команда писала подробный отчет: сколько строк кода написано, сколько багов закрыто и сколько раз кликнута мышка.","The boss watched a 15-second reel about productivity and panicked. Now he demands the team write detailed daily reports every evening: how many lines of code written, bugs closed, and mouse clicks made."
+EMP_ACTION_GOING_REPORT,Идёт писать отчёт,Going to write report
+EMP_ACTION_WRITING_REPORT,Пишет отчёт 🤬,Writing report 🤬
+LOG_DAILY_REPORTS_REJECTED,"Вы убедили босса, что отчёты — это пережиток прошлого. Он недоволен, но команда благодарна.","You convinced the boss that reports are a relic of the past. He's unhappy, but the team is grateful."
+LOG_DAILY_REPORTS_ENDED,"Босс устал читать отчёты и забыл про свою инициативу. Ежедневные отчёты отменены!","The boss got tired of reading reports and forgot about his initiative. Daily reports cancelled!"
+LOG_DAILY_REPORTS_STARTED,"17:00 — Время отчётов! Все сотрудники садятся писать отчёты для босса.","17:00 — Report time! All employees sit down to write reports for the boss."
