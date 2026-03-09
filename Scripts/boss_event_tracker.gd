@@ -33,7 +33,7 @@ func _ready():
 
 func _build_ui():
 	_tracker = PanelContainer.new()
-	_tracker.custom_minimum_size = Vector2(PANEL_WIDTH, 0)
+	_tracker.custom_minimum_size = Vector2(PANEL_WIDTH, TRACKER_HEIGHT)
 	_tracker.anchor_left = 1.0
 	_tracker.anchor_top = 1.0
 	_tracker.anchor_right = 1.0
@@ -79,7 +79,7 @@ func _build_ui():
 	_text_label.add_theme_font_size_override("font_size", 13)
 	_text_label.add_theme_color_override("font_color", Color.WHITE)
 	_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_text_label.clip_text = true
 	if UITheme:
 		UITheme.apply_font(_text_label, "semibold")
 	hbox.add_child(_text_label)
@@ -115,7 +115,30 @@ func _connect_signals():
 func _process(_delta):
 	if not _tracker:
 		return
+
+	# Прячем трекер когда открыто любое меню (как лог)
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_any_menu_open"):
+		if hud.is_any_menu_open():
+			_tracker.visible = false
+			return
+
+	# Скрыть трекер если ивент не активен
+	if BossEventSystem.state == BossEventSystem.State.IDLE:
+		_tracker.visible = false
+		return
+
+	# Восстановить видимость при закрытии меню
+	if not _tracker.visible:
+		_refresh()
+
 	_update_position()
+
+	# Обновляем дни в реальном времени (Баг 1)
+	if BossEventSystem.state == BossEventSystem.State.ACTIVE:
+		var new_days_text = tr("BOSS_EVENT_TRACKER_DAYS_LEFT") % BossEventSystem.active_days_remaining
+		if _days_label.text != new_days_text:
+			_days_label.text = new_days_text
 
 func _update_position():
 	# Ищем лог если ещё не нашли
@@ -138,7 +161,7 @@ func _update_position():
 		icon_bottom_offset = -(ICON_SIZE + BOTTOM_BAR_HEIGHT + BOTTOM_MARGIN + GAP)
 
 	_tracker.offset_bottom = icon_bottom_offset
-	_tracker.offset_top = icon_bottom_offset - max(_tracker.size.y, TRACKER_HEIGHT)
+	_tracker.offset_top = icon_bottom_offset - TRACKER_HEIGHT
 
 func _find_log_nodes():
 	var hud = get_tree().get_first_node_in_group("ui")
