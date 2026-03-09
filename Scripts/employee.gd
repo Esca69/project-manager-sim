@@ -1225,6 +1225,9 @@ func _try_proximity_chat():
 		chance *= PROX_CHAT_EXTROVERT_MULT
 	elif "introvert" in data.personality:
 		chance *= PROX_CHAT_INTROVERT_MULT
+	# === BOSS EVENT: Тотальная коммуникация → шанс чата ×3 ===
+	if BossEventSystem.is_boss_event_active("boss_event_total_communication"):
+		chance *= 3.0
 	if randf() > chance:
 		return
 	# Ищем ближайшего подходящего партнёра

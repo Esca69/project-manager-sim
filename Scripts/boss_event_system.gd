@@ -35,11 +35,11 @@ const BOSS_EVENTS = {
 		"title_key": "BOSS_EVENT_TOTAL_COMM_TITLE",
 		"desc_key": "BOSS_EVENT_TOTAL_COMM_DESC",
 		"emoji": "🗣️",
-		"min_days": 2,
-		"max_days": 3,
-		"trust_accept": 2,
-		"trust_reject": -1,
-		"trust_ignore": -2,
+		"min_days": 7,
+		"max_days": 14,
+		"trust_accept": 0,     # ВАЖНО: Accept НЕ даёт бонуса к trust!
+		"trust_reject": -10,   # Decline отнимает 10 trust
+		"trust_ignore": -12,   # Игнор — ещё хуже
 	},
 	"boss_event_overtime": {
 		"title_key": "BOSS_EVENT_OVERTIME_TITLE",
@@ -98,7 +98,7 @@ func _on_time_tick(hour: int, _minute: int):
 		_on_ignore()
 
 func _try_generate_event():
-	if randf() > 0.3:
+	if randf() > 0.4:
 		return
 	var available = []
 	for eid in BOSS_EVENTS.keys():
@@ -118,7 +118,7 @@ func _on_ignore():
 	BossManager.change_trust(event["trust_ignore"])
 	state = State.IDLE
 	pending_event_id = ""
-	cooldown_days = randi_range(3, 5)
+	cooldown_days = 7
 	emit_signal("boss_event_ignored")
 	EventLog.add(tr("BOSS_EVENT_LOG_IGNORED"), EventLog.LogType.ALERT)
 
@@ -135,7 +135,7 @@ func accept_event():
 	active_event_id = event_id
 	pending_event_id = ""
 	_add_to_recent(event_id)
-	cooldown_days = randi_range(3, 5)
+	cooldown_days = 7
 	var days = randi_range(event["min_days"], event["max_days"])
 	if days <= 0:
 		state = State.IDLE
@@ -158,9 +158,10 @@ func reject_event():
 	BossManager.change_trust(event["trust_reject"])
 	state = State.IDLE
 	pending_event_id = ""
-	cooldown_days = randi_range(3, 5)
+	cooldown_days = 7
 	emit_signal("boss_event_rejected", event_id)
 	EventLog.add(tr("BOSS_EVENT_LOG_REJECTED") % tr(event["title_key"]), EventLog.LogType.ALERT)
+	_on_reject_custom_log(event_id)
 
 # ============================================================
 #                     ТИК ДНЯ
@@ -204,17 +205,36 @@ func _apply_event_effects(event_id: String) -> void:
 	match event_id:
 		"boss_event_daily_reports": pass  # PR #6
 		"boss_event_no_lunch": pass       # PR #5
-		"boss_event_total_communication": pass  # PR #4
+		"boss_event_total_communication":
+			_apply_total_communication()
 		"boss_event_overtime": pass       # PR #3
 		"boss_event_reshuffle": pass      # PR #2
+
+func _apply_total_communication():
+	EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_START"), EventLog.LogType.ALERT)
 
 func _remove_event_effects(event_id: String) -> void:
 	match event_id:
 		"boss_event_daily_reports": pass
 		"boss_event_no_lunch": pass
-		"boss_event_total_communication": pass
+		"boss_event_total_communication":
+			_remove_total_communication()
 		"boss_event_overtime": pass
 		"boss_event_reshuffle": pass
+
+func _remove_total_communication():
+	# Убрать mood-модификаторы у всех сотрудников
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.data and npc.data is EmployeeData:
+			npc.data.remove_mood_modifier("boss_event_comm_extrovert")
+			npc.data.remove_mood_modifier("boss_event_comm_introvert")
+	EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_END"), EventLog.LogType.PROGRESS)
+
+func _on_reject_custom_log(event_id: String):
+	match event_id:
+		"boss_event_total_communication":
+			EventLog.add(tr("BOSS_EVENT_TOTAL_COMM_LOG_REJECT"), EventLog.LogType.ALERT)
 
 # ============================================================
 #                     ГЕТТЕРЫ

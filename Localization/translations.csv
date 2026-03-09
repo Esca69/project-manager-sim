@@ -778,8 +778,8 @@ BOSS_EVENT_DAILY_REPORTS_TITLE,Ежедневные отчёты,Daily Reports
 BOSS_EVENT_DAILY_REPORTS_DESC,"Босс хочет, чтобы каждый сотрудник тратил время на написание дневных отчётов. Скорость работы снизится.","The boss wants every employee to spend time writing daily reports. Work speed will decrease."
 BOSS_EVENT_NO_LUNCH_TITLE,Отмена обедов,No Lunch Break
 BOSS_EVENT_NO_LUNCH_DESC,"Босс считает, что обеды — пустая трата времени. Сотрудники не смогут ходить на обед, но будут недовольны.","The boss thinks lunch breaks are a waste of time. Employees won't be able to have lunch, but they'll be unhappy."
-BOSS_EVENT_TOTAL_COMM_TITLE,Тотальная коммуникация,Total Communication
-BOSS_EVENT_TOTAL_COMM_DESC,"Босс требует, чтобы все общались друг с другом. Сотрудники периодически будут отвлекаться на ""обязательные митинги"".","The boss demands everyone communicates with each other. Employees will periodically be distracted by ""mandatory meetings""."
+BOSS_EVENT_TOTAL_COMM_TITLE,🗣️ Тотальная коммуникация,🗣️ Total Communication
+BOSS_EVENT_TOTAL_COMM_DESC,"Босс прочитал статью на Thebestboss.com о том, что общение — ключ к эффективной команде.\n\nТеперь он хочет чтобы все сотрудники общались как можно чаще.\n\n📊 Эффекты:\n• Шанс разговоров между сотрудниками увеличен ×3\n• Экстраверты: +10 к настроению\n• Интроверты: −15 к настроению","The boss read an article on Thebestboss.com that communication is the key to an effective team.\n\nNow he wants all employees to communicate as much as possible.\n\n📊 Effects:\n• Chat chance between employees increased ×3\n• Extroverts: +10 mood\n• Introverts: −15 mood"
 BOSS_EVENT_OVERTIME_TITLE,Сверхурочные,Overtime
 BOSS_EVENT_OVERTIME_DESC,"Босс решил, что рабочий день теперь длится до 21:00. Сотрудники работают дольше, но их настроение падает.","The boss decided the work day now extends to 21:00. Employees work longer, but their mood drops."
 BOSS_EVENT_RESHUFFLE_TITLE,Пересадка,Office Reshuffle
@@ -801,3 +801,8 @@ BOSS_EVENT_POPUP_ACTIVE_TITLE,🏢 Активный ивент босса,🏢 A
 BOSS_EVENT_POPUP_DAYS_LEFT,Осталось: %d дн.,Remaining: %d days
 BOSS_EVENT_TRACKER_PENDING,❗ У босса идея!,❗ Boss has an idea!
 BOSS_EVENT_TRACKER_DAYS_LEFT,Ост.: %d дн.,Left: %d d.
+MOOD_MOD_EVENT_COMM_EXTROVERT,🗣️ Тотальная коммуникация (экстраверт),🗣️ Total Communication (extrovert)
+MOOD_MOD_EVENT_COMM_INTROVERT,🗣️ Тотальная коммуникация (интроверт),🗣️ Total Communication (introvert)
+BOSS_EVENT_TOTAL_COMM_LOG_START,🗣️ Режим тотальной коммуникации активирован! Все общаются втрое чаще.,🗣️ Total Communication mode activated! Everyone chats 3x more often.
+BOSS_EVENT_TOTAL_COMM_LOG_END,"🗣️ Босс устал от постоянного гула в опенспейсе и сам надел наушники с шумоподавлением. Режим тотальной коммуникации отменён.","🗣️ The boss got tired of the constant buzz in the open space and put on noise-cancelling headphones. Total Communication mode cancelled."
+BOSS_EVENT_TOTAL_COMM_LOG_REJECT,"🗣️ Вы отстояли право команды работать в тишине. Интроверты мысленно говорят вам спасибо. Лояльность босса: -10.","��️ You defended the team's right to work in silence. Introverts mentally thank you. Boss trust: -10."
