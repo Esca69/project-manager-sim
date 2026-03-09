@@ -640,6 +640,14 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
 	_rebind_employees_to_desks()
 
+	# === BOSS EVENT: При загрузке с активным no_lunch — принудительно отменить обеды ===
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes and bes.is_boss_event_active("boss_event_no_lunch"):
+		var all_npcs = get_tree().get_nodes_in_group("npc")
+		for npc in all_npcs:
+			if npc.has_method("force_cancel_lunch"):
+				npc.force_cancel_lunch()
+
 	# === Восстанавливаем проекты для выбора у босса ===
 	var sel_data = data.get("boss_manager", {}).get("project_selection", {})
 	if not sel_data.is_empty():
