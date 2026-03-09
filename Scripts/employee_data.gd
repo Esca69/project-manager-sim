@@ -185,6 +185,10 @@ func recalculate_mood():
 		if "introvert" in personality:
 			result += 10.0
 
+	# === BOSS EVENT: Нет обедов → mood ===
+	if bes and bes.is_boss_event_active("boss_event_no_lunch"):
+		result -= 7.0
+
 	# Временные модификаторы
 	for mod in mood_temp_modifiers:
 		result += mod.value
@@ -307,6 +311,10 @@ func get_mood_breakdown() -> Dictionary:
 	if bes and bes.is_boss_event_active("boss_event_no_hiring"):
 		if "introvert" in personality:
 			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_NO_HIRING_INTROVERT"), "value": 10.0})
+
+	# === BOSS EVENT: Нет обедов ===
+	if bes and bes.is_boss_event_active("boss_event_no_lunch"):
+		permanent_mods.append({"name": tr("MOOD_MOD_NO_LUNCH"), "value": -7.0})
 
 	# Временные
 	for mod in mood_temp_modifiers:
