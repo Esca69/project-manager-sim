@@ -266,6 +266,20 @@ func _on_start_pressed():
 	project.start_global_time = now
 	project.state = project.State.IN_PROGRESS
 	print(tr("LOG_PROJECT_STARTED") % [tr(project.title), project.start_global_time])
+	
+	# === СИСТЕМА АДАПТАЦИИ: Выдаём штраф всем, кто назначен на проект при старте ===
+	var proj_id = project.title
+	for stage in project.stages:
+		for worker in stage.workers:
+			if worker is EmployeeData:
+				if not worker.known_project_ids.has(proj_id):
+					worker.known_project_ids.append(proj_id)
+					worker.project_adapt_hours_left = 24.0
+					print("📚 %s начинает новый проект. Штраф адаптации на 24 часа." % worker.employee_name)
+					if Engine.has_singleton("EventLog"):
+						var el = Engine.get_singleton("EventLog")
+						el.add(tr("LOG_PROJECT_ADAPTATION") % worker.employee_name, 2)
+	
 	update_buttons_visibility()
 
 func _process(delta):
@@ -550,6 +564,17 @@ func _on_employee_chosen(emp_data):
 	stage.workers.append(emp_data)
 	print(tr("LOG_EMP_ASSIGNED") % [emp_data.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
 	
+	# === СИСТЕМА АДАПТАЦИИ: Если проект УЖЕ ИДЁТ, и мы докидываем человека — выдаём штраф ===
+	if project.state == ProjectData.State.IN_PROGRESS:
+		var proj_id = project.title
+		if not emp_data.known_project_ids.has(proj_id):
+			emp_data.known_project_ids.append(proj_id)
+			emp_data.project_adapt_hours_left = 24.0
+			print("📚 %s присоединяется к идущему проекту. Штраф адаптации на 24 часа." % emp_data.employee_name)
+			if Engine.has_singleton("EventLog"):
+				var el = Engine.get_singleton("EventLog")
+				el.add(tr("LOG_PROJECT_ADAPTATION") % emp_data.employee_name, 2)
+	
 	var track_node = tracks_container.get_child(current_selecting_track_index)
 	track_node.update_button_visuals()
 	recalculate_schedule_preview()
@@ -562,9 +587,14 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 		return
 	if worker_index < 0 or worker_index >= stage.workers.size():
 		return
+	
 	var removed = stage.workers[worker_index]
 	stage.workers.remove_at(worker_index)
 	print(tr("LOG_EMP_REMOVED") % [removed.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
+	
+	# === СИСТЕМА АДАПТАЦИИ: Если человека сняли с проекта — обнуляем его штраф ===
+	if removed is EmployeeData:
+		removed.project_adapt_hours_left = 0.0
 	
 	var track_node = tracks_container.get_child(stage_index)
 	track_node.update_button_visuals()

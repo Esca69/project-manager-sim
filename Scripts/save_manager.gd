@@ -172,6 +172,12 @@ func _serialize_employees() -> Array:
 			"personality": d.personality.duplicate(),
 			"current_energy": d.current_energy,
 			"motivation_bonus": d.motivation_bonus,
+			
+			# === АДАПТАЦИЯ ===
+			"onboarding_hours_left": d.onboarding_hours_left,
+			"project_adapt_hours_left": d.project_adapt_hours_left,
+			"known_project_ids": d.known_project_ids.duplicate(),
+
 			# === MOOD SYSTEM v2: Сохраняем mood + модификаторы ===
 			"mood": d.mood,
 			"mood_modifiers": serialized_modifiers,
@@ -459,6 +465,15 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		emp_data.skill_business_analysis = int(emp_dict.get("skill_business_analysis", 0))
 		emp_data.current_energy = float(emp_dict.get("current_energy", 100.0))
 		emp_data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
+
+		# === АДАПТАЦИЯ (с дефолтом 0.0 для старых сохранений) ===
+		emp_data.onboarding_hours_left = float(emp_dict.get("onboarding_hours_left", 0.0))
+		emp_data.project_adapt_hours_left = float(emp_dict.get("project_adapt_hours_left", 0.0))
+		
+		var saved_known_projects = emp_dict.get("known_project_ids", [])
+		emp_data.known_project_ids.clear()
+		for p_id in saved_known_projects:
+			emp_data.known_project_ids.append(str(p_id))
 
 		# Трейты
 		var saved_traits = emp_dict.get("traits", [])

@@ -957,6 +957,13 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _format_mod(bd.motivation_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % _format_mod(bd.aura_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _format_mod(bd.event_mod))
+	
+	# === АДАПТАЦИЯ (новые строки в ТУЛТИП) ===
+	if bd.has("onboarding_mod") and bd.onboarding_mod < 0:
+		lines.append(tr("EFF_MOD_ONBOARDING") + (" (%s)" % _format_mod(bd.onboarding_mod)))
+	if bd.has("project_adapt_mod") and bd.project_adapt_mod < 0:
+		lines.append(tr("EFF_MOD_PROJECT_ADAPT") + (" (%s)" % _format_mod(bd.project_adapt_mod)))
+
 	# === RELATIONSHIP SYSTEM: Бонус от соседей ===
 	if bd.has("neighbor_mod"):
 		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _format_mod(bd.neighbor_mod))

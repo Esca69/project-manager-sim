@@ -771,3 +771,6 @@ MOOD_MOD_NEIGHBOR_GOOD,Хороший сосед,Good neighbor
 MOOD_MOD_NEIGHBOR_BAD,Плохой сосед,Bad neighbor
 ROSTER_RELATIONSHIPS,👥 Отношения,👥 Relationships
 ROSTER_NO_COLLEAGUES,Нет коллег,No colleagues
+EFF_MOD_ONBOARDING,🏢 Адаптация в компании ,🏢 Company onboarding 
+EFF_MOD_PROJECT_ADAPT,📚 Погружение в проект ,📚 Project adaptation 
+LOG_PROJECT_ADAPTATION,📚 %s вникает в новый проект (-20%% эффективности) ,📚 %s is learning the new project (-20%% efficiency) 

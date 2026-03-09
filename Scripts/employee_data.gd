@@ -10,6 +10,11 @@ class_name EmployeeData
 @export var gender: String = "male"  # "male" или "female"
 var days_in_company: int = 0  # Инкрементируется каждый рабочий день
 
+# === АДАПТАЦИЯ (ОНБОРДИНГ И ПРОЕКТЫ) ===
+var onboarding_hours_left: float = 120.0
+var project_adapt_hours_left: float = 0.0
+var known_project_ids: Array = []
+
 const SEVERANCE_MIN_MULTIPLIER: float = 0.5
 const SEVERANCE_MAX_MULTIPLIER: float = 1.5
 
@@ -84,7 +89,7 @@ const MOOD_TRAIT_MODIFIERS = {
 # Ситуационные постоянные
 const MOOD_HAS_DESK_BONUS: float = 10.0
 const MOOD_NO_DESK_PENALTY: float = -5.0
-const MOOD_LOW_ENERGY_PENALTY: float = -5.0       # Энергия 30-50%
+const MOOD_LOW_ENERGY_PENALTY: float = -5.0        # Энергия 30-50%
 const MOOD_VERY_LOW_ENERGY_PENALTY: float = -10.0  # Энергия <30%
 const MOOD_MOTIVATION_BONUS: float = 5.0           # Мотивация от PM активна
 
@@ -642,6 +647,13 @@ func get_efficiency_multiplier() -> float:
 	# Время-зависимые трейты
 	trait_sum += _get_time_based_efficiency_mod()
 
+	# === ШТРАФЫ АДАПТАЦИИ ===
+	var adaptation_mod: float = 0.0
+	if onboarding_hours_left > 0:
+		adaptation_mod -= 0.10
+	if project_adapt_hours_left > 0:
+		adaptation_mod -= 0.20
+
 	var motivation_mod = motivation_bonus
 
 	var event_mod: float = 0.0
@@ -651,7 +663,7 @@ func get_efficiency_multiplier() -> float:
 
 	var aura_mod = aura_bonus
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod)
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -675,7 +687,13 @@ func get_efficiency_breakdown() -> Dictionary:
 	if em:
 		event_mod = em.get_employee_efficiency_modifier(employee_name)
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod)
+	var adaptation_mod: float = 0.0
+	if onboarding_hours_left > 0:
+		adaptation_mod -= 0.10
+	if project_adapt_hours_left > 0:
+		adaptation_mod -= 0.20
+
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -688,6 +706,8 @@ func get_efficiency_breakdown() -> Dictionary:
 		"aura_mod": aura_mod,
 		"event_mod": event_mod,
 		"neighbor_mod": neighbor_mod,
+		"onboarding_mod": -0.10 if onboarding_hours_left > 0 else 0.0,
+		"project_adapt_mod": -0.20 if project_adapt_hours_left > 0 else 0.0,
 		"total": total,
 	}
 

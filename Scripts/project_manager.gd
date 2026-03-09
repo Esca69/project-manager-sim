@@ -167,14 +167,18 @@ func _fail_project(project: ProjectData):
 	project.state = ProjectData.State.FAILED
 
 	# === MOOD SYSTEM v2: Провал → -10 на 24 часа всем участникам ===
+	# А также снимаем штраф адаптации, так как проект закрыт
 	for stage in project.stages:
 		for worker_data in stage.workers:
 			if worker_data is EmployeeData:
 				worker_data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 2880.0)
+				worker_data.project_adapt_hours_left = 0.0 # Сброс штрафа за адаптацию
+
 		var worker_names = stage.get("completed_worker_names", [])
 		for npc in get_tree().get_nodes_in_group("npc"):
 			if npc.data and npc.data.employee_name in worker_names:
 				npc.data.add_mood_modifier("project_failed", "MOOD_MOD_PROJECT_FAILED", -10.0, 2880.0)
+				npc.data.project_adapt_hours_left = 0.0 # Сброс штрафа за адаптацию
 
 	for stage in project.stages:
 		_freeze_stage_workers(stage)
@@ -200,6 +204,13 @@ func _finish_project(project: ProjectData):
 	EventLog.add(tr("LOG_PROJECT_FINISHED") % tr(project.title), EventLog.LogType.PROGRESS)
 	
 	project.state = ProjectData.State.FINISHED
+	
+	# === СНИМАЕМ ШТРАФ ЗА АДАПТАЦИЮ У ТЕКУЩИХ РАБОТНИКОВ (до заморозки) ===
+	for stage in project.stages:
+		for worker_data in stage.workers:
+			if worker_data is EmployeeData:
+				worker_data.project_adapt_hours_left = 0.0
+
 	for stage in project.stages:
 		if stage.get("is_completed", false) and not stage.has("completed_worker_names"):
 			_freeze_stage_workers(stage)
@@ -208,11 +219,13 @@ func _finish_project(project: ProjectData):
 	GameState.projects_finished_today.append({"project": project, "payout": payout})
 
 	# === MOOD SYSTEM v2: Проект завершён → +8 на 24 часа всем участникам ===
+	# А также снимаем штраф адаптации у всех, кто работал на прошлых этапах
 	for stage in project.stages:
 		var worker_names = stage.get("completed_worker_names", [])
 		for npc in get_tree().get_nodes_in_group("npc"):
 			if npc.data and npc.data.employee_name in worker_names:
 				npc.data.add_mood_modifier("project_success", "MOOD_MOD_PROJECT_SUCCESS", 8.0, 2880.0)
+				npc.data.project_adapt_hours_left = 0.0 # Сброс штрафа за адаптацию
 
 	# === ЛОЯЛЬНОСТЬ: УСПЕХ ===
 	var client = project.get_client()

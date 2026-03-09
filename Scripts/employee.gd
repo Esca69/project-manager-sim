@@ -548,6 +548,13 @@ func _on_day_started(_day_number: int):
 func _on_time_tick(_hour, _minute):
 	if not data: return
 
+	# === ТАЙМЕРЫ АДАПТАЦИИ (Календарные часы) ===
+	if _minute == 0:
+		if data.onboarding_hours_left > 0:
+			data.onboarding_hours_left -= 1.0
+		if data.project_adapt_hours_left > 0:
+			data.project_adapt_hours_left -= 1.0
+
 	# === EVENT SYSTEM: Не тикаем таймеры если болеем или в отгуле ===
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
 		return
