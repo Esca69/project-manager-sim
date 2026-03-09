@@ -167,6 +167,14 @@ func recalculate_mood():
 	if motivation_bonus > 0.0:
 		result += MOOD_MOTIVATION_BONUS
 
+	# === BOSS EVENT: Тотальная коммуникация → mood ===
+	var bes = _get_boss_event_system()
+	if bes and bes.is_boss_event_active("boss_event_total_communication"):
+		if "extrovert" in personality:
+			result += 10.0
+		elif "introvert" in personality:
+			result -= 15.0
+
 	# Временные модификаторы
 	for mod in mood_temp_modifiers:
 		result += mod.value
@@ -271,6 +279,14 @@ func get_mood_breakdown() -> Dictionary:
 	# Мотивация
 	if motivation_bonus > 0.0:
 		permanent_mods.append({"name": tr("MOOD_MOD_MOTIVATED"), "value": MOOD_MOTIVATION_BONUS})
+
+	# === BOSS EVENT: Тотальная коммуникация ===
+	var bes2 = _get_boss_event_system()
+	if bes2 and bes2.is_boss_event_active("boss_event_total_communication"):
+		if "extrovert" in personality:
+			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_EXTROVERT"), "value": 10.0})
+		elif "introvert" in personality:
+			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_INTROVERT"), "value": -15.0})
 
 	# Временные
 	for mod in mood_temp_modifiers:
@@ -718,6 +734,13 @@ func _get_event_manager():
 	var main_loop = Engine.get_main_loop()
 	if main_loop and main_loop is SceneTree:
 		return main_loop.root.get_node_or_null("/root/EventManager")
+	return null
+
+# === BOSS EVENT SYSTEM: Безопасный доступ из Resource ===
+func _get_boss_event_system():
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop is SceneTree:
+		return main_loop.root.get_node_or_null("/root/BossEventSystem")
 	return null
 
 # === RAISES: Генерация запроса на повышение ЗП ===
