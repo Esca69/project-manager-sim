@@ -73,11 +73,12 @@ func pay_daily_salaries():
 		if "data" in worker and worker.data is EmployeeData:
 			var salary = worker.data.daily_salary
 			total_daily_cost += salary
+			# ИСПРАВЛЕНИЕ: Используем переведенное имя
 			daily_salary_details.append({
-				"name": worker.data.employee_name,
+				"name": worker.data.get_display_name(),
 				"amount": salary
 			})
-			print("Сотрудник ", worker.data.employee_name, " получил: ", salary, "$")
+			print("Сотрудник ", worker.data.get_display_name(), " получил: ", salary, "$")
 
 	if total_daily_cost > 0:
 		add_expense(total_daily_cost)
@@ -87,9 +88,10 @@ func pay_daily_salaries():
 
 # === ЗАПИСЬ ЛЕВЕЛ-АПА ===
 func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String):
+	# ИСПРАВЛЕНИЕ: Используем переведенное имя и должность
 	levelups_today.append({
-		"name": emp.employee_name,
-		"role": emp.job_title,
+		"name": emp.get_display_name(),
+		"role": tr(emp.job_title),
 		"new_level": new_level,
 		"grade": emp.get_grade_name(),
 		"skill_gain": skill_gain,
@@ -99,8 +101,9 @@ func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trai
 
 # === ЗАПИСЬ ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ===
 func record_loyalty_change(client, change: int, reason: String):
+	# ИСПРАВЛЕНИЕ: Используем get_display_name (оно уже с эмодзи)
 	loyalty_changes_today.append({
-		"client_name": client.client_name,
+		"client_name": client.get_display_name(),
 		"emoji": client.emoji,
 		"change": change,
 		"new_loyalty": client.loyalty,

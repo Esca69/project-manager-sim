@@ -139,12 +139,13 @@ func roll_compatibility_detailed(emp_a: EmployeeData, emp_b: EmployeeData) -> Di
 		factors.append("%d man_hater→♂" % CONFLICT_PENALTY)
 
 	# smelly → штраф всем (кроме другого smelly)
+	# ИСПРАВЛЕНИЕ: Используем get_display_name() для вывода в лог
 	if "smelly" in emp_a.personality and "smelly" not in emp_b.personality:
 		total += CONFLICT_PENALTY
-		factors.append("%d smelly(%s)" % [CONFLICT_PENALTY, emp_a.employee_name])
+		factors.append("%d smelly(%s)" % [CONFLICT_PENALTY, emp_a.get_display_name()])
 	if "smelly" in emp_b.personality and "smelly" not in emp_a.personality:
 		total += CONFLICT_PENALTY
-		factors.append("%d smelly(%s)" % [CONFLICT_PENALTY, emp_b.employee_name])
+		factors.append("%d smelly(%s)" % [CONFLICT_PENALTY, emp_b.get_display_name()])
 
 	# toxic → штраф introvert'ам
 	if "toxic" in emp_a.personality and "introvert" in emp_b.personality:

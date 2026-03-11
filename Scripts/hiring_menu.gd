@@ -5,7 +5,7 @@ extends Control
 @onready var card3 = %Card3
 
 @onready var close_btn = find_child("CloseButton", true, false)
-@onready var title_label = $Window/MainVBox/HeaderPanel/TitleLabel # <--- Добавь эту строку
+@onready var title_label = $Window/MainVBox/HeaderPanel/TitleLabel 
 
 var generator_script = preload("res://Scripts/candidate_generator.gd").new()
 var candidates = []
@@ -44,7 +44,7 @@ func _ready():
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(_overlay)
 	move_child(_overlay, 0) # Строго на самый задний план, чтобы не блокировал клики!
-
+	
 	if close_btn:
 		close_btn.pressed.connect(_on_close_pressed)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
@@ -52,7 +52,7 @@ func _ready():
 		print("ОШИБКА: Не найдена кнопка CloseButton!")
 	
 	if title_label:
-		title_label.text = tr("TITLE_HIRING_MENU") # <--- Добавь это
+		title_label.text = tr("TITLE_HIRING_MENU")
 
 	_card_style_normal = _make_card_style(false)
 	_card_style_hover = _make_card_style(true)
@@ -256,7 +256,8 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 		card.mouse_exited.connect(_on_card_hover_exit.bind(card))
 
 	if name_lbl:
-		name_lbl.text = data.get_gender_icon() + " " + data.employee_name
+		# ИСПРАВЛЕНИЕ: Берем локализованное имя
+		name_lbl.text = data.get_gender_icon() + " " + data.get_display_name()
 		if UITheme: UITheme.apply_font(name_lbl, "bold")
 	if role_lbl:
 		role_lbl.text = tr(data.job_title)
@@ -428,7 +429,8 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	top_hbox.add_child(left_info)
 
 	var name_lbl = Label.new()
-	name_lbl.text = data.get_gender_icon() + " " + data.employee_name
+	# ИСПРАВЛЕНИЕ: Берем локализованное имя
+	name_lbl.text = data.get_gender_icon() + " " + data.get_display_name()
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
@@ -764,7 +766,8 @@ func _on_hire_pressed(index):
 		print("🔴 [HIRE] candidates[%d] == null — уже нанят" % index)
 		return
 
-	print("🟡 [HIRE] Нанимаем: ", human_to_hire.employee_name)
+	# ИСПРАВЛЕНИЕ: Логирование имени
+	print("🟡 [HIRE] Нанимаем: ", human_to_hire.get_display_name())
 
 	# === ДИАГНОСТИКА: Дерево сцен ===
 	print("🟡 [HIRE] current_scene = ", get_tree().current_scene)
@@ -816,7 +819,8 @@ func _on_hire_pressed(index):
 	# Лог найма
 	if EventLog:
 		var type_text = tr("EMPLOYMENT_TYPE_FREELANCER") if human_to_hire.employment_type == "freelancer" else tr("EMPLOYMENT_TYPE_CONTRACTOR")
-		EventLog.add(tr("LOG_HIRE_EMPLOYEE") % [type_text, human_to_hire.employee_name, human_to_hire.job_title, human_to_hire.monthly_salary])
+		# ИСПРАВЛЕНИЕ: Используем переведенное имя в логе
+		EventLog.add(tr("LOG_HIRE_EMPLOYEE") % [type_text, human_to_hire.get_display_name(), human_to_hire.job_title, human_to_hire.monthly_salary])
 
 	candidates[index] = null
 

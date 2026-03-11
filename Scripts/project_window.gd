@@ -37,9 +37,11 @@ func setup(data: ProjectData, selector_node):
 	if project.client_id != "":
 		var client = project.get_client()
 		if client:
-			client_prefix = client.emoji + " " + client.client_name + "  —  "
+			# ИСПРАВЛЕНИЕ: Используем get_display_name()
+			client_prefix = client.get_display_name() + "  —  "
 	
-	title_label.text = client_prefix + cat_label + " " + tr(project.title)
+	# ИСПРАВЛЕНИЕ: Используем get_display_title()
+	title_label.text = client_prefix + cat_label + " " + project.get_display_title()
 
 	var deadline_date = GameTime.get_date_short(project.deadline_day)
 	var days_left = project.deadline_day - GameTime.day
@@ -94,8 +96,16 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 	
+	# === ИСПРАВЛЕНИЕ: Переводим хардкодные заголовки столбцов ===
+	var col_role = $MainLayout/ContentWrapper/Body/TableHeader/Label
+	var col_assignee = $MainLayout/ContentWrapper/Body/TableHeader/Label2
+	var col_progress = $MainLayout/ContentWrapper/Body/TableHeader/Label3
+	
+	if col_role: col_role.text = tr("TRACK_COL_ROLE")
+	if col_assignee: col_assignee.text = tr("TRACK_COL_ASSIGNEE")
+	if col_progress: col_progress.text = tr("TRACK_COL_PROGRESS")
+	
 	# === Overlay: вставляем в РОДИТЕЛЯ, ПОД project_window ===
-	# Так окно остаётся 1500×900 по центру (как в .tscn), а overlay затемняет весь экран
 	call_deferred("_create_overlay")
 	
 	var cancel_node = $MainLayout/ContentWrapper/Body/Footer/CancelButton
@@ -159,6 +169,11 @@ func _ready():
 		UITheme.apply_font(budget_label, "bold")
 		UITheme.apply_font(start_btn, "semibold")
 		UITheme.apply_font(close_window_btn, "semibold")
+		
+		# Применяем шрифты к нашим заголовкам тоже
+		if col_role: UITheme.apply_font(col_role, "semibold")
+		if col_assignee: UITheme.apply_font(col_assignee, "semibold")
+		if col_progress: UITheme.apply_font(col_progress, "semibold")
 
 # === Создаём overlay в РОДИТЕЛЕ (HUD), прямо перед нами ===
 func _create_overlay():
@@ -265,7 +280,8 @@ func _on_start_pressed():
 	var now = get_current_global_time()
 	project.start_global_time = now
 	project.state = project.State.IN_PROGRESS
-	print(tr("LOG_PROJECT_STARTED") % [tr(project.title), project.start_global_time])
+	# ИСПРАВЛЕНИЕ: Вывод переведенного имени проекта в лог
+	print(tr("LOG_PROJECT_STARTED") % [project.get_display_title(), project.start_global_time])
 	
 	# === СИСТЕМА АДАПТАЦИИ: Выдаём штраф всем, кто назначен на проект при старте ===
 	var proj_id = project.title
@@ -275,10 +291,11 @@ func _on_start_pressed():
 				if not worker.known_project_ids.has(proj_id):
 					worker.known_project_ids.append(proj_id)
 					worker.project_adapt_hours_left = 24.0
-					print("📚 %s начинает новый проект. Штраф адаптации на 24 часа." % worker.employee_name)
+					# ИСПРАВЛЕНИЕ: Вывод переведенного имени сотрудника в лог
+					print("📚 %s начинает новый проект. Штраф адаптации на 24 часа." % worker.get_display_name())
 					if Engine.has_singleton("EventLog"):
 						var el = Engine.get_singleton("EventLog")
-						el.add(tr("LOG_PROJECT_ADAPTATION") % worker.employee_name, 2)
+						el.add(tr("LOG_PROJECT_ADAPTATION") % worker.get_display_name(), 2)
 	
 	update_buttons_visibility()
 
@@ -562,7 +579,8 @@ func _on_employee_chosen(emp_data):
 			return
 
 	stage.workers.append(emp_data)
-	print(tr("LOG_EMP_ASSIGNED") % [emp_data.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
+	# ИСПРАВЛЕНИЕ: Используем get_display_name()
+	print(tr("LOG_EMP_ASSIGNED") % [emp_data.get_display_name(), tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
 	
 	# === СИСТЕМА АДАПТАЦИИ: Если проект УЖЕ ИДЁТ, и мы докидываем человека — выдаём штраф ===
 	if project.state == ProjectData.State.IN_PROGRESS:
@@ -570,10 +588,11 @@ func _on_employee_chosen(emp_data):
 		if not emp_data.known_project_ids.has(proj_id):
 			emp_data.known_project_ids.append(proj_id)
 			emp_data.project_adapt_hours_left = 24.0
-			print("📚 %s присоединяется к идущему проекту. Штраф адаптации на 24 часа." % emp_data.employee_name)
+			# ИСПРАВЛЕНИЕ: Выводим переведенное имя в лог
+			print("📚 %s присоединяется к идущему проекту. Штраф адаптации на 24 часа." % emp_data.get_display_name())
 			if Engine.has_singleton("EventLog"):
 				var el = Engine.get_singleton("EventLog")
-				el.add(tr("LOG_PROJECT_ADAPTATION") % emp_data.employee_name, 2)
+				el.add(tr("LOG_PROJECT_ADAPTATION") % emp_data.get_display_name(), 2)
 	
 	var track_node = tracks_container.get_child(current_selecting_track_index)
 	track_node.update_button_visuals()
@@ -590,7 +609,8 @@ func _on_worker_removed(stage_index: int, worker_index: int):
 	
 	var removed = stage.workers[worker_index]
 	stage.workers.remove_at(worker_index)
-	print(tr("LOG_EMP_REMOVED") % [removed.employee_name, tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
+	# ИСПРАВЛЕНИЕ: Используем get_display_name()
+	print(tr("LOG_EMP_REMOVED") % [removed.get_display_name(), tr("STAGE_SHORT_" + stage.type), stage.workers.size()])
 	
 	# === СИСТЕМА АДАПТАЦИИ: Если человека сняли с проекта — обнуляем его штраф ===
 	if removed is EmployeeData:

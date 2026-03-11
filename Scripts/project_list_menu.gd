@@ -35,8 +35,6 @@ func _ready():
 	if title_label:
 		title_label.text = tr("TITLE_MY_PROJECTS")
 		
-	# ... остальной код _ready()
-	
 	# === ДОБАВЛЯЕМ ЗАТЕМНЕНИЕ ФОНА (OVERLAY) ===
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0.45)
@@ -339,9 +337,11 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	if proj.client_id != "":
 		var client = proj.get_client()
 		if client:
-			client_prefix = client.emoji + " " + client.client_name + "  —  "
+			# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо emoji + client_name
+			client_prefix = client.get_display_name() + "  —  "
 	
-	var title_text = client_prefix + cat_label + " " + tr(proj.title)
+	# ИСПРАВЛЕНИЕ: Используем get_display_title() вместо tr(proj.title)
+	var title_text = client_prefix + cat_label + " " + proj.get_display_title()
 	if proj.state == ProjectData.State.FINISHED:
 		title_text = "✅ " + title_text
 	elif proj.state == ProjectData.State.FAILED:

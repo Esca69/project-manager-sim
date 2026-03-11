@@ -13,8 +13,6 @@ const MARGIN_MULTIPLIER = 1.4
 
 # === ШАБЛОНЫ ПРОЕКТОВ (используем ключи из CSV) ===
 
-
-
 # MICRO — 1 вид работ (15 вариантов)
 const MICRO_TEMPLATES = [
 	{ "name": "PROJ_FIX_BUG",            "stages": ["DEV"],  "difficulty": 1 },
@@ -139,8 +137,8 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 
 	new_proj.category = category
 	
-	# ИСПРАВЛЕНИЕ: Используем TranslationServer для статической функции
-	new_proj.title = TranslationServer.translate(template["name"])
+	# ИСПРАВЛЕНИЕ: Теперь мы сохраняем ключ локализации, а не сам перевод
+	new_proj.title = template["name"]
 
 	var stage_types: Array = template["stages"]
 	new_proj.stages = []

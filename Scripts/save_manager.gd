@@ -161,6 +161,9 @@ func _serialize_employees() -> Array:
 		
 		result.append({
 			"employee_name": d.employee_name,
+			# ИСПРАВЛЕНИЕ: Добавлены новые поля локализации имен
+			"name_ru": d.name_ru,
+			"name_en": d.name_en,
 			"job_title": d.job_title,
 			"monthly_salary": d.monthly_salary,
 			"employment_type": d.employment_type,
@@ -467,6 +470,21 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	for emp_dict in employee_dicts:
 		var emp_data = EmployeeData.new()
 		emp_data.employee_name = emp_dict.get("employee_name", "???")
+		
+		# ИСПРАВЛЕНИЕ: Восстанавливаем локализованные имена. Если сохранение старое (нет name_ru), берём employee_name
+# ИСПРАВЛЕНИЕ: Восстанавливаем локализованные имена. Если сохранение старое (нет name_ru), берём employee_name
+		emp_data.name_ru = emp_dict.get("name_ru", emp_data.employee_name)
+		emp_data.name_en = emp_dict.get("name_en", emp_data.employee_name)
+		
+		# === ЖЕЛЕЗОБЕТОННАЯ МИГРАЦИЯ СТАРЫХ СОХРАНЕНИЙ ===
+		if emp_data.name_en == emp_data.name_ru:
+			var cand_gen = load("res://Scripts/candidate_generator.gd").new()
+			var gender = str(emp_dict.get("gender", "male"))
+			var new_names = cand_gen._generate_random_names(gender)
+			emp_data.name_en = new_names.en
+			cand_gen.free() # Очищаем память
+			print("🔄 Миграция сейва успешна: %s получил EN имя %s" % [emp_data.name_ru, emp_data.name_en])
+		
 		emp_data.job_title = emp_dict.get("job_title", "Junior Developer")
 		emp_data.monthly_salary = int(emp_dict.get("monthly_salary", 3000))
 		emp_data.employment_type = str(emp_dict.get("employment_type", "contractor"))

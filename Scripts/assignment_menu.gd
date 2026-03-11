@@ -72,8 +72,8 @@ func _refresh_list():
 	
 	for npc in all_npcs:
 		if npc.data:
-			# Переводим должность
-			var display_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
+			# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо employee_name
+			var display_name = npc.data.get_display_name() + " (" + tr(npc.data.job_title) + ")"
 			
 			if current_employee_data and npc.data == current_employee_data:
 				# Добавляем метку текущего сотрудника
@@ -114,16 +114,19 @@ func _on_item_list_item_activated(index):
 			var old_npc = target_desk.unassign_employee()
 			if old_npc and old_npc.has_method("release_from_desk"):
 				old_npc.release_from_desk()
-				print(tr("LOG_EMP_RELEASED") % old_npc.data.employee_name)
+				# ИСПРАВЛЕНИЕ: Выводим локализованное имя в лог
+				print(tr("LOG_EMP_RELEASED") % old_npc.data.get_display_name())
 		
 		var old_desk = _find_desk_with_npc(npc_node)
 		if old_desk and old_desk != target_desk:
 			old_desk.unassign_employee()
-			print(tr("LOG_EMP_MOVED_DESK") % [npc_node.data.employee_name, old_desk.name])
+			# ИСПРАВЛЕНИЕ: Выводим локализованное имя в лог
+			print(tr("LOG_EMP_MOVED_DESK") % [npc_node.data.get_display_name(), old_desk.name])
 		
 		target_desk.assign_employee(npc_node.data, npc_node)
 		npc_node.move_to_desk(target_desk.seat_point.global_position)
-		print(tr("LOG_EMP_ORDER_DESK") % npc_node.data.employee_name)
+		# ИСПРАВЛЕНИЕ: Выводим локализованное имя в лог
+		print(tr("LOG_EMP_ORDER_DESK") % npc_node.data.get_display_name())
 	
 	visible = false
 	target_desk = null

@@ -2,8 +2,17 @@ extends Resource
 class_name EmployeeData
 
 @export var employee_name: String = "Новичок"
+@export var name_ru: String = ""
+@export var name_en: String = ""
 @export var job_title: String = "Junior Developer"
 @export var monthly_salary: int = 3000
+
+# ИСПРАВЛЕНИЕ: Функция для получения локализованного имени
+func get_display_name() -> String:
+	if TranslationServer.get_locale().begins_with("ru"):
+		return name_ru if name_ru != "" else employee_name
+	else:
+		return name_en if name_en != "" else employee_name
 
 # === ТИП ЗАНЯТОСТИ ===
 @export var employment_type: String = "contractor"  # "contractor" или "freelancer"
@@ -52,7 +61,7 @@ var quit_days_left: int = 0           # Дней до увольнения
 
 # === СИСТЕМА ОТПУСКОВ (VACATIONS) ===
 var vacation_days_until_request: int = -1   # Обратный отсчёт до запроса (-1 = не инициализирован)
-var vacation_approved: bool = false          # Отпуск одобрен, ждём начала
+var vacation_approved: bool = false         # Отпуск одобрен, ждём начала
 var vacation_delay_days: int = 0            # Дней до начала отпуска (после одобрения)
 var vacation_days_remaining: int = 0        # Дней отпуска осталось (3 рабочих дня)
 
@@ -655,12 +664,15 @@ func get_energy_drain_multiplier() -> float:
 
 var daily_salary: int:
 	get:
-		return monthly_salary / 30
+		# Зарплата считается только за рабочие дни (22 дня в месяце)
+		return int(monthly_salary / 22.0)
 
 var hourly_rate: int:
 	get:
 		if monthly_salary <= 0: return 1
-		return monthly_salary / 160
+		# Высчитываем ставку в час, исходя из дневной ставки и 8-часового рабочего дня
+		# Это важно для аналитики затрат на проекты (total_labor_cost)
+		return int(daily_salary / 8.0)
 
 @export var skill_backend: int = 10
 @export var skill_qa: int = 5

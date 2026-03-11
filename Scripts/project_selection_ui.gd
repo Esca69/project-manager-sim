@@ -319,10 +319,12 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if data.client_id != "":
 		var client = data.get_client()
 		if client:
-			client_text = client.emoji + " " + client.client_name + "  —  "
+			# ИСПРАВЛЕНИЕ: Используем get_display_name() клиента (эмодзи уже внутри)
+			client_text = client.get_display_name() + "  —  "
 
 	var name_lbl = Label.new()
-	name_lbl.text = client_text + cat_label + " " + tr(data.title)
+	# ИСПРАВЛЕНИЕ: Используем get_display_title()
+	name_lbl.text = client_text + cat_label + " " + data.get_display_title()
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
@@ -428,7 +430,8 @@ func _on_select_pressed(index: int):
 	if _is_too_late_for_boss():
 		return
 
-	print("⏱ Начинаем обсуждение проекта: ", tr(selected.title))
+	# ИСПРАВЛЕНИЕ: Берем локализованное имя для логов
+	print("⏱ Начинаем обсуждение проекта: ", selected.get_display_title())
 
 	current_options[index] = null
 	_on_close_pressed()

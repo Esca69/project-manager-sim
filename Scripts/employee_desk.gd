@@ -45,7 +45,8 @@ func unassign_employee():
 
 func update_desk_visuals():
 	if assigned_employee:
-		name_tag.text = assigned_employee.employee_name
+		# ИСПРАВЛЕНИЕ: Выводим локализованное имя на плашке стола
+		name_tag.text = assigned_employee.get_display_name()
 		name_tag.modulate = Color.GREEN
 	else:
 		name_tag.text = tr("DESK_AVAILABLE")

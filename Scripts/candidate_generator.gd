@@ -124,43 +124,45 @@ func _roll_gender() -> String:
 	
 	return gender
 
-# Функция генерации случайного имени по уже заданному полу
-func _generate_random_name(gender: String) -> String:
-	var locale = TranslationServer.get_locale()
-	var f_name = ""
-	var l_name = ""
+# ИСПРАВЛЕНИЕ: Функция генерации сразу двух имен (RU и EN)
+func _generate_random_names(gender: String) -> Dictionary:
+	var f_name_ru = ""
+	var l_name_ru = ""
+	var f_name_en = ""
+	var l_name_en = ""
 	
-	if locale.begins_with("ru"):
-		if gender == "male":
-			f_name = first_names_ru_m.pick_random()
-			l_name = last_names_ru_m.pick_random()
-		else:
-			f_name = first_names_ru_f.pick_random()
-			l_name = last_names_ru_f.pick_random()
+	if gender == "male":
+		f_name_ru = first_names_ru_m.pick_random()
+		l_name_ru = last_names_ru_m.pick_random()
+		f_name_en = first_names_en_m.pick_random()
+		l_name_en = last_names_en.pick_random()
 	else:
-		if gender == "male":
-			f_name = first_names_en_m.pick_random()
-		else:
-			f_name = first_names_en_f.pick_random()
-		l_name = last_names_en.pick_random()
+		f_name_ru = first_names_ru_f.pick_random()
+		l_name_ru = last_names_ru_f.pick_random()
+		f_name_en = first_names_en_f.pick_random()
+		l_name_en = last_names_en.pick_random()
 		
-	return f_name + " " + l_name
+	return {
+		"ru": f_name_ru + " " + l_name_ru,
+		"en": f_name_en + " " + l_name_en
+	}
 
 func _generate_unique_name_and_gender() -> Dictionary:
 	var existing = _get_existing_employee_names()
 	var chosen_gender = _roll_gender()
 	
 	for attempt in range(50):
-		var new_name = _generate_random_name(chosen_gender)
-		if new_name not in existing:
-			return {"name": new_name, "gender": chosen_gender}
+		var new_names = _generate_random_names(chosen_gender)
+		if new_names.ru not in existing:
+			return {"names": new_names, "gender": chosen_gender}
 	
-	var fallback_name = _generate_random_name(chosen_gender)
+	var fallback_names = _generate_random_names(chosen_gender)
 	var counter = 2
-	while (fallback_name + " " + str(counter)) in existing:
+	while (fallback_names.ru + " " + str(counter)) in existing:
 		counter += 1
-	fallback_name = fallback_name + " " + str(counter)
-	return {"name": fallback_name, "gender": chosen_gender}
+	fallback_names.ru = fallback_names.ru + " " + str(counter)
+	fallback_names.en = fallback_names.en + " " + str(counter)
+	return {"names": fallback_names, "gender": chosen_gender}
 
 func _generate_personality(gender: String) -> Array[String]:
 	var result: Array[String] = []
@@ -204,9 +206,11 @@ func generate_random_candidate() -> EmployeeData:
 func generate_candidate_for_role(role: String) -> EmployeeData:
 	var new_emp = EmployeeData.new()
 
-	# 1. Уникальное имя и роль
+	# ИСПРАВЛЕНИЕ: Уникальное имя на двух языках и роль
 	var name_data = _generate_unique_name_and_gender()
-	new_emp.employee_name = name_data.name
+	new_emp.employee_name = name_data.names.ru
+	new_emp.name_ru = name_data.names.ru
+	new_emp.name_en = name_data.names.en
 	new_emp.gender = name_data.gender
 	new_emp.job_title = role
 

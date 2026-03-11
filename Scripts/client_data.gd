@@ -15,7 +15,7 @@ class_name ClientData
 @export var projects_failed: int = 0               # Провалены (хард истёк)
 
 # === ОЧКИ ЛОЯЛЬНОСТИ ЗА СОБЫТИЯ ===
-const LOYALTY_ON_TIME: int = 3       # Завершён до софт-дедлайна
+const LOYALTY_ON_TIME: int = 3        # Завершён до софт-дедлайна
 const LOYALTY_LATE: int = 1          # Завершён после софт, до хард
 const LOYALTY_FAILED: int = -5       # Провален
 
@@ -94,6 +94,9 @@ func record_project_failed():
 	projects_failed += 1
 	add_loyalty(LOYALTY_FAILED)
 
+# ИСПРАВЛЕНИЕ: Добавлены геттеры для динамического перевода имени и описания
 func get_display_name() -> String:
-	# Оборачиваем client_name в tr() для локализации имен (если в ресурсе указан ключ)
 	return emoji + " " + tr(client_name)
+
+func get_display_desc() -> String:
+	return tr(description)

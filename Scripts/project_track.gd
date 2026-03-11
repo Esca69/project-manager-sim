@@ -52,7 +52,19 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 	progress_bar.visible = false
 
 func _ready():
-	pass
+	# ИСПРАВЛЕНИЕ: Пытаемся найти заголовки столбцов (если они лежат выше в иерархии или в самом треке)
+	# Обычно они находятся в шапке таблицы, но на всякий случай проверяем локальные ноды:
+	var role_title = find_child("TitleRole", true, false)
+	if role_title and role_title is Label:
+		role_title.text = tr("TRACK_COL_ROLE")
+		
+	var assign_title = find_child("TitleAssignee", true, false)
+	if assign_title and assign_title is Label:
+		assign_title.text = tr("TRACK_COL_ASSIGNEE")
+		
+	var progress_title = find_child("TitleProgress", true, false)
+	if progress_title and progress_title is Label:
+		progress_title.text = tr("TRACK_COL_PROGRESS")
 
 # Кнопка "Назначить" с нужными скруглениями и ховером
 func _create_styled_button(text: String) -> Button:
@@ -153,6 +165,8 @@ func rebuild_worker_buttons():
 		var completed_names = stage_data.get("completed_worker_names", [])
 		if completed_names.is_empty():
 			for w in stage_data.get("workers", []):
+				# Если проект уже был завершен в старом сейве, тут останутся русские имена
+				# Если в новом - сюда запишутся ID, но для вывода мы используем get_display_name ниже
 				completed_names.append(w.employee_name)
 
 		for worker_name in completed_names:
@@ -161,7 +175,14 @@ func rebuild_worker_buttons():
 			row.alignment = BoxContainer.ALIGNMENT_CENTER
 
 			var check_lbl = Label.new()
-			check_lbl.text = "✅ " + worker_name
+			# Пытаемся найти сотрудника, чтобы вывести его переведенное имя, 
+			# но если его уволили, выведем то, что сохранилось в completed_worker_names
+			var display_name = worker_name
+			var found_emp = _find_employee_by_id(worker_name)
+			if found_emp:
+				display_name = found_emp.get_display_name()
+
+			check_lbl.text = "✅ " + display_name
 			check_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 			check_lbl.custom_minimum_size = Vector2(140, 30)
 			check_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -190,7 +211,13 @@ func rebuild_worker_buttons():
 			row.add_child(remove_btn)
 
 		var name_label = Label.new()
-		name_label.text = "👤 " + worker.employee_name
+		
+		# ИСПРАВЛЕНИЕ: Выводим локализованное имя сотрудника
+		var display_name = worker.employee_name
+		if worker.has_method("get_display_name"):
+			display_name = worker.get_display_name()
+			
+		name_label.text = "👤 " + display_name
 		name_label.add_theme_color_override("font_color", color_main_text)
 		name_label.custom_minimum_size = Vector2(140, 30)
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -207,6 +234,14 @@ func rebuild_worker_buttons():
 		_buttons_container.add_child(add_btn)
 
 	_update_track_height(workers.size())
+
+func _find_employee_by_id(emp_id: String):
+	# Ищем сотрудника в мире, чтобы получить его переведенное имя для завершенных этапов
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if npc.data and npc.data.employee_name == emp_id:
+			return npc.data
+	return null
 
 func _update_track_height(worker_count: int):
 	var extra = 1 if (not is_readonly and not is_stage_completed) else 0

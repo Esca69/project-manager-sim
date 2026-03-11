@@ -268,7 +268,8 @@ func apply_motivation(bonus: float, duration_minutes: float):
 	_motivation_minutes_left = duration_minutes
 	show_thought_bubble("🔥", 5.0)
 	_play_motivation_reaction()
-	print("🔥 %s замотивирован! +%d%% на %d мин." % [data.employee_name, int(bonus * 100), int(duration_minutes)])
+	# ИСПРАВЛЕНИЕ: Вывод в лог
+	print("🔥 %s замотивирован! +%d%% на %d мин." % [data.get_display_name(), int(bonus * 100), int(duration_minutes)])
 
 func remove_motivation():
 	if data:
@@ -300,7 +301,8 @@ func apply_toilet_ban(duration_minutes: float):
 			_start_wandering()
 	
 	if data:
-		print("🚫 %s: туалет запрещён на %d мин." % [data.employee_name, int(duration_minutes)])
+		# ИСПРАВЛЕНИЕ
+		print("🚫 %s: туалет запрещён на %d мин." % [data.get_display_name(), int(duration_minutes)])
 
 func remove_toilet_ban():
 	_toilet_ban_minutes_left = 0.0
@@ -378,7 +380,8 @@ func _apply_micromanagement_stack():
 	var angry_emojis = ["😠", "💢", "💨"]
 	show_thought_bubble(angry_emojis[randi() % angry_emojis.size()], 3.0)
 	
-	print("😠 %s: микроменеджмент! Стак %d, штраф настроения: %d" % [data.employee_name, _pm_aura_stacks, int(penalty)])
+	# ИСПРАВЛЕНИЕ
+	print("😠 %s: микроменеджмент! Стак %d, штраф настроения: %d" % [data.get_display_name(), _pm_aura_stacks, int(penalty)])
 
 # =============================================
 # === EVENT SYSTEM: БОЛЕЗНЬ ===
@@ -403,7 +406,8 @@ func start_sick_leave(days: int):
 	
 	show_thought_bubble("🤒", 3.0)
 	if data:
-		print("🤒 %s уходит на больничный (%d дн.)" % [data.employee_name, days])
+		# ИСПРАВЛЕНИЕ
+		print("🤒 %s уходит на больничный (%d дн.)" % [data.get_display_name(), days])
 
 func tick_sick_day():
 	if current_state != State.SICK_LEAVE:
@@ -418,7 +422,8 @@ func _recover_from_sick():
 	current_state = State.HOME
 	if data:
 		data.current_energy = 100.0
-		print("✅ %s выздоровел и готов к работе!" % data.employee_name)
+		# ИСПРАВЛЕНИЕ
+		print("✅ %s выздоровел и готов к работе!" % data.get_display_name())
 
 # =============================================
 # === EVENT SYSTEM: ОТГУЛ ===
@@ -452,7 +457,8 @@ func _finalize_day_off():
 	velocity = Vector2.ZERO
 	current_state = State.DAY_OFF
 	if data:
-		print("🏠 %s ушёл в отгул до завтра" % data.employee_name)
+		# ИСПРАВЛЕНИЕ
+		print("🏠 %s ушёл в отгул до завтра" % data.get_display_name())
 
 func end_day_off():
 	if current_state != State.DAY_OFF:
@@ -461,7 +467,8 @@ func end_day_off():
 	current_state = State.HOME
 	if data:
 		data.current_energy = 100.0
-		print("✅ %s вернулся из отгула" % data.employee_name)
+		# ИСПРАВЛЕНИЕ
+		print("✅ %s вернулся из отгула" % data.get_display_name())
 
 # === АНИМАЦИЯ РЕАКЦИИ НА МОТИВАЦИЮ ===
 func _play_motivation_reaction():
@@ -595,14 +602,16 @@ func _on_time_tick(_hour, _minute):
 		_motivation_minutes_left -= 1.0
 		if _motivation_minutes_left <= 0:
 			remove_motivation()
-			print("⏰ Мотивация закончилась у %s" % data.employee_name)
+			# ИСПРАВЛЕНИЕ
+			print("⏰ Мотивация закончилась у %s" % data.get_display_name())
 
 	# === ЗАПРЕТ ТУАЛЕТА: ТАЙМЕР ===
 	if _toilet_ban_minutes_left > 0:
 		_toilet_ban_minutes_left -= 1.0
 		if _toilet_ban_minutes_left <= 0:
 			remove_toilet_ban()
-			print("🚽 Запрет туалета закончился у %s" % data.employee_name)
+			# ИСПРАВЛЕНИЕ
+			print("🚽 Запрет туалета закончился у %s" % data.get_display_name())
 
 	# === PROXIMITY CHAT SYSTEM: Тик кулдаунов + попытка чата ===
 	_tick_chat_cooldowns()
@@ -683,8 +692,11 @@ func _physics_process(delta):
 	match current_state:
 		State.IDLE:
 			_apply_lean(Vector2.ZERO, delta)
-			if my_desk_position == Vector2.ZERO and _is_work_time():
-				_start_wandering()
+			if _is_work_time():
+				if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+					move_to_desk(my_desk_position)
+				else:
+					_start_wandering()
 		
 		State.HOME:
 			_apply_lean(Vector2.ZERO, delta)
@@ -1150,7 +1162,8 @@ func _try_start_lunch():
 	z_index = 0
 	show_thought_bubble("🍽️")
 	if data:
-		print("🍽️ %s идёт на обед" % data.employee_name)
+		# ИСПРАВЛЕНИЕ
+		print("🍽️ %s идёт на обед" % data.get_display_name())
 
 func _start_fridge_phase():
 	current_state = State.LUNCH_AT_FRIDGE
@@ -1219,7 +1232,8 @@ func _finish_lunch():
 	# +10 mood на 4 часа
 	if data:
 		data.add_mood_modifier("lunch_boost", "MOOD_MOD_LUNCH", LUNCH_MOOD_BONUS, LUNCH_MOOD_DURATION)
-		print("🍽️ %s пообедал! +%.0f mood на %.0f мин." % [data.employee_name, LUNCH_MOOD_BONUS, LUNCH_MOOD_DURATION])
+		# ИСПРАВЛЕНИЕ
+		print("🍽️ %s пообедал! +%.0f mood на %.0f мин." % [data.get_display_name(), LUNCH_MOOD_BONUS, LUNCH_MOOD_DURATION])
 	
 	# Возврат к нужному состоянию
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
@@ -1233,7 +1247,8 @@ func _cancel_lunch():
 	_release_all_lunch_resources()
 	# Обед не засчитан — можно попробовать снова
 	if data:
-		print("🍽️ %s: обед прерван" % data.employee_name)
+		# ИСПРАВЛЕНИЕ
+		print("🍽️ %s: обед прерван" % data.get_display_name())
 
 func force_cancel_lunch():
 	var lunch_states = [
@@ -1387,11 +1402,11 @@ func _find_proximity_partner():
 func _execute_proximity_chat(partner_npc):
 	var result = RelationshipManager.process_chat_result(data, partner_npc.data)
 
-	# Ставим кулдаун на пару — на ОБОИХ
+	# Ставим кулдаун на пару — на ОБОИХ (используем ID!)
 	_set_pair_cooldown(partner_npc.data.employee_name, PROX_CHAT_COOLDOWN)
 	partner_npc._set_pair_cooldown(data.employee_name, PROX_CHAT_COOLDOWN)
 
-# === ДОБАВЛЕНО: Случайный личный кулдаун (от 1 до 2 часов) ===
+	# === ДОБАВЛЕНО: Случайный личный кулдаун (от 1 до 2 часов) ===
 	var random_cd = randf_range(60.0, 120.0)
 	_personal_chat_cooldown = random_cd
 	partner_npc._personal_chat_cooldown = random_cd
@@ -1401,19 +1416,21 @@ func _execute_proximity_chat(partner_npc):
 	if is_instance_valid(partner_npc):
 		partner_npc._show_chat_reaction(result.is_positive)
 
-	# Записываем в EventLog
+	# Записываем в EventLog (Используем get_display_name для вывода)
 	var rel_val = RelationshipManager.get_relationship(data.employee_name, partner_npc.data.employee_name)
 	var level_name = tr(RelationshipManager.get_rel_level_name(data.employee_name, partner_npc.data.employee_name))
 	# Собираем debug-строку с деталями броска
 	var debug_parts: String = "🎲%d" % result.base_roll
 	if result.factors.size() > 0:
 		debug_parts += " " + ", ".join(result.factors)
+		
+	# ИСПРАВЛЕНИЕ: Выводим в лог переведенные имена
 	if result.is_positive:
-		EventLog.add(tr("LOG_CHAT_POSITIVE") % [data.employee_name, partner_npc.data.employee_name, rel_val, level_name] + " | Δ%+d (%s)" % [result.delta, debug_parts])
+		EventLog.add(tr("LOG_CHAT_POSITIVE") % [data.get_display_name(), partner_npc.data.get_display_name(), rel_val, level_name] + " | Δ%+d (%s)" % [result.delta, debug_parts])
 	else:
-		EventLog.add(tr("LOG_CHAT_NEGATIVE") % [data.employee_name, partner_npc.data.employee_name, rel_val, level_name] + " | Δ%+d (%s)" % [result.delta, debug_parts])
+		EventLog.add(tr("LOG_CHAT_NEGATIVE") % [data.get_display_name(), partner_npc.data.get_display_name(), rel_val, level_name] + " | Δ%+d (%s)" % [result.delta, debug_parts])
 
-	print("💬 Proximity chat: %s ↔ %s, delta=%d, rel=%d (%s) | %s" % [data.employee_name, partner_npc.data.employee_name, result.delta, rel_val, level_name, debug_parts])
+	print("💬 Proximity chat: %s ↔ %s, delta=%d, rel=%d (%s) | %s" % [data.get_display_name(), partner_npc.data.get_display_name(), result.delta, rel_val, level_name, debug_parts])
 
 func _show_chat_reaction(is_positive: bool):
 	show_thought_bubble("💬", 1.0)
@@ -1478,6 +1495,7 @@ func _update_neighbor_bonus():
 			continue
 		var dist = my_desk.global_position.distance_to(desk.global_position)
 		if dist <= 300.0:
+			# Используем ID для логики
 			neighbor_names.append(desk.assigned_employee.employee_name)
 
 	data.neighbor_mod = RelationshipManager.get_neighbor_efficiency_mod(data.employee_name, neighbor_names)
@@ -1487,8 +1505,6 @@ func _update_neighbor_bonus():
 		RelationshipManager.apply_neighbor_mood(data, neighbor_name)
 
 	# === Пассивный штраф от smelly-соседей ===
-	# Smelly раздражает всех соседей просто своим присутствием,
-	# независимо от уровня отношений. Smelly не раздражают друг друга.
 	if "smelly" not in data.personality:
 		for desk in desks:
 			if desk == my_desk:
@@ -1503,14 +1519,13 @@ func _update_neighbor_bonus():
 			if dist_to_desk > 500.0:
 				continue
 			if "smelly" in desk.assigned_npc_node.data.personality:
-				# Mood-модификатор уникален для каждого smelly-соседа (480 с ≈ 8 игровых минут)
+				# Используем ID для создания уникального ключа
 				data.add_mood_modifier(
 					"smelly_neighbor_" + desk.assigned_employee.employee_name,
 					"MOOD_MOD_NEIGHBOR_BAD",
 					-3.0,
 					480.0
 				)
-				# Штраф эффективности накапливается: каждый smelly-сосед добавляет -0.03
 				data.neighbor_mod -= 0.03
 
 func _clear_smelly_neighbor_mods():
@@ -1531,6 +1546,10 @@ func _on_wander_arrived():
 	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
 
 func move_to_desk(target_point: Vector2):
+	# Если мы отправляем его в ту же точку, где его стол УЖЕ находится 
+	# — это сам сотрудник возвращается с перерыва (внутренний вызов).
+	var is_internal_call = (my_desk_position == target_point)
+	
 	my_desk_position = target_point
 	
 	if not _is_work_time():
@@ -1544,6 +1563,23 @@ func move_to_desk(target_point: Vector2):
 			current_state = State.IDLE
 		return
 	
+	# Если это пересадка (внешний вызов от игрока), мы не прерываем важные дела сотрудника
+	if not is_internal_call:
+		var do_not_disturb_states = [
+			State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION,
+			State.HOME, State.GOING_HOME,
+			State.GOING_COFFEE, State.COFFEE_BREAK,
+			State.GOING_TOILET, State.TOILET_BREAK,
+			State.GOING_LUNCH_FRIDGE, State.LUNCH_AT_FRIDGE,
+			State.GOING_LUNCH_KITCHEN, State.LUNCH_AT_KITCHEN,
+			State.GOING_LUNCH_TABLE, State.LUNCH_EATING,
+			State.GOING_TO_REPORT, State.WRITING_REPORT
+		]
+		
+		if current_state in do_not_disturb_states:
+			return # Просто запомнили новый my_desk_position и ушли. Потом он сам туда пойдет.
+	
+	# Если это внутренний вызов (вернулся с обеда) или он просто стоял без дела:
 	current_state = State.MOVING
 	z_index = 0 
 	nav_agent.target_position = target_point
@@ -1702,6 +1738,9 @@ func setup_employee(new_data: EmployeeData):
 	_assign_random_color()
 	update_visuals()
 	_setup_early_bird()
+	# === ИСПРАВЛЕНИЕ: Если наняли в обед или после, считаем, что он поел дома ===
+	if GameTime and GameTime.hour >= 12:
+		_lunch_done_today = true
 
 func update_visuals():
 	if body_sprite:
@@ -1784,7 +1823,8 @@ func update_status_label():
 		else:
 			short_role = data.job_title
 		
-		debug_label.text = short_role + "\n" + data.employee_name + "\n" + action_text
+		# ИСПРАВЛЕНИЕ: Вывод переведенного имени над головой
+		debug_label.text = short_role + "\n" + data.get_display_name() + "\n" + action_text
 
 func _show_random_work_thought():
 	var emoji = "💼"
@@ -1926,7 +1966,8 @@ func open_raise_dialog():
 	if not data or not data.is_requesting_raise:
 		return
 
-	var display_name = data.employee_name + " (" + tr(data.job_title) + ")"
+	# ИСПРАВЛЕНИЕ: Выводим переведенное имя в диалоге
+	var display_name = data.get_display_name() + " (" + tr(data.job_title) + ")"
 
 	var event_data = {
 		"id": "raise_request",
@@ -1970,13 +2011,15 @@ func _check_raise_escalation():
 		# День 1 — первое напоминание
 		data.add_mood_modifier("raise_ignored", "MOOD_MOD_RAISE_IGNORED", -7.0, 2880.0)  # 48 часов
 		if EventLog:
-			EventLog.add(tr("LOG_RAISE_IGNORED_1") % data.employee_name, EventLog.LogType.ALERT)
+			# ИСПРАВЛЕНИЕ
+			EventLog.add(tr("LOG_RAISE_IGNORED_1") % data.get_display_name(), EventLog.LogType.ALERT)
 
 	elif data.raise_ignored_days == 3:
 		# День 3 — жёсткое напоминание
 		data.add_mood_modifier("raise_ignored", "MOOD_MOD_RAISE_IGNORED_HARD", -15.0, 2880.0)
 		if EventLog:
-			EventLog.add(tr("LOG_RAISE_IGNORED_3") % data.employee_name, EventLog.LogType.ALERT)
+			# ИСПРАВЛЕНИЕ
+			EventLog.add(tr("LOG_RAISE_IGNORED_3") % data.get_display_name(), EventLog.LogType.ALERT)
 
 	elif data.raise_ignored_days >= 5:
 		# День 5 — увольнение
@@ -1991,7 +2034,8 @@ func _fire_self_raise_ignored():
 	_hide_raise_bubble()
 
 	if EventLog:
-		EventLog.add(tr("LOG_RAISE_QUIT") % data.employee_name, EventLog.LogType.ALERT)
+		# ИСПРАВЛЕНИЕ
+		EventLog.add(tr("LOG_RAISE_QUIT") % data.get_display_name(), EventLog.LogType.ALERT)
 
 	# Штраф морали остальным контрактникам
 	for other_npc in get_tree().get_nodes_in_group("npc"):
@@ -2035,7 +2079,8 @@ func _fire_self_hunting():
 		return
 
 	if EventLog:
-		EventLog.add(tr("LOG_HUNTING_QUIT_FINAL") % data.employee_name, EventLog.LogType.ALERT)
+		# ИСПРАВЛЕНИЕ
+		EventLog.add(tr("LOG_HUNTING_QUIT_FINAL") % data.get_display_name(), EventLog.LogType.ALERT)
 
 	# Увольнение БЕЗ severance и БЕЗ штрафа морали (ушёл к конкурентам — его выбор)
 	_remove_from_all_projects()
@@ -2060,7 +2105,8 @@ func start_vacation():
 	current_state = State.ON_VACATION
 	data.vacation_days_remaining = 3
 	if EventLog:
-		EventLog.add(tr("LOG_VACATION_STARTED") % data.employee_name, EventLog.LogType.PROGRESS)
+		# ИСПРАВЛЕНИЕ
+		EventLog.add(tr("LOG_VACATION_STARTED") % data.get_display_name(), EventLog.LogType.PROGRESS)
 
 func tick_vacation_day():
 	if current_state != State.ON_VACATION:
@@ -2079,7 +2125,8 @@ func _return_from_vacation():
 		data.current_energy = 100.0
 		data.add_mood_modifier("vacation_rest", "MOOD_MOD_VACATION_REST", 10.0, 4320.0)
 	if EventLog:
-		EventLog.add(tr("LOG_VACATION_ENDED") % data.employee_name, EventLog.LogType.PROGRESS)
+		# ИСПРАВЛЕНИЕ
+		EventLog.add(tr("LOG_VACATION_ENDED") % data.get_display_name(), EventLog.LogType.PROGRESS)
 
 func _check_vacation_timer():
 	if not data or data.employment_type != "contractor":
@@ -2109,7 +2156,8 @@ func _tick_vacation_delay():
 
 func _trigger_vacation_request():
 	var delay = randi_range(1, 3)
-	var display_name = data.employee_name + " (" + tr(data.job_title) + ")"
+	# ИСПРАВЛЕНИЕ: Переведенное имя в окне запроса
+	var display_name = data.get_display_name() + " (" + tr(data.job_title) + ")"
 	var delay_text = ""
 	match delay:
 		1: delay_text = tr("VACATION_DELAY_TOMORROW")

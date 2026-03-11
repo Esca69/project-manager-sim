@@ -22,7 +22,7 @@ var elapsed_days: float = 0.0
 @export var hard_days_budget: int = 0
 @export var soft_days_budget: int = 0
 
-# --- СТРУКТУРА ЭТ��ПОВ ---
+# --- СТРУКТУРА ЭТАПОВ ---
 @export var stages: Array = []
 
 # --- ФИНАНСЫ ---
@@ -74,6 +74,10 @@ func get_client_display_name() -> String:
 	if client:
 		return client.get_display_name()
 	return tr("PROJ_UNKNOWN_CLIENT")
+
+# ИСПРАВЛЕНИЕ: Геттер для динамического локализованного имени проекта
+func get_display_title() -> String:
+	return tr(title)
 
 # Метка категории для UI
 func get_category_label() -> String:

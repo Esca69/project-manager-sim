@@ -23,7 +23,6 @@ var _btn_main_menu: Button
 # Настройки (вложенная панель)
 var _settings_panel: PanelContainer
 var _settings_open: bool = false
-var _lang_option: OptionButton
 
 const SETTINGS_PATH = "user://settings.json"
 
@@ -38,10 +37,10 @@ func _ready():
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		# Проверяем, открыто ли меню сейчас
-		if is_open(): # (или visible, смотря как у тебя сделано)
-			close()   # Если открыто — закрываем
+		if is_open():
+			close()
 		else:
-			open()    # Если закрыто — открываем
+			open()
 			
 		# На всякий случай поглощаем ввод и здесь
 		get_viewport().set_input_as_handled()
@@ -49,7 +48,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # === ПОСТРОЕНИЕ UI ===
 
 func _build_ui():
-	# Затемне��ие
+	# Затемнение
 	_dim = ColorRect.new()
 	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_dim.color = Color(0, 0, 0, 0.5)
@@ -240,32 +239,6 @@ func _build_settings_panel():
 		UITheme.apply_font(title, "bold")
 	vbox.add_child(title)
 
-	# Язык
-	var lang_hbox = HBoxContainer.new()
-	lang_hbox.add_theme_constant_override("separation", 12)
-	var lang_label = Label.new()
-	lang_label.text = tr("MENU_LANGUAGE")
-	lang_label.add_theme_font_size_override("font_size", 15)
-	lang_label.add_theme_color_override("font_color", COLOR_TEXT_DARK)
-	lang_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if UITheme:
-		UITheme.apply_font(lang_label, "semibold")
-	lang_hbox.add_child(lang_label)
-
-	_lang_option = OptionButton.new()
-	_lang_option.add_item("Русский", 0)
-	_lang_option.add_item("English", 1)
-	_lang_option.custom_minimum_size = Vector2(150, 34)
-	_lang_option.add_theme_font_size_override("font_size", 14)
-	var current_locale = TranslationServer.get_locale()
-	if current_locale.begins_with("en"):
-		_lang_option.select(1)
-	else:
-		_lang_option.select(0)
-	_lang_option.item_selected.connect(_on_language_changed)
-	lang_hbox.add_child(_lang_option)
-	vbox.add_child(lang_hbox)
-
 	# Музыка
 	vbox.add_child(_make_slider_row(tr("MENU_MUSIC_VOLUME"), AudioManager.music_volume, func(val): AudioManager.set_music_volume(val)))
 
@@ -365,10 +338,6 @@ func _on_save_pressed():
 
 func _on_main_menu_pressed():
 	# === FIX: НЕ сохраняем при выходе в меню ===
-	# Раньше тут был SaveManager.save_game() — это приводило к тому,
-	# что ��ри "Продолжить" загружалось состояние на момент выхода (9:05),
-	# а не последнее автосохранение (08:00).
-	# Теперь при выходе в меню НЕ перезаписываем сохранение.
 	_save_settings()
 	# Снимаем паузу и переходим
 	GameTime.set_paused(false)
@@ -388,12 +357,6 @@ func _close_settings():
 	_save_settings()
 	_settings_panel.visible = false
 	_panel.visible = true
-
-func _on_language_changed(index: int):
-	match index:
-		0: TranslationServer.set_locale("ru")
-		1: TranslationServer.set_locale("en")
-	_save_settings()
 
 func _save_settings():
 	var data = {

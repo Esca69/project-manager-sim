@@ -37,8 +37,6 @@ func _ready():
 	if title_label:
 		title_label.text = tr("TAB_EMPLOYEES")
 		
-	
-
 	_force_fullscreen_size()
 
 	_overlay = ColorRect.new()
@@ -269,7 +267,8 @@ func _create_card(npc_node) -> PanelContainer:
 	main_hbox.add_child(info_vbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.get_gender_icon() + " " + emp.employee_name + "  —  " + emp.job_title
+	# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо сырого employee_name
+	name_lbl.text = emp.get_gender_icon() + " " + emp.get_display_name() + "  —  " + tr(emp.job_title)
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
@@ -848,15 +847,16 @@ func _build_relationships_tooltip_text(emp: EmployeeData) -> String:
 			continue
 		if npc.data.employee_name == emp.employee_name:
 			continue
-		var other_name = npc.data.employee_name
 		
-		# --- ИСПРАВЛЕНО ТУТ ---
+		# ИСПРАВЛЕНИЕ: ID оставляем для логики, дисплейное имя для вывода
+		var other_id = npc.data.employee_name
+		var other_display = npc.data.get_display_name()
 		var other_role = tr(npc.data.job_title) 
 		
-		var value = RelationshipManager.get_relationship(emp.employee_name, other_name)
-		var level = RelationshipManager.get_rel_level(emp.employee_name, other_name)
-		var level_name = tr(RelationshipManager.get_rel_level_name(emp.employee_name, other_name))
-		entries.append({"name": other_name, "role": other_role, "value": value, "level": level, "level_name": level_name})
+		var value = RelationshipManager.get_relationship(emp.employee_name, other_id)
+		var level = RelationshipManager.get_rel_level(emp.employee_name, other_id)
+		var level_name = tr(RelationshipManager.get_rel_level_name(emp.employee_name, other_id))
+		entries.append({"name": other_display, "role": other_role, "value": value, "level": level, "level_name": level_name})
 
 	if entries.is_empty():
 		return tr("ROSTER_NO_COLLEAGUES")
@@ -1273,7 +1273,8 @@ func _get_working_project_name(emp_data: EmployeeData) -> String:
 				continue
 			for worker in stage.workers:
 				if worker == emp_data:
-					return tr(project.title)
+					# ИСПРАВЛЕНИЕ: Используем get_display_title
+					return project.get_display_title()
 	return "?"
 
 func _find_npc_node(emp_data: EmployeeData):
@@ -1291,7 +1292,8 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 
 	var projects_list = _get_assigned_projects(emp_data)
 
-	var text = tr("ROSTER_FIRE_CONFIRM_NAME") % emp_data.employee_name
+	# ИСПРАВЛЕНИЕ: Выводим переведенное имя
+	var text = tr("ROSTER_FIRE_CONFIRM_NAME") % emp_data.get_display_name()
 
 	# Показать компенсацию для контрактника
 	if emp_data.employment_type == "contractor" and _pending_severance > 0:
@@ -1303,7 +1305,8 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 	if projects_list.size() > 0:
 		var proj_names = []
 		for p in projects_list:
-			proj_names.append(tr(p.title))
+			# ИСПРАВЛЕНИЕ: Выводим переведенное название проекта
+			proj_names.append(p.get_display_title())
 		text += "\n\n" + tr("ROSTER_FIRE_WARN_PROJECTS") + "\n" + ", ".join(proj_names)
 		text += "\n\n" + tr("ROSTER_FIRE_WARN_STAGES")
 
@@ -1343,7 +1346,8 @@ func _confirm_fire():
 					break
 			if idx != -1:
 				stage.workers.remove_at(idx)
-				print("❌ Снят с проекта: ", project.title, ", этап: ", stage.type)
+				# ИСПРАВЛЕНИЕ
+				print("❌ Снят с проекта: ", project.get_display_title(), ", этап: ", stage.type)
 
 	for desk in get_tree().get_nodes_in_group("desk"):
 		if not desk.has_method("unassign_employee"):
@@ -1359,24 +1363,27 @@ func _confirm_fire():
 		_pending_fire_node.release_from_desk()
 		_pending_fire_node.remove_from_group("npc")
 		_pending_fire_node.queue_free()
-		print("🔥 Уволен: ", _pending_fire_data.employee_name)
+		# ИСПРАВЛЕНИЕ
+		print("🔥 Уволен: ", _pending_fire_data.get_display_name())
 
 	# Списать компенсацию
 	if _pending_severance > 0:
 		GameState.add_expense(_pending_severance)
 		GameState.daily_event_expenses.append({
-			"reason": tr("EXPENSE_SEVERANCE") % _pending_fire_data.employee_name,
+			# ИСПРАВЛЕНИЕ
+			"reason": tr("EXPENSE_SEVERANCE") % _pending_fire_data.get_display_name(),
 			"amount": _pending_severance
 		})
 		if EventLog:
-			EventLog.add(tr("LOG_SEVERANCE_PAID") % [_pending_fire_data.employee_name, _pending_severance])
+			# ИСПРАВЛЕНИЕ
+			EventLog.add(tr("LOG_SEVERANCE_PAID") % [_pending_fire_data.get_display_name(), _pending_severance])
 
 	# Лог увольнения
 	if EventLog:
 		if _pending_fire_data.employment_type == "contractor":
-			EventLog.add(tr("LOG_FIRE_CONTRACTOR") % [_pending_fire_data.employee_name, _pending_severance])
+			EventLog.add(tr("LOG_FIRE_CONTRACTOR") % [_pending_fire_data.get_display_name(), _pending_severance])
 		else:
-			EventLog.add(tr("LOG_FIRE_FREELANCER") % _pending_fire_data.employee_name)
+			EventLog.add(tr("LOG_FIRE_FREELANCER") % _pending_fire_data.get_display_name())
 
 	# Штраф морали остальным контрактникам
 	if _pending_fire_data.employment_type == "contractor":

@@ -182,7 +182,7 @@ func _build_ui():
 
 	# === ВЕРСИЯ ===
 	_version_label = Label.new()
-	_version_label.text = "v0.2 alpha"
+	_version_label.text = "v0.3 alpha"
 	_version_label.add_theme_font_size_override("font_size", 12)
 	_version_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7, 0.7))
 	_version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

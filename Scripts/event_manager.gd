@@ -252,11 +252,13 @@ func _try_scope_expansion() -> bool:
 func _trigger_scope_expansion(project: ProjectData, stage: Dictionary):
 	var client = project.get_client()
 	var client_name = ""
-	var display_title = tr(project.title)
+	# ИСПРАВЛЕНИЕ: Берем локализованное название проекта
+	var display_title = project.get_display_title()
 	
 	if client:
+		# ИСПРАВЛЕНИЕ: Берем локализованное имя клиента
 		client_name = client.get_display_name()
-		display_title = client.emoji + " " + client.client_name + " — " + display_title
+		display_title = client_name + " — " + display_title
 	else:
 		client_name = tr("EVENT_UNKNOWN_CLIENT")
 
@@ -303,12 +305,13 @@ func register_finished_project(project: ProjectData):
 		return
 	_pending_reviews.append({
 		"client_id": client.client_id,
+		# ИСПРАВЛЕНИЕ: Сохраняем локализованное имя
 		"client_name": client.get_display_name(),
-		"project_title": project.title,
+		"project_title": project.title, # Оставляем сырой title для логики, если нужно
 		"budget": project.budget,
 		"finished_day": GameTime.day,
 	})
-	print("⭐ Проект '%s' добавлен в очередь на отзыв" % tr(project.title))
+	print("⭐ Проект '%s' добавлен в очередь на отзыв" % project.get_display_title())
 
 func _cleanup_expired_reviews():
 	var remaining = []
@@ -343,11 +346,12 @@ func _try_client_review() -> bool:
 func _trigger_client_review(review: Dictionary):
 	var bonus_amount = int(review["budget"] * 0.10)
 	
-	# Формируем красивое название с эмодзи клиента
+	# Формируем красивое название с клиентом
+	# ИСПРАВЛЕНИЕ: Берем локализованное название проекта
 	var display_title = tr(review["project_title"])
 	var client = ClientManager.get_client_by_id(review["client_id"])
 	if client:
-		display_title = client.emoji + " " + client.client_name + " — " + display_title
+		display_title = client.get_display_name() + " — " + display_title
 		
 	# Делаем копию, чтобы не ломать оригинал в массиве (хотя он удаляется ниже)
 	var review_for_event = review.duplicate()
@@ -411,11 +415,12 @@ func _try_contract_cancel() -> bool:
 func _trigger_contract_cancel(project: ProjectData):
 	var client = project.get_client()
 	var client_name = ""
-	var display_title = tr(project.title)
+	# ИСПРАВЛЕНИЕ: Берем локализованное название проекта
+	var display_title = project.get_display_title()
 	
 	if client:
 		client_name = client.get_display_name()
-		display_title = client.emoji + " " + client.client_name + " — " + display_title
+		display_title = client_name + " — " + display_title
 	else:
 		client_name = tr("EVENT_UNKNOWN_CLIENT")
 
@@ -489,12 +494,13 @@ func _trigger_junior_mistake(info: Dictionary):
 	
 	# Форматируем имя проекта с клиентом
 	var client = project.get_client()
-	var display_title = tr(project.title)
+	# ИСПРАВЛЕНИЕ: Берем локализованное название проекта
+	var display_title = project.get_display_title()
 	if client:
-		display_title = client.emoji + " " + client.client_name + " — " + display_title
+		display_title = client.get_display_name() + " — " + display_title
 		
-	# Форматируем имя сотрудника с ролью
-	var display_worker_name = worker.employee_name + " (" + tr(worker.job_title) + ")"
+	# ИСПРАВЛЕНИЕ: Берем локализованное имя сотрудника с ролью
+	var display_worker_name = worker.get_display_name() + " (" + tr(worker.job_title) + ")"
 
 	var event_data = {
 		"id": "junior_mistake",
@@ -613,7 +619,8 @@ func _pick_dayoff_candidate():
 # =============================================
 func _trigger_sick_event(employee_node):
 	var emp_name_raw = employee_node.data.employee_name
-	var display_name = emp_name_raw + " (" + tr(employee_node.data.job_title) + ")"
+	# ИСПРАВЛЕНИЕ: Берем локализованное имя
+	var display_name = employee_node.data.get_display_name() + " (" + tr(employee_node.data.job_title) + ")"
 	var cure_cost = randi_range(EXPRESS_CURE_MIN, EXPRESS_CURE_MAX)
 	# Округляем до 50
 	cure_cost = int(round(float(cure_cost) / 50.0)) * 50
@@ -649,7 +656,8 @@ func _trigger_sick_event(employee_node):
 
 func _trigger_dayoff_event(employee_node):
 	var emp_name_raw = employee_node.data.employee_name
-	var display_name = emp_name_raw + " (" + tr(employee_node.data.job_title) + ")"
+	# ИСПРАВЛЕНИЕ: Берем локализованное имя
+	var display_name = employee_node.data.get_display_name() + " (" + tr(employee_node.data.job_title) + ")"
 
 	var event_data = {
 		"id": "day_off",
@@ -711,22 +719,24 @@ func _apply_sick_choice(event_data: Dictionary, choice_id: String):
 		return
 		
 	var emp_name_real = emp_node.data.employee_name
+	# Для логов
+	var emp_display_name = emp_node.data.get_display_name()
 
 	match choice_id:
 		"express_cure":
 			# Списать деньги
 			GameState.add_expense(event_data["cure_cost"])
-			GameState.daily_event_expenses.append({"reason": tr("EXPENSE_CURE") % emp_name_real, "amount": event_data["cure_cost"]})
+			GameState.daily_event_expenses.append({"reason": tr("EXPENSE_CURE") % emp_display_name, "amount": event_data["cure_cost"]})
 			# Болеет 1 день
 			emp_node.start_sick_leave(1)
-			print("🏥 %s: экспресс-лечение за $%d, вернётся завтра" % [emp_name_real, event_data["cure_cost"]])
-			EventLog.add(tr("LOG_SICK_EXPRESS_CURE") % [emp_name_real, event_data["cure_cost"]], EventLog.LogType.ALERT)
+			print("🏥 %s: экспресс-лечение за $%d, вернётся завтра" % [emp_display_name, event_data["cure_cost"]])
+			EventLog.add(tr("LOG_SICK_EXPRESS_CURE") % [emp_display_name, event_data["cure_cost"]], EventLog.LogType.ALERT)
 
 		"sick_leave":
 			# Болеет 2-3 дня
 			emp_node.start_sick_leave(event_data["sick_days"])
-			print("🤒 %s: больничный на %d дней" % [emp_name_real, event_data["sick_days"]])
-			EventLog.add(tr("LOG_SICK_LEAVE") % [emp_name_real, event_data["sick_days"]], EventLog.LogType.ALERT)
+			print("🤒 %s: больничный на %d дней" % [emp_display_name, event_data["sick_days"]])
+			EventLog.add(tr("LOG_SICK_LEAVE") % [emp_display_name, event_data["sick_days"]], EventLog.LogType.ALERT)
 
 func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data["employee_node"]
@@ -734,6 +744,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 		return
 		
 	var emp_name_real = emp_node.data.employee_name
+	var emp_display_name = emp_node.data.get_display_name()
 
 	match choice_id:
 		"allow":
@@ -754,8 +765,8 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_ALLOW_MOOD_VALUE,
 					DAYOFF_ALLOW_MOOD_DURATION
 				)
-			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [emp_name_real, int(DAYOFF_ALLOW_MOOD_VALUE)])
-			EventLog.add(tr("LOG_DAYOFF_ALLOWED") % emp_name_real, EventLog.LogType.ROUTINE)
+			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [emp_display_name, int(DAYOFF_ALLOW_MOOD_VALUE)])
+			EventLog.add(tr("LOG_DAYOFF_ALLOWED") % emp_display_name, EventLog.LogType.ROUTINE)
 
 		"deny":
 			# Не отпустить — дебафф efficiency до конца дня
@@ -774,8 +785,8 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_DENY_MOOD_VALUE,
 					DAYOFF_DENY_MOOD_DURATION
 				)
-			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [emp_name_real, int(DAYOFF_DENY_MOOD_VALUE)])
-			EventLog.add(tr("LOG_DAYOFF_DENIED") % emp_name_real, EventLog.LogType.ROUTINE)
+			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [emp_display_name, int(DAYOFF_DENY_MOOD_VALUE)])
+			EventLog.add(tr("LOG_DAYOFF_DENIED") % emp_display_name, EventLog.LogType.ROUTINE)
 
 # === ПРИМЕНЕНИЕ: РАСШИРЕНИЕ СКОУПА ===
 func _apply_scope_expansion(event_data: Dictionary, choice_id: String):
@@ -791,8 +802,8 @@ func _apply_scope_expansion(event_data: Dictionary, choice_id: String):
 			# Добавляем бюджет 1:1
 			var extra_budget = int(project.budget * (float(extra_percent) / 100.0))
 			project.budget += extra_budget
-			print("📦 Скоуп расширен: +%d%% работы, +$%d бюджета для '%s'" % [extra_percent, extra_budget, tr(project.title)])
-			EventLog.add(tr("LOG_SCOPE_EXPANDED") % [extra_percent, tr(project.title)], EventLog.LogType.PROGRESS)
+			print("📦 Скоуп расширен: +%d%% работы, +$%d бюджета для '%s'" % [extra_percent, extra_budget, project.get_display_title()])
+			EventLog.add(tr("LOG_SCOPE_EXPANDED") % [extra_percent, project.get_display_title()], EventLog.LogType.PROGRESS)
 
 		"decline":
 			# -1 лояльность клиента
@@ -827,9 +838,9 @@ func _apply_contract_cancel(event_data: Dictionary, _choice_id: String):
 
 	# Начисляем неустойку
 	GameState.add_income(payout)
-	GameState.daily_income_details.append({"reason": tr("INCOME_CONTRACT_CANCEL") % tr(project.title), "amount": payout})
-	print("💔 Контракт расторгнут: '%s', неустойка +$%d" % [tr(project.title), payout])
-	EventLog.add(tr("LOG_CONTRACT_CANCELLED") % tr(project.title), EventLog.LogType.ALERT)
+	GameState.daily_income_details.append({"reason": tr("INCOME_CONTRACT_CANCEL") % project.get_display_title(), "amount": payout})
+	print("💔 Контракт расторгнут: '%s', неустойка +$%d" % [project.get_display_title(), payout])
+	EventLog.add(tr("LOG_CONTRACT_CANCELLED") % project.get_display_title(), EventLog.LogType.ALERT)
 
 	# Снимаем всех сотрудников с этапов
 	for stage in project.stages:
@@ -861,7 +872,7 @@ func _apply_junior_mistake(event_data: Dictionary, choice_id: String):
 					-10.0,
 					2880.0  # 2 суток
 				)
-			print("🤦 %s отчитан. +%d%% работы, -10 mood" % [worker.employee_name, actual_percent])
+			print("🤦 %s отчитан. +%d%% работы, -10 mood" % [worker.get_display_name(), actual_percent])
 
 		"help":
 			# Доп. работа увеличена в 2 раза из-за помощи
@@ -878,8 +889,8 @@ func _apply_junior_mistake(event_data: Dictionary, choice_id: String):
 				)
 			# XP бонус ×1.5 за этот этап
 			stage["xp_bonus_multiplier"] = 1.5
-			stage["xp_bonus_employee"] = worker.employee_name
-			print("🤦 %s получил помощь. +%d%% работы, +5 mood, ×1.5 XP" % [worker.employee_name, actual_percent])
+			stage["xp_bonus_employee"] = worker.employee_name # Тут ID нужен
+			print("🤦 %s получил помощь. +%d%% работы, +5 mood, ×1.5 XP" % [worker.get_display_name(), actual_percent])
 
 # =============================================
 # СИСТЕМА ЭФФЕКТОВ
@@ -892,6 +903,7 @@ func _apply_raise_choice(event_data: Dictionary, choice_id: String):
 
 	var emp_data = emp_node.data
 	var emp_name = emp_data.employee_name
+	var emp_display_name = emp_data.get_display_name()
 
 	match choice_id:
 		"accept_raise":
@@ -905,8 +917,8 @@ func _apply_raise_choice(event_data: Dictionary, choice_id: String):
 			emp_data.add_mood_modifier("raise_accepted", "MOOD_MOD_RAISE_ACCEPTED", 10.0, 7200.0)
 
 			if EventLog:
-				EventLog.add(tr("LOG_RAISE_ACCEPTED") % [emp_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
-			print("💰 %s: ЗП повышена $%d → $%d" % [emp_name, old_salary, emp_data.monthly_salary])
+				EventLog.add(tr("LOG_RAISE_ACCEPTED") % [emp_display_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
+			print("💰 %s: ЗП повышена $%d → $%d" % [emp_display_name, old_salary, emp_data.monthly_salary])
 
 		"deny_raise":
 			emp_data.is_requesting_raise = false
@@ -917,8 +929,8 @@ func _apply_raise_choice(event_data: Dictionary, choice_id: String):
 			emp_data.add_mood_modifier("raise_denied", "MOOD_MOD_RAISE_DENIED", -15.0, 6000.0)
 
 			if EventLog:
-				EventLog.add(tr("LOG_RAISE_DENIED") % emp_name, EventLog.LogType.ALERT)
-			print("💰 %s: запрос ЗП отклонён" % emp_name)
+				EventLog.add(tr("LOG_RAISE_DENIED") % emp_display_name, EventLog.LogType.ALERT)
+			print("💰 %s: запрос ЗП отклонён" % emp_display_name)
 
 func add_effect(effect: Dictionary):
 	active_effects.append(effect)
@@ -959,7 +971,8 @@ func _try_hunting() -> bool:
 
 func _trigger_hunting_event(employee_node):
 	var emp_data = employee_node.data
-	var display_name = emp_data.employee_name + " (" + tr(emp_data.job_title) + ")"
+	# ИСПРАВЛЕНИЕ: Берем локализованное имя
+	var display_name = emp_data.get_display_name() + " (" + tr(emp_data.job_title) + ")"
 
 	# Случайная прибавка 5-15%
 	var percent = randf_range(0.05, 0.15)
@@ -997,7 +1010,7 @@ func _apply_hunting_choice(event_data: Dictionary, choice_id: String):
 		return
 
 	var emp_data = emp_node.data
-	var emp_name = emp_data.employee_name
+	var emp_display_name = emp_data.get_display_name()
 
 	match choice_id:
 		"retain":
@@ -1008,15 +1021,15 @@ func _apply_hunting_choice(event_data: Dictionary, choice_id: String):
 			emp_data.add_mood_modifier("hunting_retained", "MOOD_MOD_HUNTING_RETAINED", 10.0, 2880.0)
 
 			if EventLog:
-				EventLog.add(tr("LOG_HUNTING_RETAINED") % [emp_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
-			print("🏹 %s удержан: $%d → $%d" % [emp_name, old_salary, emp_data.monthly_salary])
+				EventLog.add(tr("LOG_HUNTING_RETAINED") % [emp_display_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
+			print("🏹 %s удержан: $%d → $%d" % [emp_display_name, old_salary, emp_data.monthly_salary])
 
 		"refuse":
 			# -10 mood на 72 часа (4320 мин)
 			emp_data.add_mood_modifier("hunting_refused", "MOOD_MOD_HUNTING_REFUSED", -10.0, 4320.0)
 
 			if EventLog:
-				EventLog.add(tr("LOG_HUNTING_REFUSED") % emp_name, EventLog.LogType.ALERT)
+				EventLog.add(tr("LOG_HUNTING_REFUSED") % emp_display_name, EventLog.LogType.ALERT)
 
 			# 30% шанс ухода
 			if randf() < HUNTING_QUIT_CHANCE:
@@ -1041,7 +1054,7 @@ func _apply_hunting_choice(event_data: Dictionary, choice_id: String):
 					_show_event_popup(quit_event)
 				)
 			else:
-				print("🏹 %s остался, несмотря на отказ (70%% удача)" % emp_name)
+				print("🏹 %s остался, несмотря на отказ (70%% удача)" % emp_display_name)
 
 func _apply_hunting_quit(event_data: Dictionary, _choice_id: String):
 	var emp_node = event_data.get("employee_node")
@@ -1053,8 +1066,8 @@ func _apply_hunting_quit(event_data: Dictionary, _choice_id: String):
 	emp_data.quit_days_left = event_data["quit_days"]
 
 	if EventLog:
-		EventLog.add(tr("LOG_HUNTING_QUIT_STARTED") % [emp_data.employee_name, emp_data.quit_days_left], EventLog.LogType.ALERT)
-	print("🚪 %s уходит через %d дней" % [emp_data.employee_name, emp_data.quit_days_left])
+		EventLog.add(tr("LOG_HUNTING_QUIT_STARTED") % [emp_data.get_display_name(), emp_data.quit_days_left], EventLog.LogType.ALERT)
+	print("🚪 %s уходит через %d дней" % [emp_data.get_display_name(), emp_data.quit_days_left])
 
 func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
 	var emp_node = event_data.get("employee_node")
@@ -1068,7 +1081,7 @@ func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
 			emp_data.vacation_delay_days = event_data["delay_days"]
 			emp_data.vacation_days_until_request = -1
 			if EventLog:
-				EventLog.add(tr("LOG_VACATION_APPROVED") % [emp_data.employee_name, event_data["delay_days"]], EventLog.LogType.PROGRESS)
+				EventLog.add(tr("LOG_VACATION_APPROVED") % [emp_data.get_display_name(), event_data["delay_days"]], EventLog.LogType.PROGRESS)
 
 		"deny_vacation":
 			emp_data.vacation_approved = false
@@ -1076,7 +1089,7 @@ func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
 			emp_data.init_vacation_timer()
 			emp_data.add_mood_modifier("vacation_denied", "MOOD_MOD_VACATION_DENIED", -15.0, 4320.0)
 			if EventLog:
-				EventLog.add(tr("LOG_VACATION_DENIED") % emp_data.employee_name, EventLog.LogType.ALERT)
+				EventLog.add(tr("LOG_VACATION_DENIED") % emp_data.get_display_name(), EventLog.LogType.ALERT)
 
 func _apply_freelancer_leave(event_data: Dictionary, _choice_id: String):
 	var leave_type = event_data.get("leave_type", "hard")

@@ -297,6 +297,7 @@ func _build_finance_section():
 			if UITheme: UITheme.apply_font(details_lbl, "regular")
 			_content_vbox.add_child(details_lbl)
 			for entry in salary_details:
+				# ИСПРАВЛЕНИЕ: Имя уже локализовано в game_state.gd, просто подставляем
 				var emp_name: String = entry["name"]
 				var amount: int = entry["amount"]
 				var det_lbl = Label.new()
@@ -322,7 +323,6 @@ func _build_finance_section():
 				_content_vbox.add_child(det_lbl)
 	else:
 		if GameState.daily_expenses > 0:
-			# Передаем переведенное название навыка
 			_add_locked_hint(tr("SKILL_REPORT_EXPENSES_NAME"))
 
 	var total_color = COLOR_GREEN if balance_end >= balance_start else COLOR_RED
@@ -360,7 +360,7 @@ func _build_projects_section():
 			var payout: int = entry["payout"]
 			var text: String
 			if has_analytics:
-				text = tr("DAY_SUMMARY_PROJ_PAYOUT") % [proj.category.to_upper(), proj.title, payout]
+				text = tr("DAY_SUMMARY_PROJ_PAYOUT") % [proj.category.to_upper(), proj.get_display_title(), payout]
 				if payout < proj.budget:
 					var penalty = proj.budget - payout
 					text += tr("DAY_SUMMARY_PROJ_PENALTY") % penalty
@@ -370,7 +370,7 @@ func _build_projects_section():
 					var profit = payout - labor
 					text += tr("DAY_SUMMARY_PROJ_COST_INFO") % [labor, profit]
 			else:
-				text = tr("DAY_SUMMARY_PROJ_COMPLETED") % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_COMPLETED") % [proj.category.to_upper(), proj.get_display_title()]
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_GREEN)
@@ -384,13 +384,13 @@ func _build_projects_section():
 		for proj in failed_today:
 			var text: String
 			if has_analytics:
-				text = tr("DAY_SUMMARY_PROJ_FAILED_DETAIL") % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_FAILED_DETAIL") % [proj.category.to_upper(), proj.get_display_title()]
 				# === АНАЛИТИКА: Показать потери ===
 				var labor = int(proj.total_labor_cost)
 				if labor > 0:
 					text += tr("DAY_SUMMARY_PROJ_COST_LOST") % labor
 			else:
-				text = tr("DAY_SUMMARY_PROJ_FAILED_SHORT") % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_FAILED_SHORT") % [proj.category.to_upper(), proj.get_display_title()]
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_RED)
@@ -416,7 +416,7 @@ func _build_projects_section():
 				var soft_days = proj.soft_deadline_day - GameTime.day
 				var hard_days = proj.deadline_day - GameTime.day
 				text = tr("DAY_SUMMARY_PROJ_ACTIVE_DETAIL") % [
-					proj.category.to_upper(), proj.title, stage_info, soft_days, hard_days
+					proj.category.to_upper(), proj.get_display_title(), stage_info, soft_days, hard_days
 				]
 				# === АНАЛИТИКА: Затраты на рабочую силу ===
 				var labor = int(proj.total_labor_cost)
@@ -424,7 +424,7 @@ func _build_projects_section():
 				if labor > 0:
 					text += tr("DAY_SUMMARY_PROJ_COST_INFO") % [labor, expected_payout - labor]
 			else:
-				text = tr("DAY_SUMMARY_PROJ_ACTIVE_SHORT") % [proj.category.to_upper(), proj.title]
+				text = tr("DAY_SUMMARY_PROJ_ACTIVE_SHORT") % [proj.category.to_upper(), proj.get_display_title()]
 
 			var lbl = Label.new()
 			lbl.text = text
@@ -448,7 +448,7 @@ func _build_projects_section():
 		var sub_label = _create_subsection_label(tr("DAY_SUMMARY_PROJ_DRAFT"))
 		_content_vbox.add_child(sub_label)
 		for proj in drafting:
-			var text = tr("DAY_SUMMARY_PROJ_DRAFT_DETAIL") % [proj.category.to_upper(), proj.title]
+			var text = tr("DAY_SUMMARY_PROJ_DRAFT_DETAIL") % [proj.category.to_upper(), proj.get_display_title()]
 			var lbl = Label.new()
 			lbl.text = text
 			lbl.add_theme_color_override("font_color", COLOR_GRAY)
@@ -558,7 +558,7 @@ func _build_employees_section():
 		_content_vbox.add_child(sub)
 		for emp in sick_list:
 			var lbl = Label.new()
-			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_SICK")]
+			lbl.text = "      %s — %s" % [emp.get_display_name(), tr("DAY_SUMMARY_EMP_ON_SICK")]
 			lbl.add_theme_color_override("font_color", COLOR_RED)
 			lbl.add_theme_font_size_override("font_size", 13)
 			if UITheme: UITheme.apply_font(lbl, "regular")
@@ -569,7 +569,7 @@ func _build_employees_section():
 		_content_vbox.add_child(sub)
 		for emp in dayoff_list:
 			var lbl = Label.new()
-			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_DAYOFF")]
+			lbl.text = "      %s — %s" % [emp.get_display_name(), tr("DAY_SUMMARY_EMP_ON_DAYOFF")]
 			lbl.add_theme_color_override("font_color", COLOR_GRAY)
 			lbl.add_theme_font_size_override("font_size", 13)
 			if UITheme: UITheme.apply_font(lbl, "regular")
@@ -580,7 +580,7 @@ func _build_employees_section():
 		_content_vbox.add_child(sub)
 		for emp in vacation_list:
 			var lbl = Label.new()
-			lbl.text = "      %s — %s" % [emp.employee_name, tr("DAY_SUMMARY_EMP_ON_VACATION")]
+			lbl.text = "      %s — %s" % [emp.get_display_name(), tr("DAY_SUMMARY_EMP_ON_VACATION")]
 			lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
 			lbl.add_theme_font_size_override("font_size", 13)
 			if UITheme: UITheme.apply_font(lbl, "regular")
@@ -594,7 +594,7 @@ func _build_employees_section():
 		var warn_lbl = Label.new()
 		var names = []
 		for emp in low_energy:
-			names.append(emp.employee_name)
+			names.append(emp.get_display_name())
 		warn_lbl.text = tr("DAY_SUMMARY_EMP_LOW_ENERGY") + " " + ", ".join(names)
 		warn_lbl.add_theme_color_override("font_color", COLOR_ORANGE)
 		warn_lbl.add_theme_font_size_override("font_size", 13)
@@ -633,7 +633,8 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	margin.add_child(hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	# ИСПРАВЛЕНИЕ: Локализованное имя и должность
+	name_lbl.text = emp.get_display_name() + "  —  " + tr(emp.job_title)
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -690,7 +691,8 @@ func _create_employee_card_idle(emp: EmployeeData) -> PanelContainer:
 	margin.add_child(hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = emp.employee_name + "  —  " + emp.job_title
+	# ИСПРАВЛЕНИЕ: Локализованное имя и должность
+	name_lbl.text = emp.get_display_name() + "  —  " + tr(emp.job_title)
 	name_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -791,6 +793,7 @@ func _build_levelups_section():
 		vbox.add_theme_constant_override("separation", 2)
 		card_margin.add_child(vbox)
 
+		# ИСПРАВЛЕНИЕ: Имя уже локализовано в game_state.gd, просто подставляем
 		var title_text = tr("DAY_SUMMARY_LEVELUP_TITLE") % [entry["name"], entry["new_level"], entry["grade"]]
 		var title_lbl = Label.new()
 		title_lbl.text = title_text

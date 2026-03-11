@@ -1,6 +1,6 @@
 extends Panel
 
-# Сигнал: "Я выбра�� вот этого человека"
+# Сигнал: "Я выбрал вот этого человека"
 signal employee_selected(data: EmployeeData)
 
 @onready var item_list = $MainVBox/ContentMargin/VBoxContainer/ItemList
@@ -72,7 +72,8 @@ func open_list(stage_type: String = ""):
 
 			# Блокируем сотрудников в отпуске
 			if npc.current_state == npc.State.ON_VACATION:
-				var vac_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
+				# ИСПРАВЛЕНИЕ: Используем get_display_name()
+				var vac_name = npc.data.get_display_name() + " (" + tr(npc.data.job_title) + ")"
 				vac_name += " ✈️ " + tr("EMP_SELECT_ON_VACATION")
 				var vac_index = item_list.add_item(vac_name)
 				item_list.set_item_metadata(vac_index, npc.data)
@@ -82,7 +83,9 @@ func open_list(stage_type: String = ""):
 				continue
 
 			var is_busy = _is_employee_assigned_to_any_project(npc.data)
-			var display_name = npc.data.employee_name + " (" + tr(npc.data.job_title) + ")"
+			
+			# ИСПРАВЛЕНИЕ: Используем get_display_name()
+			var display_name = npc.data.get_display_name() + " (" + tr(npc.data.job_title) + ")"
 			
 			if is_busy:
 				display_name += tr("EMP_SELECT_BUSY")

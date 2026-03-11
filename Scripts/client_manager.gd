@@ -10,12 +10,13 @@ func _ready():
 func _init_clients():
 	clients.clear()
 
+	# ИСПРАВЛЕНИЕ: Убраны вызовы tr(), чтобы сохранялись ключи локализации
 	var defs = [
-		{"id": "novotech",     "name": tr("CLIENT_NOVOTECH"),      "emoji": "🚀", "desc": tr("CLIENT_NOVOTECH_DESC")},
-		{"id": "edaplus",      "name": tr("CLIENT_EDAPLUS"),       "emoji": "🍕", "desc": tr("CLIENT_EDAPLUS_DESC")},
-		{"id": "finansgroup",  "name": tr("CLIENT_FINANSGROUP"),   "emoji": "🏦", "desc": tr("CLIENT_FINANSGROUP_DESC")},
-		{"id": "medialine",    "name": tr("CLIENT_MEDIALINE"),     "emoji": "📺", "desc": tr("CLIENT_MEDIALINE_DESC")},
-		{"id": "stroymaster",  "name": tr("CLIENT_STROYMASTER"),   "emoji": "🏗", "desc": tr("CLIENT_STROYMASTER_DESC")},
+		{"id": "novotech",     "name": "CLIENT_NOVOTECH",      "emoji": "🚀", "desc": "CLIENT_NOVOTECH_DESC"},
+		{"id": "edaplus",      "name": "CLIENT_EDAPLUS",       "emoji": "🍕", "desc": "CLIENT_EDAPLUS_DESC"},
+		{"id": "finansgroup",  "name": "CLIENT_FINANSGROUP",   "emoji": "🏦", "desc": "CLIENT_FINANSGROUP_DESC"},
+		{"id": "medialine",    "name": "CLIENT_MEDIALINE",     "emoji": "📺", "desc": "CLIENT_MEDIALINE_DESC"},
+		{"id": "stroymaster",  "name": "CLIENT_STROYMASTER",   "emoji": "🏗", "desc": "CLIENT_STROYMASTER_DESC"},
 	]
 
 	for d in defs:

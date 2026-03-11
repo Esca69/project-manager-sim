@@ -265,7 +265,8 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	card_vbox.add_child(top_hbox)
 
 	var name_lbl = Label.new()
-	name_lbl.text = client.emoji + "  " + client.client_name
+	# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо сырого client_name + emoji
+	name_lbl.text = client.get_display_name()
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 17)
@@ -282,7 +283,8 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 
 	# === СТРОКА 2: Описание ===
 	var desc_lbl = Label.new()
-	desc_lbl.text = client.description
+	# ИСПРАВЛЕНИЕ: Используем get_display_desc()
+	desc_lbl.text = client.get_display_desc()
 	desc_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	desc_lbl.add_theme_font_size_override("font_size", 13)
 	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -371,7 +373,7 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 			var mark_lbl = Label.new()
 			var is_reached = client.loyalty >= threshold
 			var icon = "✅" if is_reached else "⬜"
-			# Здесь мы оборачиваем level["label"] в tr(), так как внутри хранятся ключи (например, LOYALTY_MICRO_PROJECTS)
+			# Обертка tr() оставлена для локализации лейбла
 			mark_lbl.text = "%s %d: %s" % [icon, threshold, tr(level["label"])]
 			mark_lbl.add_theme_font_size_override("font_size", 11)
 
@@ -412,8 +414,7 @@ func _add_stat_label(parent: HBoxContainer, text: String, color: Color):
 	if UITheme: UITheme.apply_font(lbl, "semibold")
 	parent.add_child(lbl)
 
-
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
-		close() 
+		close()
 		get_viewport().set_input_as_handled()

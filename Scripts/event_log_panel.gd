@@ -58,6 +58,10 @@ func _build_ui():
 	if UITheme:
 		UITheme.apply_shadow(panel_style)
 	_panel.add_theme_stylebox_override("panel", panel_style)
+	
+	# ИСПРАВЛЕНИЕ 2: Ловим события мыши над всей панелью
+	_panel.gui_input.connect(_on_scroll_input)
+	
 	add_child(_panel)
 
 	var vbox = VBoxContainer.new()
@@ -103,6 +107,10 @@ func _build_ui():
 	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_scroll.clip_contents = true
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	
+	# ИСПРАВЛЕНИЕ 2: Ловим события мыши непосредственно на скролле
+	_scroll.gui_input.connect(_on_scroll_input)
+	
 	vbox.add_child(_scroll)
 
 	var scroll_margin = MarginContainer.new()
@@ -135,6 +143,13 @@ func _build_ui():
 	_icon_btn.pressed.connect(_expand)
 	_icon_btn.visible = false
 	add_child(_icon_btn)
+
+# === ФУНКЦИЯ-ПЕРЕХВАТЧИК (ПРЕДОТВРАЩАЕТ ПРОКРУТКУ КАРТЫ ЗА ЛОГОМ) ===
+func _on_scroll_input(event: InputEvent):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			# Помечаем событие как "обработанное", чтобы оно не ушло к камере
+			get_viewport().set_input_as_handled()
 
 func _add_message_label(entry: Dictionary):
 	var lbl = Label.new()
