@@ -101,6 +101,9 @@ var cooldown_days: int = 0
 var recent_event_ids: Array = []  # последние 2 ивента (для антиповтора)
 var ignore_penalty_pending: bool = false
 
+# === НОВЫЕ ПЕРЕМЕННЫЕ ЛОГИКИ ===
+var total_events_generated: int = 0
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	GameTime.time_tick.connect(_on_time_tick)
@@ -112,7 +115,7 @@ func _ready():
 
 func _on_time_tick(hour: int, minute: int):
 	# Генерация в 10:09 рабочего дня (ровно один раз в день)
-	if hour == 10 and minute == 9 and state == State.IDLE and cooldown_days == 0:
+	if hour == 10 and minute == 9 and state == State.IDLE and cooldown_days <= 0:
 		if not GameTime.is_weekend():
 			_try_generate_event()
 	# Игнор в 18:00 если ещё ожидается
@@ -128,22 +131,41 @@ func _on_time_tick(hour: int, minute: int):
 			_end_daily_reports_session()
 
 func _try_generate_event():
+	# ИСПРАВЛЕНИЕ: Не раньше 3-го дня игры (используем глобальный GameTime)
+	if GameTime.day < 3:
+		return
+
 	if randf() > 0.4:
 		return
+		
 	var available = []
 	for eid in BOSS_EVENTS.keys():
 		if eid in EXCLUDED_EVENT_IDS:
 			continue
+			
+		# ИСПРАВЛЕНИЕ: Самый первый ивент не может быть "no_hiring"
+		if total_events_generated == 0 and eid == "boss_event_no_hiring":
+			continue
+			
 		if not recent_event_ids.has(eid):
 			available.append(eid)
+			
 	if available.is_empty():
-		# Фоллбэк — без excluded и без антиповтора
+		# Фоллбэк
 		for eid in BOSS_EVENTS.keys():
 			if eid not in EXCLUDED_EVENT_IDS:
+				if total_events_generated == 0 and eid == "boss_event_no_hiring":
+					continue
 				available.append(eid)
+				
 	if available.is_empty():
 		return
+		
 	var chosen_id: String = available[randi() % available.size()]
+	
+	# Увеличиваем счетчик ивентов!
+	total_events_generated += 1
+	
 	state = State.PENDING
 	pending_event_id = chosen_id
 	emit_signal("boss_event_generated", chosen_id)
@@ -155,13 +177,13 @@ func _on_ignore():
 	if event.is_empty():
 		state = State.IDLE
 		pending_event_id = ""
-		cooldown_days = randi_range(7, 14)
+		cooldown_days = 7  # ИСПРАВЛЕНИЕ: Жесткий кулдаун 7 дней
 		emit_signal("boss_event_ignored")
 		return
 	BossManager.change_trust(event["trust_ignore"])
 	state = State.IDLE
 	pending_event_id = ""
-	cooldown_days = randi_range(7, 14)
+	cooldown_days = 7  # ИСПРАВЛЕНИЕ: Жесткий кулдаун 7 дней
 	emit_signal("boss_event_ignored")
 	EventLog.add(tr("BOSS_EVENT_LOG_IGNORED"), EventLog.LogType.ALERT)
 
@@ -178,7 +200,9 @@ func accept_event():
 	active_event_id = event_id
 	pending_event_id = ""
 	_add_to_recent(event_id)
-	cooldown_days = randi_range(7, 14)
+	
+	# ИСПРАВЛЕНИЕ: Здесь больше НЕТ cooldown_days! Он выдастся только по завершению ивента.
+	
 	var days = randi_range(event["min_days"], event["max_days"])
 	if days <= 0:
 		state = State.IDLE
@@ -186,10 +210,12 @@ func accept_event():
 	else:
 		state = State.ACTIVE
 		active_days_remaining = days
+		
 	emit_signal("boss_event_accepted", event_id)
 	_apply_event_effects(event_id)
 	EventLog.add(tr("BOSS_EVENT_LOG_ACCEPTED") % tr(event["title_key"]), EventLog.LogType.ALERT)
-	# Если мгновенный ивент — сразу завершаем
+	
+	# Если мгновенный ивент — сразу завершаем (функция сама выдаст кулдаун 7 дней)
 	if days <= 0:
 		_end_active_event()
 
@@ -201,23 +227,23 @@ func reject_event():
 	BossManager.change_trust(event["trust_reject"])
 	state = State.IDLE
 	pending_event_id = ""
-	cooldown_days = randi_range(7, 14)
+	cooldown_days = 7  # ИСПРАВЛЕНИЕ: Жесткий кулдаун 7 дней
 	emit_signal("boss_event_rejected", event_id)
 	EventLog.add(tr("BOSS_EVENT_LOG_REJECTED") % tr(event["title_key"]), EventLog.LogType.ALERT)
 	_on_reject_custom_log(event_id)
 
 # ============================================================
-#                     ТИК ДНЯ
+#                         ТИК ДНЯ
 # ============================================================
 
 func _on_day_started(_day_number: int = 0):
-	# Кулдаун тикает КАЖДЫЙ день (включая выходные) — календарные дни
+	# Кулдаун тикает КАЖДЫЙ день (включая выходные)
 	if cooldown_days > 0:
 		cooldown_days -= 1
 
-	# Остальная логика — только рабочие дни
 	if GameTime.is_weekend():
 		return
+		
 	if state == State.ACTIVE:
 		active_days_remaining -= 1
 		if active_days_remaining <= 0:
@@ -230,9 +256,11 @@ func _end_active_event():
 	var event = BOSS_EVENTS.get(ended_id, {})
 	if not event.is_empty():
 		EventLog.add(tr("BOSS_EVENT_LOG_ENDED") % tr(event["title_key"]), EventLog.LogType.PROGRESS)
+	
 	state = State.IDLE
 	active_event_id = ""
 	active_days_remaining = 0
+	cooldown_days = 7  # ИСПРАВЛЕНИЕ: Выдаем 7 дней кулдауна ПОСЛЕ окончания ивента
 
 # ============================================================
 #                     ВСПОМОГАТЕЛЬНЫЕ
@@ -255,18 +283,17 @@ func _apply_event_effects(event_id: String) -> void:
 			_apply_no_lunch()
 		"boss_event_total_communication":
 			_apply_total_communication()
-		"boss_event_overtime": pass       # PR #3
-		"boss_event_reshuffle": pass      # PR #2
+		"boss_event_overtime": pass
+		"boss_event_reshuffle": pass
 		"boss_event_we_are_family":
 			_apply_we_are_family()
 		"boss_event_no_hiring":
 			_apply_no_hiring()
 
 func _apply_daily_reports():
-	pass  # No immediate effect at accept time — 17:00 trigger handles sessions
+	pass 
 
 func _remove_daily_reports():
-	# Force end any active report sessions when event ends
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
 		if npc.has_method("force_end_report"):
@@ -318,7 +345,6 @@ func _remove_event_effects(event_id: String) -> void:
 			_remove_no_hiring()
 
 func _remove_total_communication():
-	# Убрать mood-модификаторы у всех сотрудников
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
 		if npc.data and npc.data is EmployeeData:
@@ -348,7 +374,6 @@ func _on_reject_custom_log(event_id: String):
 		"boss_event_no_lunch":
 			EventLog.add(tr("LOG_NO_LUNCH_REJECTED"), EventLog.LogType.PROGRESS)
 
-# === УНИВЕРСАЛЬНОЕ ПРЕРЫВАНИЕ ИВЕНТА ИЗВНЕ ===
 func abort_active_event(penalty: int, log_message: String):
 	if state != State.ACTIVE or active_event_id == "":
 		return
@@ -358,10 +383,10 @@ func abort_active_event(penalty: int, log_message: String):
 	state = State.IDLE
 	active_event_id = ""
 	active_days_remaining = 0
-	cooldown_days = randi_range(7, 14)
+	cooldown_days = 7  # ИСПРАВЛЕНИЕ: Жесткий кулдаун 7 дней
 
 # ============================================================
-#                     ГЕТТЕРЫ
+#                          ГЕТТЕРЫ
 # ============================================================
 
 func is_boss_event_active(event_id: String = "") -> bool:
@@ -389,7 +414,7 @@ func has_pending_event() -> bool:
 	return state == State.PENDING and pending_event_id != ""
 
 # ============================================================
-#                     СЕРИАЛИЗАЦИЯ
+#                       СЕРИАЛИЗАЦИЯ
 # ============================================================
 
 func serialize() -> Dictionary:
@@ -401,6 +426,7 @@ func serialize() -> Dictionary:
 		"cooldown_days": cooldown_days,
 		"recent_event_ids": recent_event_ids.duplicate(),
 		"ignore_penalty_pending": ignore_penalty_pending,
+		"total_events_generated": total_events_generated,  # ИСПРАВЛЕНИЕ: Сохраняем счетчик
 	}
 
 func deserialize(d: Dictionary):
@@ -413,3 +439,4 @@ func deserialize(d: Dictionary):
 	for eid in d.get("recent_event_ids", []):
 		recent_event_ids.append(str(eid))
 	ignore_penalty_pending = d.get("ignore_penalty_pending", false)
+	total_events_generated = int(d.get("total_events_generated", 0))  # ИСПРАВЛЕНИЕ: Загружаем счетчик

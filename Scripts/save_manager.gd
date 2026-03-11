@@ -161,7 +161,6 @@ func _serialize_employees() -> Array:
 		
 		result.append({
 			"employee_name": d.employee_name,
-			# ИСПРАВЛЕНИЕ: Добавлены новые поля локализации имен
 			"name_ru": d.name_ru,
 			"name_en": d.name_en,
 			"job_title": d.job_title,
@@ -472,7 +471,6 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		emp_data.employee_name = emp_dict.get("employee_name", "???")
 		
 		# ИСПРАВЛЕНИЕ: Восстанавливаем локализованные имена. Если сохранение старое (нет name_ru), берём employee_name
-# ИСПРАВЛЕНИЕ: Восстанавливаем локализованные имена. Если сохранение старое (нет name_ru), берём employee_name
 		emp_data.name_ru = emp_dict.get("name_ru", emp_data.employee_name)
 		emp_data.name_en = emp_dict.get("name_en", emp_data.employee_name)
 		
@@ -590,7 +588,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.current_state = 12
 			elif saved_state == 19 or saved_state == 20:  # GOING_TO_CHAT / CHATTING — DEPRECATED, заменяем на WANDERING
 				npc.current_state = 9  # State.WANDERING
-			elif saved_state == 21:  # State.ON_VACATION (сдвинулось из-за новых стейтов)
+			elif saved_state == 21:  # State.ON_VACATION
 				npc.visible = false
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO

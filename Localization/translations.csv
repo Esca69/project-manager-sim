@@ -799,7 +799,7 @@ BOSS_EVENT_POPUP_TRUST_ACCEPT,Доверие за принятие: +%d 🤝,Tru
 BOSS_EVENT_POPUP_TRUST_REJECT,Доверие за отказ: %d 🤝,Trust for rejecting: %d 🤝
 BOSS_EVENT_POPUP_ACTIVE_TITLE,🏢 Активный ивент босса,🏢 Active Boss Event
 BOSS_EVENT_POPUP_DAYS_LEFT,Осталось: %d дн.,Remaining: %d days
-BOSS_EVENT_TRACKER_PENDING,❗ У босса идея!,❗ Boss has an idea!
+BOSS_EVENT_TRACKER_PENDING,У босса идея!,Boss has an idea!
 BOSS_EVENT_TRACKER_DAYS_LEFT,Ост.: %d дн.,Left: %d d.
 MOOD_MOD_EVENT_COMM_EXTROVERT,🗣️ Тотальная коммуникация (экстраверт),🗣️ Total Communication (extrovert)
 MOOD_MOD_EVENT_COMM_INTROVERT,🗣️ Тотальная коммуникация (интроверт),🗣️ Total Communication (introvert)
@@ -840,3 +840,10 @@ TRACK_COL_ASSIGNEE,Исполнитель ,Assignee
 TRACK_COL_PROGRESS,Прогресс ,Progress 
 LOG_MONTH,мес ,m. 
 LOG_DAY,день ,d. 
+QUEST_OBJ_INCOME,Заработать ≥ %d прибыли ,Earn ≥ %d profit 
+QUEST_OBJ_MAX_EXPENSES,Сохранить расходы ≤ $%d ,Keep expenses ≤ $%d 
+QUEST_OBJ_FINISH_PROJECTS,Завершить ≥ %d проектов ,Finish ≥ %d projects 
+QUEST_OBJ_HIRE_EMPLOYEES,Нанять ≥ %d сотрудников ,Hire ≥ %d employees 
+QUEST_OBJ_LEVELUPS,Повысить сотрудников ≥ %d раз ,Promote employees ≥ %d times 
+QUEST_OBJ_PM_LEVEL,PM достигает уровня ≥ %d ,PM reaches level ≥ %d 
+QUEST_OBJ_NO_FAILS,Ни одного проваленного проекта ,No failed projects 

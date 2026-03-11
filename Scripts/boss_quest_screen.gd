@@ -1,7 +1,6 @@
 extends Control
 
 # === UI экран: Босс даёт задание на месяц ===
-# Переделан в стиль client_panel: синий хедер, overlay, Inter шрифт
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
@@ -17,6 +16,7 @@ var _overlay: ColorRect
 var _window: PanelContainer
 var _content_vbox: VBoxContainer
 var _close_btn: Button
+var _title_label: Label
 
 func _ready():
 	visible = false
@@ -62,7 +62,6 @@ func _build_ui():
 	main_vbox.add_theme_constant_override("separation", 0)
 	_window.add_child(main_vbox)
 
-	# === СИНИЙ ХЕДЕР ===
 	var header_panel = Panel.new()
 	header_panel.custom_minimum_size = Vector2(0, 40)
 	var header_style = StyleBoxFlat.new()
@@ -73,22 +72,21 @@ func _build_ui():
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	var title_label = Label.new()
-	title_label.text = tr("BOSS_QUEST_TITLE")
-	title_label.set_anchors_preset(Control.PRESET_CENTER)
-	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-	title_label.offset_left = -150
-	title_label.offset_top = -11.5
-	title_label.offset_right = 150
-	title_label.offset_bottom = 11.5
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_color_override("font_color", COLOR_WHITE)
-	title_label.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(title_label, "bold")
-	header_panel.add_child(title_label)
+	_title_label = Label.new()
+	_title_label.text = tr("BOSS_QUEST_TITLE")
+	_title_label.set_anchors_preset(Control.PRESET_CENTER)
+	_title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_title_label.offset_left = -150
+	_title_label.offset_top = -11.5
+	_title_label.offset_right = 150
+	_title_label.offset_bottom = 11.5
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	_title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(_title_label, "bold")
+	header_panel.add_child(_title_label)
 
-	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
 	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content_margin.add_theme_constant_override("margin_left", 30)
@@ -102,19 +100,21 @@ func _build_ui():
 	content_margin.add_child(_content_vbox)
 
 func open(quest: Dictionary):
+	# Обновляем заголовок перед показом (важно для переключения языков)
+	if _title_label:
+		_title_label.text = tr("BOSS_QUEST_TITLE")
+		
 	for child in _content_vbox.get_children():
 		child.queue_free()
 
-	# Доверие
 	var trust_lbl = Label.new()
-	trust_lbl.text = tr("BOSS_TRUST_LABEL") % [BossManager.boss_trust, BossManager.get_trust_label()]
+	trust_lbl.text = tr("BOSS_TRUST_LABEL") % [BossManager.boss_trust, tr(BossManager.get_trust_label())]
 	trust_lbl.add_theme_font_size_override("font_size", 14)
 	trust_lbl.add_theme_color_override("font_color", BossManager.get_trust_color())
 	trust_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if UITheme: UITheme.apply_font(trust_lbl, "semibold")
 	_content_vbox.add_child(trust_lbl)
 
-	# Предупреждение
 	if quest.get("is_impossible", false):
 		var warn_lbl = Label.new()
 		warn_lbl.text = tr("BOSS_IMPOSSIBLE_WARN")
@@ -127,7 +127,6 @@ func open(quest: Dictionary):
 	var sep = HSeparator.new()
 	_content_vbox.add_child(sep)
 
-	# Речь босса
 	var speech_lbl = Label.new()
 	speech_lbl.text = _get_boss_speech(quest)
 	speech_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -136,7 +135,6 @@ func open(quest: Dictionary):
 	if UITheme: UITheme.apply_font(speech_lbl, "regular")
 	_content_vbox.add_child(speech_lbl)
 
-	# Цели — заголовок
 	var goals_title = Label.new()
 	goals_title.text = tr("BOSS_GOALS_TITLE") % quest["month"]
 	goals_title.add_theme_font_size_override("font_size", 16)
@@ -144,7 +142,6 @@ func open(quest: Dictionary):
 	if UITheme: UITheme.apply_font(goals_title, "bold")
 	_content_vbox.add_child(goals_title)
 
-	# Каждая цель — строка
 	for obj in quest["objectives"]:
 		var row_panel = PanelContainer.new()
 		row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -175,8 +172,10 @@ func open(quest: Dictionary):
 		obj_hbox.add_child(bullet)
 
 		var obj_lbl = Label.new()
-		# Label цели переводится в самом BossManager, здесь просто выводим как есть
-		obj_lbl.text = obj["label"] 
+		
+		# ИСПРАВЛЕНИЕ: Вызываем функцию ребилда строки из BossManager
+		obj_lbl.text = BossManager._rebuild_label(obj)
+		
 		obj_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		obj_lbl.add_theme_font_size_override("font_size", 15)
 		obj_lbl.add_theme_color_override("font_color", COLOR_DARK)
@@ -193,7 +192,6 @@ func open(quest: Dictionary):
 	var sep2 = HSeparator.new()
 	_content_vbox.add_child(sep2)
 
-	# Кнопка "Принять" — синяя, как везде
 	var accept_btn = Button.new()
 	accept_btn.text = tr("BOSS_ACCEPT_BTN")
 	accept_btn.custom_minimum_size = Vector2(250, 44)

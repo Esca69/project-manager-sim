@@ -59,7 +59,7 @@ func _build_ui():
 		UITheme.apply_shadow(panel_style)
 	_panel.add_theme_stylebox_override("panel", panel_style)
 	
-	# ИСПРАВЛЕНИЕ 2: Ловим события мыши над всей панелью
+	# ИСПРАВЛЕНИЕ: Ловим события мыши ТОЛЬКО над фоновой панелью
 	_panel.gui_input.connect(_on_scroll_input)
 	
 	add_child(_panel)
@@ -108,8 +108,8 @@ func _build_ui():
 	_scroll.clip_contents = true
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	
-	# ИСПРАВЛЕНИЕ 2: Ловим события мыши непосредственно на скролле
-	_scroll.gui_input.connect(_on_scroll_input)
+	# УБРАНА ОШИБКА: Мы больше не перехватываем ввод у самого ScrollContainer, 
+	# давая ему нормально прокручиваться.
 	
 	vbox.add_child(_scroll)
 
@@ -148,8 +148,8 @@ func _build_ui():
 func _on_scroll_input(event: InputEvent):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			# Помечаем событие как "обработанное", чтобы оно не ушло к камере
-			get_viewport().set_input_as_handled()
+			# ИСПРАВЛЕНИЕ: Корректно гасим событие на уровне панели
+			_panel.accept_event()
 
 func _add_message_label(entry: Dictionary):
 	var lbl = Label.new()

@@ -1,7 +1,6 @@
 extends Control
 
 # === UI экран: Отчёт по результатам прошлого месяца ===
-# Переделан в стиль client_panel: синий хедер, overlay, Inter шрифт
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
@@ -16,6 +15,7 @@ const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 var _overlay: ColorRect
 var _window: PanelContainer
 var _content_vbox: VBoxContainer
+var _title_label: Label
 
 func _ready():
 	visible = false
@@ -61,7 +61,6 @@ func _build_ui():
 	main_vbox.add_theme_constant_override("separation", 0)
 	_window.add_child(main_vbox)
 
-	# === СИНИЙ ХЕДЕР ===
 	var header_panel = Panel.new()
 	header_panel.custom_minimum_size = Vector2(0, 40)
 	var header_style = StyleBoxFlat.new()
@@ -72,22 +71,21 @@ func _build_ui():
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	var title_label = Label.new()
-	title_label.text = tr("BOSS_REPORT_TITLE")
-	title_label.set_anchors_preset(Control.PRESET_CENTER)
-	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-	title_label.offset_left = -120
-	title_label.offset_top = -11.5
-	title_label.offset_right = 120
-	title_label.offset_bottom = 11.5
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_color_override("font_color", COLOR_WHITE)
-	title_label.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(title_label, "bold")
-	header_panel.add_child(title_label)
+	_title_label = Label.new()
+	_title_label.text = tr("BOSS_REPORT_TITLE")
+	_title_label.set_anchors_preset(Control.PRESET_CENTER)
+	_title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_title_label.offset_left = -120
+	_title_label.offset_top = -11.5
+	_title_label.offset_right = 120
+	_title_label.offset_bottom = 11.5
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	_title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(_title_label, "bold")
+	header_panel.add_child(_title_label)
 
-	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
 	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content_margin.add_theme_constant_override("margin_left", 30)
@@ -101,6 +99,10 @@ func _build_ui():
 	content_margin.add_child(_content_vbox)
 
 func open(report: Dictionary):
+	# Обновляем заголовок перед показом
+	if _title_label:
+		_title_label.text = tr("BOSS_REPORT_TITLE")
+		
 	for child in _content_vbox.get_children():
 		child.queue_free()
 
@@ -121,7 +123,6 @@ func open(report: Dictionary):
 	var sep = HSeparator.new()
 	_content_vbox.add_child(sep)
 
-	# Результаты по каждой цели — строки как в boss_panel
 	for r in results:
 		var obj = r["objective"]
 		var achieved = r["achieved"]
@@ -155,7 +156,10 @@ func open(report: Dictionary):
 		row.add_child(icon)
 
 		var lbl = Label.new()
-		lbl.text = obj["label"]
+		
+		# ИСПРАВЛЕНИЕ: Вызываем функцию ребилда строки из BossManager
+		lbl.text = BossManager._rebuild_label(obj)
+			
 		lbl.add_theme_font_size_override("font_size", 15)
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		lbl.add_theme_color_override("font_color", COLOR_DARK if achieved else COLOR_GRAY)
@@ -176,7 +180,6 @@ func open(report: Dictionary):
 	var sep2 = HSeparator.new()
 	_content_vbox.add_child(sep2)
 
-	# Итого доверие
 	var total_row = HBoxContainer.new()
 	total_row.add_theme_constant_override("separation", 10)
 
@@ -201,16 +204,14 @@ func open(report: Dictionary):
 
 	_content_vbox.add_child(total_row)
 
-	# Текущее доверие
 	var current_trust = Label.new()
-	current_trust.text = tr("BOSS_REPORT_CURRENT_TRUST") % [BossManager.boss_trust, BossManager.get_trust_label()]
+	current_trust.text = tr("BOSS_REPORT_CURRENT_TRUST") % [BossManager.boss_trust, tr(BossManager.get_trust_label())]
 	current_trust.add_theme_font_size_override("font_size", 14)
 	current_trust.add_theme_color_override("font_color", BossManager.get_trust_color())
 	current_trust.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if UITheme: UITheme.apply_font(current_trust, "semibold")
 	_content_vbox.add_child(current_trust)
 
-	# Реакция босса
 	var reaction = Label.new()
 	reaction.text = _get_boss_reaction(total_trust, was_impossible)
 	reaction.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -220,7 +221,6 @@ func open(report: Dictionary):
 	if UITheme: UITheme.apply_font(reaction, "regular")
 	_content_vbox.add_child(reaction)
 
-	# Кнопка — синяя
 	var close_btn = Button.new()
 	close_btn.text = tr("BOSS_REPORT_CLOSE")
 	close_btn.custom_minimum_size = Vector2(200, 40)

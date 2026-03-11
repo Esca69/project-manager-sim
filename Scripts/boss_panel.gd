@@ -1,6 +1,6 @@
 extends Control
 
-# === ЦВЕТА (как в client_panel.gd) ===
+# === ЦВЕТА ===
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
 const COLOR_RED = Color(0.8980392, 0.22352941, 0.20784314, 1)
@@ -18,6 +18,7 @@ var _window: PanelContainer
 var _scroll: ScrollContainer
 var _content_vbox: VBoxContainer
 var _close_btn: Button
+var _title_label: Label
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -34,6 +35,8 @@ func _force_fullscreen_size():
 
 func open():
 	_force_fullscreen_size()
+	if _title_label:
+		_title_label.text = tr("BOSS_TITLE")
 	_populate()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -46,7 +49,7 @@ func close():
 	else:
 		visible = false
 
-# === ПОСТРОЕНИЕ КАРКАСА (идентично client_panel) ===
+# === ПОСТРОЕНИЕ КАРКАСА ===
 func _build_ui():
 	_overlay = ColorRect.new()
 	_overlay.color = Color(0, 0, 0, 0.45)
@@ -95,20 +98,20 @@ func _build_ui():
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	var title_label = Label.new()
-	title_label.text = tr("BOSS_TITLE")
-	title_label.set_anchors_preset(Control.PRESET_CENTER)
-	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-	title_label.offset_left = -88
-	title_label.offset_top = -11.5
-	title_label.offset_right = 88
-	title_label.offset_bottom = 11.5
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_color_override("font_color", COLOR_WHITE)
-	title_label.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(title_label, "bold")
-	header_panel.add_child(title_label)
+	_title_label = Label.new()
+	_title_label.text = tr("BOSS_TITLE")
+	_title_label.set_anchors_preset(Control.PRESET_CENTER)
+	_title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_title_label.offset_left = -88
+	_title_label.offset_top = -11.5
+	_title_label.offset_right = 88
+	_title_label.offset_bottom = 11.5
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	_title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(_title_label, "bold")
+	header_panel.add_child(_title_label)
 
 	_close_btn = Button.new()
 	_close_btn.text = "X"
@@ -161,7 +164,7 @@ func _populate():
 	# === СТРОКА: Доверие ===
 	var trust = BossManager.boss_trust
 	var trust_lbl = Label.new()
-	trust_lbl.text = tr("BOSS_TRUST") % [trust, BossManager.get_trust_label()]
+	trust_lbl.text = tr("BOSS_TRUST") % [trust, tr(BossManager.get_trust_label())]
 	trust_lbl.add_theme_color_override("font_color", BossManager.get_trust_color())
 	trust_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(trust_lbl, "regular")
@@ -184,7 +187,6 @@ func _populate():
 	if UITheme: UITheme.apply_font(quest_title, "bold")
 	_content_vbox.add_child(quest_title)
 
-	# === КАЖДАЯ ЦЕЛЬ — КЛЮЧ "objectives", НЕ "goals" ===
 	var objectives = quest.get("objectives", [])
 	for obj in objectives:
 		_add_objective_row(obj)
@@ -199,7 +201,6 @@ func _add_objective_row(obj: Dictionary):
 
 	var trust_reward = obj.get("trust_reward", 0)
 
-	# Фоновая подложка строки
 	var row_panel = PanelContainer.new()
 	row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var row_style = StyleBoxFlat.new()
@@ -223,14 +224,15 @@ func _add_objective_row(obj: Dictionary):
 	row_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row_margin.add_child(row_vbox)
 
-	# Текст цели + награда справа
 	var top_hbox = HBoxContainer.new()
 	top_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row_vbox.add_child(top_hbox)
 
 	var goal_text = Label.new()
-	# Label здесь уже локализован в BossManager, поэтому просто берем obj.label
-	goal_text.text = obj.get("label", "")
+	
+	# ИСПРАВЛЕНИЕ: Вызываем вашу идеальную функцию из BossManager!
+	goal_text.text = BossManager._rebuild_label(obj)
+
 	goal_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	goal_text.add_theme_color_override("font_color", COLOR_GREEN if is_done else COLOR_DARK)
 	goal_text.add_theme_font_size_override("font_size", 14)
@@ -245,7 +247,6 @@ func _add_objective_row(obj: Dictionary):
 		if UITheme: UITheme.apply_font(reward_lbl, "semibold")
 		top_hbox.add_child(reward_lbl)
 
-	# Прогресс-бар
 	var pbar = ProgressBar.new()
 	pbar.min_value = 0
 	pbar.show_percentage = false
@@ -259,7 +260,6 @@ func _add_objective_row(obj: Dictionary):
 		pbar.max_value = 1
 		pbar.value = 1 if is_done else 0
 	elif is_inverse:
-		# "Меньше лучше" (max_expenses): бар показывает сколько осталось до лимита
 		pbar.max_value = target if target > 0 else 1
 		pbar.value = max(target - current, 0)
 	else:
@@ -284,10 +284,8 @@ func _add_objective_row(obj: Dictionary):
 
 	row_vbox.add_child(pbar)
 
-	# Подпись прогресса
 	var progress_lbl = Label.new()
 	if obj_type == "no_fails":
-		# Используем новые ключи для статуса
 		progress_lbl.text = tr("QUEST_STATUS_COMPLETED") if is_done else tr("QUEST_STATUS_FAILS") % current
 	else:
 		progress_lbl.text = "%d / %d" % [current, target]
