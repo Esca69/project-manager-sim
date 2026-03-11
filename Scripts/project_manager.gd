@@ -57,7 +57,7 @@ func _physics_process(delta):
 			_fail_project(project)
 			continue
 
-		var is_working_hours = GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
+		var is_working_hours = GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR and not GameTime.is_weekend()
 
 		var active_stage = null
 		for i in range(project.stages.size()):
@@ -76,25 +76,33 @@ func _physics_process(delta):
 				active_stage["actual_start"] = project.elapsed_days
 
 			if is_working_hours and active_stage.workers.size() > 0:
+				# Вычисляем прошедшее время один раз для всех в этом кадре
+				var minutes_this_tick = GameTime.MINUTES_PER_REAL_SECOND * delta
+
 				for worker_data in active_stage.workers:
+					# === 1. АЛЛОКАЦИЯ: Списание стоимости времени ===
+					# Происходит всегда, если сотрудник назначен на активный этап 
+					# в рабочее время (даже если он пьет кофе, бродит или болеет дома)
+					var cost_this_tick = minutes_this_tick * (float(worker_data.hourly_rate) / 60.0)
+					project.daily_labor_cost += cost_this_tick
+					project.total_labor_cost += cost_this_tick
+
+					# === 2. РАБОТА: Начисление прогресса ===
 					var worker_node = _get_employee_node(worker_data)
 					if worker_node and worker_node.current_state == worker_node.State.WORKING:
 						var skill = _get_skill_for_stage(active_stage.type, worker_data)
 						var efficiency = worker_data.get_efficiency_multiplier()
+						
 						var speed_per_second = (float(skill) * efficiency) / 60.0
 						var progress_this_tick = speed_per_second * delta
 						active_stage.progress += progress_this_tick
 
-						var minutes_this_tick = GameTime.MINUTES_PER_REAL_SECOND * delta
+						# Записываем в мету полезно отработанное время (для отчёта)
 						var old_work = worker_data.get_meta("daily_work_minutes", 0.0) if worker_data.has_meta("daily_work_minutes") else 0.0
 						worker_data.set_meta("daily_work_minutes", old_work + minutes_this_tick)
+						
 						var old_prog = worker_data.get_meta("daily_progress", 0.0) if worker_data.has_meta("daily_progress") else 0.0
 						worker_data.set_meta("daily_progress", old_prog + progress_this_tick)
-
-						# === АНАЛИТИКА: Считаем затраты на рабочую силу ===
-						var cost_this_tick = minutes_this_tick * (float(worker_data.hourly_rate) / 60.0)
-						project.daily_labor_cost += cost_this_tick
-						project.total_labor_cost += cost_this_tick
 
 			if active_stage.progress >= active_stage.amount:
 				active_stage.progress = active_stage.amount

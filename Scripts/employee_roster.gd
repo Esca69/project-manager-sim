@@ -485,10 +485,20 @@ func _create_card(npc_node) -> PanelContainer:
 		var breakdown_text = _build_mood_breakdown_text(emp_ref)
 		var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var btn_global = mood_help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		mood_tooltip_ref[0] = tp
-		# Находим Label внутри тултипа для live-обновления
 		mood_tooltip_label_ref[0] = parent_ref._find_label_in_tooltip(tp)
 	)
 	mood_help_btn.mouse_exited.connect(func():
@@ -576,8 +586,19 @@ func _create_card(npc_node) -> PanelContainer:
 		var breakdown_text = _build_efficiency_breakdown_text(emp_ref)
 		var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var btn_global = eff_help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		eff_tooltip_ref[0] = tp
 	)
 	eff_help_btn.mouse_exited.connect(func():
@@ -710,8 +731,19 @@ func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
 		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var panel_global = panel.global_position
-		tp.global_position = Vector2(panel_global.x + panel.size.x + 10, panel_global.y - 5)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(panel_global.x + panel.size.x + 10, panel_global.y - 5)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = panel_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		tooltip_ref[0] = tp
 	)
 
@@ -781,8 +813,19 @@ func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContaine
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(description, color)
 		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var btn_global = help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		tooltip_ref[0] = tp
 	)
 	
@@ -826,8 +869,19 @@ func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
 		tp.custom_minimum_size = Vector2(350, 0)
 		
 		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var btn_global = help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		tooltip_ref[0] = tp
 	)
 	help_btn.mouse_exited.connect(func():
@@ -1032,14 +1086,26 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 
 	var description = emp.get_trait_description(trait_id)
 	var tooltip_ref: Array = [null]
+	var parent_ref = self
 
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(description, color)
-		self.add_child(tp)
+		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var btn_global = help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		tooltip_ref[0] = tp
 	)
 
@@ -1092,8 +1158,19 @@ func _create_hidden_trait() -> HBoxContainer:
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
 		parent_ref.add_child(tp)
+		
+		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		
 		var btn_global = help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+			
+		tp.global_position = target_pos
 		tooltip_ref[0] = tp
 	)
 

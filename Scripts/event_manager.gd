@@ -659,10 +659,15 @@ func _trigger_dayoff_event(employee_node):
 	# ИСПРАВЛЕНИЕ: Берем локализованное имя
 	var display_name = employee_node.data.get_display_name() + " (" + tr(employee_node.data.job_title) + ")"
 
+	# Рандомизируем причину отгула (от 0 до 5)
+	var reason_idx = randi_range(0, 5)
+	var reason_key = "EVENT_DAYOFF_DESC" if reason_idx == 0 else "EVENT_DAYOFF_DESC_%d" % reason_idx
+
 	var event_data = {
 		"id": "day_off",
 		"employee_node": employee_node,
 		"employee_name": display_name,
+		"reason_key": reason_key,
 		"choices": [
 			{
 				"id": "allow",

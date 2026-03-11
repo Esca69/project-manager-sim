@@ -17,7 +17,6 @@ const WINDOW_WIDTH = 520
 const WINDOW_HEIGHT_MIN = 280
 
 # Заголовки и эмодзи по типу ивента
-# Заголовки и эмодзи по типу ивента
 const EVENT_HEADERS = {
 	"sick_leave": {"emoji": "🤒", "title_key": "EVENT_SICK_TITLE"},
 	"day_off": {"emoji": "🙏", "title_key": "EVENT_DAYOFF_TITLE"},
@@ -193,6 +192,9 @@ func _get_event_description(event_data: Dictionary) -> String:
 		"sick_leave":
 			return tr("EVENT_SICK_DESC") % event_data["employee_name"]
 		"day_off":
+			# Если есть смешная причина, используем её, иначе берем старую по умолчанию
+			if event_data.has("reason_key"):
+				return tr(event_data["reason_key"]) % event_data["employee_name"]
 			return tr("EVENT_DAYOFF_DESC") % event_data["employee_name"]
 		"scope_expansion":
 			return tr("EVENT_SCOPE_DESC") % [event_data["client_name"], event_data["project_title"]]
