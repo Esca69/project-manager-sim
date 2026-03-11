@@ -1,0 +1,854 @@
+id,ru,en
+WEEKDAY_SHORT_MON,Пн,Mon
+WEEKDAY_SHORT_TUE,Вт,Tue
+WEEKDAY_SHORT_WED,Ср,Wed
+WEEKDAY_SHORT_THU,Чт,Thu
+WEEKDAY_SHORT_FRI,Пт,Fri
+WEEKDAY_SHORT_SAT,Сб,Sat
+WEEKDAY_SHORT_SUN,Вс,Sun
+WEEKDAY_FULL_MON,Понедельник,Monday
+WEEKDAY_FULL_TUE,Вторник,Tuesday
+WEEKDAY_FULL_WED,Среда,Wednesday
+WEEKDAY_FULL_THU,Четверг,Thursday
+WEEKDAY_FULL_FRI,Пятница,Friday
+WEEKDAY_FULL_SAT,Суббота,Saturday
+WEEKDAY_FULL_SUN,Воскресенье,Sunday
+DATE_FORMAT,"Мес. %d, День %d (%s)","Mo. %d, Day %d (%s)"
+DATE_FORMAT_SHORT,"Мес. %d, День %d","Mo. %d, Day %d"
+TRAIT_FAST_LEARNER,🧠 Быстрый ум,🧠 Fast Learner
+TRAIT_ENERGIZER,⚡ Энерджайзер,⚡ Energizer
+TRAIT_EARLY_BIRD,🐦 Ранняя пташка,🐦 Early Bird
+TRAIT_CHEAP_HIRE,💰 Скромный,💰 Modest
+TRAIT_TOILET_LOVER,🚽 Любит покакать,🚽 Toilet Lover
+TRAIT_COFFEE_LOVER,☕ Кофеман,☕ Coffee Addict
+TRAIT_SLOWPOKE,🐌 Тормоз,🐌 Slowpoke
+TRAIT_EXPENSIVE,💸 Зазнайка,💸 Pricey
+TRAIT_DESC_FAST_LEARNER,+20% к скорости работы на этапах проекта,+20% work speed on project stages
+TRAIT_DESC_ENERGIZER,Энергия тратится на 30% медленнее,Energy drains 30% slower
+TRAIT_DESC_EARLY_BIRD,Приходит на работу на 30-40 минут раньше,Arrives at work 30-40 minutes earlier
+TRAIT_DESC_CHEAP_HIRE,Зарплата на 15% ниже,Salary is 15% lower
+TRAIT_DESC_TOILET_LOVER,Сидит в туалете в 2 раза дольше,Spends 2x longer in the toilet
+TRAIT_DESC_COFFEE_LOVER,Кофе-брейк длится в 2 раза дольше,Coffee break lasts 2x longer
+TRAIT_DESC_SLOWPOKE,-20% к скорости работы на этапах проекта,-20% work speed on project stages
+TRAIT_DESC_EXPENSIVE,Зарплата на 20% выше,Salary is 20% higher
+EMPLOYEE_DEFAULT_NAME,Новичок,Rookie
+SKILL_ESTIMATE_WORK_1_NAME,📐 Оценка объёма I,📐 Work Estimate I
+SKILL_ESTIMATE_WORK_1_DESC,Объём работ по проекту показан как вилка ±20% вместо ±40%,Project work scope shown as ±20% range instead of ±40%
+SKILL_ESTIMATE_WORK_2_NAME,📐 Оценка объёма II,📐 Work Estimate II
+SKILL_ESTIMATE_WORK_2_DESC,Вы видите точный объём работ по каждому этапу,You see the exact work amount for each stage
+SKILL_ESTIMATE_BUDGET_1_NAME,💰 Оценка бюджета I,💰 Budget Estimate I
+SKILL_ESTIMATE_BUDGET_1_DESC,Бюджет проекта показан как вилка ±15% вместо ±35%,Project budget shown as ±15% range instead of ±35%
+SKILL_ESTIMATE_BUDGET_2_NAME,💰 Оценка бюджета II,💰 Budget Estimate II
+SKILL_ESTIMATE_BUDGET_2_DESC,Вы видите точный бюджет проекта,You see the exact project budget
+SKILL_PROJECT_LIMIT_1_NAME,📁 Лимит проектов I,📁 Project Limit I
+SKILL_PROJECT_LIMIT_1_DESC,Максимум активных проектов увеличен до 5 (было 3),Max active projects increased to 5 (was 3)
+SKILL_PROJECT_LIMIT_2_NAME,📁 Лимит проектов II,📁 Project Limit II
+SKILL_PROJECT_LIMIT_2_DESC,Максимум активных проектов увеличен до 7,Max active projects increased to 7
+SKILL_BOSS_MEETING_SPEED_1_NAME,⏱ Обсуждение I,⏱ Meetings I
+SKILL_BOSS_MEETING_SPEED_1_DESC,Обсуждение проекта с боссом занимает 3 часа вместо 4,Boss meeting takes 3 hours instead of 4
+SKILL_BOSS_MEETING_SPEED_2_NAME,⏱ Обсуждение II,⏱ Meetings II
+SKILL_BOSS_MEETING_SPEED_2_DESC,Обсуждение проекта с боссом занимает 2 часа,Boss meeting takes 2 hours
+SKILL_READ_TRAITS_1_NAME,👁 Чтение людей I,👁 Read People I
+SKILL_READ_TRAITS_1_DESC,При найме вы видите 1 трейт кандидата,You can see 1 trait when hiring
+SKILL_READ_TRAITS_2_NAME,👁 Чтение людей II,👁 Read People II
+SKILL_READ_TRAITS_2_DESC,При найме вы видите 2 трейта кандидата,You can see 2 traits when hiring
+SKILL_READ_TRAITS_3_NAME,👁 Чтение людей III,👁 Read People III
+SKILL_READ_TRAITS_3_DESC,Вы видите все трейты кандидата при найме,You see all candidate traits when hiring
+SKILL_READ_SKILLS_1_NAME,📊 Оценка кадров I,📊 Skill Assessment I
+SKILL_READ_SKILLS_1_DESC,Навыки кандидата показаны как «Низкий / Средний / Высокий» вместо полного скрытия,Candidate skills shown as Low / Medium / High instead of hidden
+SKILL_READ_SKILLS_2_NAME,📊 Оценка кадров II,📊 Skill Assessment II
+SKILL_READ_SKILLS_2_DESC,Навыки кандидата показаны как диапазон (100–150),Candidate skills shown as range (100–150)
+SKILL_READ_SKILLS_3_NAME,📊 Оценка кадров III,📊 Skill Assessment III
+SKILL_READ_SKILLS_3_DESC,Вы видите точные значения навыков кандидата,You see exact candidate skill values
+SKILL_CANDIDATE_COUNT_1_NAME,👤 Кандидаты I,👤 Candidates I
+SKILL_CANDIDATE_COUNT_1_DESC,При поиске HR выдаёт 3 кандидата вместо 2,HR search returns 3 candidates instead of 2
+SKILL_CANDIDATE_COUNT_2_NAME,👤 Кандидаты II,👤 Candidates II
+SKILL_CANDIDATE_COUNT_2_DESC,При поиске HR выдаёт 5 кандидатов,HR search returns 5 candidates
+SKILL_HR_SEARCH_SPEED_1_NAME,🔍 Скорость поиска I,🔍 Search Speed I
+SKILL_HR_SEARCH_SPEED_1_DESC,Поиск кандидатов занимает 1.5 часа вместо 2,Candidate search takes 1.5 hours instead of 2
+SKILL_HR_SEARCH_SPEED_2_NAME,🔍 Скорость поиска II,🔍 Search Speed II
+SKILL_HR_SEARCH_SPEED_2_DESC,Поиск кандидатов занимает 1 час,Candidate search takes 1 hour
+SKILL_REPORT_EXPENSES_NAME,📋 Учёт расходов,📋 Expense Tracking
+SKILL_REPORT_EXPENSES_DESC,В дневном отчёте видна детализация затрат: кому выплачена зарплата и сколько,Day report shows expense details: who was paid and how much
+SKILL_REPORT_PROJECTS_NAME,📋 Аналитика проектов,📋 Project Analytics
+SKILL_REPORT_PROJECTS_DESC,"В дневном отчёте видны этапы проектов, процент прогресса и дни до дедлайнов","Day report shows project stages, progress % and days until deadlines"
+SKILL_REPORT_PRODUCTIVITY_NAME,📋 Оценка продуктивности,📋 Productivity Report
+SKILL_REPORT_PRODUCTIVITY_DESC,В дневном отчёте видно кто из сотрудников сколько часов работал и сколько очков принёс,Day report shows how many hours each employee worked and points earned
+SKILL_MOTIVATE_NAME,🔥 Мотивировать,🔥 Motivate
+SKILL_MOTIVATE_DESC,Активный навык (Q): все сотрудники рядом получают +20% скорости работы на 2 часа. Перезарядка: 4 часа,Active skill (Q): nearby employees get +20% work speed for 2 hours. Cooldown: 4 hours
+SKILL_NO_TOILET_NAME,🚽 Не сейчас!,🚽 Not Now!
+SKILL_NO_TOILET_DESC,Активный навык (R): сотрудники рядом не уходят в туалет 4 часа. Перезарядка: 8 часов,Active skill (R): nearby employees won't take toilet breaks for 4 hours. Cooldown: 8 hours
+SKILL_CATEGORY_PROJECTS,Проекты,Projects
+SKILL_CATEGORY_PEOPLE,Люди,People
+SKILL_CATEGORY_ANALYTICS,Аналитика,Analytics
+SKILL_CATEGORY_ACTIVE,Активные,Active
+TAB_EMPLOYEES,👥 Сотрудники,👥 Employees
+TAB_CLIENTS,🤝 Заказчики,🤝 Clients
+TAB_PM_SKILLS,🧠 Навыки PM,🧠 PM Skills
+TAB_BOSS,🏢 Босс,🏢 Boss
+DAY_SUMMARY_TITLE,Итоги дня,Day Summary
+DAY_SUMMARY_CONTINUE,Продолжить →,Continue →
+DAY_SUMMARY_FINANCE,💰 Финансы,💰 Finances
+DAY_SUMMARY_BALANCE_START,Баланс на начало дня:,Balance at day start:
+DAY_SUMMARY_INCOME,📈 Доходы за день:,📈 Income today:
+DAY_SUMMARY_EXPENSES,📉 Расходы за день:,📉 Expenses today:
+DAY_SUMMARY_SALARIES,Зарплаты:,Salaries:
+DAY_SUMMARY_BALANCE_END,Баланс на конец дня:,Balance at day end:
+DAY_SUMMARY_LOCKED_HINT,"🔒 Изучите навык «%s» в дереве навыков PM, чтобы видеть детализацию","🔒 Unlock ""%s"" in the PM skill tree to see details"
+ROSTER_ENERGY,Энергия: %d%%,Energy: %d%%
+ROSTER_EFFICIENCY,Эффект.: x%.1f,Efficiency: x%.1f
+ROSTER_EFFICIENCY_MOTIVATED,🔥 Эффект.: x%.1f,🔥 Efficiency: x%.1f
+ROSTER_FIRE_BTN,Уволить,Fire
+ROSTER_FIRE_CONFIRM,"Вы уверены, что хотите уволить",Are you sure you want to fire
+ROSTER_FIRE_YES,Да,Yes
+ROSTER_FIRE_NO,Нет,No
+STATUS_IDLE,Свободен,Idle
+STATUS_WORKING,Работает,Working
+STATUS_COFFEE,Кофе-брейк ☕,Coffee break ☕
+STATUS_TOILET,В туалете 🚽,In toilet 🚽
+STATUS_WANDERING,Гуляет,Wandering
+STATUS_GOING_HOME,Уходит домой,Going home
+STATUS_HOME,Дома,At home
+STATUS_DISCUSSING,Обсуждение,Discussing
+STATUS_MOVING,Идёт к месту,Moving
+HR_BUSY_DISCUSSING,HR: PM занят обсуждением с боссом.,HR: PM is busy discussing with the boss.
+HR_BUSY_SEARCHING,HR: PM уже ищет кандидатов.,HR: PM is already searching for candidates.
+HR_SEARCH_LABEL,Поиск кандидатов,Searching for candidates
+HR_TOO_LATE,Слишком поздно — HR не успеет завершить поиск до конца дня.,Too late — HR won't finish the search before end of day.
+END_DAY_BTN,Завершить день,End Day
+CLIENT_NOVOTECH,НовоТех,NovoTech
+CLIENT_NOVOTECH_DESC,IT-стартап. Всегда хочет быстро и дёшево.,IT startup. Always wants it fast and cheap.
+CLIENT_EDAPLUS,ЕдаПлюс,FoodPlus
+CLIENT_EDAPLUS_DESC,Сеть доставки еды. Много мелких задач.,Food delivery chain. Lots of small tasks.
+CLIENT_FINANSGROUP,ФинансГрупп,FinanceGroup
+CLIENT_FINANSGROUP_DESC,"Банк. Серьёзные проекты, хорошие бюджеты.","Bank. Serious projects, good budgets."
+CLIENT_MEDIALINE,МедиаЛайн,MediaLine
+CLIENT_MEDIALINE_DESC,Рекламное агентство. Креативные задачи.,Ad agency. Creative tasks.
+CLIENT_STROYMASTER,СтройМастер,BuildMaster
+CLIENT_STROYMASTER_DESC,Строительная компания. Стабильный поток.,Construction company. Steady workflow.
+LOYALTY_MICRO_PROJECTS,Micro проекты,Micro projects
+LOYALTY_BUDGET_5,+5% к бюджету,+5% to budget
+LOYALTY_SIMPLE_PROJECTS,Simple проекты,Simple projects
+LOYALTY_BUDGET_10,+10% к бюджету,+10% to budget
+LOYALTY_EASY_PROJECTS,Easy проекты,Easy projects
+LOYALTY_BUDGET_15,+15% к бюджету,+15% to budget
+LOYALTY_BUDGET_20,+20% к бюджету,+20% to budget
+PROJ_FIX_BUG,Фикс бага на сайте,Fix website bug
+PROJ_TEST_FORM,Протестировать форму,Test form
+PROJ_WRITE_TZ,Составить ТЗ на лендинг,Write landing page spec
+PROJ_FIX_LAYOUT,Поправить вёрстку письма,Fix email layout
+PROJ_TEST_AUTH,Тестирование авторизации,Test authentication
+PROJ_COMPETITOR_ANALYSIS,Анализ конкурентов,Competitor analysis
+PROJ_FAQ,Описать и сделать FAQ,Describe and build FAQ
+PROJ_API,Написать и протестить API,Write and test API
+PROJ_FORM_DESC,Описание + правка формы,Description + form fix
+PROJ_FILTERS,Доработка + тест фильтров,Improve + test filters
+PROJ_MODULE_TEST,ТЗ + тестирование модуля,Spec + module testing
+PROJ_REPORT,Аналитика + разработка отчёта,Analytics + report development
+PROJ_LANDING,Лендинг пекарни,Bakery landing page
+PROJ_SITE_CARD,Сайт-визитка,Business card website
+PROJ_CRM_TAXI,CRM для такси,CRM for taxi
+PROJ_AUTH_MODULE,Модуль авторизации,Auth module
+PROJ_SHOP,Интернет-магазин,Online store
+PROJ_ORDERS,Портал заказов,Orders portal
+PROJ_CHAT,Чат поддержки,Support chat
+PROJ_DASHBOARD,Дашборд статистики,Statistics dashboard
+QUEST_PROFIT,Заработать ≥ $%d прибыли,Earn ≥ $%d profit
+QUEST_PROJECTS,Завершить ≥ %d проектов,Complete ≥ %d projects
+QUEST_HIRES,Нанять ≥ %d сотрудников,Hire ≥ %d employees
+QUEST_LOYALTY,Суммарная лояльность клиентов ≥ %d,Total client loyalty ≥ %d
+QUEST_NO_FAILS,Ни одного проваленного проекта,No failed projects
+QUEST_MAX_EXPENSES,Расходы на зарплаты ≤ $%d,Salary expenses ≤ $%d
+QUEST_PM_LEVEL,PM достигает уровня ≥ %d,PM reaches level ≥ %d
+QUEST_EMPLOYEE_LEVELUPS,Сотрудники повысились ≥ %d раз,Employees leveled up ≥ %d times
+BOSS_TITLE,🏢 Босс,🏢 Boss
+BOSS_TRUST,Доверие: %d 🤝  %s,Trust: %d 🤝  %s
+BOSS_NO_QUEST,Босс пока не дал задание.\nПодойдите к столу босса в начале месяца.,No assignment yet.\nVisit the boss's desk at the start of the month.
+BOSS_QUEST_MONTH,📋  Задание месяца %d:,📋  Month %d assignment:
+BOSS_QUEST_TITLE,🏢 Новое задание от босса,🏢 New assignment from the boss
+BOSS_TRUST_LABEL,Доверие босса: %d 🤝  (%s),Boss trust: %d 🤝  (%s)
+BOSS_IMPOSSIBLE_WARN,⚠️ Босс в этом месяце особенно требователен...,⚠️ The boss is extra demanding this month...
+BOSS_GOALS_TITLE,📋 Цели на месяц %d:,📋 Goals for month %d:
+BOSS_ACCEPT_BTN,✅ Понял босс!,✅ Got it boss!
+BOSS_SPEECH_1,"Значит так, у нас планы на этот месяц. Покажи что ты можешь.","So, we have plans this month. Show me what you can do."
+BOSS_SPEECH_2,Руководство ждёт результатов. Давай не подведём.,Management expects results. Let's not disappoint.
+BOSS_SPEECH_3,Новый месяц — новые цели. Я рассчитываю на тебя.,New month — new goals. I'm counting on you.
+BOSS_SPEECH_4,"Ладно, слушай внимательно. Вот что нужно сделать.","Alright, listen carefully. Here's what needs to be done."
+BOSS_SPEECH_IMPOSSIBLE_1,Этот месяц будет непростым. Руководство поставило амбициозные цели...,This month won't be easy. Management set ambitious goals...
+BOSS_SPEECH_IMPOSSIBLE_2,"Не буду врать, задача серьёзная. Но я верю в тебя.","I won't lie, it's a tough one. But I believe in you."
+BOSS_SPEECH_IMPOSSIBLE_3,Сверху пришли... интересные ожидания. Сделай что сможешь.,Interesting expectations came from above. Do what you can.
+BOSS_REPORT_TITLE,📊 Итоги месяца,📊 Monthly Results
+BOSS_REPORT_IMPOSSIBLE,(Это был месяц с повышенными требованиями),(This was a month with elevated demands)
+BOSS_REPORT_TRUST_CHANGE,Изменение доверия:,Trust change:
+BOSS_REPORT_CURRENT_TRUST,Текущее доверие: %d  %s,Current trust: %d  %s
+BOSS_REPORT_CLOSE,Понятно,Got it
+BOSS_REACTION_IMPOSSIBLE_WIN,Невероятно! Я не ожидал что ты справишься с такими планами.,Incredible! I didn't expect you to handle such plans.
+BOSS_REACTION_GREAT,Отличная работа! Так держать.,Excellent work! Keep it up.
+BOSS_REACTION_OK,"Неплохо. Есть над чем работать, но в целом доволен.","Not bad. Room for improvement, but overall satisfied."
+BOSS_REACTION_MEH,"Могло быть и лучше, но хоть что-то сделал.","Could've been better, but at least something got done."
+BOSS_REACTION_ZERO,Ничего не выполнено... Я разочарован.,Nothing was completed... I'm disappointed.
+BOSS_REACTION_FAIL,Это провал. Мне придётся подумать о твоём будущем здесь.,This is a failure. I'll have to think about your future here.
+HR_ROLE_TITLE,Выберите роль для поиска,Select role to search
+HR_ROLE_BA,Business Analyst,Business Analyst
+HR_ROLE_DEV,Backend Developer,Backend Developer
+HR_ROLE_QA,QA Engineer,QA Engineer
+NAME_OLEG,Олег,Oleg
+NAME_MARIA,Мария,Maria
+NAME_ALEXEY,Алексей,Alexey
+NAME_DARYA,Дарья,Darya
+NAME_IVAN,Иван,Ivan
+NAME_ELENA,Елена,Elena
+NAME_MAX,Макс,Max
+NAME_SERGEY,Сергей,Sergey
+NAME_ANNA,Анна,Anna
+SURNAME_PETROV,Петров(а),Petrov
+SURNAME_SMIRNOV,Смирнов(а),Smirnov
+SURNAME_KUZNETSOV,Кузнецов(а),Kuznetsov
+SURNAME_POPOV,Попов(а),Popov
+SURNAME_VASILIEV,Васильев(а),Vasiliev
+SURNAME_SOKOLOV,Соколов(а),Sokolov
+SURNAME_MIKHAILOV,Михайлов(а),Mikhailov
+UI_CLOSE,Закрыть,Close
+UI_SALARY,$ %d,$ %d
+UI_LEVEL,Уровень %d,Level %d
+UI_XP,XP: %d / %d,XP: %d / %d
+UI_PM_LEVEL,PM Уровень %d,PM Level %d
+UI_SKILL_POINTS,Очки навыков: %d,Skill points: %d
+UI_SKILL_LOCKED,🔒 Заблокировано,🔒 Locked
+UI_SKILL_UNLOCKED,✅ Изучено,✅ Unlocked
+UI_SKILL_COST,Стоимость: %d,Cost: %d
+UI_SKILL_REQUIRES,Требуется: %s,Requires: %s
+PROJECT_STATE_DRAFTING,Черновик,Draft
+PROJECT_STATE_IN_PROGRESS,В работе,In Progress
+PROJECT_STATE_FINISHED,Завершён,Completed
+PROJECT_STATE_FAILED,Провален,Failed
+PROJECT_BUDGET,Бюджет: $%d,Budget: $%d
+PROJECT_DEADLINE_SOFT,Софт-дедлайн: %s,Soft deadline: %s
+PROJECT_DEADLINE_HARD,Хард-дедлайн: %s,Hard deadline: %s
+PROJECT_PENALTY,Штраф за просрочку: %d%%,Late penalty: %d%%
+PROJECT_STAGE,Этап %d: %s,Stage %d: %s
+PROJECT_ASSIGN_WORKER,Назначить сотрудника,Assign employee
+PROJECT_REMOVE_WORKER,Убрать,Remove
+PROJECT_TAKE,Взять проект,Take project
+PROJECT_CLIENT,Заказчик: %s,Client: %s
+HIRE_BTN,Нанять,Hire
+HIRE_HIDDEN_TRAIT,??? Неизвестный трейт,??? Unknown trait
+BOSS_TRUST_STATE_ANGRY,😡 Недоволен,😡 Angry
+BOSS_TRUST_STATE_NEUTRAL,😐 Нейтрально,😐 Neutral
+BOSS_TRUST_STATE_FINE,🙂 Нормально,🙂 Fine
+BOSS_TRUST_STATE_PLEASED,😊 Доволен,😊 Pleased
+BOSS_TRUST_STATE_VERY_PLEASED,😄 Очень доволен,😄 Very Pleased
+BOSS_TRUST_STATE_AMAZED,🌟 Восхищён,🌟 Amazed
+QUEST_STATUS_COMPLETED,✅ Выполнено,✅ Completed
+QUEST_STATUS_FAILS,❌ %d провалов,❌ %d fails
+CLIENT_TOTAL_LOYALTY,❤ Общая лояльность: %d,❤ Total Loyalty: %d
+CLIENT_WEEKLY_PROJECTS,📅 Предложений от босса в неделю: %d,📅 Boss proposals per week: %d
+CLIENT_LOYALTY_POINTS,❤ %d очков (ур. %d),❤ %d points (lvl %d)
+CLIENT_STAT_SUCCESS,✅ Успешно: %d,✅ Success: %d
+CLIENT_STAT_LATE,⚠ Просрочка софт: %d,⚠ Soft deadline: %d
+CLIENT_STAT_FAIL,❌ Провал: %d,❌ Failed: %d
+CLIENT_BONUS_BUDGET,💰 Бюджет: +%d%%,💰 Budget: +%d%%
+CLIENT_UNLOCKED_PROJECTS,📋 Проекты: %s,📋 Projects: %s
+CLIENT_NEXT_LEVEL_INFO,⏭ До следующего: %d / %d (%s),⏭ Next level: %d / %d (%s)
+CLIENT_MAX_LEVEL,🏆 Максимальный уровень лояльности!,🏆 Maximum loyalty level!
+DAY_SUMMARY_PROJECTS,📋 Проекты,📋 Projects
+DAY_SUMMARY_PROJ_FINISHED,✅ Завершены сегодня:,✅ Finished today:
+DAY_SUMMARY_PROJ_PAYOUT,[%s] %s — Выплата: $%d,[%s] %s — Payout: $%d
+DAY_SUMMARY_PROJ_PENALTY," (⚠ штраф -$%d, просрочка софт)"," (⚠ penalty -$%d, soft deadline missed)"
+DAY_SUMMARY_PROJ_COMPLETED,[%s] %s — завершён,[%s] %s — completed
+DAY_SUMMARY_PROJ_FAILED,❌ Провалены сегодня:,❌ Failed today:
+DAY_SUMMARY_PROJ_FAILED_DETAIL,[%s] %s — Хард-дедлайн истёк выплата: $0,[%s] %s — Hard deadline expired payout: $0
+DAY_SUMMARY_PROJ_FAILED_SHORT,[%s] %s — провален,[%s] %s — failed
+DAY_SUMMARY_PROJ_IN_PROGRESS,🔧 В работе:,🔧 In progress:
+DAY_SUMMARY_PROJ_ACTIVE_DETAIL,[%s] %s — %s | софт: %d дн. | хард: %d дн.,[%s] %s — %s | soft: %d d. | hard: %d d.
+DAY_SUMMARY_PROJ_ACTIVE_SHORT,[%s] %s — в работе,[%s] %s — in progress
+DAY_SUMMARY_PROJ_DRAFT,📝 Ожидают старта:,📝 Awaiting start:
+DAY_SUMMARY_PROJ_DRAFT_DETAIL,[%s] %s — не начат назначьте людей,[%s] %s — not started assign people
+DAY_SUMMARY_NO_PROJECTS,Нет активных проектов,No active projects
+DAY_SUMMARY_NO_EMPLOYEES,Нет сотрудников,No employees
+DAY_SUMMARY_EMP_TOTAL_ONLY,👥 Всего сотрудников: %d,👥 Total employees: %d
+DAY_SUMMARY_EMP_STATS,👥 Всего: %d  |  🔧 Работали: %d  |  💤 Простаивали: %d,👥 Total: %d  |  🔧 Worked: %d  |  💤 Idle: %d
+DAY_SUMMARY_EMP_WORKED,🔧 Работали сегодня:,🔧 Worked today:
+DAY_SUMMARY_EMP_IDLE,💤 Простаивали (не назначены на проект):,💤 Idle (not assigned to project):
+DAY_SUMMARY_EMP_LOW_ENERGY,⚠ Низкая энергия:,⚠ Low energy:
+DAY_SUMMARY_EMP_NOT_WORKED,💤 Не работал,💤 Did not work
+STAGE_BA,Бизнес-анализ,Business Analysis
+STAGE_DEV,Разработка,Development
+STAGE_QA,Тестирование,Testing
+DAY_SUMMARY_STAGE_FORMAT,этап %s (%d%%),stage %s (%d%%)
+DAY_SUMMARY_STAGE_DONE,завершён,completed
+DAY_SUMMARY_TIME_HM,%d ч %d мин,%d h %d m
+DAY_SUMMARY_TIME_M,%d мин,%d m
+DAY_SUMMARY_PTS_K,%dk очков,%dk points
+DAY_SUMMARY_PTS,%d очков,%d points
+DAY_SUMMARY_LEVELUPS,🎉 Повышения за день,🎉 Level-ups today
+DAY_SUMMARY_LEVELUP_TITLE,🎉 %s получил уровень %d (%s)!,🎉 %s reached level %d (%s)!
+DAY_SUMMARY_SKILL_GAIN,Навык +%d,Skill +%d
+DAY_SUMMARY_NEW_TRAIT,  |  Новый трейт: %s,  |  New trait: %s
+DAY_SUMMARY_EMP_SALARY,        • %s — $%d,        • %s — $%d
+EMP_ACTION_IDLE,ждёт задачу,waiting for task
+EMP_ACTION_MOVING,идёт к столу,going to desk
+EMP_ACTION_WORK_LERA,отвечает тикеты...,answering tickets...
+EMP_ACTION_WORK_DEV,пишет код...,writing code...
+EMP_ACTION_WORK_BA,составляет ТЗ...,writing specs...
+EMP_ACTION_WORK_QA,ищет баги...,hunting bugs...
+EMP_ACTION_WORK_DEFAULT,работает...,working...
+EMP_ACTION_GOING_HOME,идёт домой,going home
+EMP_ACTION_HOME,дома,at home
+EMP_ACTION_GOING_COFFEE,идёт за кофе,getting coffee
+EMP_ACTION_COFFEE_BREAK,пьёт кофе,drinking coffee
+EMP_ACTION_GOING_TOILET,идёт в туалет,going to toilet
+EMP_ACTION_TOILET_BREAK,в туалете,in toilet
+EMP_ACTION_WANDERING,слоняется без дела,wandering around
+EMP_ACTION_WANDER_PAUSE,задумался...,thinking...
+ROLE_SHORT_DEV,DEV,DEV
+ROLE_SHORT_BA,BA,BA
+ROLE_SHORT_QA,QA,QA
+GRADE_JUNIOR,Junior,Junior
+GRADE_MIDDLE,Middle,Middle
+GRADE_SENIOR,Senior,Senior
+GRADE_LEAD,Lead,Lead
+DESK_AVAILABLE,СВОБОДНО,AVAILABLE
+ROSTER_GRADE_LEVEL,%s  Ур. %d,%s  Lvl %d
+ROSTER_MAX_LEVEL,✦ MAX,✦ MAX
+ROSTER_SKILL,Навык:  %s,Skill:  %s
+ROSTER_SALARY,Зарплата: %d $/мес,Salary: $%d/mo
+ROSTER_HIDDEN_TRAIT_TOOLTIP,Неизвестное качество сотрудника.\nИзучите навык «Чтение людей» в дереве навыков PM.,Unknown employee trait.\nLearn the 'Read People' skill in the PM skill tree.
+ROSTER_STATUS_IDLE,💤 Простаивает,💤 Idle
+ROSTER_STATUS_MOVING,🚶 Идёт к столу,🚶 Going to desk
+ROSTER_STATUS_WORKING,🔧 Работает (%s),🔧 Working (%s)
+ROSTER_STATUS_GOING_HOME,🏠 Идёт домой,🏠 Going home
+ROSTER_STATUS_HOME,🏠 Дома,🏠 At home
+ROSTER_STATUS_GOING_COFFEE,☕ Идёт за кофе,☕ Getting coffee
+ROSTER_STATUS_COFFEE_BREAK,☕ Кофе-брейк,☕ Coffee break
+ROSTER_STATUS_GOING_TOILET,🚽 Идёт в туалет,🚽 Going to toilet
+ROSTER_STATUS_TOILET_BREAK,🚽 В туалете,🚽 In toilet
+ROSTER_STATUS_WANDERING,🚶 Слоняется,🚶 Wandering
+ROSTER_STATUS_THINKING,🚶 Стоит думает,🚶 Standing thinking
+ROSTER_FIRE_CONFIRM_NAME,Уволить %s?,Fire %s?
+ROSTER_FIRE_WARN_PROJECTS,⚠️ Этот сотрудник назначен на проекты:,⚠️ This employee is assigned to projects:
+ROSTER_FIRE_WARN_STAGES,Он будет снят со всех этапов!,They will be removed from all stages!
+ROSTER_FIRE_TITLE,⚠️ Подтверждение увольнения,⚠️ Confirm Firing
+UI_CANCEL,Отмена,Cancel
+EMP_SELECT_TITLE,Выберите сотрудника,Select employee
+EMP_SELECT_BUSY, — 🔒 Занят на проекте, — 🔒 Assigned to project
+EMP_SELECT_NO_ROLE,⚠ Нет сотрудников с ролью %s,⚠ No employees with role %s
+REASON_PROJECT_ON_TIME,Проект завершён вовремя,Project completed on time
+REASON_PROJECT_LATE,Проект завершён с просрочкой,Project completed late
+REASON_PROJECT_FAILED,Проект провален,Project failed
+HR_ROLE_TITLE,🔍 Какого специалиста ищем?,🔍 Who are we looking for?
+HR_ROLE_HINT,Выберите роль сотрудника которого хотите найти:,Select the role of the employee you want to hire:
+HR_ROLE_TIME_H,⏱ Поиск кандидатов занимает %d ч.,⏱ Candidate search takes %d h.
+HR_ROLE_TIME_M,⏱ Поиск кандидатов занимает %d мин.,⏱ Candidate search takes %d m.
+HR_ROLE_BTN_SEARCH,🔍  Начать поиск,🔍  Start search
+HR_ROLE_BTN_LATE,Слишком поздно,Too late
+HR_ROLE_WARN_LATE,🕐 Поиск нельзя начать после %d:00 — не хватит времени до конца рабочего дня.,🕐 Search cannot be started after %d:00 — not enough time before end of day.
+HUD_BALANCE,$ %d ,$ %d 
+HUD_INFO_NAME,Имя: %s ,Name: %s 
+HUD_INFO_ROLE,Должность: %s ,Role: %s 
+HUD_INFO_SALARY,Ставка: %d$/месяц ,Salary: $%d/month 
+PLAYER_DISCUSS_TITLE,Обсуждение,Meeting
+PLAYER_COOLDOWN_FORMAT,⏳ Перезарядка: %d:%02d,⏳ Cooldown: %d:%02d
+PLAYER_SKILL_READY,Готово!,Ready!
+SKILL_VAL_LOW,Низкий,Low
+SKILL_VAL_MEDIUM,Средний,Medium
+SKILL_VAL_HIGH,Высокий,High
+UI_XP_MAX,XP: %d (МАКС.),XP: %d (MAX)
+UI_SKILL_COST_VAL,🧠 %d очк.,🧠 %d pts.
+UI_SKILL_UNLOCK_BTN,Изучить,Unlock
+PROJ_DEFAULT_TITLE,Проект,Project
+PROJ_UNKNOWN_CLIENT,Неизвестный клиент,Unknown client
+PROJ_CAT_MICRO,[MICRO],[MICRO]
+PROJ_CAT_SIMPLE,[SIMPLE],[SIMPLE]
+PROJ_CAT_EASY,[EASY],[EASY]
+PROJ_CAT_UNKNOWN,[???],[???]
+PROJ_LIST_EMPTY,Нет активных проектов.\nВозьмите проект у босса.,No active projects.\nTake a project from the boss.
+PROJ_LIST_STATUS_DRAFT,📝 Черновик — назначьте людей и нажмите Старт,📝 Draft — assign people and press Start
+PROJ_LIST_STATUS_IN_PROGRESS,🔧 В работе — этап: %s,🔧 In progress — stage: %s
+PROJ_LIST_FAILED_DEADLINE,❌ Провален — хард-дедлайн истёк,❌ Failed — hard deadline expired
+PROJ_LIST_BUDGET_FAILED,Бюджет: $0 (Провал),Budget: $0 (Failed)
+PROJ_LIST_SOFT_INFO,Софт: %s (ост. %d дн.) | штраф -%d%%,Soft: %s (%d d. left) | penalty -%d%%
+PROJ_LIST_HARD_INFO,Хард: %s (ост. %d дн.),Hard: %s (%d d. left)
+PROJ_LIST_PROGRESS,Прогресс: %d%%,Progress: %d%%
+UI_OPEN,Открыть,Open
+LOG_MAX_PROJECTS,⚠ Максимум активных проектов достигнут! (%d),⚠ Max active projects reached! (%d)
+LOG_PROJECT_ADDED,📋 Проект добавлен: %s (всего: %d),📋 Project added: %s (total: %d)
+LOG_PROJECT_FAILED,❌ ПРОЕКТ ПРОВАЛЕН (хард-дедлайн): %s,❌ PROJECT FAILED (hard deadline): %s
+LOG_PROJECT_FINISHED_LATE,⚠️ ПРОЕКТ ЗАВЕРШЁН С ПРОСРОЧКОЙ: %s | Штраф: -$%d | Выплата: $%d,⚠️ PROJECT FINISHED LATE: %s | Penalty: -$%d | Payout: $%d
+LOG_PROJECT_FINISHED_ON_TIME,🎉 ПРОЕКТ ЗАВЕРШЁН ВОВРЕМЯ: %s | Выплата: $%d,🎉 PROJECT FINISHED ON TIME: %s | Payout: $%d
+LOG_XP_GAIN,📈 %s получил %d XP за этап %s,📈 %s gained %d XP for stage %s
+PROJ_SEL_LIMIT_TITLE,⚠ Достигнут лимит активных проектов (%d из %d),⚠ Max active projects reached (%d out of %d)
+PROJ_SEL_LIMIT_HINT,Завершите текущие проекты или прокачайте навык PM для увеличения лимита.,Complete current projects or upgrade PM skills to increase the limit.
+PROJ_SEL_TIME_TITLE,🕐 Босс не хочет обсуждать проекты после %d:00,🕐 Boss doesn't want to discuss projects after %d:00
+PROJ_SEL_TIME_HINT,Приходите завтра утром.,Come back tomorrow morning.
+PROJ_SEL_WEEK_DONE,Все проекты на этой неделе выбраны!,All projects for this week have been selected!
+PROJ_SEL_WORK_LABEL,Работы:,Work:
+PROJ_SEL_BOSS_MEETING,⏱ Обсуждение с боссом: %d ч.,⏱ Boss meeting: %d h.
+PROJ_SEL_BUDGET_LABEL,Бюджет %s,Budget %s
+PROJ_SEL_BTN_LIMIT,Лимит,Limit
+PROJ_SEL_BTN_LATE,Поздно,Late
+PROJ_SEL_BTN_SELECT,Выбрать,Select
+PROJ_SEL_SOFT_DAYS,Софт: %d дн. (штраф -%d%%),Soft: %d d. (penalty -%d%%)
+PROJ_SEL_HARD_DAYS,Хард: %d дн. (провал = $0),Hard: %d d. (fail = $0)
+PROJECT_ASSIGN_WORKER_SHORT,Назначить,Assign
+STAGE_SHORT_BA,BA,BA
+STAGE_SHORT_DEV,DEV,DEV
+STAGE_SHORT_QA,QA,QA
+PROJ_WIN_MONTH_SHORT,Мес. %d,Mo. %d
+PROJ_WIN_DEADLINE_COMBINED,Софт: %s (%d дн. -%d%%) | Хард: %s (%d дн.),Soft: %s (%d d. -%d%%) | Hard: %s (%d d.)
+PROJ_WIN_BTN_START,Начать проект,Start Project
+LOG_PROJECT_STARTED,КНОПКА СТАРТ: Записано время старта проекта %s: %f,START BUTTON: Recorded start time for project %s: %f
+LOG_WARN_ALREADY_ASSIGNED,⚠️ Этот сотрудник уже назначен на этот этап!,⚠️ This employee is already assigned to this stage!
+LOG_EMP_ASSIGNED,✅ Назначен: %s на этап %s (всего: %d),✅ Assigned: %s to stage %s (total: %d)
+LOG_EMP_REMOVED,❌ Снят: %s с этапа %s (осталось: %d),❌ Removed: %s from stage %s (remaining: %d)
+ASSIGN_MENU_CURRENT,  [текущий],  [current]
+ASSIGN_MENU_NO_STAFF,⚠ Нет доступных сотрудников!,⚠ No employees available!
+LOG_WARN_ALREADY_AT_DESK,Этот сотрудник уже сидит за этим столом!,This employee is already at this desk!
+LOG_EMP_RELEASED,🔄 %s освобождён от текущего стола,🔄 %s released from current desk
+LOG_EMP_MOVED_DESK,🔄 %s снят со стола: %s,🔄 %s removed from desk: %s
+LOG_EMP_ORDER_DESK,✅ %s получил приказ идти к столу!,✅ %s ordered to move to desk!
+MENU_SUBTITLE,Симулятор офисного выживания,Office Survival Simulator
+MENU_CONTINUE,Продолжить,Continue
+MENU_NEW_GAME,Новая игра,New Game
+MENU_SETTINGS,Настройки,Settings
+MENU_QUIT,Выход,Quit
+MENU_LOADING,Загрузка...,Loading...
+MENU_LANGUAGE,Язык,Language
+MENU_MUSIC_VOLUME,Музыка,Music
+MENU_SFX_VOLUME,Эффекты,SFX
+MENU_BACK,Назад,Back
+PAUSE_TITLE,Пауза,Pause
+PAUSE_RESUME,Продолжить,Resume
+PAUSE_SAVE,Сохранить,Save Game
+PAUSE_SAVED,Сохранено!,Saved!
+PAUSE_MAIN_MENU,В главное меню,Main Menu
+TUTORIAL_TITLE,😤 Обучение,😤 Tutorial
+TUTORIAL_BOSS_SAYS,Босс говорит...,Boss says...
+TUTORIAL_BTN_NEXT,Далее →,Next →
+TUTORIAL_BTN_FINISH,За работу! 💼,Let's work! 💼
+TUTORIAL_TITLE,😤 Обучение,😤 Tutorial
+TUTORIAL_BOSS_SAYS,Босс говорит...,Boss says...
+TUTORIAL_BTN_NEXT,Далее →,Next →
+TUTORIAL_BTN_FINISH,За работу! 💼,Let's work! 💼
+TUTORIAL_STEP_1,"Значит так, новенький. У меня мало времени, так что слушай внимательно.\n\nПеремещаешься — WASD. Камера — колёсико мыши. Взаимодействие с объектами — клавиша E.\n\nЭто всё, что тебе нужно знать про кнопки. Дальше — голова.","Right then, newbie. I don't have much time, so listen carefully.\n\nMove — WASD. Camera — mouse wheel. Interact with objects — E key.\n\nThat's all you need to know about buttons. The rest is brains."
+TUTORIAL_STEP_2,"Тебя наняли проектным менеджером. Не спрашивай, чья это была идея.\n\nБерёшь проекты, укладываешься в сроки, следишь за сотрудниками и зарабатываешь деньги. Всё просто — на словах.\n\nЕсли баланс уйдёт в минус, а заказчики начнут жаловаться — виноват будешь ты. Не я.","You were hired as a project manager. Don't ask whose idea that was.\n\nTake projects, meet deadlines, manage employees, make money. Simple — in theory.\n\nIf the balance goes negative and clients start complaining — that's on you. Not me."
+TUTORIAL_STEP_3,"Я — босс. Кабинет справа по коридору.\n\nРаз в месяц приходишь ко мне — я даю задачи. Справишься — хорошо. Провалишь — я запомню.\n\nСейчас иди ко мне и возьми первое задание. Пока ты этого не сделаешь, проекты я тебе выдавать не буду.","I'm the boss. Office is to the right down the corridor.\n\nOnce a month you come to me — I give assignments. Succeed — good. Fail — I'll remember.\n\nGo to me now and pick up your first task. Until you do, I won't be giving you any projects."
+TUTORIAL_STEP_4,"По коридору дальше — отдел кадров. Там ты нанимаешь сотрудников.\n\nБез команды работать некому. Логично, правда?\n\nТолько помни: каждый нанятый — это зарплата каждый день. Так что не набирай всех подряд.","Further down the corridor is HR. That's where you hire employees.\n\nNo team — no one to work. Logical, right?\n\nJust remember: every hire means a daily salary. So don't just hire everyone you see."
+TUTORIAL_STEP_5,"Твоё рабочее место — чуть выше на экране. Подойди, нажми E.\n\nТам ты видишь все свои проекты, назначаешь исполнителей на этапы и запускаешь работу.\n\nБез нажатия «Начать проект» ничего не произойдёт. Люди не телепаты.","Your workstation is just above you on screen. Walk up, press E.\n\nThere you see all your projects, assign workers to stages, and start work.\n\nWithout pressing 'Start Project' nothing will happen. People aren't mind readers."
+TUTORIAL_STEP_6,"Сотрудников мало нанять — их нужно посадить за столы.\n\nПодходишь к столу, жмёшь E, выбираешь работника. Без рабочего места они будут бродить по офису как туристы.\n\nМне туристы в офисе не нужны.","Hiring employees isn't enough — you need to seat them at desks.\n\nWalk up to a desk, press E, choose a worker. Without a workspace they'll wander around the office like tourists.\n\nI don't need tourists in my office."
+TUTORIAL_STEP_7,"Всё. Больше разжёвывать не собираюсь — ты взрослый человек. Наверное.\n\nДедлайны тикают, заказчики ждут, деньги сами не появятся. Вперёд.\n\nНасчёт твоей зарплаты — не сейчас. Сначала докажи, что ты её заслуживаешь.","That's it. I'm not going to spoon-feed you anymore — you're an adult. Presumably.\n\nDeadlines are ticking, clients are waiting, money won't appear on its own. Get going.\n\nAs for your salary — not now. First prove you deserve one."
+TAB_ACTIVE_PROJECTS,Активные проекты,Active Projects
+TAB_COMPLETED_PROJECTS,Завершенные проекты,Completed Projects
+HR_ROLE_TIME_H_M,Время поиска: %s ч. %s мин. ,Search will take: %s h. %s min. 
+EVENT_SICK_TITLE,Болезнь сотрудника,Employee Illness
+EVENT_SICK_DESC,%s слёг с температурой и не может выйти на работу.,%s has fallen ill and cannot come to work.
+EVENT_SICK_CHOICE_CURE,Оплатить экспресс-лечение ($%d),Pay for express treatment ($%d)
+EVENT_SICK_CURE_DESC,Вернётся завтра.,Will return tomorrow.
+EVENT_SICK_CHOICE_LEAVE,Отправить на больничный,Send on sick leave
+EVENT_SICK_LEAVE_DESC,Вернётся через %d дн. Бесплатно. Зарплата сохраняется.,Will return in %d days. Free. Salary is preserved.
+EVENT_DAYOFF_TITLE,Просьба об отгуле,Request for Day Off
+EVENT_DAYOFF_DESC,"%s подходит к вам: ""У меня срочная ситуация дома, можно я уйду на сегодня?""","%s approaches you: ""I have an urgent situation at home, can I leave for today?"""
+EVENT_DAYOFF_CHOICE_ALLOW,Отпустить,Let them go
+EVENT_DAYOFF_ALLOW_DESC,Уйдёт до конца дня. Завтра вернётся с бонусом +10% к эффективности.,Will leave for the day. Tomorrow returns with +10% efficiency bonus.
+EVENT_DAYOFF_CHOICE_DENY,Отказать,Deny
+EVENT_DAYOFF_DENY_DESC,Останется работать с -20% эффективностью до конца дня.,Will stay working but with -20% efficiency until end of day.
+ROSTER_STATUS_SICK,🤒 Болеет (%d дн.),🤒 Sick (%d d.)
+ROSTER_STATUS_DAYOFF,🏠 В отгуле,🏠 Day off
+ROSTER_STATUS_BUFF,💚 Мотивирован,💚 Motivated
+ROSTER_STATUS_DEBUFF,😤 Раздражён,😤 Irritated
+EMP_ACTION_SICK_LEAVE,🤒 На больничном,🤒 Sick leave
+EMP_ACTION_DAY_OFF,🏠 В отгуле,🏠 Day off
+MOOD_ZONE_MISERABLE,Подавлен,Miserable
+MOOD_ZONE_SAD,Грустит,Sad
+MOOD_ZONE_NORMAL,Нормально,Normal
+MOOD_ZONE_GOOD,Хорошо,Good
+MOOD_ZONE_HAPPY,Счастлив,Happy
+ROSTER_MOOD,🎭 Настроение: %d (%s),🎭 Mood: %d (%s)
+ROSTER_EFF_BREAKDOWN_TITLE,⚙️ Из чего складывается:,⚙️ Efficiency breakdown:
+ROSTER_EFF_BREAKDOWN_MOOD,🎭 Настроение: %s (%d) → %s,🎭 Mood: %s (%d) → %s
+ROSTER_EFF_BREAKDOWN_ENERGY,⚡ Энергия: %d%% → %s,⚡ Energy: %d%% → %s
+ROSTER_EFF_BREAKDOWN_TRAITS,🧬 Трейты: %s,🧬 Traits: %s
+ROSTER_EFF_BREAKDOWN_MOTIVATION,🔥 Мотивация: %s,🔥 Motivation: %s
+ROSTER_EFF_BREAKDOWN_EVENTS,🎲 Ивенты: %s,🎲 Events: %s
+ROSTER_EFF_BREAKDOWN_TOTAL,📊 Итого: %s,📊 Total: %s
+MOOD_MOD_HAS_DESK,Есть рабочее задание,Has work assignment
+MOOD_MOD_NO_DESK,Нет рабочего задания,No work assignment
+ROSTER_MOOD_BREAKDOWN_TITLE,🎭 Из чего складывается настроение:,🎭 Mood breakdown:
+ROSTER_MOOD_BREAKDOWN_BASE,База: %d,Base: %d
+ROSTER_MOOD_BREAKDOWN_TARGET,🎯 Естественный уровень: %d,🎯 Natural target: %d
+ROSTER_MOOD_BREAKDOWN_CURRENT,📍 Текущее: %d,📍 Current mood: %d
+ROSTER_MOOD_BREAKDOWN_CURRENT,📍 Текущее: %d,📍 Current mood: %d
+ROSTER_MOOD_BREAKDOWN_PERMANENT,📌 Постоянные:,📌 Permanent:
+ROSTER_MOOD_BREAKDOWN_TEMPORARY,⏳ Временные:,⏳ Temporary:
+MOOD_MOD_COFFEE,Выпил кофе,Had coffee
+MOOD_MOD_TOILET,Сходил в туалет,Used toilet
+MOOD_MOD_STAGE_COMPLETE,Завершил этап,Completed stage
+MOOD_MOD_LEVEL_UP,Повышение уровня!,Level up!
+MOOD_MOD_PROJECT_SUCCESS,Проект успешен,Project succeeded
+MOOD_MOD_PROJECT_FAILED,Проект провален,Project failed
+MOOD_MOD_TRAIT_FAST_LEARNER,Трейт: Быстрый ум,Trait: Fast Learner
+MOOD_MOD_TRAIT_ENERGIZER,Трейт: Энерджайзер,Trait: Energizer
+MOOD_MOD_TRAIT_EARLY_BIRD,Трейт: Ранняя пташка,Trait: Early Bird
+MOOD_MOD_TRAIT_CHEAP_HIRE,Трейт: Скромный,Trait: Modest
+MOOD_MOD_TRAIT_COFFEE_LOVER,Трейт: Кофеман,Trait: Coffee Addict
+MOOD_MOD_TRAIT_TOILET_LOVER,Трейт: Любит покакать,Trait: Toilet Lover
+MOOD_MOD_TRAIT_SLOWPOKE,Трейт: Тормоз,Trait: Slowpoke
+MOOD_MOD_TRAIT_EXPENSIVE,Трейт: Зазнайка,Trait: Pricey
+TRAIT_OPTIMIST,😊 Оптимист,😊 Optimist
+TRAIT_PESSIMIST,😞 Пессимист,😞 Pessimist
+TRAIT_ATHLETIC,🏃 Спортсмен,🏃 Athletic
+TRAIT_SLEEPYHEAD,😴 Соня,😴 Sleepyhead
+TRAIT_DESC_OPTIMIST,Позитивный взгляд на жизнь. +8 к настроению.,Positive outlook on life. +8 to mood.
+TRAIT_DESC_PESSIMIST,Всегда ожидает худшего. -8 к настроению.,Always expects the worst. -8 to mood.
+TRAIT_DESC_ATHLETIC,Бодрый по утрам. До 13:00: +3 настроение и +5% эффективность.,Energetic in the mornings. Before 13:00: +3 mood and +5% efficiency.
+TRAIT_DESC_SLEEPYHEAD,Клюёт носом после обеда. После 14:00: -3 настроение и -5% эффективность.,Drowsy after lunch. After 14:00: -3 mood and -5% efficiency.
+MOOD_MOD_ATHLETIC_ACTIVE,🏃 Спортсмен (до 13:00),🏃 Athletic (before 13:00)
+MOOD_MOD_ATHLETIC_INACTIVE,🏃 Спортсмен (неактивен),🏃 Athletic (inactive)
+MOOD_MOD_SLEEPYHEAD_ACTIVE,😴 Соня (после 14:00),😴 Sleepyhead (after 14:00)
+MOOD_MOD_SLEEPYHEAD_INACTIVE,😴 Соня (неактивен),😴 Sleepyhead (inactive)
+MOOD_MOD_DAYOFF_ALLOW,Благодарен за отгул,Grateful for day off
+MOOD_MOD_DAYOFF_DENY,Обижен за отказ в отгуле,Upset about denied day off
+EVENT_SCOPE_TITLE,Расширение скоупа,Scope Expansion
+EVENT_SCOPE_DESC,Клиент %s просит добавить функционал в проект «%s».,"Client %s asks to add features to project ""%s""."
+EVENT_SCOPE_CHOICE_ACCEPT,Согласиться,Accept
+EVENT_SCOPE_ACCEPT_DESC,"+%d%% работы на текущем этапе, +%d%% бюджета. Дедлайн без изменений.","+%d%% work on current stage, +%d%% budget. Deadline unchanged."
+EVENT_SCOPE_CHOICE_DECLINE,Отказать,Decline
+EVENT_SCOPE_DECLINE_DESC,Лояльность клиента снизится на 1.,Client loyalty will decrease by 1.
+EVENT_REVIEW_TITLE,Отзыв клиента,Client Review
+EVENT_REVIEW_DESC,Клиент %s доволен работой над «%s» и готов оставить отзыв.,"Client %s is satisfied with ""%s"" and is ready to leave a review."
+EVENT_REVIEW_CHOICE_REVIEW,Попросить отзыв,Ask for Review
+EVENT_REVIEW_REVIEW_DESC,+2 лояльности клиента.,+2 client loyalty.
+EVENT_REVIEW_CHOICE_BONUS,Попросить бонус,Ask for Bonus
+EVENT_REVIEW_BONUS_DESC,Получить +$%d (10%% бюджета проекта).,Receive +$%d (10%% of project budget).
+EVENT_CANCEL_TITLE,Разрыв контракта,Contract Cancelled
+EVENT_CANCEL_DESC,"Клиент %s сообщил, что больше не нуждается в проект�� «%s». Контракт расторгнут.","Client %s has informed that project ""%s"" is no longer needed. Contract terminated."
+EVENT_CANCEL_CHOICE_OK,Понятно,Understood
+EVENT_CANCEL_OK_DESC,Получить $%d неустойку (30%% бюджета).,Receive $%d penalty fee (30%% of budget).
+EVENT_JUNIOR_TITLE,Ошибка джуниора,Junior's Mistake
+EVENT_JUNIOR_DESC,%s допустил ошибку на этапе «%s» проекта «%s». Нужно переделывать часть работы.,"%s made a mistake on stage ""%s"" of project ""%s"". Part of the work needs to be redone."
+EVENT_JUNIOR_CHOICE_SCOLD,Отчитать при всех,Scold publicly
+EVENT_JUNIOR_SCOLD_DESC,"+%d%% доп. работы (вдвое меньше), но -10 настроения на 2 суток.","+%d%% extra work (halved), but -10 mood for 2 days."
+EVENT_JUNIOR_CHOICE_HELP,Помочь разобраться,Help out
+EVENT_JUNIOR_HELP_DESC,"+%d%% доп. работы, +5 настроения, ×1.5 XP за этап.","+%d%% extra work, +5 mood, ×1.5 XP for this stage."
+EVENT_UNKNOWN_CLIENT,Неизвестный клиент,Unknown client
+MOOD_MOD_SCOLDED,Отчитан при всех,Scolded publicly
+MOOD_MOD_HELPED,Помощь от PM,Help from PM
+EMP_ACTION_GOING_LUNCH,Идёт на обед,Going to lunch
+EMP_ACTION_LUNCH_FRIDGE,Берёт еду,Getting food
+EMP_ACTION_LUNCH_KITCHEN,Готовит,Cooking
+EMP_ACTION_LUNCH_EATING,Обедает,Having lunch
+MOOD_MOD_LUNCH,Пообедал,Had lunch
+ROSTER_STATUS_GOING_LUNCH,🍽️ Идёт на обед,🍽️ Going to lunch
+ROSTER_STATUS_LUNCH_FRIDGE,🍽️ Берёт еду,🍽️ Getting food
+ROSTER_STATUS_LUNCH_KITCHEN,🍽️ Готовит,🍽️ Cooking
+ROSTER_STATUS_LUNCH_EATING,🍽️ Обедает,🍽️ Having lunch
+TITLE_MY_PROJECTS,Мои проекты ,My Projects 
+TITLE_HIRING_MENU,Найм сотрудников ,Hiring 
+PROJ_FIX_BUG,Исправление бага,Fix Bug
+PROJ_TEST_FORM,Тестирование формы,Test Form
+PROJ_WRITE_TZ,Написание ТЗ,Write Spec
+PROJ_FIX_LAYOUT,Правка верстки,Fix Layout
+PROJ_TEST_AUTH,Тест авторизации,Test Auth
+PROJ_COMPETITOR_ANALYSIS,Анализ конкурентов,Competitor Analysis
+PROJ_UPDATE_PLUGINS,Обновление плагинов,Update Plugins
+PROJ_SMOKE_TEST,Смок-тестирование,Smoke Testing
+PROJ_USER_STORY,Написание User Story,Write User Story
+PROJ_OPTIMIZE_DB,Оптимизация БД,Optimize DB
+PROJ_TEST_API_ENDPOINT,Тестирование API,Test API Endpoint
+PROJ_GATHER_REQ,Сбор требований,Gather Requirements
+PROJ_REFACTOR_CODE,Рефакторинг кода,Refactor Code
+PROJ_REGRESSION_TEST,Регрессионный тест,Regression Test
+PROJ_CUSTDEV,Проведение CustDev,CustDev
+PROJ_FAQ,Страница FAQ,FAQ Page
+PROJ_API,Разработка REST API,REST API
+PROJ_FORM_DESC,Проектирование формы,Form Design
+PROJ_FILTERS,Фильтры поиска,Search Filters
+PROJ_MODULE_TEST,Тест требований модуля,Test Module Reqs
+PROJ_REPORT,Система отчетов,Report System
+PROJ_PAYMENT_GATEWAY,Платежный шлюз,Payment Gateway
+PROJ_USER_ROLES,Ролевая модель,User Roles
+PROJ_EMAIL_NOTIF,Email-уведомления,Email Notifications
+PROJ_DATA_EXPORT,Экспорт данных,Data Export
+PROJ_LOAD_TEST_PLAN,План нагрузочного теста,Load Test Plan
+PROJ_PUSH_NOTIF,Push-уведомления,Push Notifications
+PROJ_ONBOARDING,Онбординг пользователей,User Onboarding
+PROJ_SECURITY_AUDIT,Аудит безопасности,Security Audit
+PROJ_ANALYTICS_SETUP,Настройка аналитики,Analytics Setup
+PROJ_LANDING,Landing Page,Landing Page
+PROJ_SITE_CARD,Сайт-визитка,Business Card Site
+PROJ_CRM_TAXI,CRM для такси,Taxi CRM
+PROJ_AUTH_MODULE,Модуль авторизации,Auth Module
+PROJ_SHOP,Интернет-магазин,Online Store
+PROJ_ORDERS,Система заказов,Order System
+PROJ_CHAT,Онлайн-чат,Live Chat
+PROJ_DASHBOARD,Админ-панель,Admin Dashboard
+PROJ_FORUM,Форум пользователей,User Forum
+PROJ_BLOG,Корпоративный блог,Corporate Blog
+PROJ_PORTFOLIO,Платформа портфолио,Portfolio Platform
+PROJ_SUPPORT_TICKETS,Система тикетов,Support Ticketing
+PROJ_INVENTORY,Система склада,Inventory System
+PROJ_BOOKING,Система бронирования,Booking System
+PROJ_MOBILE_APP,MVP моб. приложения,Mobile App MVP
+DAY_SUMMARY_PROJ_COST_INFO, · Затраты: $%d / Прибыль: $%d, · Cost: $%d / Profit: $%d
+DAY_SUMMARY_PROJ_COST_LOST, · Потеряно на ЗП: $%d, · Salary lost: $%d
+INCOME_PROJECT,Проект: %s,Project: %s
+INCOME_CLIENT_BONUS,Бонус от %s,Bonus from %s
+INCOME_CONTRACT_CANCEL,Неустойка: %s,Penalty: %s
+EXPENSE_CURE,Лечение: %s,Treatment: %s
+DAY_SUMMARY_INCOME_DETAILS,Детализация доходов:,Income details:
+DAY_SUMMARY_EVENT_EXPENSES,Прочие расходы:,Other expenses:
+DAY_SUMMARY_EMP_STATS_FULL,Всего: %d · Работали: %d · Простой: %d · Отсутствуют: %d,Total: %d · Worked: %d · Idle: %d · Absent: %d
+DAY_SUMMARY_EMP_SICK,На больничном,On sick leave
+DAY_SUMMARY_EMP_DAYOFF,В отгуле,On day off
+DAY_SUMMARY_EMP_ON_SICK,больничный,sick leave
+DAY_SUMMARY_EMP_ON_DAYOFF,отгул,day off
+MOOD_MOD_MOTIVATED,🔥 Замотивирован,🔥 Motivated
+MOOD_MOD_LOW_ENERGY,⚡ Мало энергии,⚡ Low energy
+MOOD_MOD_VERY_LOW_ENERGY,⚡ Критически мало энергии,⚡ Very low energy
+LOG_NEW_DAY,Начало нового рабочего дня.,Start of a new working day.
+LOG_SICK_EXPRESS_CURE,🏥 %s: экспресс-лечение за $%d,🏥 %s: express treatment for $%d
+LOG_SICK_LEAVE,🤒 %s: больничный на %d дн.,🤒 %s: sick leave for %d days
+LOG_DAYOFF_ALLOWED,🏠 %s отпущен домой,🏠 %s was allowed to leave
+LOG_DAYOFF_DENIED,😤 %s: отгул отклонён,😤 %s: day off denied
+LOG_SCOPE_EXPANDED,📦 Скоуп +%d%% для «%s»,"📦 Scope +%d%% for ""%s"""
+LOG_CONTRACT_CANCELLED,💔 Контракт расторгнут: «%s»,"💔 Contract cancelled: ""%s"""
+LOG_DISCUSSION_STARTED,🤝 Обсуждение начато: %s,🤝 Discussion started: %s
+LOG_DISCUSSION_FINISHED,✅ Проект взят: %s,✅ Project taken: %s
+LOG_HR_SEARCH_DONE,✅ Поиск завершён: %s,✅ Search complete: %s
+LOG_PROJECT_FINISHED,🎉 Проект завершён: «%s»,"🎉 Project finished: ""%s"""
+LOG_STAGE_COMPLETED,✅ Этап %s завершён: «%s»,"✅ Stage %s completed: ""%s"""
+LOG_PANEL_TITLE,📋 Журнал,📋 Journal
+EMPLOYMENT_TYPE_FREELANCER,Фрилансер,Freelancer
+EMPLOYMENT_TYPE_CONTRACTOR,Контрактник,Contractor
+ROSTER_FIRE_SEVERANCE,💰 Компенсация при увольнении: $%d,💰 Severance pay: $%d
+ROSTER_FIRE_SEVERANCE_WARNING,⚠️ Внимание! Баланс станет: $%d,⚠️ Warning! Balance will be: $%d
+MOOD_MOD_COLLEAGUE_FIRED,Уволили коллегу,Colleague was fired
+LOG_HIRE_EMPLOYEE,📋 Нанят %s: %s (%s $%d/мес),📋 Hired %s: %s (%s $%d/mo)
+LOG_FIRE_CONTRACTOR,🔥 Уволен контрактник %s. Компенсация: $%d,🔥 Contractor %s fired. Severance: $%d
+LOG_FIRE_FREELANCER,🔥 Уволен фрилансер %s (без компенсации),🔥 Freelancer %s fired (no severance)
+LOG_SEVERANCE_PAID,💰 Выплачена компенсация %s: $%d,💰 Severance paid for %s: $%d
+EVENT_FREELANCER_LEAVE_TITLE,Фрилансер уходит,Freelancer Leaving
+EVENT_FREELANCER_SOFT_DESC,"%s (%s) подходит к вам:
+
+«%s»
+
+Планирует уйти через %d дн.","%s (%s) approaches you:
+
+""%s""
+
+Planning to leave in %d day(s)."
+EVENT_FREELANCER_HARD_DESC,"%s (%s) подходит к вам:
+
+«%s»
+
+Уходит прямо сейчас!","%s (%s) approaches you:
+
+""%s""
+
+Leaving right now!"
+EVENT_FREELANCER_LEAVE_OK,Понятно,Got it
+EVENT_FREELANCER_LEAVE_OK_DESC,Принять к сведению. ,Duly noted. 
+FREELANCER_REASON_1,Нашёл более интересный проект на стороне.,Found a more interesting project elsewhere.
+FREELANCER_REASON_2,Устал от рутины — хочу попробовать что-то новое.,Tired of routine — want to try something new.
+FREELANCER_REASON_3,Получил предложение с лучшими условиями.,Got an offer with better terms.
+FREELANCER_REASON_4,Мне нужен перерыв — выгорание подкралось незаметно.,I need a break — burnout crept up on me.
+FREELANCER_REASON_5,Решил сменить направление в карьере.,Decided to change my career direction.
+LOG_FREELANCER_SUDDEN_LEAVE,🚪 Фрилансер %s внезапно покинул компанию!,🚪 Freelancer %s suddenly left the company!
+LOG_FREELANCER_WARN_LEAVE,⚠️ Фрилансер %s собирается уйти через %d дн.,⚠️ Freelancer %s is leaving in %d day(s).
+LOG_FREELANCER_DEPARTED,🚪 Фрилансер %s покинул компанию (отработал %d дн.),🚪 Freelancer %s left the company (worked %d day(s))
+EXPENSE_SEVERANCE,💰 Компенсация: %s,💰 Severance: %s
+TOOLTIP_FREELANCER,"Фрилансер: чуть дороже контрактника, но может уйти в любой момент. Не растёт по опыту (не получает XP). При увольнении не требует компенсации.","Freelancer: slightly more expensive, but may leave at any time. Does not gain experience (no XP). No severance pay when fired."
+TOOLTIP_CONTRACTOR,"Контрактник: стабильный сотрудник, растёт по опыту (получает XP). При увольнении требуется компенсация: $%d–$%d.","Contractor: stable employee, gains experience (earns XP). Cannot leave on their own. Severance pay when fired: $%d–$%d."
+FREE_CAMERA_HINT,Свободная камера — WASD для обзора,Free camera — WASD to look around
+ROSTER_EFF_BREAKDOWN_AURA,👁️ Аура PM: %s,👁️ PM Aura: %s
+MOOD_MOD_MICROMANAGEMENT,😠 Микроменеджмент,😠 Micromanagement
+LOG_RAISE_REQUEST,💰 %s просит повышение ЗП (грейд: %s),💰 %s is requesting a raise (grade: %s)
+LOG_RAISE_ACCEPTED,💰 %s: ЗП повышена $%d → $%d,💰 %s: salary raised $%d → $%d
+LOG_RAISE_DENIED,💰 %s: запрос на повышение ЗП отклонён,💰 %s: raise request denied
+LOG_RAISE_IGNORED_1,⚠️ %s всё ещё ждёт ответа на запрос повышения ЗП,⚠️ %s is still waiting for a raise response
+LOG_RAISE_IGNORED_3,😠 %s крайне недоволен тем что его запрос на повышение игнорируется,😠 %s is very unhappy that their raise request is being ignored
+LOG_RAISE_QUIT,🚪 %s уволился из-за игнорирования запроса на повышение ЗП,🚪 %s quit because their raise request was ignored
+EVENT_RAISE_TITLE,Запрос повышения ЗП,Raise Request
+EVENT_RAISE_DESC,"%s достиг грейда %s и просит повышение зарплаты.
+Текущая ЗП: $%d
+Желаемая ЗП: $%d","%s has reached grade %s and is requesting a raise.
+Current salary: $%d
+Requested salary: $%d"
+EVENT_RAISE_CHOICE_ACCEPT,Принять,Accept
+EVENT_RAISE_ACCEPT_DESC,Повысить ЗП до $%d,Raise salary to $%d
+EVENT_RAISE_CHOICE_DENY,Отказать,Deny
+EVENT_RAISE_DENY_DESC,Отклонить запрос на повышение,Decline the raise request
+EVENT_HUNTING_TITLE,Предложение от конкурента,Offer from a competitor
+EVENT_HUNTING_DESC,"%s получил предложение от конкурента.
+Текущая ЗП: $%d
+Предложенная ЗП: $%d","%s has received an offer from a competitor.
+Current salary: $%d
+Offered salary: $%d"
+EVENT_HUNTING_QUIT_TITLE,Сотрудник уходит к конкуренту,Employee leaving for competitor
+EVENT_HUNTING_QUIT_DESC,%s принял предложение конкурента и уходит через %d дн.,%s has accepted a competitor's offer and is leaving in %d day(s).
+MOOD_MOD_RAISE_ACCEPTED,💰 Повышение ЗП,💰 Got a raise
+MOOD_MOD_RAISE_DENIED,😞 Отказ в повышении ЗП,😞 Raise denied
+MOOD_MOD_RAISE_IGNORED,😤 Запрос на повышение ЗП игнорируется,😤 Raise request being ignored
+MOOD_MOD_RAISE_IGNORED_HARD,😠 Запрос на повышение ЗП долго игнорируется,😠 Raise request long ignored
+MOOD_MOD_COLLEAGUE_QUIT_IGNORED,😔 Коллега ушёл из-за плохого управления,😔 Colleague left due to poor management
+EVENT_HUNTING_CHOICE_RETAIN,Мы ценим тебя — согласовано,We value you — approved
+EVENT_HUNTING_RETAIN_DESC,Зарплата повысится до $%d. Сотрудник останется.,Salary will increase to $%d. Employee stays.
+EVENT_HUNTING_CHOICE_REFUSE,Бюджет не резиновый — решай сам,Budget isn't infinite — your call
+EVENT_HUNTING_REFUSE_DESC,Зарплата не изменится. Есть шанс 30%% что сотрудник уйдёт.,Salary stays the same. 30%% chance employee leaves.
+EVENT_HUNTING_QUIT_CHOICE_OK,Принять к сведению,Acknowledge
+EVENT_HUNTING_QUIT_OK_DESC,У вас %d дней чтобы найти замену.,You have %d days to find a replacement.
+MOOD_MOD_HUNTING_RETAINED,🤝 Компания ценит меня,🤝 Company values me
+MOOD_MOD_HUNTING_REFUSED,😤 Отказали в удержании,😤 Retention denied
+LOG_HUNTING_RETAINED,🏹 %s удержан от конкурентов: $%d → $%d,🏹 %s retained from competitors: $%d → $%d
+LOG_HUNTING_REFUSED,🏹 %s: отказано в контр-оффере,🏹 %s: counter-offer denied
+LOG_HUNTING_QUIT_STARTED,🚪 %s уходит к конкурентам через %d дн.,🚪 %s is leaving for a competitor in %d days.
+LOG_HUNTING_QUIT_FINAL,🚪 %s ушёл к конкурентам,🚪 %s left for a competitor
+ROSTER_STATUS_QUITTING,🚪 Увольняется через %d дн.,🚪 Leaving in %d days
+ROSTER_STATUS_RAISE_REQUEST,💰 Ждёт обсуждения ЗП,💰 Waiting to discuss salary
+EMP_ACTION_ON_VACATION,✈️ В отпуске,✈️ On vacation
+EVENT_VACATION_TITLE,✈️ Запрос на отпуск,✈️ Vacation Request
+EVENT_VACATION_DESC,%s чувствует выгорание и просит 3 дня отпуска.\n\nПланирует уйти %s.\n\nЗарплата продолжит начисляться.,%s is feeling burned out and requests 3 days off.\n\nPlanning to leave %s.\n\nSalary will continue to accrue.
+EVENT_VACATION_CHOICE_APPROVE,Конечно хорошего отдыха!,Sure enjoy your rest!
+EVENT_VACATION_APPROVE_DESC,Сотрудник уйдёт в отпуск %s. Зарплата сохраняется.,Employee will go on vacation %s. Salary continues.
+EVENT_VACATION_CHOICE_DENY,Сейчас не время для отдыха,Now is not the time to rest
+EVENT_VACATION_DENY_DESC,Отпуск отменён. -15 к настроению на 72 часа.,Vacation cancelled. -15 mood for 72 hours.
+VACATION_DELAY_TOMORROW,завтра,tomorrow
+VACATION_DELAY_2DAYS,через 2 дня,in 2 days
+VACATION_DELAY_3DAYS,через 3 дня,in 3 days
+MOOD_MOD_VACATION_DENIED,❌ Не пустили в отпуск,❌ Vacation denied
+MOOD_MOD_VACATION_REST,✈️ Отлично отдохнул!,✈️ Great rest!
+LOG_VACATION_APPROVED,✈️ %s: отпуск одобрен (через %d дн.),✈️ %s: vacation approved (in %d days)
+LOG_VACATION_DENIED,✈️ %s: отпуск отклонён,✈️ %s: vacation denied
+LOG_VACATION_STARTED,✈️ %s ушёл в отпуск,✈️ %s went on vacation
+LOG_VACATION_ENDED,✈️ %s вернулся из отпуска,✈️ %s returned from vacation
+ROSTER_STATUS_ON_VACATION,✈️ В отпуске (ещё %d дн.),✈️ On vacation (%d days left)
+ROSTER_STATUS_VACATION_PENDING,✈️ Отпуск через %d дн.,✈️ Vacation in %d days
+EMP_SELECT_ON_VACATION,В отпуске,On vacation
+DAY_SUMMARY_EMP_VACATION,В отпуске,On vacation
+DAY_SUMMARY_EMP_ON_VACATION,в отпуске,on vacation
+PERSONALITY_EXTROVERT,🗣 Экстраверт,🗣 Extrovert
+PERSONALITY_INTROVERT,🤫 Интроверт,🤫 Introvert
+PERSONALITY_TOXIC,☠ Токсик,☠ Toxic
+PERSONALITY_GEEK,🎮 Гик,🎮 Geek
+PERSONALITY_JOCK,💪 Спортсмен,💪 Jock
+PERSONALITY_FINANCE_BRO,📈 Финанс-бро,📈 Finance Bro
+PERSONALITY_PARENT,👶 Родитель,👶 Parent
+PERSONALITY_INFORMAL,🤘 Неформал,🤘 Informal
+PERSONALITY_FURRY,🐾 Фурри,🐾 Furry
+PERSONALITY_SMELLY,🦨 Неопрятный,🦨 Smelly
+PERSONALITY_SEXIST,🚫 Сексист,🚫 Sexist
+PERSONALITY_MAN_HATER,🚫 Мужененавистница,🚫 Man Hater
+PERSONALITY_FLIRT,😏 Бабник,😏 Flirt
+PERSONALITY_DESC_EXTROVERT,Инициирует разговоры. Восстанавливает настроение от общения.,Initiates conversations. Recovers mood from socializing.
+PERSONALITY_DESC_INTROVERT,Теряет энергию при долгих беседах. Работает лучше в тишине.,Loses energy during long conversations. Works better in quiet.
+PERSONALITY_DESC_TOXIC,Любой разговор с ним имеет высокий шанс закончиться плохо для собеседника.,Any conversation with them has a high chance of ending badly for the other person.
+PERSONALITY_DESC_GEEK,"Любит видеоигры, аниме и технологии. Легко находит общий язык с другими гиками.","Loves video games, anime and tech. Gets along easily with other geeks."
+PERSONALITY_DESC_JOCK,Любит спорт и здоровый образ жизни. Дружит со спортсменами и финансистами.,Loves sports and healthy lifestyle. Gets along with jocks and finance bros.
+PERSONALITY_DESC_FINANCE_BRO,"Говорит о крипте, инвестициях и бизнесе. Дружит с финансистами и спортсменами.","Talks about crypto, investments and business. Gets along with finance bros and jocks."
+PERSONALITY_DESC_PARENT,Обсуждает детей и семейные темы. Не понимает неформалов.,Discusses kids and family topics. Doesn't understand informals.
+PERSONALITY_DESC_INFORMAL,"Фанат панка, альтернативной культуры. Конфликтует с родителями.","Fan of punk, alternative culture. Conflicts with parents."
+PERSONALITY_DESC_FURRY,"Увлекается фурри-культурой. Дружит с гиками, но раздражает спортсменов и финансистов.","Into furry culture. Gets along with geeks, but annoys jocks and finance bros."
+PERSONALITY_DESC_SMELLY,Не следит за гигиеной. Раздражает всех соседей по столам.,Poor hygiene. Annoys all nearby desk neighbors.
+PERSONALITY_DESC_SEXIST,Негативно относится к женщинам-коллегам. Штраф к общению и работе рядом с ними.,Negative attitude towards female colleagues. Penalty to interactions and working near them.
+PERSONALITY_DESC_MAN_HATER,Негативно относится к мужчинам-коллегам. Штраф к общению и работе рядом с ними.,Negative attitude towards male colleagues. Penalty to interactions and working near them.
+PERSONALITY_DESC_FLIRT,"Постоянно флиртует с коллегами противоположного пола. Повышает им настроение, но отвлекает.",Constantly flirts with opposite gender colleagues. Boosts their mood but distracts them.
+LOG_CHAT_POSITIVE,"%s и %s хорошо поболтали [%d, %s]","%s and %s had a nice chat [%d, %s]"
+LOG_CHAT_NEGATIVE,"%s и %s поругались [%d, %s]","%s and %s had a bad chat [%d, %s]"
+EMP_ACTION_GOING_CHAT,Идёт общаться,Going to chat
+EMP_ACTION_CHATTING,Болтает,Chatting
+MOOD_MOD_GOOD_CHAT,Хороший разговор,Nice chat
+MOOD_MOD_BAD_CHAT,Плохой разговор,Bad chat
+REL_LEVEL_NEMESIS,Враги,Nemesis
+REL_LEVEL_DISLIKE,Неприязнь,Dislike
+REL_LEVEL_NEUTRAL,Нейтральные,Neutral
+REL_LEVEL_FRIENDLY,Приятели,Friendly
+REL_LEVEL_BESTIES,Лучшие друзья,Besties
+ROSTER_STATUS_GOING_CHAT,Идёт общаться,Going to chat
+ROSTER_STATUS_CHATTING,Болтает,Chatting
+ROSTER_STATUS_ON_VACATION_STATE,В отпуске,On vacation
+ROSTER_EFF_BREAKDOWN_NEIGHBORS,�� Соседи: %s,🤝 Neighbors: %s
+MOOD_MOD_NEIGHBOR_GOOD,Хороший сосед,Good neighbor
+MOOD_MOD_NEIGHBOR_BAD,Плохой сосед,Bad neighbor
+ROSTER_RELATIONSHIPS,👥 Отношения,👥 Relationships
+ROSTER_NO_COLLEAGUES,Нет коллег,No colleagues
+EFF_MOD_ONBOARDING,🏢 Адаптация в компании ,🏢 Company onboarding 
+EFF_MOD_PROJECT_ADAPT,📚 Погружение в проект ,📚 Project adaptation 
+LOG_PROJECT_ADAPTATION,📚 %s вникает в новый проект (-20%% эффективности) ,📚 %s is learning the new project (-20%% efficiency) 
+BOSS_EVENT_DAILY_REPORTS_TITLE,Ежедневные отчёты,Daily Reports
+BOSS_EVENT_DAILY_REPORTS_DESC,"Босс хочет, чтобы каждый сотрудник тратил время на написание дневных отчётов. Скорость работы снизится.",The boss wants every employee to spend time writing daily reports. Work speed will decrease.
+BOSS_EVENT_NO_LUNCH_TITLE,Отмена обедов,No Lunch Break
+BOSS_EVENT_NO_LUNCH_DESC,"Босс считает, что обеды — пустая трата времени. Сотрудники не смогут ходить на обед, но будут недовольны.","The boss thinks lunch breaks are a waste of time. Employees won't be able to have lunch, but they'll be unhappy."
+BOSS_EVENT_TOTAL_COMM_TITLE,🗣️ Тотальная коммуникация,🗣️ Total Communication
+BOSS_EVENT_TOTAL_COMM_DESC,"Босс прочитал статью на Thebestboss.com о том, что общение — ключ к эффективной команде.\n\nТеперь он хочет чтобы все сотрудники общались как можно чаще.\n\n📊 Эффекты:\n• Шанс разговоров между сотрудниками увеличен ×3\n• Экстраверты: +10 к настроению\n• Интроверты: −15 к настроению",The boss read an article on Thebestboss.com that communication is the key to an effective team.\n\nNow he wants all employees to communicate as much as possible.\n\n📊 Effects:\n• Chat chance between employees increased ×3\n• Extroverts: +10 mood\n• Introverts: −15 mood
+BOSS_EVENT_OVERTIME_TITLE,Сверхурочные,Overtime
+BOSS_EVENT_OVERTIME_DESC,"Босс решил, что рабочий день теперь длится до 21:00. Сотрудники работают дольше, но их настроение падает.","The boss decided the work day now extends to 21:00. Employees work longer, but their mood drops."
+BOSS_EVENT_RESHUFFLE_TITLE,Пересадка,Office Reshuffle
+BOSS_EVENT_RESHUFFLE_DESC,Босс решил пересадить всех сотрудников на случайные места. Все привязки к столам будут сброшены.,The boss decided to reshuffle all employees to random desks. All desk assignments will be reset.
+BOSS_EVENT_LOG_GENERATED,🏢 У босса новая идея: %s,🏢 Boss has a new idea: %s
+BOSS_EVENT_LOG_ACCEPTED,✅ Ивент босса принят: %s,✅ Boss event accepted: %s
+BOSS_EVENT_LOG_REJECTED,❌ Ивент босса отклонён: %s,❌ Boss event rejected: %s
+BOSS_EVENT_LOG_IGNORED,⚠️ Ивент босса проигнорирован! Доверие снижено.,⚠️ Boss event ignored! Trust decreased.
+BOSS_EVENT_LOG_ENDED,📋 Ивент босса завершён: %s,📋 Boss event ended: %s
+BOSS_EVENT_POPUP_TITLE,🏢 Идея босса,🏢 Boss's Idea
+BOSS_EVENT_POPUP_ACCEPT,✅ Принять,✅ Accept
+BOSS_EVENT_POPUP_REJECT,❌ Отклонить,❌ Reject
+BOSS_EVENT_POPUP_OK,Понятно,Got it
+BOSS_EVENT_POPUP_DURATION,Длительность: %d-%d дн.,Duration: %d-%d days
+BOSS_EVENT_POPUP_DURATION_INSTANT,Мгновенный эффект,Instant effect
+BOSS_EVENT_POPUP_TRUST_ACCEPT,Доверие за принятие: +%d 🤝,Trust for accepting: +%d 🤝
+BOSS_EVENT_POPUP_TRUST_REJECT,Доверие за отказ: %d 🤝,Trust for rejecting: %d 🤝
+BOSS_EVENT_POPUP_ACTIVE_TITLE,🏢 Активный ивент босса,🏢 Active Boss Event
+BOSS_EVENT_POPUP_DAYS_LEFT,Осталось: %d дн.,Remaining: %d days
+BOSS_EVENT_TRACKER_PENDING,У босса идея!,Boss has an idea!
+BOSS_EVENT_TRACKER_DAYS_LEFT,Ост.: %d дн.,Left: %d d.
+MOOD_MOD_EVENT_COMM_EXTROVERT,🗣️ Тотальная коммуникация (экстраверт),🗣️ Total Communication (extrovert)
+MOOD_MOD_EVENT_COMM_INTROVERT,🗣️ Тотальная коммуникация (интроверт),🗣️ Total Communication (introvert)
+BOSS_EVENT_TOTAL_COMM_LOG_START,🗣️ Режим тотальной коммуникации активирован! Все общаются втрое чаще.,🗣️ Total Communication mode activated! Everyone chats 3x more often.
+BOSS_EVENT_TOTAL_COMM_LOG_END,🗣️ Босс устал от постоянного гула в опенспейсе и сам надел наушники с шумоподавлением. Режим тотальной коммуникации отменён.,🗣️ The boss got tired of the constant buzz in the open space and put on noise-cancelling headphones. Total Communication mode cancelled.
+BOSS_EVENT_TOTAL_COMM_LOG_REJECT,🗣️ Вы отстояли право команды работать в тишине. Интроверты мысленно говорят вам спасибо. Лояльность босса: -10.,🗣️ You defended the team's right to work in silence. Introverts mentally thank you. Boss trust: -10.
+BOSS_EVENT_FAMILY_TITLE,👨‍👩‍👧‍👦 Мы — одна семья!,👨‍👩‍👧‍👦 We Are Family!
+BOSS_EVENT_FAMILY_DESC,"Босс начитался статей про бирюзовые организации на Thebestboss.com.\n\n«Мы не просто коллеги, мы — семья! В семьях никого не бросают!»\n\nНазначает месяц сплочения: никто не увольняется, все дружат и поддерживают друг друга!\n\n📊 Эффекты:\n• Увольнение сотрудника приведёт к ярости босса (-20 лояльности) и отмене ивента\n• Сотрудники с чертой «Родитель» получают +10 к настроению","The boss has been reading about teal organizations on Thebestboss.com.\n\n""We're not just colleagues, we're family! Families don't abandon anyone!""\n\nHe declares a month of team bonding: no one gets fired, everyone is friends!\n\n📊 Effects:\n• Firing an employee will enrage the boss (-20 trust) and cancel the event\n• Employees with ""Parent"" trait get +10 mood"
+MOOD_MOD_EVENT_FAMILY_PARENT,👨‍👩‍👧‍👦 Мы — одна семья,👨‍👩‍👧‍👦 We Are Family
+WARNING_FIRE_DURING_FAMILY,⚠️ ВНИМАНИЕ: Босс объявил нас семьей!\nУвольнение приведет его в ярость (-20 лояльности)!,⚠️ WARNING: The boss declared us a family!\nFiring will enrage him (-20 trust)!
+LOG_FAMILY_EVENT_FAILED,👨‍👩‍👧‍👦 Вы уволили «члена семьи»! Босс в ярости разорвал плакат бирюзовой организации. Лояльность босса: -20.,"👨‍👩‍👧‍👦 You fired a ""family member""! The boss furiously tore down the teal organization poster. Boss trust: -20."
+BOSS_EVENT_FAMILY_LOG_START,👨‍👩‍👧‍👦 Босс объявил «Месяц сплочения»! Увольнения теперь караются потерей лояльности. Сотрудники-родители чувствуют себя как дома.,"👨‍👩‍👧‍👦 The boss declared a ""Bonding Month""! Firings are now punished with trust loss. Parent employees feel at home."
+BOSS_EVENT_FAMILY_LOG_END,👨‍👩‍👧‍👦 Босс устал от корпоративных объятий и вспомнил про KPI. Ивент «Мы — семья» успешно завершён.,"👨‍👩‍👧‍👦 The boss got tired of corporate hugs and remembered about KPIs. ""We Are Family"" event completed."
+BOSS_EVENT_FAMILY_LOG_REJECT,"👨‍👩‍👧‍👦 Вы объяснили боссу, что офис — это бизнес, а не секта. Запрет на увольнения не введён. Лояльность босса: -10.","👨‍👩‍👧‍👦 You explained to the boss that the office is a business, not a cult. Firing ban not enacted. Boss trust: -10."
+EVENT_NO_HIRING_TITLE,🚫 Почему нас так много? Никакого найма!,🚫 Why are there so many of us? No more hiring!
+EVENT_NO_HIRING_DESC,"Босс вышел в опенспейс, посмотрел на толпу людей и не понял, почему при таком количестве народа фичи пилятся так медленно. «Вы тут просто проедаете мой бюджет! Замораживаю найм! Работайте с теми, кто есть!»","The boss walked into the open space, looked at the crowd, and couldn't understand why features are being developed so slowly with so many people. 'You're just eating through my budget! I'm freezing all hiring! Work with what you've got!'"
+MOOD_MOD_EVENT_NO_HIRING_INTROVERT,🚫 Наконец-то тишина,🚫 Finally some quiet
+WARNING_HIRE_DURING_FREEZE,🚫 ВНИМАНИЕ: Босс заморозил найм! Любой новый человек приведет его в ярость (-20 лояльности)!,🚫 WARNING: Boss froze hiring! Any new hire will enrage him (-20 loyalty)!
+LOG_NO_HIRING_EVENT_FAILED,🚫 Вы наняли нового сотрудника в обход приказа! Босс рвет и мечет. Лояльность босса: -20.,🚫 You hired a new employee against orders! The boss is furious. Boss loyalty: -20.
+LOG_NO_HIRING_EVENT_SUCCESS,"🚫 Босс решил, что текущая команда достаточно выгорела, и снова разрешил публиковать вакансии. Запрет на найм снят.",🚫 The boss decided the current team has burned out enough and allowed job postings again. Hiring freeze lifted.
+LOG_NO_HIRING_EVENT_REJECTED,"🚫 Вы с боем защитили бюджет на новые кадры. Найм открыт, но босс затаил обиду. Лояльность босса: -10.","🚫 You fought to keep the hiring budget. Hiring stays open, but the boss holds a grudge. Boss loyalty: -10."
+LOG_NO_HIRING_EVENT_START,🚫 Босс заморозил найм! Нанимать новых сотрудников запрещено. Интроверты вздохнули с облегчением.,🚫 The boss froze all hiring! Recruiting new employees is forbidden. Introverts breathed a sigh of relief.
+EVENT_NO_LUNCH_TITLE,🍽️ Оптимизация пищеварения,🍽️ Digestion Optimization
+EVENT_NO_LUNCH_DESC,"Босс подсчитал, что походы на кухню и разогрев контейнеров съедают 12.5% рабочего времени. «С сегодняшнего дня едим не отходя от мониторов! Я заказал на всех питательные смарт-батончики со вкусом дедлайна.»","The boss calculated that kitchen trips and reheating containers eat up 12.5% of work time. 'From now on, we eat at our desks! I ordered smart nutrition bars with deadline flavor for everyone.'"
+MOOD_MOD_NO_LUNCH,🍽️ Нет нормального обеда,🍽️ No proper lunch
+LOG_NO_LUNCH_REJECTED,"🍽️ Вы отстояли право команды на горячий суп. Босс недоволен, но сотрудники сыты.","🍽️ You stood up for the team's right to hot soup. The boss is displeased, but the team is well-fed."
+LOG_NO_LUNCH_ENDED,"🍽️ Запасы смарт-батончиков иссякли, а босса начало тошнить от пиццы. Кухня снова открыта!",🍽️ The smart bar supplies ran out and the boss got sick of pizza. The kitchen is open again!
+LOG_NO_LUNCH_EVENT_START,🍽️ Босс запретил обеды! Сотрудники переходят на смарт-батончики. Настроение команды падает.,🍽️ The boss banned lunch breaks! Employees switch to nutrition bars. Team mood is dropping.
+EVENT_DAILY_REPORT_TITLE,"📊 Ежедневные отчёты. Чем вы все тут заняты, бездельники?","📊 Daily Reports. What are you all doing here, slackers?"
+EVENT_DAILY_REPORT_DESC,"Босс посмотрел 15-секундный рилс про продуктивность и запаниковал. Теперь он требует, чтобы каждый вечер команда писала подробный отчет: сколько строк кода написано, сколько багов закрыто и сколько раз кликнута мышка.","The boss watched a 15-second reel about productivity and panicked. Now he demands the team write detailed daily reports every evening: how many lines of code written, bugs closed, and mouse clicks made."
+EMP_ACTION_GOING_REPORT,Идёт писать отчёт,Going to write report
+EMP_ACTION_WRITING_REPORT,Пишет отчёт 🤬,Writing report 🤬
+LOG_DAILY_REPORTS_REJECTED,"Вы убедили босса, что отчёты — это пережиток прошлого. Он недоволен, но команда благодарна.","You convinced the boss that reports are a relic of the past. He's unhappy, but the team is grateful."
+LOG_DAILY_REPORTS_ENDED,Босс устал читать отчёты и забыл про свою инициативу. Ежедневные отчёты отменены!,The boss got tired of reading reports and forgot about his initiative. Daily reports cancelled!
+LOG_DAILY_REPORTS_STARTED,17:00 — Время отчётов! Все сотрудники садятся писать отчёты для босса.,17:00 — Report time! All employees sit down to write reports for the boss.
+TRACK_COL_ROLE,Роль ,Role 
+TRACK_COL_ASSIGNEE,Исполнитель ,Assignee 
+TRACK_COL_PROGRESS,Прогресс ,Progress 
+LOG_MONTH,мес ,m. 
+LOG_DAY,день ,d. 
+QUEST_OBJ_INCOME,Заработать ≥ %d прибыли ,Earn ≥ %d profit 
+QUEST_OBJ_MAX_EXPENSES,Сохранить расходы ≤ $%d ,Keep expenses ≤ $%d 
+QUEST_OBJ_FINISH_PROJECTS,Завершить ≥ %d проектов ,Finish ≥ %d projects 
+QUEST_OBJ_HIRE_EMPLOYEES,Нанять ≥ %d сотрудников ,Hire ≥ %d employees 
+QUEST_OBJ_LEVELUPS,Повысить сотрудников ≥ %d раз ,Promote employees ≥ %d times 
+QUEST_OBJ_PM_LEVEL,PM достигает уровня ≥ %d ,PM reaches level ≥ %d 
+QUEST_OBJ_NO_FAILS,Ни одного проваленного проекта ,No failed projects 
+EVENT_DAYOFF_DESC_1,"""%s просит отгул: «Босс как-то очень странно смотрит на меня из своего кабинета, мне не по себе. Можно я просто тихо уйду?»"" ","""%s asks for a day off: """"The boss is looking at me really weirdly from his office, it's creeping me out. Can I just quietly leave?"""""" "
+EVENT_DAYOFF_DESC_2,"""%s просит отгул: «Я выпил пятую кружку офисного эспрессо, и теперь я вижу, как звуки переливаются цветами. Мне лучше прилечь дома»."" ","""%s asks for a day off: """"I drank my fifth cup of office espresso, and now I can see sounds in color. I better lie down at home."""""" "
+EVENT_DAYOFF_DESC_3,"""%s просит отгул: «Я только что понял, что надел футболку наизнанку и задом наперед. Я не могу работать в таких унизительных условиях. Можно мне уйти домой?»"" ","""%s asks for a day off: """"I just realized I put my t-shirt on inside out and backwards. I cannot work under such humiliating conditions. Can I go home?"""""" "
+EVENT_DAYOFF_DESC_4,"""%s просит отгул: «Мне срочно нужно уйти. Мой кот... эмм... только что прислал мне СМС, что забыл выключить утюг»."" ","""%s asks for a day off: """"I urgently need to leave. My cat... um... just texted me that he forgot to unplug the iron."""""" "
+EVENT_DAYOFF_DESC_5,"""%s просит отгул: «Я открыл свой собственный код, который написал в прошлую пятницу, и не понял ни строчки. Мне нужно пойти домой и подумать о своей жизни»."" ","""%s asks for a day off: """"I opened my own code from last Friday and didn't understand a single line. I need to go home and rethink my life."""""" "
