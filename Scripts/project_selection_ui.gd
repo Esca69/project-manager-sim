@@ -746,17 +746,16 @@ func _make_nego_card(title: String, desc: String, cost: int, repeatable: bool, o
 		buy_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 		buy_btn.pressed.connect(on_buy)
 	else:
-		var btn_style_dis = StyleBoxFlat.new()
-		btn_style_dis.bg_color = Color(0.9, 0.9, 0.9, 1)
-		btn_style_dis.corner_radius_top_left = 10
-		btn_style_dis.corner_radius_top_right = 10
-		btn_style_dis.corner_radius_bottom_right = 10
-		btn_style_dis.corner_radius_bottom_left = 10
-
 		buy_btn.text = tr("NEGO_NOT_ENOUGH")
-		buy_btn.add_theme_stylebox_override("normal", btn_style_dis)
-		buy_btn.add_theme_stylebox_override("disabled", btn_style_dis)
-		buy_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+		buy_btn.add_theme_stylebox_override("normal", _btn_style_disabled)
+		buy_btn.add_theme_stylebox_override("hover", _btn_style_disabled)
+		buy_btn.add_theme_stylebox_override("pressed", _btn_style_disabled)
+		buy_btn.add_theme_stylebox_override("disabled", _btn_style_disabled)
+		buy_btn.add_theme_color_override("font_color", Color(0.55, 0.55, 0.6, 1))
+		buy_btn.add_theme_color_override("font_hover_color", Color(0.55, 0.55, 0.6, 1))
+		buy_btn.add_theme_color_override("font_pressed_color", Color(0.55, 0.55, 0.6, 1))
+		buy_btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.55, 0.6, 1))
+		buy_btn.add_theme_font_size_override("font_size", 14)
 
 	if UITheme: UITheme.apply_font(buy_btn, "semibold")
 	hbox.add_child(buy_btn)
