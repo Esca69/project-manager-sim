@@ -86,6 +86,12 @@ func pay_daily_salaries():
 	else:
 		print("Некому платить зарплату. Бюджет цел.")
 
+	# === PM SALARY ===
+	var daily_pm_salary = PMData.get_daily_salary()
+	add_expense(daily_pm_salary)
+	PMData.change_personal_balance(daily_pm_salary)
+	daily_salary_details.append({"name": tr("PM_SALARY_NAME"), "amount": daily_pm_salary})
+
 # === ЗАПИСЬ ЛЕВЕЛ-АПА ===
 func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String):
 	# ИСПРАВЛЕНИЕ: Используем переведенное имя и должность

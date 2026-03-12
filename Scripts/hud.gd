@@ -74,6 +74,10 @@ var _event_log_panel: Control
 var _boss_event_popup: Control
 var _boss_event_tracker: Control
 
+# === META: MY LIFE PANEL ===
+var _my_life_panel: Control
+var _personal_balance_label: Label
+
 # === ИНДИКАТОР СВОБОДНОЙ КАМЕРЫ ===
 var _free_camera_hint: PanelContainer = null
 
@@ -194,6 +198,10 @@ func _ready():
 
 	# === BOSS EVENT SYSTEM: Создаём попап и трекер ===
 	_build_boss_event_ui()
+
+	# === META: Создаём панель "Моя жизнь" ===
+	_build_my_life_panel()
+	_build_personal_balance_label()
 
 func _apply_fonts():
 	if UITheme == null:
@@ -508,6 +516,7 @@ func is_any_menu_open() -> bool:
 	if _boss_quest_screen and _boss_quest_screen.visible: return true
 	if _boss_report_screen and _boss_report_screen.visible: return true
 	if _hr_role_screen and _hr_role_screen.visible: return true
+	if _my_life_panel and _my_life_panel.visible: return true
 
 	var hiring_menu = get_node_or_null("HiringMenu")
 	if hiring_menu and hiring_menu.visible: return true
@@ -623,6 +632,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				pm_skill_tree.visible = false
 				client_panel.visible = false
 				if _boss_panel: _boss_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
 				employee_roster.open()
 				if UITheme and employee_roster.modulate.a < 1.0:
 					employee_roster.modulate.a = 1.0
@@ -636,6 +646,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				employee_roster.visible = false
 				client_panel.visible = false
 				if _boss_panel: _boss_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
 				pm_skill_tree.open()
 				if UITheme and pm_skill_tree.modulate.a < 1.0:
 					pm_skill_tree.modulate.a = 1.0
@@ -649,6 +660,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				employee_roster.visible = false
 				pm_skill_tree.visible = false
 				if _boss_panel: _boss_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
 				client_panel.open()
 		"boss":
 			if _boss_panel and _boss_panel.visible:
@@ -660,7 +672,20 @@ func _on_bottom_tab_pressed(tab_name: String):
 				employee_roster.visible = false
 				pm_skill_tree.visible = false
 				client_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
 				_boss_panel.open()
+		"my_life":
+			if _my_life_panel and _my_life_panel.visible:
+				if UITheme:
+					UITheme.fade_out(_my_life_panel)
+				else:
+					_my_life_panel.visible = false
+			elif _my_life_panel:
+				employee_roster.visible = false
+				pm_skill_tree.visible = false
+				client_panel.visible = false
+				if _boss_panel: _boss_panel.visible = false
+				_my_life_panel.open()
 
 # === ПРИНУДИТЕЛЬНАЯ ОТПРАВКА ВСЕХ СОТРУДНИКОВ ДОМОЙ ===
 func _dismiss_all_employees():
@@ -773,6 +798,33 @@ func _build_boss_event_ui():
 		_boss_event_tracker.set_anchors_preset(Control.PRESET_FULL_RECT)
 		_boss_event_tracker.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(_boss_event_tracker)
+
+func _build_my_life_panel():
+	var my_life_script = load("res://Scripts/my_life_panel.gd")
+	if my_life_script:
+		_my_life_panel = Control.new()
+		_my_life_panel.set_script(my_life_script)
+		_my_life_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_my_life_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+		add_child(_my_life_panel)
+
+func _build_personal_balance_label():
+	# Добавляем лейбл личного баланса в TopBar HBox
+	var hbox_container = get_node_or_null("TopBar/MarginContainer/HBoxContainer")
+	if hbox_container == null:
+		return
+	_personal_balance_label = Label.new()
+	_personal_balance_label.add_theme_color_override("font_color", Color(0.85, 0.65, 0.13, 1))
+	_personal_balance_label.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(_personal_balance_label, "bold")
+	_personal_balance_label.text = "🏎️ $%d" % PMData.personal_balance
+	# Вставляем сразу после BalanceLabel (индекс 1 обычно, но ищем по имени)
+	hbox_container.add_child(_personal_balance_label)
+	PMData.personal_balance_changed.connect(_on_personal_balance_changed)
+
+func _on_personal_balance_changed(new_amount: int):
+	if _personal_balance_label:
+		_personal_balance_label.text = "🏎️ $%d" % new_amount
 
 func open_boss_event(event_data: Dictionary):
 	if _boss_event_popup and _boss_event_popup.has_method("open"):

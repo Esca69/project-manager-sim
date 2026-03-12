@@ -852,3 +852,52 @@ EVENT_DAYOFF_DESC_2,"""%s просит отгул: «Я выпил пятую к
 EVENT_DAYOFF_DESC_3,"""%s просит отгул: «Я только что понял, что надел футболку наизнанку и задом наперед. Я не могу работать в таких унизительных условиях. Можно мне уйти домой?»"" ","""%s asks for a day off: """"I just realized I put my t-shirt on inside out and backwards. I cannot work under such humiliating conditions. Can I go home?"""""" "
 EVENT_DAYOFF_DESC_4,"""%s просит отгул: «Мне срочно нужно уйти. Мой кот... эмм... только что прислал мне СМС, что забыл выключить утюг»."" ","""%s asks for a day off: """"I urgently need to leave. My cat... um... just texted me that he forgot to unplug the iron."""""" "
 EVENT_DAYOFF_DESC_5,"""%s просит отгул: «Я открыл свой собственный код, который написал в прошлую пятницу, и не понял ни строчки. Мне нужно пойти домой и подумать о своей жизни»."" ","""%s asks for a day off: """"I opened my own code from last Friday and didn't understand a single line. I need to go home and rethink my life."""""" "
+INTRO_LINE_1,Жил-был обычный человек и была у него мечта.,Once upon a time there was an ordinary man with a dream.
+INTRO_LINE_2,"Он отчаянно хотел купить себе «Бамборгини Шавермтадор».","He desperately wanted to buy a «Bamborghini Shawermtador»."
+INTRO_LINE_3,"Ради этой цели он пошел на крайние меры... И решил стать Проджект-Менеджером.","To achieve this goal he went to extreme measures... And decided to become a Project Manager."
+INTRO_LINE_4,"Не знаю, как это связано. Но план был надёжен как швейцарские часы...","I don't know how that's related. But the plan was solid as a Swiss watch..."
+INTRO_BTN_START,Начать,Start
+MY_LIFE_TITLE,🏎️ Моя жизнь,🏎️ My Life
+MY_LIFE_PROGRESS,$%d / $%d,$%d / $%d
+MY_LIFE_MONTHLY_SALARY,Ежемесячная ЗП: $%d,Monthly salary: $%d
+MY_LIFE_DAILY_RATE,Дневная ставка: $%d,Daily rate: $%d
+MY_LIFE_PARTNERSHIP,Статус партнёрства: %s,Partnership status: %s
+MY_LIFE_WIN_BTN,Купить мечту и уйти на пенсию!,Buy the dream and retire!
+PARTNER_NONE,Нет,None
+PARTNER_JUNIOR,Младший партнёр (1%),Junior Partner (1%)
+PARTNER_MID,Партнёр (5%),Partner (5%)
+PARTNER_SENIOR,Старший партнёр (10%),Senior Partner (10%)
+NEGO_TITLE,🤝 Переговоры,🤝 Negotiations
+NEGO_TRUST,Доверие босса: %d,Boss trust: %d
+NEGO_RAISE_5,+5%% к ЗП,+5%% raise
+NEGO_RAISE_10,+10%% к ЗП,+10%% raise
+NEGO_RAISE_15,+15%% к ЗП,+15%% raise
+NEGO_RAISE_5_DESC,Небольшое повышение зарплаты,A small salary increase
+NEGO_RAISE_10_DESC,Хорошее повышение зарплаты,A good salary increase
+NEGO_RAISE_15_DESC,Существенное повышение зарплаты,A significant salary increase
+NEGO_PARTNER_1,Младший партнёр (1%),Junior Partner (1%)
+NEGO_PARTNER_2,Партнёр (5%),Partner (5%)
+NEGO_PARTNER_3,Старший партнёр (10%),Senior Partner (10%)
+NEGO_PARTNER_1_DESC,Получайте 1% от чистой прибыли компании,Receive 1% of the company's net profit
+NEGO_PARTNER_2_DESC,Получайте 5% от чистой прибыли компании,Receive 5% of the company's net profit
+NEGO_PARTNER_3_DESC,Получайте 10% от чистой прибыли компании,Receive 10% of the company's net profit
+NEGO_COST,Стоимость: %d 🤝,Cost: %d 🤝
+NEGO_PURCHASED,✅ Приобретено,✅ Purchased
+NEGO_LOCKED,🔒 Сначала купите предыдущий уровень,🔒 Purchase the previous tier first
+NEGO_NOT_ENOUGH,Недостаточно доверия,Not enough trust
+PM_SALARY_NAME,👔 Моя зарплата (PM),👔 My salary (PM)
+LOG_PM_RAISE,📈 Вы договорились о повышении ЗП! Новая ЗП: $%d/мес,📈 You negotiated a raise! New salary: $%d/mo
+LOG_PM_DIVIDEND,💰 Получены дивиденды партнёра: $%d,💰 Partner dividends received: $%d
+LOG_PM_PARTNER_UP,🤝 Вы стали: %s,🤝 You are now: %s
+DIVIDEND_TITLE,💰 Дивиденды партнёра,💰 Partner Dividends
+DIVIDEND_AMOUNT,Сумма: $%d,Amount: $%d
+DIVIDEND_CALC,%s от чистой прибыли $%d,%s of net profit $%d
+DIVIDEND_NONE_TITLE,📉 Дивиденды,📉 Dividends
+DIVIDEND_NONE_DESC,Компания в убытке. Дивиденды не начислены.,Company at a loss. No dividends.
+DIVIDEND_BTN_OK,Понятно,Got it
+TAB_PROJECTS,📋 Проекты,📋 Projects
+TAB_NEGOTIATIONS,🤝 Переговоры,🤝 Negotiations
+BOTTOMBAR_MY_LIFE,🏎️ Моя жизнь,🏎️ My Life
+MY_LIFE_BALANCE_LABEL,💰 $%d,💰 $%d
+NEGO_SECTION_SALARY,💰 Повышение ЗП,💰 Salary Raises
+NEGO_SECTION_PARTNERSHIP,🤝 Партнёрство,🤝 Partnership

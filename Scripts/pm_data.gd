@@ -7,6 +7,35 @@ var skill_points: int = 0
 signal xp_changed(new_xp: int, new_skill_points: int)
 signal skill_unlocked(skill_id: String)
 
+# === META PROGRESSION ===
+var personal_balance: int = 0
+var monthly_salary: int = 1000
+var partner_tier: int = 0  # 0=нет, 1=Младший(1%), 2=Партнер(5%), 3=Старший(10%)
+
+const WIN_TARGET: int = 300000
+
+const PARTNER_TIERS = {
+	0: {"name_key": "PARTNER_NONE", "percent": 0.0},
+	1: {"name_key": "PARTNER_JUNIOR", "percent": 0.01},
+	2: {"name_key": "PARTNER_MID", "percent": 0.05},
+	3: {"name_key": "PARTNER_SENIOR", "percent": 0.10},
+}
+
+signal personal_balance_changed(new_amount: int)
+
+func change_personal_balance(amount: int):
+	personal_balance += amount
+	emit_signal("personal_balance_changed", personal_balance)
+
+func get_daily_salary() -> int:
+	return int(monthly_salary / 22.0)
+
+func get_partner_percent() -> float:
+	return PARTNER_TIERS.get(partner_tier, {}).get("percent", 0.0)
+
+func get_partner_name() -> String:
+	return tr(PARTNER_TIERS.get(partner_tier, {}).get("name_key", "PARTNER_NONE"))
+
 # === ПОРОГИ XP ДЛЯ ПОЛУЧЕНИЯ ОЧКОВ ===
 const XP_THRESHOLDS = [
 	50, 120, 200, 300, 420, 560, 720, 900, 1100, 1320,
