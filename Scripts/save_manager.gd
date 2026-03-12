@@ -100,6 +100,9 @@ func _serialize_pm_data() -> Dictionary:
 		"skill_points": PMData.skill_points,
 		"unlocked_skills": PMData.unlocked_skills.duplicate(),
 		"_last_threshold_index": PMData._last_threshold_index,
+		"personal_balance": PMData.personal_balance,
+		"monthly_salary": PMData.monthly_salary,
+		"partner_tier": PMData.partner_tier,
 	}
 
 # --- BossManager ---
@@ -855,6 +858,10 @@ func _load_pm_data(d: Dictionary):
 	var skills = d.get("unlocked_skills", [])
 	for s in skills:
 		PMData.unlocked_skills.append(str(s))
+
+	PMData.personal_balance = int(d.get("personal_balance", 0))
+	PMData.monthly_salary = int(d.get("monthly_salary", 1000))
+	PMData.partner_tier = int(d.get("partner_tier", 0))
 
 func _load_boss_manager(d: Dictionary):
 	if d.is_empty():

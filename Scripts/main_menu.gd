@@ -472,8 +472,13 @@ func _on_new_game_pressed():
 	# Сбрасываем все синглтоны
 	_reset_all_singletons()
 
-	# Переходим в офис
-	get_tree().change_scene_to_file("res://Scenes/office.tscn")
+	# Показываем интро-экран перед началом игры
+	var intro = Control.new()
+	intro.set_script(load("res://Scripts/intro_screen.gd"))
+	intro.set_anchors_preset(Control.PRESET_FULL_RECT)
+	intro.process_mode = Node.PROCESS_MODE_ALWAYS
+	intro.z_index = 200
+	add_child(intro)
 
 func _on_settings_pressed():
 	var dim = get_node_or_null("SettingsDim")
@@ -548,6 +553,9 @@ func _reset_all_singletons():
 	PMData.skill_points = 0
 	PMData._last_threshold_index = -1
 	PMData.unlocked_skills.clear()
+	PMData.personal_balance = 0
+	PMData.monthly_salary = 1000
+	PMData.partner_tier = 0
 
 	# BossManager
 	BossManager.boss_trust = 0

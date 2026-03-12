@@ -38,6 +38,7 @@ func _ready():
 	_add_tab_button(tr("TAB_CLIENTS"), "clients")
 	_add_tab_button(tr("TAB_PM_SKILLS"), "pm_skills")
 	_add_tab_button(tr("TAB_BOSS"), "boss")
+	_add_tab_button(tr("BOTTOMBAR_MY_LIFE"), "my_life")
 
 func _add_tab_button(label_text: String, tab_name: String):
 	var btn = Button.new()

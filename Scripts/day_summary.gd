@@ -302,9 +302,11 @@ func _build_finance_section():
 				var amount: int = entry["amount"]
 				var det_lbl = Label.new()
 				det_lbl.text = tr("DAY_SUMMARY_EMP_SALARY") % [emp_name, amount]
-				det_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+				# Выделяем строку зарплаты PM золотым цветом
+				var is_pm_salary = emp_name == tr("PM_SALARY_NAME")
+				det_lbl.add_theme_color_override("font_color", Color(0.85, 0.65, 0.13, 1) if is_pm_salary else COLOR_GRAY)
 				det_lbl.add_theme_font_size_override("font_size", 12)
-				if UITheme: UITheme.apply_font(det_lbl, "regular")
+				if UITheme: UITheme.apply_font(det_lbl, "semibold" if is_pm_salary else "regular")
 				_content_vbox.add_child(det_lbl)
 		# === ДЕТАЛИЗАЦИЯ ИВЕНТ-РАСХОДОВ ===
 		if GameState.daily_event_expenses.size() > 0:

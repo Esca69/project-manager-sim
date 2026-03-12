@@ -16,6 +16,7 @@ var _overlay: ColorRect
 var _window: PanelContainer
 var _content_vbox: VBoxContainer
 var _title_label: Label
+var _dividend_screen: Control
 
 func _ready():
 	visible = false
@@ -24,6 +25,14 @@ func _ready():
 	z_index = 95
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_build_ui()
+	# Создаём экран дивидендов
+	var div_script = load("res://Scripts/dividend_screen.gd")
+	if div_script:
+		_dividend_screen = Control.new()
+		_dividend_screen.set_script(div_script)
+		_dividend_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_dividend_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+		add_child(_dividend_screen)
 
 func _build_ui():
 	_overlay = ColorRect.new()
@@ -259,6 +268,14 @@ func _on_close():
 		UITheme.fade_out(self, 0.2)
 	else:
 		visible = false
+
+	# === ДИВИДЕНДЫ ПАРТНЁРА ===
+	if PMData.partner_tier > 0 and _dividend_screen:
+		var net_profit = BossManager.monthly_income - BossManager.monthly_expenses
+		# Показываем экран дивидендов через небольшую задержку
+		get_tree().create_timer(0.25, true, false, true).timeout.connect(func():
+			_dividend_screen.open(net_profit)
+		)
 
 func _get_boss_reaction(trust: int, was_impossible: bool) -> String:
 	if was_impossible and trust > 0:
