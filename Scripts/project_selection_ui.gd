@@ -134,41 +134,53 @@ func _setup_scroll_container():
 
 	await get_tree().process_frame
 
-	# === TAB BUTTONS (pill-style) ===
+	# === TAB BUTTONS — размещаем в MainVBox НАД CardsMargin ===
+	var main_vbox = $Window/MainVBox
+
+	# Pill-стиль контейнера вкладок
 	var tab_panel = PanelContainer.new()
 	tab_panel.add_theme_stylebox_override("panel", tab_bg_style)
-	cards_margin.add_child(tab_panel)
+	tab_panel.custom_minimum_size = Vector2(460, 50)
+	tab_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	tab_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var tab_margin = MarginContainer.new()
-	tab_margin.add_theme_constant_override("margin_left", 4)
-	tab_margin.add_theme_constant_override("margin_top", 4)
-	tab_margin.add_theme_constant_override("margin_right", 4)
-	tab_margin.add_theme_constant_override("margin_bottom", 4)
+	tab_margin.add_theme_constant_override("margin_left", 6)
+	tab_margin.add_theme_constant_override("margin_top", 6)
+	tab_margin.add_theme_constant_override("margin_right", 6)
+	tab_margin.add_theme_constant_override("margin_bottom", 6)
 	tab_panel.add_child(tab_margin)
 
-	var tab_bar = HBoxContainer.new()
-	tab_bar.add_theme_constant_override("separation", 4)
-	tab_margin.add_child(tab_bar)
+	var tab_hbox = HBoxContainer.new()
+	tab_hbox.add_theme_constant_override("separation", 8)
+	tab_margin.add_child(tab_hbox)
 
+	# Внешний отступ для зоны вкладок
+	var container_margin = MarginContainer.new()
+	container_margin.add_theme_constant_override("margin_top", 10)
+	container_margin.add_theme_constant_override("margin_bottom", 15)
+	container_margin.add_child(tab_panel)
+
+	# Вставляем в MainVBox перед CardsMargin
+	main_vbox.add_child(container_margin)
+	main_vbox.move_child(container_margin, cards_margin.get_index())
+
+	# Кнопки вкладок
 	_tab_projects_btn = Button.new()
 	_tab_projects_btn.text = tr("TAB_PROJECTS")
-	_tab_projects_btn.custom_minimum_size = Vector2(200, 38)
 	_tab_projects_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_tab_projects_btn.focus_mode = Control.FOCUS_NONE
-	_tab_projects_btn.toggle_mode = false
-	if UITheme: UITheme.apply_font(_tab_projects_btn, "semibold")
+	if UITheme: UITheme.apply_font(_tab_projects_btn, "bold")
 	_tab_projects_btn.pressed.connect(_on_tab_projects)
-	tab_bar.add_child(_tab_projects_btn)
+	tab_hbox.add_child(_tab_projects_btn)
 
 	_tab_nego_btn = Button.new()
 	_tab_nego_btn.text = tr("TAB_NEGOTIATIONS")
-	_tab_nego_btn.custom_minimum_size = Vector2(200, 38)
 	_tab_nego_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_tab_nego_btn.focus_mode = Control.FOCUS_NONE
-	_tab_nego_btn.toggle_mode = false
-	if UITheme: UITheme.apply_font(_tab_nego_btn, "semibold")
+	if UITheme: UITheme.apply_font(_tab_nego_btn, "bold")
 	_tab_nego_btn.pressed.connect(_on_tab_negotiations)
-	tab_bar.add_child(_tab_nego_btn)
+	tab_hbox.add_child(_tab_nego_btn)
 
 	_update_tab_styles()
 

@@ -120,14 +120,14 @@ func _build_ui():
 	close_btn.offset_bottom = 16
 	close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
-	var close_style = StyleBoxEmpty.new()
-	close_btn.add_theme_color_override("font_color", COLOR_WHITE)
-	close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-	close_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+	close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	var close_style = StyleBoxFlat.new()
+	close_style.bg_color = COLOR_WHITE
+	close_style.corner_radius_top_left = 10
+	close_style.corner_radius_top_right = 10
+	close_style.corner_radius_bottom_right = 10
+	close_style.corner_radius_bottom_left = 10
 	close_btn.add_theme_stylebox_override("normal", close_style)
-	close_btn.add_theme_stylebox_override("hover", close_style)
-	close_btn.add_theme_stylebox_override("pressed", close_style)
-	close_btn.add_theme_stylebox_override("focus", close_style)
 	if UITheme: UITheme.apply_font(close_btn, "semibold")
 	close_btn.pressed.connect(_close)
 	header_panel.add_child(close_btn)
@@ -145,12 +145,12 @@ func _build_ui():
 	_content_vbox.add_theme_constant_override("separation", 16)
 	content_margin.add_child(_content_vbox)
 
-	# === Большой эмодзи машины ===
-	var car_lbl = Label.new()
-	car_lbl.text = "🏎️"
-	car_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	car_lbl.add_theme_font_size_override("font_size", 56)
-	_content_vbox.add_child(car_lbl)
+	# === Большой эмодзи кошелька ===
+	var wallet_lbl = Label.new()
+	wallet_lbl.text = "💰"
+	wallet_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	wallet_lbl.add_theme_font_size_override("font_size", 56)
+	_content_vbox.add_child(wallet_lbl)
 
 	# === Баланс ===
 	_balance_label = Label.new()
