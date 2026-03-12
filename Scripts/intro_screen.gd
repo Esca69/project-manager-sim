@@ -11,12 +11,18 @@ var _line_labels: Array = []
 var _start_btn: Button
 var _current_line: int = 0
 var _tween: Tween
+var _loading_label: Label
+var _spinner_timer: float = 0.0
+var _is_loading: bool = false
+const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
+var _spinner_index: int = 0
 
 const INTRO_LINES = ["INTRO_LINE_1", "INTRO_LINE_2", "INTRO_LINE_3", "INTRO_LINE_4"]
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_process(false)
 	_build_ui()
 
 func _build_ui():
@@ -122,6 +128,37 @@ func _show_next_line():
 	)
 
 func _on_start_pressed():
+	if _is_loading:
+		return
+	_is_loading = true
 	_start_btn.disabled = true
-	# Прямой переход в офис — нет необходимости в fade-out, так как интро — самостоятельная сцена
+	set_process(true)
+
+	# Change button text to loading indicator
+	var loading_text = tr("MENU_LOADING")
+	_start_btn.text = "⏳  " + (loading_text if loading_text != "MENU_LOADING" else "Загрузка...")
+
+	# Add a loading label below the button
+	_loading_label = Label.new()
+	_loading_label.text = "◐"
+	_loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_loading_label.add_theme_font_size_override("font_size", 32)
+	_loading_label.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	_loading_label.modulate.a = 0.0
+	_start_btn.get_parent().add_child(_loading_label)
+
+	# Fade in the loading label
+	var tween = create_tween()
+	tween.tween_property(_loading_label, "modulate:a", 1.0, 0.3)
+
+	# Wait a frame for UI to update, then load
+	await get_tree().process_frame
 	get_tree().change_scene_to_file("res://Scenes/office.tscn")
+
+func _process(delta):
+	if _loading_label:
+		_spinner_timer += delta
+		if _spinner_timer >= 0.15:
+			_spinner_timer = 0.0
+			_spinner_index = (_spinner_index + 1) % SPINNER_FRAMES.size()
+			_loading_label.text = SPINNER_FRAMES[_spinner_index]
