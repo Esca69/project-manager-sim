@@ -44,7 +44,6 @@ func _build_ui():
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.color = Color(0, 0, 0, 0.35)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.pressed = null
 	add_child(overlay)
 	overlay.gui_input.connect(func(event):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -226,8 +225,6 @@ func _make_card() -> PanelContainer:
 	style.border_color = COLOR_BORDER
 	card.add_theme_stylebox_override("panel", style)
 	return card
-
-const COLOR_BG = Color(0.96, 0.97, 1.0, 1)
 
 func _get_card_inner(card: PanelContainer) -> VBoxContainer:
 	var m = MarginContainer.new()

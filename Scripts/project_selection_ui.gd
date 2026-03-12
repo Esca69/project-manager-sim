@@ -563,7 +563,7 @@ func _rebuild_negotiations():
 	_nego_container.add_child(trust_lbl)
 
 	# === ЗАГОЛОВОК: Повышение ЗП ===
-	var salary_header = _make_section_header("💰 " + tr("NEGO_RAISE_5").replace("+5% к ЗП", "") + "Повышение ЗП" if TranslationServer.get_locale().begins_with("ru") else "💰 Salary Raises")
+	var salary_header = _make_section_header(tr("NEGO_SECTION_SALARY"))
 	_nego_container.add_child(salary_header)
 
 	# Карточки повышения ЗП
@@ -587,7 +587,7 @@ func _rebuild_negotiations():
 		_nego_container.add_child(card)
 
 	# === ЗАГОЛОВОК: Партнёрство ===
-	var partner_section = _make_section_header("🤝 " + ("Партнёрство" if TranslationServer.get_locale().begins_with("ru") else "Partnership"))
+	var partner_section = _make_section_header(tr("NEGO_SECTION_PARTNERSHIP"))
 	_nego_container.add_child(partner_section)
 
 	# Карточки партнёрства
