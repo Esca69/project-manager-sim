@@ -818,8 +818,14 @@ func _build_personal_balance_label():
 	_personal_balance_label.add_theme_font_size_override("font_size", 15)
 	if UITheme: UITheme.apply_font(_personal_balance_label, "bold")
 	_personal_balance_label.text = "🏎️ $%d" % PMData.personal_balance
-	# Вставляем сразу после BalanceLabel (индекс 1 обычно, но ищем по имени)
-	hbox_container.add_child(_personal_balance_label)
+	# Вставляем ПЕРЕД SpeedControls, чтобы лейбл был слева от кнопок скорости
+	var speed_controls = hbox_container.get_node_or_null("SpeedControls")
+	if speed_controls:
+		var idx = speed_controls.get_index()
+		hbox_container.add_child(_personal_balance_label)
+		hbox_container.move_child(_personal_balance_label, idx)
+	else:
+		hbox_container.add_child(_personal_balance_label)
 	PMData.personal_balance_changed.connect(_on_personal_balance_changed)
 
 func _on_personal_balance_changed(new_amount: int):

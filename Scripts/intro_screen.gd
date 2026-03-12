@@ -98,7 +98,7 @@ func _build_ui():
 	vbox.add_child(_start_btn)
 
 	# Запускаем анимацию через небольшую задержку
-	await get_tree().create_timer(0.4, true, false, true).timeout
+	await get_tree().create_timer(0.8, true, false, true).timeout
 	_animate_lines()
 
 func _animate_lines():
@@ -114,8 +114,8 @@ func _show_next_line():
 
 	var lbl = _line_labels[_current_line]
 	_tween = create_tween()
-	_tween.tween_property(lbl, "modulate:a", 1.0, 0.6).set_ease(Tween.EASE_OUT)
-	_tween.tween_interval(0.3)
+	_tween.tween_property(lbl, "modulate:a", 1.0, 1.4).set_ease(Tween.EASE_OUT)
+	_tween.tween_interval(0.8)
 	_tween.tween_callback(func():
 		_current_line += 1
 		_show_next_line()
@@ -124,7 +124,7 @@ func _show_next_line():
 func _on_start_pressed():
 	# Плавное исчезновение и переход в офис
 	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.4).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "modulate:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
 	tween.tween_callback(func():
 		get_tree().change_scene_to_file("res://Scenes/office.tscn")
 	)

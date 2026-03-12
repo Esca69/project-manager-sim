@@ -26,6 +26,13 @@ var _tab_projects_btn: Button
 var _tab_nego_btn: Button
 var _nego_container: VBoxContainer
 
+var tab_bg_style: StyleBoxFlat
+var tab_active_style: StyleBoxFlat
+var tab_inactive_style: StyleBoxFlat
+
+const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
+const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
+
 func _ready():
 	add_to_group("project_selection_ui")
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -86,6 +93,27 @@ func _ready():
 		close_btn.pressed.connect(_on_close_pressed)
 		if UITheme: UITheme.apply_font(close_btn, "semibold")
 
+	# === PILL-СТИЛЬ ВКЛАДОК ===
+	tab_bg_style = StyleBoxFlat.new()
+	tab_bg_style.bg_color = Color(0.92, 0.94, 0.96, 1)
+	tab_bg_style.corner_radius_top_left = 24
+	tab_bg_style.corner_radius_top_right = 24
+	tab_bg_style.corner_radius_bottom_right = 24
+	tab_bg_style.corner_radius_bottom_left = 24
+
+	tab_active_style = StyleBoxFlat.new()
+	tab_active_style.bg_color = Color(1, 1, 1, 1)
+	tab_active_style.corner_radius_top_left = 20
+	tab_active_style.corner_radius_top_right = 20
+	tab_active_style.corner_radius_bottom_right = 20
+	tab_active_style.corner_radius_bottom_left = 20
+	tab_active_style.shadow_color = Color(0, 0, 0, 0.08)
+	tab_active_style.shadow_size = 4
+	tab_active_style.shadow_offset = Vector2(0, 2)
+
+	tab_inactive_style = StyleBoxFlat.new()
+	tab_inactive_style.bg_color = Color(1, 1, 1, 0)
+
 	_setup_scroll_container()
 
 func _force_fullscreen_size():
@@ -106,18 +134,43 @@ func _setup_scroll_container():
 
 	await get_tree().process_frame
 
-	# === TAB BUTTONS ===
-	var tab_bar = HBoxContainer.new()
-	tab_bar.add_theme_constant_override("separation", 8)
-	cards_margin.add_child(tab_bar)
+	# === TAB BUTTONS (pill-style) ===
+	var tab_panel = PanelContainer.new()
+	tab_panel.add_theme_stylebox_override("panel", tab_bg_style)
+	cards_margin.add_child(tab_panel)
 
-	_tab_projects_btn = _make_tab_button(tr("TAB_PROJECTS"), true)
+	var tab_margin = MarginContainer.new()
+	tab_margin.add_theme_constant_override("margin_left", 4)
+	tab_margin.add_theme_constant_override("margin_top", 4)
+	tab_margin.add_theme_constant_override("margin_right", 4)
+	tab_margin.add_theme_constant_override("margin_bottom", 4)
+	tab_panel.add_child(tab_margin)
+
+	var tab_bar = HBoxContainer.new()
+	tab_bar.add_theme_constant_override("separation", 4)
+	tab_margin.add_child(tab_bar)
+
+	_tab_projects_btn = Button.new()
+	_tab_projects_btn.text = tr("TAB_PROJECTS")
+	_tab_projects_btn.custom_minimum_size = Vector2(200, 38)
+	_tab_projects_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tab_projects_btn.focus_mode = Control.FOCUS_NONE
+	_tab_projects_btn.toggle_mode = false
+	if UITheme: UITheme.apply_font(_tab_projects_btn, "semibold")
 	_tab_projects_btn.pressed.connect(_on_tab_projects)
 	tab_bar.add_child(_tab_projects_btn)
 
-	_tab_nego_btn = _make_tab_button(tr("TAB_NEGOTIATIONS"), false)
+	_tab_nego_btn = Button.new()
+	_tab_nego_btn.text = tr("TAB_NEGOTIATIONS")
+	_tab_nego_btn.custom_minimum_size = Vector2(200, 38)
+	_tab_nego_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tab_nego_btn.focus_mode = Control.FOCUS_NONE
+	_tab_nego_btn.toggle_mode = false
+	if UITheme: UITheme.apply_font(_tab_nego_btn, "semibold")
 	_tab_nego_btn.pressed.connect(_on_tab_negotiations)
 	tab_bar.add_child(_tab_nego_btn)
+
+	_update_tab_styles()
 
 	# === PROJECTS SCROLL ===
 	_scroll = ScrollContainer.new()
@@ -149,55 +202,28 @@ func _setup_scroll_container():
 
 	_scroll_ready = true
 
-func _make_tab_button(label: String, active: bool) -> Button:
-	var btn = Button.new()
-	btn.text = label
-	btn.custom_minimum_size = Vector2(200, 38)
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.toggle_mode = false
-	_apply_tab_style(btn, active)
-	if UITheme: UITheme.apply_font(btn, "semibold")
-	return btn
+func _apply_button_style(btn: Button, box_style: StyleBox, font_color: Color):
+	btn.add_theme_stylebox_override("normal", box_style)
+	btn.add_theme_stylebox_override("hover", box_style)
+	btn.add_theme_stylebox_override("pressed", box_style)
+	btn.add_theme_stylebox_override("focus", box_style)
+	btn.add_theme_color_override("font_color", font_color)
+	btn.add_theme_color_override("font_hover_color", font_color)
+	btn.add_theme_color_override("font_pressed_color", font_color)
+	btn.add_theme_color_override("font_focus_color", font_color)
 
-func _apply_tab_style(btn: Button, active: bool):
-	var style_active = StyleBoxFlat.new()
-	style_active.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-	style_active.corner_radius_top_left = 10
-	style_active.corner_radius_top_right = 10
-	style_active.corner_radius_bottom_right = 10
-	style_active.corner_radius_bottom_left = 10
-
-	var style_inactive = StyleBoxFlat.new()
-	style_inactive.bg_color = Color(1, 1, 1, 1)
-	style_inactive.border_width_left = 2
-	style_inactive.border_width_top = 2
-	style_inactive.border_width_right = 2
-	style_inactive.border_width_bottom = 2
-	style_inactive.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-	style_inactive.corner_radius_top_left = 10
-	style_inactive.corner_radius_top_right = 10
-	style_inactive.corner_radius_bottom_right = 10
-	style_inactive.corner_radius_bottom_left = 10
-
-	if active:
-		btn.add_theme_stylebox_override("normal", style_active)
-		btn.add_theme_stylebox_override("hover", style_active)
-		btn.add_theme_stylebox_override("pressed", style_active)
-		btn.add_theme_color_override("font_color", Color.WHITE)
-		btn.add_theme_color_override("font_hover_color", Color.WHITE)
-		btn.add_theme_color_override("font_pressed_color", Color.WHITE)
-	else:
-		btn.add_theme_stylebox_override("normal", style_inactive)
-		btn.add_theme_stylebox_override("hover", style_active)
-		btn.add_theme_stylebox_override("pressed", style_active)
-		btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-		btn.add_theme_color_override("font_hover_color", Color.WHITE)
-		btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+func _update_tab_styles():
+	if _tab_projects_btn and _tab_nego_btn:
+		if _active_tab == "projects":
+			_apply_button_style(_tab_projects_btn, tab_active_style, COLOR_BLUE)
+			_apply_button_style(_tab_nego_btn, tab_inactive_style, COLOR_GRAY)
+		else:
+			_apply_button_style(_tab_projects_btn, tab_inactive_style, COLOR_GRAY)
+			_apply_button_style(_tab_nego_btn, tab_active_style, COLOR_BLUE)
 
 func _on_tab_projects():
 	_active_tab = "projects"
-	if _tab_projects_btn: _apply_tab_style(_tab_projects_btn, true)
-	if _tab_nego_btn: _apply_tab_style(_tab_nego_btn, false)
+	_update_tab_styles()
 	if _scroll: _scroll.visible = true
 	if _nego_container and _nego_container.get_parent():
 		_nego_container.get_parent().visible = false
@@ -205,8 +231,7 @@ func _on_tab_projects():
 
 func _on_tab_negotiations():
 	_active_tab = "negotiations"
-	if _tab_projects_btn: _apply_tab_style(_tab_projects_btn, false)
-	if _tab_nego_btn: _apply_tab_style(_tab_nego_btn, true)
+	_update_tab_styles()
 	if _scroll: _scroll.visible = false
 	if _nego_container and _nego_container.get_parent():
 		_nego_container.get_parent().visible = true
