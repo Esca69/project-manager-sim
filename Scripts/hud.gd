@@ -817,7 +817,7 @@ func _build_personal_balance_label():
 	_personal_balance_label.add_theme_color_override("font_color", Color(0.85, 0.65, 0.13, 1))
 	_personal_balance_label.add_theme_font_size_override("font_size", 15)
 	if UITheme: UITheme.apply_font(_personal_balance_label, "bold")
-	_personal_balance_label.text = "🏎️ $%d" % PMData.personal_balance
+	_personal_balance_label.text = "💰 $%d" % PMData.personal_balance
 	# Вставляем ПЕРЕД SpeedControls, чтобы лейбл был слева от кнопок скорости
 	var speed_controls = hbox_container.get_node_or_null("SpeedControls")
 	if speed_controls:
@@ -830,7 +830,7 @@ func _build_personal_balance_label():
 
 func _on_personal_balance_changed(new_amount: int):
 	if _personal_balance_label:
-		_personal_balance_label.text = "🏎️ $%d" % new_amount
+		_personal_balance_label.text = "💰 $%d" % new_amount
 
 func open_boss_event(event_data: Dictionary):
 	if _boss_event_popup and _boss_event_popup.has_method("open"):

@@ -122,9 +122,6 @@ func _show_next_line():
 	)
 
 func _on_start_pressed():
-	# Плавное исчезновение и переход в офис
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
-	tween.tween_callback(func():
-		get_tree().change_scene_to_file("res://Scenes/office.tscn")
-	)
+	_start_btn.disabled = true
+	# Прямой переход в офис — нет необходимости в fade-out, так как интро — самостоятельная сцена
+	get_tree().change_scene_to_file("res://Scenes/office.tscn")

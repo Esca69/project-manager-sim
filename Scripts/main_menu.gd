@@ -472,13 +472,8 @@ func _on_new_game_pressed():
 	# Сбрасываем все синглтоны
 	_reset_all_singletons()
 
-	# Показываем интро-экран перед началом игры
-	var intro = Control.new()
-	intro.set_script(load("res://Scripts/intro_screen.gd"))
-	intro.set_anchors_preset(Control.PRESET_FULL_RECT)
-	intro.process_mode = Node.PROCESS_MODE_ALWAYS
-	intro.z_index = 200
-	add_child(intro)
+	# Переходим на отдельную сцену интро (чтобы main_menu не мелькал за интро)
+	get_tree().change_scene_to_file("res://Scenes/intro_screen.tscn")
 
 func _on_settings_pressed():
 	var dim = get_node_or_null("SettingsDim")
