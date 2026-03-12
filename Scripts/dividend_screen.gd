@@ -138,6 +138,7 @@ func open(net_profit: int):
 
 		# Начисляем дивиденды
 		GameState.add_expense(dividend)
+		GameState.daily_event_expenses.append({"label": tr("LOG_PM_DIVIDEND") % dividend, "amount": dividend})
 		PMData.change_personal_balance(dividend)
 		EventLog.add(tr("LOG_PM_DIVIDEND") % dividend)
 	else:

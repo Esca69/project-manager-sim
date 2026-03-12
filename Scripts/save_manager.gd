@@ -862,6 +862,7 @@ func _load_pm_data(d: Dictionary):
 	PMData.personal_balance = int(d.get("personal_balance", 0))
 	PMData.monthly_salary = int(d.get("monthly_salary", 1000))
 	PMData.partner_tier = int(d.get("partner_tier", 0))
+	PMData.emit_signal("personal_balance_changed", PMData.personal_balance)
 
 func _load_boss_manager(d: Dictionary):
 	if d.is_empty():

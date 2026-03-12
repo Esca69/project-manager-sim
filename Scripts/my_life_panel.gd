@@ -25,13 +25,20 @@ var _win_btn: Button
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	z_index = 80
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	z_index = 90
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_force_fullscreen_size()
 	_build_ui()
 	PMData.personal_balance_changed.connect(_on_balance_changed)
 
+func _force_fullscreen_size():
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
+
 func open():
+	_force_fullscreen_size()
 	_refresh()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -42,24 +49,20 @@ func _build_ui():
 	# Полупрозрачный оверлей
 	var overlay = ColorRect.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.color = Color(0, 0, 0, 0.35)
+	overlay.color = Color(0, 0, 0, 0.45)
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(overlay)
-	overlay.gui_input.connect(func(event):
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			_close()
-	)
 
-	# Окно — позиционируем как остальные панели (внизу справа)
+	# Окно — 1500×900 по центру, как client_panel.gd
 	_window = PanelContainer.new()
-	_window.custom_minimum_size = Vector2(650, 560)
-	_window.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_window.offset_left = -680
-	_window.offset_top = -640
-	_window.offset_right = -20
-	_window.offset_bottom = -80
-	_window.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_window.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_window.custom_minimum_size = Vector2(1500, 900)
+	_window.set_anchors_preset(Control.PRESET_CENTER)
+	_window.offset_left = -750
+	_window.offset_top = -450
+	_window.offset_right = 750
+	_window.offset_bottom = 450
+	_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_window.grow_vertical = Control.GROW_DIRECTION_BOTH
 
 	var window_style = StyleBoxFlat.new()
 	window_style.bg_color = COLOR_WHITE
@@ -83,7 +86,7 @@ func _build_ui():
 
 	# Заголовок
 	var header_panel = Panel.new()
-	header_panel.custom_minimum_size = Vector2(0, 50)
+	header_panel.custom_minimum_size = Vector2(0, 40)
 	var header_style = StyleBoxFlat.new()
 	header_style.bg_color = COLOR_BLUE
 	header_style.corner_radius_top_left = 20
@@ -96,11 +99,38 @@ func _build_ui():
 	title_lbl.set_anchors_preset(Control.PRESET_CENTER)
 	title_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	title_lbl.grow_vertical = Control.GROW_DIRECTION_BOTH
+	title_lbl.offset_left = -120
+	title_lbl.offset_top = -11.5
+	title_lbl.offset_right = 120
+	title_lbl.offset_bottom = 11.5
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_lbl.add_theme_color_override("font_color", COLOR_WHITE)
-	title_lbl.add_theme_font_size_override("font_size", 18)
+	title_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(title_lbl, "bold")
 	header_panel.add_child(title_lbl)
+
+	# Кнопка закрытия "X" в заголовке
+	var close_btn = Button.new()
+	close_btn.text = "X"
+	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	close_btn.offset_left = -51
+	close_btn.offset_top = -15
+	close_btn.offset_right = -24
+	close_btn.offset_bottom = 16
+	close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+	var close_style = StyleBoxEmpty.new()
+	close_btn.add_theme_color_override("font_color", COLOR_WHITE)
+	close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	close_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+	close_btn.add_theme_stylebox_override("normal", close_style)
+	close_btn.add_theme_stylebox_override("hover", close_style)
+	close_btn.add_theme_stylebox_override("pressed", close_style)
+	close_btn.add_theme_stylebox_override("focus", close_style)
+	if UITheme: UITheme.apply_font(close_btn, "semibold")
+	close_btn.pressed.connect(_close)
+	header_panel.add_child(close_btn)
 
 	# Контент
 	var content_margin = MarginContainer.new()
