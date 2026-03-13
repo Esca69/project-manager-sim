@@ -853,9 +853,9 @@ EVENT_DAYOFF_DESC_3,"""%s просит отгул: «Я только что по
 EVENT_DAYOFF_DESC_4,"""%s просит отгул: «Мне срочно нужно уйти. Мой кот... эмм... только что прислал мне СМС, что забыл выключить утюг»."" ","""%s asks for a day off: """"I urgently need to leave. My cat... um... just texted me that he forgot to unplug the iron."""""" "
 EVENT_DAYOFF_DESC_5,"""%s просит отгул: «Я открыл свой собственный код, который написал в прошлую пятницу, и не понял ни строчки. Мне нужно пойти домой и подумать о своей жизни»."" ","""%s asks for a day off: """"I opened my own code from last Friday and didn't understand a single line. I need to go home and rethink my life."""""" "
 INTRO_LINE_1,Жил-был обычный человек и была у него мечта.,Once upon a time there was an ordinary man with a dream.
-INTRO_LINE_2,"Он отчаянно хотел купить себе «Бамборгини Шавермтадор».","He desperately wanted to buy a «Bamborghini Shawermtador»."
-INTRO_LINE_3,"Ради этой цели он пошел на крайние меры... И решил стать Проджект-Менеджером.","To achieve this goal he went to extreme measures... And decided to become a Project Manager."
-INTRO_LINE_4,"Не знаю, как это связано. Но план был надёжен как швейцарские часы...","I don't know how that's related. But the plan was solid as a Swiss watch..."
+INTRO_LINE_2,Он отчаянно хотел купить себе «Бамборгини Шавермтадор».,He desperately wanted to buy a « LamBROghini Avocador».
+INTRO_LINE_3,Ради этой цели он пошел на крайние меры... И решил стать Проджект-Менеджером.,To achieve this goal he went to extreme measures... And decided to become a Project Manager.
+INTRO_LINE_4,"Не знаю, как это связано. Но план был надёжен как швейцарские часы...",I don't know how that's related. But the plan was solid as a Swiss watch...
 INTRO_BTN_START,Начать,Start
 MY_LIFE_TITLE,💰 Моя жизнь,💰 My Life
 MY_LIFE_PROGRESS,$%d / $%d,$%d / $%d
