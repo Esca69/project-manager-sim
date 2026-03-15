@@ -185,6 +185,8 @@ func _serialize_employees() -> Array:
 			"onboarding_hours_left": d.onboarding_hours_left,
 			"project_adapt_hours_left": d.project_adapt_hours_left,
 			"known_project_ids": d.known_project_ids.duplicate(),
+			# === CRUNCH TIME: Дебафф эффективности ===
+			"crunch_efficiency_debuff_hours_left": d.crunch_efficiency_debuff_hours_left,
 
 			# === MOOD SYSTEM v2: Сохраняем mood + модификаторы ===
 			"mood": d.mood,
@@ -258,6 +260,7 @@ func _serialize_projects() -> Array:
 			"state": proj.state,
 			"stages": [],
 			"total_labor_cost": proj.total_labor_cost,
+			"crunch_active": proj.crunch_active,
 		}
 
 		for stage in proj.stages:
@@ -501,6 +504,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		# === АДАПТАЦИЯ (с дефолтом 0.0 для старых сохранений) ===
 		emp_data.onboarding_hours_left = float(emp_dict.get("onboarding_hours_left", 0.0))
 		emp_data.project_adapt_hours_left = float(emp_dict.get("project_adapt_hours_left", 0.0))
+		emp_data.crunch_efficiency_debuff_hours_left = float(emp_dict.get("crunch_efficiency_debuff_hours_left", 0.0))
 		
 		var saved_known_projects = emp_dict.get("known_project_ids", [])
 		emp_data.known_project_ids.clear()
@@ -622,6 +626,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		proj.soft_deadline_penalty_percent = int(proj_dict.get("soft_deadline_penalty_percent", 10))
 		proj.state = int(proj_dict.get("state", 0))
 		proj.total_labor_cost = float(proj_dict.get("total_labor_cost", 0.0))
+		proj.crunch_active = bool(proj_dict.get("crunch_active", false))
 
 		proj.stages.clear()
 		var saved_stages = proj_dict.get("stages", [])

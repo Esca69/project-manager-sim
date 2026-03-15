@@ -563,6 +563,11 @@ func update_time_label(_hour, _minute):
 			print("⏰ 21:00 — автоматическое завершение дня!")
 			_on_end_day_pressed()
 
+	# === CRUNCH TIME: Показываем кнопку «Завершить день» в 20:00 ===
+	if GameTime.hour == 20 and GameTime.minute == 0 and not GameTime.is_weekend() and not GameTime.is_night_skip:
+		if not end_day_button.visible:
+			end_day_button.visible = true
+
 func update_balance_ui(amount):
 	balance_label.text = tr("HUD_BALANCE") % amount
 
@@ -717,6 +722,9 @@ func _on_end_day_pressed():
 		GameTime.start_night_skip()
 
 func _on_work_ended_show_end_day():
+	# === CRUNCH TIME: Если активен кранч — кнопка появляется только в 20:00 ===
+	if ProjectManager.has_any_crunch_active():
+		return
 	end_day_button.visible = true
 
 func _on_work_started_hide_end_day():

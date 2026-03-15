@@ -112,6 +112,8 @@ func _reset_employee_daily_stats():
 		if npc.data:
 			npc.data.set_meta("daily_work_minutes", 0.0)
 			npc.data.set_meta("daily_progress", 0.0)
+			# === CRUNCH TIME: Сбрасываем переработанное время (для итогов дня) ===
+			npc.data.set_meta("crunch_overtime_minutes", 0.0)
 
 # === ИНКРЕМЕНТ ДНЕЙ В КОМПАНИИ (09:05) ===
 func _increment_days_in_company():

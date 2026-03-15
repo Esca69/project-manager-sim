@@ -40,6 +40,11 @@ var daily_labor_cost: float = 0.0
 enum State { DRAFTING, IN_PROGRESS, FINISHED, FAILED }
 var state = State.DRAFTING
 
+# === CRUNCH TIME ===
+# Если true — сотрудники на активном этапе работают до 20:00 (вместо 18:00).
+# Без доплат, без обеда/туалета. После смены: -20% эффективность (24ч), -10 настроение (48ч).
+var crunch_active: bool = false
+
 # Вычисляем итоговую выплату при завершении
 func get_final_payout(finish_day: int) -> int:
 	# Провал хард-дедлайна — $0

@@ -901,3 +901,12 @@ BOTTOMBAR_MY_LIFE,💰 Моя жизнь,💰 My Life
 MY_LIFE_BALANCE_LABEL,💰 $%d,💰 $%d
 NEGO_SECTION_SALARY,💰 Повышение ЗП,💰 Salary Raises
 NEGO_SECTION_PARTNERSHIP,🤝 Партнёрство,🤝 Partnership
+CRUNCH_TIME_BUTTON,🔥 Crunch Time,🔥 Crunch Time
+CRUNCH_TIME_BUTTON_ON,🔥 Кранч АКТИВЕН,🔥 Crunch ACTIVE
+CRUNCH_TIME_TOOLTIP,"Сотрудники на активном этапе этого проекта останутся работать до 20:00 без доплат. Во время кранча они не ходят на обед и в туалет. На следующий день их эффективность упадёт на 20%, а настроение ухудшится на 10 единиц на 48 часов.","Employees on the active stage of this project will stay until 20:00 with no extra pay. During crunch, they skip lunch and toilet breaks. The next day, their efficiency drops by 20% and mood worsens by 10 for 48 hours."
+CRUNCH_DEBUFF_EFFICIENCY,😩 Усталость после кранча,😩 Post-crunch fatigue
+CRUNCH_DEBUFF_MOOD,😩 Вымотан кранчем,😩 Worn out from crunch
+MOOD_MOD_CRUNCH_EXHAUSTED,Вымотан кранчем,Worn out from crunch
+LOG_CRUNCH_ACTIVATED,🔥 Кранч активирован: %s,🔥 Crunch activated: %s
+LOG_CRUNCH_PENALTIES,😩 %s уходит после кранча. Применены штрафы.,😩 %s leaves after crunch. Penalties applied.
+DAY_SUMMARY_CRUNCH_OVERTIME,Переработка: %s,Overtime: %s

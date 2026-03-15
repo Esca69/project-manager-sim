@@ -17,6 +17,12 @@ var current_selecting_track_index: int = -1
 const GANTT_VIEW_WIDTH = 900.0
 const MIN_TIMELINE_DAYS = 7.0
 
+# === CRUNCH TIME: UI элементы ===
+var _crunch_btn: Button = null
+var _crunch_help_btn: Button = null
+var _crunch_tooltip_ref: Array = [null]
+var color_crunch_main = Color(0.87, 0.44, 0.13, 1)  # Оранжевый цвет кранча
+
 var current_time_line: ColorRect
 var soft_deadline_line: ColorRect
 var hard_deadline_line: ColorRect
@@ -163,6 +169,9 @@ func _ready():
 	start_btn.add_theme_stylebox_override("disabled", disabled_style)
 	start_btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
 
+	# === CRUNCH TIME: Создаём кнопку кранча в футере ===
+	_build_crunch_row()
+
 	if UITheme:
 		UITheme.apply_font(title_label, "bold")
 		UITheme.apply_font(deadline_label, "regular")
@@ -174,6 +183,186 @@ func _ready():
 		if col_role: UITheme.apply_font(col_role, "semibold")
 		if col_assignee: UITheme.apply_font(col_assignee, "semibold")
 		if col_progress: UITheme.apply_font(col_progress, "semibold")
+
+# === CRUNCH TIME: Создаём ряд с кнопкой кранча в футере ===
+func _build_crunch_row():
+	var footer = $MainLayout/ContentWrapper/Body/Footer
+	if not footer:
+		return
+
+	var crunch_hbox = HBoxContainer.new()
+	crunch_hbox.name = "CrunchRow"
+	crunch_hbox.add_theme_constant_override("separation", 8)
+	footer.add_child(crunch_hbox)
+
+	_crunch_btn = Button.new()
+	_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
+	_crunch_btn.custom_minimum_size = Vector2(160, 36)
+	_crunch_btn.visible = false
+
+	var crunch_style_normal = StyleBoxFlat.new()
+	crunch_style_normal.bg_color = Color(1, 1, 1, 1)
+	crunch_style_normal.border_width_left = 2
+	crunch_style_normal.border_width_top = 2
+	crunch_style_normal.border_width_right = 2
+	crunch_style_normal.border_width_bottom = 2
+	crunch_style_normal.border_color = color_crunch_main
+	crunch_style_normal.corner_radius_top_left = 20
+	crunch_style_normal.corner_radius_top_right = 20
+	crunch_style_normal.corner_radius_bottom_right = 20
+	crunch_style_normal.corner_radius_bottom_left = 20
+
+	var crunch_style_hover = StyleBoxFlat.new()
+	crunch_style_hover.bg_color = color_crunch_main
+	crunch_style_hover.border_width_left = 2
+	crunch_style_hover.border_width_top = 2
+	crunch_style_hover.border_width_right = 2
+	crunch_style_hover.border_width_bottom = 2
+	crunch_style_hover.border_color = color_crunch_main
+	crunch_style_hover.corner_radius_top_left = 20
+	crunch_style_hover.corner_radius_top_right = 20
+	crunch_style_hover.corner_radius_bottom_right = 20
+	crunch_style_hover.corner_radius_bottom_left = 20
+
+	var crunch_style_active = StyleBoxFlat.new()
+	crunch_style_active.bg_color = color_crunch_main
+	crunch_style_active.border_width_left = 2
+	crunch_style_active.border_width_top = 2
+	crunch_style_active.border_width_right = 2
+	crunch_style_active.border_width_bottom = 2
+	crunch_style_active.border_color = color_crunch_main
+	crunch_style_active.corner_radius_top_left = 20
+	crunch_style_active.corner_radius_top_right = 20
+	crunch_style_active.corner_radius_bottom_right = 20
+	crunch_style_active.corner_radius_bottom_left = 20
+
+	_crunch_btn.add_theme_stylebox_override("normal", crunch_style_normal)
+	_crunch_btn.add_theme_stylebox_override("hover", crunch_style_hover)
+	_crunch_btn.add_theme_stylebox_override("pressed", crunch_style_active)
+	_crunch_btn.add_theme_color_override("font_color", color_crunch_main)
+	_crunch_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	_crunch_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+
+	if UITheme:
+		UITheme.apply_font(_crunch_btn, "semibold")
+
+	_crunch_btn.pressed.connect(_on_crunch_pressed)
+	crunch_hbox.add_child(_crunch_btn)
+
+	# Иконка помощи (?)
+	_crunch_help_btn = Button.new()
+	_crunch_help_btn.text = "?"
+	_crunch_help_btn.custom_minimum_size = Vector2(28, 28)
+	_crunch_help_btn.flat = false
+	_crunch_help_btn.visible = false
+
+	var help_style = StyleBoxFlat.new()
+	help_style.bg_color = Color(0.9, 0.9, 0.9, 1)
+	help_style.border_width_left = 1
+	help_style.border_width_top = 1
+	help_style.border_width_right = 1
+	help_style.border_width_bottom = 1
+	help_style.border_color = Color(0.7, 0.7, 0.7, 1)
+	help_style.corner_radius_top_left = 14
+	help_style.corner_radius_top_right = 14
+	help_style.corner_radius_bottom_right = 14
+	help_style.corner_radius_bottom_left = 14
+	_crunch_help_btn.add_theme_stylebox_override("normal", help_style)
+	_crunch_help_btn.add_theme_stylebox_override("hover", help_style)
+	_crunch_help_btn.add_theme_stylebox_override("pressed", help_style)
+	_crunch_help_btn.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4, 1))
+	if UITheme:
+		UITheme.apply_font(_crunch_help_btn, "semibold")
+
+	crunch_hbox.add_child(_crunch_help_btn)
+
+	# Тултип при наведении
+	_crunch_help_btn.mouse_entered.connect(_on_crunch_help_hover)
+	_crunch_help_btn.mouse_exited.connect(_on_crunch_help_exit)
+
+# === CRUNCH TIME: Обновить состояние кнопки кранча ===
+func _update_crunch_btn():
+	if not _crunch_btn or not project:
+		return
+
+	var is_in_progress = (project.state == ProjectData.State.IN_PROGRESS)
+	var is_work_time = not GameTime.is_weekend() and GameTime.hour >= GameTime.START_HOUR and GameTime.hour < 20
+	var should_show = is_in_progress and is_work_time
+
+	_crunch_btn.visible = should_show
+	if _crunch_help_btn:
+		_crunch_help_btn.visible = should_show
+
+	if should_show:
+		if project.crunch_active:
+			_crunch_btn.text = tr("CRUNCH_TIME_BUTTON_ON")
+			_crunch_btn.add_theme_color_override("font_color", Color.WHITE)
+		else:
+			_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
+			_crunch_btn.add_theme_color_override("font_color", color_crunch_main)
+
+# === CRUNCH TIME: Переключение кранча ===
+func _on_crunch_pressed():
+	if not project or project.state != ProjectData.State.IN_PROGRESS:
+		return
+	project.crunch_active = not project.crunch_active
+	_update_crunch_btn()
+	if project.crunch_active:
+		print("🔥 Кранч активирован для проекта: %s" % project.get_display_title())
+		if Engine.has_singleton("EventLog"):
+			var el = Engine.get_singleton("EventLog")
+			el.add(tr("LOG_CRUNCH_ACTIVATED") % project.get_display_title(), 1)
+	else:
+		print("✅ Кранч деактивирован для проекта: %s" % project.get_display_title())
+
+# === CRUNCH TIME: Тултип при наведении на иконку ? ===
+func _on_crunch_help_hover():
+	if _crunch_tooltip_ref[0] != null and is_instance_valid(_crunch_tooltip_ref[0]):
+		_crunch_tooltip_ref[0].queue_free()
+	var tooltip_text = tr("CRUNCH_TIME_TOOLTIP")
+	var tp = _create_crunch_tooltip(tooltip_text)
+	add_child(tp)
+	await get_tree().process_frame
+	if not is_instance_valid(tp): return
+	if _crunch_help_btn:
+		var btn_global = _crunch_help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 36, btn_global.y - 10)
+	_crunch_tooltip_ref[0] = tp
+
+func _on_crunch_help_exit():
+	if _crunch_tooltip_ref[0] != null and is_instance_valid(_crunch_tooltip_ref[0]):
+		_crunch_tooltip_ref[0].queue_free()
+		_crunch_tooltip_ref[0] = null
+
+func _create_crunch_tooltip(text: String) -> PanelContainer:
+	var panel = PanelContainer.new()
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.15, 0.10, 0.05, 0.97)
+	bg_style.border_width_left = 1
+	bg_style.border_width_top = 1
+	bg_style.border_width_right = 1
+	bg_style.border_width_bottom = 1
+	bg_style.border_color = color_crunch_main
+	bg_style.corner_radius_top_left = 8
+	bg_style.corner_radius_top_right = 8
+	bg_style.corner_radius_bottom_right = 8
+	bg_style.corner_radius_bottom_left = 8
+	bg_style.content_margin_left = 10
+	bg_style.content_margin_top = 8
+	bg_style.content_margin_right = 10
+	bg_style.content_margin_bottom = 8
+	panel.add_theme_stylebox_override("panel", bg_style)
+	panel.z_index = 100
+
+	var lbl = Label.new()
+	lbl.text = text
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7, 1))
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.custom_minimum_size = Vector2(280, 0)
+	if UITheme: UITheme.apply_font(lbl, "regular")
+	panel.add_child(lbl)
+	return panel
 
 # === Создаём overlay в РОДИТЕЛЕ (HUD), прямо перед нами ===
 func _create_overlay():
@@ -206,6 +395,8 @@ func _notification(what):
 
 # === Закрытие окна (кнопка X + ESC) ===
 func close():
+	# === CRUNCH TIME: Убираем тултип при закрытии окна ===
+	_on_crunch_help_exit()
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -269,6 +460,7 @@ func update_buttons_visibility():
 		start_btn.visible = false
 	else:
 		start_btn.visible = true
+	_update_crunch_btn()
 
 func get_current_global_time() -> float:
 	var day_part = float(GameTime.hour) / 24.0
@@ -304,6 +496,7 @@ func _process(delta):
 	if not visible: return
 	
 	_update_budget_display()
+	_update_crunch_btn()
 
 	var origin_day = project.created_at_day
 	var origin_time = _get_origin_time()

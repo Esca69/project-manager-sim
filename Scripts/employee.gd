@@ -113,6 +113,10 @@ const PM_AURA_MOOD_PENALTY_PER_STACK: float = -5.0  # Каждый стак = -5
 const PM_AURA_MOOD_DURATION: float = 120.0  # Дебафф длится 120 игровых минут
 const PM_AURA_MAX_STACKS: int = 100  # Максимальный расчётный лимит стаков
 
+# === CRUNCH TIME ===
+const CRUNCH_END_HOUR: int = 20
+var _in_crunch: bool = false
+
 # === EVENT SYSTEM: Счётчик дней болезни и флаг отгула ===
 var sick_days_left: int = 0
 var is_on_day_off: bool = false
@@ -257,8 +261,13 @@ func _ready():
 	GameTime.time_tick.connect(_on_time_tick)
 	GameTime.day_started.connect(_on_day_started)
 	
-	if GameTime.hour < 9 or GameTime.hour >= 18 or GameTime.is_weekend():
+	if GameTime.hour < 9 or GameTime.hour >= 20 or GameTime.is_weekend():
 		_go_to_sleep_instant()
+	elif GameTime.hour >= 18:
+		if not data or not ProjectManager.is_employee_in_crunch(data):
+			_go_to_sleep_instant()
+		else:
+			_in_crunch = true
 
 # === МОТИВАЦИЯ: ПРИМЕНИТЬ БОНУС ===
 func apply_motivation(bonus: float, duration_minutes: float):
@@ -553,6 +562,7 @@ func _on_day_started(_day_number: int):
 	_pm_aura_stacks = 0
 	_pm_aura_annoyance_timer = 0.0
 	_in_pm_aura = false
+	_in_crunch = false
 	if data:
 		data.aura_bonus = 0.0
 	_chat_pair_cooldowns.clear()
@@ -567,6 +577,9 @@ func _on_time_tick(_hour, _minute):
 			data.onboarding_hours_left -= 1.0
 		if data.project_adapt_hours_left > 0:
 			data.project_adapt_hours_left -= 1.0
+		# === CRUNCH TIME: Тикаем дебафф эффективности ===
+		if data.crunch_efficiency_debuff_hours_left > 0:
+			data.crunch_efficiency_debuff_hours_left -= 1.0
 
 	# === EVENT SYSTEM: Не тикаем таймеры если болеем или в отгуле ===
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
@@ -596,6 +609,12 @@ func _on_time_tick(_hour, _minute):
 	# === VACATION: Тик задержки перед отпуском в 08:00 ===
 	if _hour == 8 and _minute == 0 and not GameTime.is_weekend():
 		_tick_vacation_delay()
+
+	# === CRUNCH TIME: В 20:00 отправляем домой и накладываем штрафы ===
+	if _hour == CRUNCH_END_HOUR and _minute == 0 and _in_crunch:
+		_in_crunch = false
+		_apply_crunch_penalties()
+		_should_go_home = true
 
 	# === МОТИВАЦИЯ: ТАЙМЕР ===
 	if _motivation_minutes_left > 0:
@@ -946,6 +965,23 @@ func _leave_desk_to_wander():
 	else:
 		_force_go_home()
 
+# === CRUNCH TIME: Наложить штрафы после переработки ===
+func _apply_crunch_penalties():
+	if not data: return
+	# Дебафф эффективности -20% на 1 рабочий день (~24 игровых часа)
+	data.crunch_efficiency_debuff_hours_left = 24.0
+	# Дебафф настроения -10 на 48 игровых часов (2880 мин)
+	data.add_mood_modifier("crunch_exhausted", "MOOD_MOD_CRUNCH_EXHAUSTED", -10.0, 2880.0)
+	# Записываем переработанное время для итогов дня
+	var daily_work = data.get_meta("daily_work_minutes", 0.0) if data.has_meta("daily_work_minutes") else 0.0
+	var normal_work_max = float((GameTime.END_HOUR - GameTime.START_HOUR) * 60)
+	var overtime = max(0.0, daily_work - normal_work_max)
+	data.set_meta("crunch_overtime_minutes", overtime)
+	print("😩 %s уходит после кранча. Дебаффы: -20%% эфф., -10 настроение. Переработка: %.0f мин." % [data.get_display_name(), overtime])
+	if Engine.has_singleton("EventLog"):
+		var el = Engine.get_singleton("EventLog")
+		el.add(tr("LOG_CRUNCH_PENALTIES") % data.get_display_name(), 1)
+
 func _move_along_path(delta):
 	var next_path_position = nav_agent.get_next_path_position()
 	var direction = global_position.direction_to(next_path_position)
@@ -983,9 +1019,10 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 func _is_work_time() -> bool:
 	if GameTime.is_weekend():
 		return false
+	var end_hour = CRUNCH_END_HOUR if _in_crunch else GameTime.END_HOUR
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
-		return GameTime.hour >= _early_bird_start_hour and GameTime.hour < GameTime.END_HOUR
-	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR
+		return GameTime.hour >= _early_bird_start_hour and GameTime.hour < end_hour
+	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < end_hour
 
 func _start_wandering():
 	_wander_origin = global_position
@@ -1089,6 +1126,9 @@ func _try_start_toilet_break():
 		return
 	if _toilet_ban_minutes_left > 0:
 		return
+	# === CRUNCH TIME: Запрет туалета во время кранча ===
+	if _in_crunch:
+		return
 	
 	if toilet_visits_done >= toilet_visit_times.size():
 		return
@@ -1147,6 +1187,9 @@ func _try_start_lunch():
 	if current_state == State.WRITING_REPORT or current_state == State.GOING_TO_REPORT:
 		return
 	if _lunch_done_today:
+		return
+	# === CRUNCH TIME: Запрет обеда во время кранча ===
+	if _in_crunch:
 		return
 	if GameTime.hour < LUNCH_START_HOUR or GameTime.hour >= LUNCH_END_HOUR:
 		return
@@ -1700,6 +1743,11 @@ func _on_work_started():
 
 func _on_work_ended():
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
+		return
+	# === CRUNCH TIME: Проверяем, назначен ли сотрудник на кранч-проект ===
+	if data and ProjectManager.is_employee_in_crunch(data):
+		_in_crunch = true
+		print("🔥 %s остаётся на кранч до 20:00" % data.get_display_name())
 		return
 	_should_go_home = true
 

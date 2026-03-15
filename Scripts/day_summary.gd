@@ -519,8 +519,9 @@ func _build_employees_section():
 			continue
 		var work_minutes = npc.data.get_meta("daily_work_minutes", 0.0) if npc.data.has_meta("daily_work_minutes") else 0.0
 		var progress = npc.data.get_meta("daily_progress", 0.0) if npc.data.has_meta("daily_progress") else 0.0
+		var overtime = npc.data.get_meta("crunch_overtime_minutes", 0.0) if npc.data.has_meta("crunch_overtime_minutes") else 0.0
 		if work_minutes > 0.1:
-			worked_list.append({"data": npc.data, "minutes": work_minutes, "progress": progress})
+			worked_list.append({"data": npc.data, "minutes": work_minutes, "progress": progress, "overtime": overtime})
 		else:
 			idle_list.append(npc.data)
 
@@ -543,9 +544,10 @@ func _build_employees_section():
 			var emp: EmployeeData = entry["data"]
 			var minutes: float = entry["minutes"]
 			var progress: float = entry["progress"]
+			var overtime: float = entry.get("overtime", 0.0)
 			var hours_str = _format_work_time(minutes)
 			var progress_str = _format_progress(progress)
-			var card = _create_employee_card(emp, hours_str, progress_str)
+			var card = _create_employee_card(emp, hours_str, progress_str, overtime)
 			_content_vbox.add_child(card)
 
 	if idle_list.size() > 0:
@@ -604,7 +606,7 @@ func _build_employees_section():
 		_content_vbox.add_child(warn_lbl)
 
 # === КАРТОЧКА РАБОТАВШЕГО СОТРУДНИКА (с тенью) ===
-func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: String) -> PanelContainer:
+func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: String, overtime_minutes: float = 0.0) -> PanelContainer:
 	var card = PanelContainer.new()
 	var style: StyleBoxFlat
 	if UITheme:
@@ -658,6 +660,15 @@ func _create_employee_card(emp: EmployeeData, hours_str: String, progress_str: S
 	prog_lbl.custom_minimum_size = Vector2(160, 0)
 	if UITheme: UITheme.apply_font(prog_lbl, "semibold")
 	hbox.add_child(prog_lbl)
+
+	# === CRUNCH TIME: Показываем переработанное время ===
+	if overtime_minutes > 0.5:
+		var overtime_lbl = Label.new()
+		overtime_lbl.text = "🔥 " + tr("DAY_SUMMARY_CRUNCH_OVERTIME") % _format_work_time(overtime_minutes)
+		overtime_lbl.add_theme_color_override("font_color", Color(0.87, 0.44, 0.13, 1))
+		overtime_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(overtime_lbl, "semibold")
+		hbox.add_child(overtime_lbl)
 
 	return card
 

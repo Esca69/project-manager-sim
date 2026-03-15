@@ -1018,6 +1018,10 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	if bd.has("project_adapt_mod") and bd.project_adapt_mod < 0:
 		lines.append(tr("EFF_MOD_PROJECT_ADAPT") + (" (%s)" % _format_mod(bd.project_adapt_mod)))
 
+	# === CRUNCH TIME: Дебафф после кранча ===
+	if bd.has("crunch_mod") and bd.crunch_mod < 0:
+		lines.append(tr("CRUNCH_DEBUFF_EFFICIENCY") + (" (%s)" % _format_mod(bd.crunch_mod)))
+
 	# === RELATIONSHIP SYSTEM: Бонус от соседей ===
 	if bd.has("neighbor_mod"):
 		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _format_mod(bd.neighbor_mod))
