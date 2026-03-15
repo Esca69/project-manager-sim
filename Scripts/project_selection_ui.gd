@@ -723,27 +723,26 @@ func _make_nego_card(title: String, desc: String, cost: int, repeatable: bool, o
 	if UITheme: UITheme.apply_font(cost_lbl, "semibold")
 	left_vbox.add_child(cost_lbl)
 
-	# Правая часть — кнопка
+	# Правая часть — кнопка (обёрнута в VBox для вертикального центрирования)
+	var right_vbox = VBoxContainer.new()
+	right_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_child(right_vbox)
+
 	var can_afford = BossManager.boss_trust >= cost
 
 	var buy_btn = Button.new()
-	buy_btn.custom_minimum_size = Vector2(130, 40)
+	buy_btn.custom_minimum_size = Vector2(160, 40)
 	buy_btn.focus_mode = Control.FOCUS_NONE
 	buy_btn.disabled = not can_afford
 
 	if can_afford:
-		var btn_style_n = StyleBoxFlat.new()
-		btn_style_n.bg_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
-		btn_style_n.corner_radius_top_left = 10
-		btn_style_n.corner_radius_top_right = 10
-		btn_style_n.corner_radius_bottom_right = 10
-		btn_style_n.corner_radius_bottom_left = 10
-
 		buy_btn.text = tr("PROJ_SEL_BTN_SELECT") if repeatable else "🤝 Deal"
-		buy_btn.add_theme_stylebox_override("normal", btn_style_n)
-		buy_btn.add_theme_stylebox_override("hover", btn_style_n)
-		buy_btn.add_theme_color_override("font_color", Color.WHITE)
+		buy_btn.add_theme_stylebox_override("normal", _btn_style)
+		buy_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+		buy_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+		buy_btn.add_theme_color_override("font_color", COLOR_BLUE)
 		buy_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		buy_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
 		buy_btn.pressed.connect(on_buy)
 	else:
 		buy_btn.text = tr("NEGO_NOT_ENOUGH")
@@ -755,10 +754,10 @@ func _make_nego_card(title: String, desc: String, cost: int, repeatable: bool, o
 		buy_btn.add_theme_color_override("font_hover_color", Color(0.55, 0.55, 0.6, 1))
 		buy_btn.add_theme_color_override("font_pressed_color", Color(0.55, 0.55, 0.6, 1))
 		buy_btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.55, 0.6, 1))
-		buy_btn.add_theme_font_size_override("font_size", 14)
 
+	buy_btn.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(buy_btn, "semibold")
-	hbox.add_child(buy_btn)
+	right_vbox.add_child(buy_btn)
 
 	return card
 
