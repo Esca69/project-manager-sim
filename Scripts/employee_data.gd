@@ -24,6 +24,9 @@ var onboarding_hours_left: float = 120.0
 var project_adapt_hours_left: float = 0.0
 var known_project_ids: Array = []
 
+# === CRUNCH TIME: Дебафф эффективности после кранча (-20%, 1 рабочий день) ===
+var crunch_efficiency_debuff_hours_left: float = 0.0
+
 const SEVERANCE_MIN_MULTIPLIER: float = 0.5
 const SEVERANCE_MAX_MULTIPLIER: float = 1.5
 
@@ -710,6 +713,11 @@ func get_efficiency_multiplier() -> float:
 	if project_adapt_hours_left > 0:
 		adaptation_mod -= 0.20
 
+	# === CRUNCH TIME: Дебафф после кранча ===
+	var crunch_mod: float = 0.0
+	if crunch_efficiency_debuff_hours_left > 0:
+		crunch_mod = -0.20
+
 	var motivation_mod = motivation_bonus
 
 	var event_mod: float = 0.0
@@ -719,7 +727,7 @@ func get_efficiency_multiplier() -> float:
 
 	var aura_mod = aura_bonus
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod)
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -749,7 +757,12 @@ func get_efficiency_breakdown() -> Dictionary:
 	if project_adapt_hours_left > 0:
 		adaptation_mod -= 0.20
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod)
+	# === CRUNCH TIME: Дебафф после кранча ===
+	var crunch_mod: float = 0.0
+	if crunch_efficiency_debuff_hours_left > 0:
+		crunch_mod = -0.20
+
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -764,6 +777,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"neighbor_mod": neighbor_mod,
 		"onboarding_mod": -0.10 if onboarding_hours_left > 0 else 0.0,
 		"project_adapt_mod": -0.20 if project_adapt_hours_left > 0 else 0.0,
+		"crunch_mod": crunch_mod,
 		"total": total,
 	}
 

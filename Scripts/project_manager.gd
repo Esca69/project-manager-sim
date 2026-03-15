@@ -57,7 +57,8 @@ func _physics_process(delta):
 			_fail_project(project)
 			continue
 
-		var is_working_hours = GameTime.hour >= GameTime.START_HOUR and GameTime.hour < GameTime.END_HOUR and not GameTime.is_weekend()
+		var crunch_end_hour = 20 if project.crunch_active else GameTime.END_HOUR
+		var is_working_hours = GameTime.hour >= GameTime.START_HOUR and GameTime.hour < crunch_end_hour and not GameTime.is_weekend()
 
 		var active_stage = null
 		for i in range(project.stages.size()):
@@ -173,6 +174,7 @@ func _fail_project(project: ProjectData):
 	print(tr("LOG_PROJECT_FAILED") % tr(project.title))
 	EventLog.add(tr("LOG_PROJECT_FAILED") % tr(project.title), EventLog.LogType.ALERT)
 	project.state = ProjectData.State.FAILED
+	project.crunch_active = false
 
 	# === MOOD SYSTEM v2: Провал → -10 на 24 часа всем участникам ===
 	# А также снимаем штраф адаптации, так как проект закрыт
@@ -212,6 +214,7 @@ func _finish_project(project: ProjectData):
 	EventLog.add(tr("LOG_PROJECT_FINISHED") % tr(project.title), EventLog.LogType.PROGRESS)
 	
 	project.state = ProjectData.State.FINISHED
+	project.crunch_active = false
 	
 	# === СНИМАЕМ ШТРАФ ЗА АДАПТАЦИЮ У ТЕКУЩИХ РАБОТНИКОВ (до заморозки) ===
 	for stage in project.stages:
@@ -286,3 +289,37 @@ func is_employee_on_active_stage(emp_data: EmployeeData) -> bool:
 				if worker_data == emp_data:
 					return true
 	return false
+
+# === CRUNCH TIME: Есть ли хоть один активный кранч? ===
+func has_any_crunch_active() -> bool:
+	for project in active_projects:
+		if project.state == ProjectData.State.IN_PROGRESS and project.crunch_active:
+			return true
+	return false
+
+# === CRUNCH TIME: Назначен ли сотрудник на активный этап кранч-проекта? ===
+func is_employee_in_crunch(emp_data: EmployeeData) -> bool:
+	for project in active_projects:
+		if project.state != ProjectData.State.IN_PROGRESS:
+			continue
+		if not project.crunch_active:
+			continue
+		var active_stage = _get_active_stage(project)
+		if active_stage:
+			for worker_data in active_stage.workers:
+				if worker_data == emp_data:
+					return true
+	return false
+
+# === CRUNCH TIME: Получить активный этап проекта ===
+func _get_active_stage(project: ProjectData) -> Dictionary:
+	for i in range(project.stages.size()):
+		var stage = project.stages[i]
+		if stage.get("is_completed", false):
+			continue
+		var prev_ok = true
+		if i > 0:
+			prev_ok = project.stages[i - 1].get("is_completed", false)
+		if prev_ok:
+			return stage
+	return {}
