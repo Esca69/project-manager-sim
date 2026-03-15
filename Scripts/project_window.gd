@@ -21,7 +21,7 @@ const MIN_TIMELINE_DAYS = 7.0
 var _crunch_btn: Button = null
 var _crunch_help_btn: Button = null
 var _crunch_tooltip_ref: Array = [null]
-var color_crunch_main = Color(0.87, 0.44, 0.13, 1)  # Оранжевый цвет кранча
+const COLOR_CRUNCH = Color(0.17254902, 0.30980393, 0.5686275, 1)  # Стандартный синий цвет UI
 
 var current_time_line: ColorRect
 var soft_deadline_line: ColorRect
@@ -199,6 +199,7 @@ func _build_crunch_row():
 	_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
 	_crunch_btn.custom_minimum_size = Vector2(160, 36)
 	_crunch_btn.visible = false
+	_crunch_btn.focus_mode = Control.FOCUS_NONE
 
 	var crunch_style_normal = StyleBoxFlat.new()
 	crunch_style_normal.bg_color = Color(1, 1, 1, 1)
@@ -206,42 +207,44 @@ func _build_crunch_row():
 	crunch_style_normal.border_width_top = 2
 	crunch_style_normal.border_width_right = 2
 	crunch_style_normal.border_width_bottom = 2
-	crunch_style_normal.border_color = color_crunch_main
+	crunch_style_normal.border_color = COLOR_CRUNCH
 	crunch_style_normal.corner_radius_top_left = 20
 	crunch_style_normal.corner_radius_top_right = 20
 	crunch_style_normal.corner_radius_bottom_right = 20
 	crunch_style_normal.corner_radius_bottom_left = 20
 
 	var crunch_style_hover = StyleBoxFlat.new()
-	crunch_style_hover.bg_color = color_crunch_main
+	crunch_style_hover.bg_color = COLOR_CRUNCH
 	crunch_style_hover.border_width_left = 2
 	crunch_style_hover.border_width_top = 2
 	crunch_style_hover.border_width_right = 2
 	crunch_style_hover.border_width_bottom = 2
-	crunch_style_hover.border_color = color_crunch_main
+	crunch_style_hover.border_color = COLOR_CRUNCH
 	crunch_style_hover.corner_radius_top_left = 20
 	crunch_style_hover.corner_radius_top_right = 20
 	crunch_style_hover.corner_radius_bottom_right = 20
 	crunch_style_hover.corner_radius_bottom_left = 20
 
-	var crunch_style_active = StyleBoxFlat.new()
-	crunch_style_active.bg_color = color_crunch_main
-	crunch_style_active.border_width_left = 2
-	crunch_style_active.border_width_top = 2
-	crunch_style_active.border_width_right = 2
-	crunch_style_active.border_width_bottom = 2
-	crunch_style_active.border_color = color_crunch_main
-	crunch_style_active.corner_radius_top_left = 20
-	crunch_style_active.corner_radius_top_right = 20
-	crunch_style_active.corner_radius_bottom_right = 20
-	crunch_style_active.corner_radius_bottom_left = 20
+	var crunch_style_disabled = StyleBoxFlat.new()
+	crunch_style_disabled.bg_color = Color(0.93, 0.93, 0.93, 1)
+	crunch_style_disabled.border_width_left = 2
+	crunch_style_disabled.border_width_top = 2
+	crunch_style_disabled.border_width_right = 2
+	crunch_style_disabled.border_width_bottom = 2
+	crunch_style_disabled.border_color = Color(0.8, 0.8, 0.8, 1)
+	crunch_style_disabled.corner_radius_top_left = 20
+	crunch_style_disabled.corner_radius_top_right = 20
+	crunch_style_disabled.corner_radius_bottom_right = 20
+	crunch_style_disabled.corner_radius_bottom_left = 20
 
 	_crunch_btn.add_theme_stylebox_override("normal", crunch_style_normal)
 	_crunch_btn.add_theme_stylebox_override("hover", crunch_style_hover)
-	_crunch_btn.add_theme_stylebox_override("pressed", crunch_style_active)
-	_crunch_btn.add_theme_color_override("font_color", color_crunch_main)
+	_crunch_btn.add_theme_stylebox_override("pressed", crunch_style_hover)
+	_crunch_btn.add_theme_stylebox_override("disabled", crunch_style_disabled)
+	_crunch_btn.add_theme_color_override("font_color", COLOR_CRUNCH)
 	_crunch_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	_crunch_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	_crunch_btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
 
 	if UITheme:
 		UITheme.apply_font(_crunch_btn, "semibold")
@@ -249,28 +252,42 @@ func _build_crunch_row():
 	_crunch_btn.pressed.connect(_on_crunch_pressed)
 	crunch_hbox.add_child(_crunch_btn)
 
-	# Иконка помощи (?)
+	# Иконка помощи (?) — стиль как _create_help_button() в employee_roster.gd
 	_crunch_help_btn = Button.new()
 	_crunch_help_btn.text = "?"
-	_crunch_help_btn.custom_minimum_size = Vector2(28, 28)
+	_crunch_help_btn.custom_minimum_size = Vector2(22, 22)
 	_crunch_help_btn.flat = false
 	_crunch_help_btn.visible = false
+	_crunch_help_btn.focus_mode = Control.FOCUS_NONE
+	_crunch_help_btn.add_theme_font_size_override("font_size", 11)
+	_crunch_help_btn.add_theme_color_override("font_color", COLOR_CRUNCH)
 
-	var help_style = StyleBoxFlat.new()
-	help_style.bg_color = Color(0.9, 0.9, 0.9, 1)
-	help_style.border_width_left = 1
-	help_style.border_width_top = 1
-	help_style.border_width_right = 1
-	help_style.border_width_bottom = 1
-	help_style.border_color = Color(0.7, 0.7, 0.7, 1)
-	help_style.corner_radius_top_left = 14
-	help_style.corner_radius_top_right = 14
-	help_style.corner_radius_bottom_right = 14
-	help_style.corner_radius_bottom_left = 14
-	_crunch_help_btn.add_theme_stylebox_override("normal", help_style)
-	_crunch_help_btn.add_theme_stylebox_override("hover", help_style)
-	_crunch_help_btn.add_theme_stylebox_override("pressed", help_style)
-	_crunch_help_btn.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4, 1))
+	var help_style_normal = StyleBoxFlat.new()
+	help_style_normal.bg_color = Color(1, 1, 1, 1)
+	help_style_normal.border_width_left = 2
+	help_style_normal.border_width_top = 2
+	help_style_normal.border_width_right = 2
+	help_style_normal.border_width_bottom = 2
+	help_style_normal.border_color = COLOR_CRUNCH
+	help_style_normal.corner_radius_top_left = 11
+	help_style_normal.corner_radius_top_right = 11
+	help_style_normal.corner_radius_bottom_right = 11
+	help_style_normal.corner_radius_bottom_left = 11
+	_crunch_help_btn.add_theme_stylebox_override("normal", help_style_normal)
+
+	var help_style_hover = StyleBoxFlat.new()
+	help_style_hover.bg_color = Color(0.92, 0.94, 1.0, 1)
+	help_style_hover.border_width_left = 2
+	help_style_hover.border_width_top = 2
+	help_style_hover.border_width_right = 2
+	help_style_hover.border_width_bottom = 2
+	help_style_hover.border_color = COLOR_CRUNCH
+	help_style_hover.corner_radius_top_left = 11
+	help_style_hover.corner_radius_top_right = 11
+	help_style_hover.corner_radius_bottom_right = 11
+	help_style_hover.corner_radius_bottom_left = 11
+	_crunch_help_btn.add_theme_stylebox_override("hover", help_style_hover)
+
 	if UITheme:
 		UITheme.apply_font(_crunch_help_btn, "semibold")
 
@@ -279,6 +296,9 @@ func _build_crunch_row():
 	# Тултип при наведении
 	_crunch_help_btn.mouse_entered.connect(_on_crunch_help_hover)
 	_crunch_help_btn.mouse_exited.connect(_on_crunch_help_exit)
+
+	# === Сбрасываем disabled при начале нового рабочего дня ===
+	GameTime.work_started.connect(func(): _update_crunch_btn())
 
 # === CRUNCH TIME: Обновить состояние кнопки кранча ===
 func _update_crunch_btn():
@@ -296,73 +316,40 @@ func _update_crunch_btn():
 	if should_show:
 		if project.crunch_active:
 			_crunch_btn.text = tr("CRUNCH_TIME_BUTTON_ON")
-			_crunch_btn.add_theme_color_override("font_color", Color.WHITE)
+			_crunch_btn.disabled = true
 		else:
 			_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
-			_crunch_btn.add_theme_color_override("font_color", color_crunch_main)
+			_crunch_btn.disabled = false
 
-# === CRUNCH TIME: Переключение кранча ===
+# === CRUNCH TIME: Активация кранча (только включить, выключить нельзя) ===
 func _on_crunch_pressed():
 	if not project or project.state != ProjectData.State.IN_PROGRESS:
 		return
-	project.crunch_active = not project.crunch_active
+	project.crunch_active = true
 	_update_crunch_btn()
-	if project.crunch_active:
-		print("🔥 Кранч активирован для проекта: %s" % project.get_display_title())
-		if Engine.has_singleton("EventLog"):
-			var el = Engine.get_singleton("EventLog")
-			el.add(tr("LOG_CRUNCH_ACTIVATED") % project.get_display_title(), 1)
-	else:
-		print("✅ Кранч деактивирован для проекта: %s" % project.get_display_title())
+	print("🔥 Кранч активирован для проекта: %s" % project.get_display_title())
+	if Engine.has_singleton("EventLog"):
+		var el = Engine.get_singleton("EventLog")
+		el.add(tr("LOG_CRUNCH_ACTIVATED") % project.get_display_title(), 1)
 
 # === CRUNCH TIME: Тултип при наведении на иконку ? ===
 func _on_crunch_help_hover():
 	if _crunch_tooltip_ref[0] != null and is_instance_valid(_crunch_tooltip_ref[0]):
 		_crunch_tooltip_ref[0].queue_free()
 	var tooltip_text = tr("CRUNCH_TIME_TOOLTIP")
-	var tp = _create_crunch_tooltip(tooltip_text)
+	var tp = TraitUIHelper._create_tooltip(tooltip_text, COLOR_CRUNCH)
 	add_child(tp)
 	await get_tree().process_frame
 	if not is_instance_valid(tp): return
 	if _crunch_help_btn:
 		var btn_global = _crunch_help_btn.global_position
-		tp.global_position = Vector2(btn_global.x + 36, btn_global.y - 10)
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
 	_crunch_tooltip_ref[0] = tp
 
 func _on_crunch_help_exit():
 	if _crunch_tooltip_ref[0] != null and is_instance_valid(_crunch_tooltip_ref[0]):
 		_crunch_tooltip_ref[0].queue_free()
 		_crunch_tooltip_ref[0] = null
-
-func _create_crunch_tooltip(text: String) -> PanelContainer:
-	var panel = PanelContainer.new()
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.15, 0.10, 0.05, 0.97)
-	bg_style.border_width_left = 1
-	bg_style.border_width_top = 1
-	bg_style.border_width_right = 1
-	bg_style.border_width_bottom = 1
-	bg_style.border_color = color_crunch_main
-	bg_style.corner_radius_top_left = 8
-	bg_style.corner_radius_top_right = 8
-	bg_style.corner_radius_bottom_right = 8
-	bg_style.corner_radius_bottom_left = 8
-	bg_style.content_margin_left = 10
-	bg_style.content_margin_top = 8
-	bg_style.content_margin_right = 10
-	bg_style.content_margin_bottom = 8
-	panel.add_theme_stylebox_override("panel", bg_style)
-	panel.z_index = 100
-
-	var lbl = Label.new()
-	lbl.text = text
-	lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.7, 1))
-	lbl.add_theme_font_size_override("font_size", 12)
-	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl.custom_minimum_size = Vector2(280, 0)
-	if UITheme: UITheme.apply_font(lbl, "regular")
-	panel.add_child(lbl)
-	return panel
 
 # === Создаём overlay в РОДИТЕЛЕ (HUD), прямо перед нами ===
 func _create_overlay():

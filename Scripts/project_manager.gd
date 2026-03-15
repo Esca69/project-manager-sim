@@ -10,10 +10,16 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	# Подписываемся на начало рабочего дня для сброса daily_labor_cost
 	GameTime.work_started.connect(_on_work_started)
+	# Сбрасываем кранч при начале ночной промотки (до сохранения)
+	GameTime.night_skip_started.connect(_on_night_skip_started)
 
 func _on_work_started():
 	for project in active_projects:
 		project.daily_labor_cost = 0.0
+
+func _on_night_skip_started():
+	for project in active_projects:
+		project.crunch_active = false
 
 func add_project(proj: ProjectData):
 	if count_active_projects() >= PMData.get_max_projects():
