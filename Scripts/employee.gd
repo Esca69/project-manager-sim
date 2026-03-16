@@ -117,6 +117,10 @@ const PM_AURA_MAX_STACKS: int = 100  # Максимальный расчётны
 const CRUNCH_END_HOUR: int = 20
 var _in_crunch: bool = false
 
+# === MORNING MOOD SYSTEM ===
+var _morning_mood_bubble_pending: bool = false
+var _morning_mood_bubble_emoji: String = ""
+
 # === EVENT SYSTEM: Счётчик дней болезни и флаг отгула ===
 var sick_days_left: int = 0
 var is_on_day_off: bool = false
@@ -648,6 +652,20 @@ func _on_time_tick(_hour, _minute):
 	# === PROXIMITY CHAT SYSTEM: Тик кулдаунов + попытка чата ===
 	_tick_chat_cooldowns()
 	_try_proximity_chat()
+
+	# === MORNING MOOD: Отложенный бабл ===
+	if _morning_mood_bubble_pending:
+		var current_time = GameTime.hour * 60 + GameTime.minute
+		if current_time >= 570 and current_time <= 660:  # 9:30 до 11:00
+			if randf() < 0.03:  # ~3% за минуту
+				show_thought_bubble(_morning_mood_bubble_emoji, 3.0)
+				_morning_mood_bubble_pending = false
+				_morning_mood_bubble_emoji = ""
+		elif current_time > 660:
+			# После 11:00 — показываем принудительно если ещё ждём
+			show_thought_bubble(_morning_mood_bubble_emoji, 3.0)
+			_morning_mood_bubble_pending = false
+			_morning_mood_bubble_emoji = ""
 
 	# === RELATIONSHIP SYSTEM: Обновление бонуса от соседей ===
 	_update_neighbor_bonus()
@@ -1713,6 +1731,7 @@ func _on_work_started():
 		_pm_aura_annoyance_timer = 0.0
 		_in_pm_aura = false
 		data.aura_bonus = 0.0
+		_apply_morning_mood()
 		return
 	
 	if data:
@@ -1727,6 +1746,8 @@ func _on_work_started():
 	_in_pm_aura = false
 	if data:
 		data.aura_bonus = 0.0
+	
+	_apply_morning_mood()
 	
 	if my_desk_position == Vector2.ZERO:
 		visible = true
@@ -1763,6 +1784,46 @@ func _on_work_ended():
 		print("🔥 %s остаётся на кранч до 20:00" % data.get_display_name())
 		return
 	_should_go_home = true
+
+# === MORNING MOOD SYSTEM ===
+func _apply_morning_mood():
+	if not data:
+		return
+	
+	var roll = randi_range(1, 100)
+	
+	# Убираем старый модификатор утреннего настроения (если остался с прошлого дня)
+	data.remove_mood_modifier("morning_mood")
+	
+	if roll <= 60:
+		# Нейтральное настроение — модификатор не применяется
+		pass
+	elif roll <= 75:
+		# Хорошее настроение: +5, 720 минут (12 часов)
+		data.add_mood_modifier("morning_mood", "MODIFIER_GOOD_MOOD", 5.0, 720.0)
+		_morning_mood_bubble_pending = true
+		_morning_mood_bubble_emoji = "🙂"
+	elif roll <= 90:
+		# Плохое настроение: -5, 720 минут
+		data.add_mood_modifier("morning_mood", "MODIFIER_BAD_MOOD", -5.0, 720.0)
+		_morning_mood_bubble_pending = true
+		_morning_mood_bubble_emoji = "😕"
+	elif roll <= 95:
+		# Отличное настроение: +10, 720 минут
+		data.add_mood_modifier("morning_mood", "MODIFIER_EXCELLENT_MOOD", 10.0, 720.0)
+		_morning_mood_bubble_pending = true
+		_morning_mood_bubble_emoji = "😄"
+		# Логируем только крайние случаи
+		if EventLog:
+			EventLog.add(tr("LOG_MORNING_MOOD_EXCELLENT") % data.get_display_name(), EventLog.LogType.ROUTINE)
+	else:
+		# Ужасное настроение: -10, 720 минут
+		data.add_mood_modifier("morning_mood", "MODIFIER_TERRIBLE_MOOD", -10.0, 720.0)
+		_morning_mood_bubble_pending = true
+		_morning_mood_bubble_emoji = "😣"
+		# Логируем только крайние случаи
+		if EventLog:
+			EventLog.add(tr("LOG_MORNING_MOOD_TERRIBLE") % data.get_display_name(), EventLog.LogType.ALERT)
 
 func _on_arrived_home():
 	visible = false
