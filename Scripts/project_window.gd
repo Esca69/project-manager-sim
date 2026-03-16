@@ -208,11 +208,12 @@ func _build_crunch_row():
 	var crunch_hbox = HBoxContainer.new()
 	crunch_hbox.name = "CrunchRow"
 	crunch_hbox.add_theme_constant_override("separation", 8)
+	crunch_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	footer.add_child(crunch_hbox)
 
 	_crunch_btn = Button.new()
 	_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
-	_crunch_btn.custom_minimum_size = Vector2(160, 36)
+	_crunch_btn.custom_minimum_size = Vector2(160, 40)
 	_crunch_btn.visible = false
 	_crunch_btn.focus_mode = Control.FOCUS_NONE
 
@@ -379,6 +380,8 @@ func close():
 # === Обработка ESC ===
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
+		if selector_ref and selector_ref.visible:
+			return
 		close()
 		get_viewport().set_input_as_handled()
 

@@ -138,6 +138,11 @@ func _get_role_name(stage_type: String) -> String:
 func _on_cancel_button_pressed():
 	visible = false
 
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		_on_cancel_button_pressed()
+		get_viewport().set_input_as_handled()
+
 func _on_item_list_item_activated(index):
 	var data = item_list.get_item_metadata(index)
 	
