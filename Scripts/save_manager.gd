@@ -224,6 +224,9 @@ func _serialize_employees() -> Array:
 			# === BURNOUT SYSTEM ===
 			"burnout_level": d.burnout_level,
 			"burnout_timer": d.burnout_timer,
+			# === MORNING MOOD SYSTEM: Состояние бабла ===
+			"morning_mood_bubble_pending": npc._morning_mood_bubble_pending if "_morning_mood_bubble_pending" in npc else false,
+			"morning_mood_bubble_emoji": npc._morning_mood_bubble_emoji if "_morning_mood_bubble_emoji" in npc else "",
 		})
 	return result
 
@@ -583,6 +586,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === BURNOUT SYSTEM ===
 			npc.data.burnout_level = float(emp_dict.get("burnout_level", 0.0))
 			npc.data.burnout_timer = float(emp_dict.get("burnout_timer", 0.0))
+			# === MORNING MOOD SYSTEM: Состояние бабла ===
+			npc._morning_mood_bubble_pending = emp_dict.get("morning_mood_bubble_pending", false)
+			npc._morning_mood_bubble_emoji = str(emp_dict.get("morning_mood_bubble_emoji", ""))
 			# === PROXIMITY CHAT: Восстанавливаем кулдауны пар ===
 			var saved_cooldowns = emp_dict.get("chat_pair_cooldowns", {})
 			npc._chat_pair_cooldowns.clear()

@@ -914,3 +914,9 @@ BURNOUT_LABEL,😮‍💨 Выгорание: %d%%,😮‍💨 Burnout: %d%%
 BURNOUT_TOOLTIP_DESC,"Сотрудники выгорают, если долго работают в плохом настроении. Каждый процент выгорания снижает эффективность на 1%.","Employees burn out when working in a bad mood for extended periods. Each percent of burnout reduces efficiency by 1%."
 EFFICIENCY_BREAKDOWN_BURNOUT,🔻 Штраф от выгорания,🔻 Burnout penalty
 LOG_BURNOUT_INCREASED,😮‍💨 %s выгорает! (выгорание: %d%%),😮‍💨 %s is burning out! (burnout: %d%%)
+MODIFIER_GOOD_MOOD,Хорошее утро,Good Morning Mood
+MODIFIER_BAD_MOOD,Плохое утро,Bad Morning Mood
+MODIFIER_EXCELLENT_MOOD,Отличное утро,Excellent Morning Mood
+MODIFIER_TERRIBLE_MOOD,Ужасное утро,Terrible Morning Mood
+LOG_MORNING_MOOD_EXCELLENT,😄 %s пришёл на работу в отличном настроении!,😄 %s came to work in an excellent mood!
+LOG_MORNING_MOOD_TERRIBLE,😣 %s пришёл на работу в ужасном настроении,😣 %s came to work in a terrible mood.
