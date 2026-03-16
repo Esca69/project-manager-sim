@@ -149,6 +149,9 @@ func _ready():
 	if not project_list_menu.project_opened.is_connected(_on_project_list_opened):
 		project_list_menu.project_opened.connect(_on_project_list_opened)
 
+	if not project_window.closed.is_connected(_on_project_window_closed):
+		project_window.closed.connect(_on_project_window_closed)
+
 	if bottom_bar and not bottom_bar.tab_pressed.is_connected(_on_bottom_tab_pressed):
 		bottom_bar.tab_pressed.connect(_on_bottom_tab_pressed)
 
@@ -624,6 +627,9 @@ func _on_project_list_opened(proj_data: ProjectData):
 		UITheme.fade_in(project_window)
 	else:
 		project_window.visible = true
+
+func _on_project_window_closed():
+	project_list_menu.open_menu()
 
 func _on_bottom_tab_pressed(tab_name: String):
 	match tab_name:
