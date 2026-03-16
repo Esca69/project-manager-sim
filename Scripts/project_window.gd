@@ -100,12 +100,25 @@ func setup(data: ProjectData, selector_node):
     
     _update_budget_display()
 
+func _force_fullscreen_size():
+    var vp_size = get_viewport().get_visible_rect().size
+    position = Vector2.ZERO
+    size = vp_size
+
 func _ready():
     process_mode = Node.PROCESS_MODE_ALWAYS
+    z_index = 90
+    mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _force_fullscreen_size()
     timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 
-    # === Overlay: вставляем в РОДИТЕЛЯ, ПОД project_window ===
-    call_deferred("_create_overlay")
+    # === Overlay: дочерний элемент, позади MainLayout ===
+    _bg_overlay = ColorRect.new()
+    _bg_overlay.color = Color(0, 0, 0, 0.45)
+    _bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+    _bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    add_child(_bg_overlay)
+    move_child(_bg_overlay, 0)
 
     # === ИСПРАВЛЕНИЕ: Переводим хардкодные заголовки столбцов ===
     var col_role = $MainLayout/ContentWrapper/Body/TableHeader/Label
@@ -353,35 +366,6 @@ func _on_crunch_help_exit():
         _crunch_tooltip_ref[0].queue_free()
         _crunch_tooltip_ref[0] = null
 
-# === Создаём overlay в РОДИТЕЛЕ (HUD), прямо перед нами ===
-func _create_overlay():
-    var parent = get_parent()
-    if not parent:
-        return
-    
-    _bg_overlay = ColorRect.new()
-    _bg_overlay.name = "ProjectWindowOverlay"
-    _bg_overlay.color = Color(0, 0, 0, 0.45)
-    _bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-    _bg_overlay.visible = false
-    
-    # Добавляем в родителя
-    parent.add_child(_bg_overlay)
-    
-    # Растягиваем на весь экран
-    if _bg_overlay is Control:
-        _bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-    
-    # Ставим прямо перед project_window, чтобы был ПОД нами
-    var my_index = get_index()
-    parent.move_child(_bg_overlay, my_index)
-
-# === Показ/скрытие overlay вместе с окном ===
-func _notification(what):
-    if what == NOTIFICATION_VISIBILITY_CHANGED:
-        if _bg_overlay:
-            _bg_overlay.visible = visible
-
 # === Закрытие окна (кнопка X + ESC) ===
 func close():
     # === CRUNCH TIME: Убираем тултип при закрытии окна ===
@@ -390,8 +374,6 @@ func close():
         UITheme.fade_out(self, 0.15)
     else:
         visible = false
-    if _bg_overlay:
-        _bg_overlay.visible = false
     emit_signal("closed")
 
 # === Обработка ESC ===
