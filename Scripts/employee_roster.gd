@@ -160,6 +160,7 @@ func _update_live_data():
 		var effect_lbl = card.get_meta("effect_label") if card.has_meta("effect_label") else null
 		var mood_lbl = card.get_meta("mood_label") if card.has_meta("mood_label") else null
 		var mood_bar = card.get_meta("mood_bar") if card.has_meta("mood_bar") else null
+		var burnout_lbl = card.get_meta("burnout_label") if card.has_meta("burnout_label") else null
 
 		if energy_lbl:
 			var energy_pct = int(emp_data.current_energy)
@@ -202,6 +203,11 @@ func _update_live_data():
 			var fill_style = mood_bar.get_theme_stylebox("fill") as StyleBoxFlat
 			if fill_style:
 				fill_style.bg_color = _get_mood_color(emp_data.mood)
+
+		# === BURNOUT SYSTEM: обновляем выгорание в реальном времени ===
+		if burnout_lbl:
+			burnout_lbl.text = tr("BURNOUT_LABEL") % int(emp_data.burnout_level)
+			burnout_lbl.add_theme_color_override("font_color", _get_burnout_color(emp_data.burnout_level))
 
 		# === MOOD: live-обновление тултипа, пока он открыт ===
 		var mood_tooltip_ref = card.get_meta("mood_tooltip_ref") if card.has_meta("mood_tooltip_ref") else null
@@ -557,6 +563,48 @@ func _create_card(npc_node) -> PanelContainer:
 		energy_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
 	right_vbox.add_child(energy_lbl)
 	card.set_meta("energy_label", energy_lbl)
+
+	# === BURNOUT SYSTEM: Выгорание ===
+	var burnout_hbox = HBoxContainer.new()
+	burnout_hbox.add_theme_constant_override("separation", 6)
+	right_vbox.add_child(burnout_hbox)
+
+	var burnout_lbl = Label.new()
+	burnout_lbl.text = tr("BURNOUT_LABEL") % int(emp.burnout_level)
+	burnout_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(burnout_lbl, "semibold")
+	burnout_lbl.add_theme_color_override("font_color", _get_burnout_color(emp.burnout_level))
+	burnout_hbox.add_child(burnout_lbl)
+	card.set_meta("burnout_label", burnout_lbl)
+
+	# Кнопка "?" — tooltip про механику выгорания
+	var burnout_help_btn = _create_help_button()
+	var burnout_tooltip_ref: Array = [null]
+	burnout_help_btn.mouse_entered.connect(func():
+		if burnout_tooltip_ref[0] != null and is_instance_valid(burnout_tooltip_ref[0]):
+			burnout_tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip(tr("BURNOUT_TOOLTIP_DESC"), Color(0.17254902, 0.30980393, 0.5686275, 1))
+		parent_ref.add_child(tp)
+
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+
+		var btn_global = burnout_help_btn.global_position
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+
+		tp.global_position = target_pos
+		burnout_tooltip_ref[0] = tp
+	)
+	burnout_help_btn.mouse_exited.connect(func():
+		if burnout_tooltip_ref[0] != null and is_instance_valid(burnout_tooltip_ref[0]):
+			burnout_tooltip_ref[0].queue_free()
+		burnout_tooltip_ref[0] = null
+	)
+	burnout_hbox.add_child(burnout_help_btn)
 
 	# === ЭФФЕКТИВНОСТЬ + КНОПКА "?" ===
 	var eff_hbox = HBoxContainer.new()
@@ -1022,6 +1070,10 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	if bd.has("crunch_mod") and bd.crunch_mod < 0:
 		lines.append(tr("CRUNCH_DEBUFF_EFFICIENCY") + (" (%s)" % _format_mod(bd.crunch_mod)))
 
+	# === BURNOUT SYSTEM: Штраф от выгорания ===
+	if bd.has("burnout_mod") and bd.burnout_mod < 0:
+		lines.append(tr("EFFICIENCY_BREAKDOWN_BURNOUT") + (" (%s)" % _format_mod(bd.burnout_mod)))
+
 	# === RELATIONSHIP SYSTEM: Бонус от соседей ===
 	if bd.has("neighbor_mod"):
 		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _format_mod(bd.neighbor_mod))
@@ -1048,6 +1100,17 @@ func _get_mood_color(mood_val: float) -> Color:
 	elif mood_val >= 40.0:
 		return Color(0.9, 0.7, 0.1, 1)
 	elif mood_val >= 20.0:
+		return Color(0.9, 0.45, 0.1, 1)
+	else:
+		return Color(0.85, 0.25, 0.2, 1)
+
+# === BURNOUT SYSTEM: Цвет по уровню выгорания ===
+func _get_burnout_color(burnout_val: float) -> Color:
+	if burnout_val == 0.0:
+		return Color(0.5, 0.5, 0.5, 1)
+	elif burnout_val <= 10.0:
+		return Color(0.9, 0.7, 0.1, 1)
+	elif burnout_val <= 25.0:
 		return Color(0.9, 0.45, 0.1, 1)
 	else:
 		return Color(0.85, 0.25, 0.2, 1)

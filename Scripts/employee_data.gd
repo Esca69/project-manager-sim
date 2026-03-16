@@ -27,6 +27,13 @@ var known_project_ids: Array = []
 # === CRUNCH TIME: Дебафф эффективности после кранча (-20%, 1 рабочий день) ===
 var crunch_efficiency_debuff_hours_left: float = 0.0
 
+# === BURNOUT SYSTEM ===
+var burnout_level: float = 0.0    # Burnout percentage (0.0 to 100.0)
+var burnout_timer: float = 0.0    # Accumulated minutes in bad mood (resets every 480)
+
+const BURNOUT_TIMER_THRESHOLD: float = 480.0  # 8 hours = 480 game minutes
+const BURNOUT_MAX: float = 100.0               # Maximum burnout level
+
 const SEVERANCE_MIN_MULTIPLIER: float = 0.5
 const SEVERANCE_MAX_MULTIPLIER: float = 1.5
 
@@ -727,7 +734,12 @@ func get_efficiency_multiplier() -> float:
 
 	var aura_mod = aura_bonus
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod)
+	# === BURNOUT SYSTEM: Штраф от выгорания ===
+	var burnout_mod: float = 0.0
+	if burnout_level > 0:
+		burnout_mod = -burnout_level * 0.01  # 1% burnout = -0.01
+
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -762,7 +774,10 @@ func get_efficiency_breakdown() -> Dictionary:
 	if crunch_efficiency_debuff_hours_left > 0:
 		crunch_mod = -0.20
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod)
+	# === BURNOUT SYSTEM: Штраф от выгорания ===
+	var burnout_mod: float = -burnout_level * 0.01 if burnout_level > 0 else 0.0
+
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -778,6 +793,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"onboarding_mod": -0.10 if onboarding_hours_left > 0 else 0.0,
 		"project_adapt_mod": -0.20 if project_adapt_hours_left > 0 else 0.0,
 		"crunch_mod": crunch_mod,
+		"burnout_mod": burnout_mod,
 		"total": total,
 	}
 
