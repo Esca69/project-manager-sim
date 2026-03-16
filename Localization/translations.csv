@@ -910,3 +910,7 @@ MOOD_MOD_CRUNCH_EXHAUSTED,Вымотан кранчем,Worn out from crunch
 LOG_CRUNCH_ACTIVATED,🔥 Кранч активирован: %s,🔥 Crunch activated: %s
 LOG_CRUNCH_PENALTIES,😩 %s уходит после кранча. Применены штрафы.,😩 %s leaves after crunch. Penalties applied.
 DAY_SUMMARY_CRUNCH_OVERTIME,Переработка: %s,Overtime: %s
+BURNOUT_LABEL,😮‍💨 Выгорание: %d%%,😮‍💨 Burnout: %d%%
+BURNOUT_TOOLTIP_DESC,"Сотрудники выгорают, если долго работают в плохом настроении. Каждый процент выгорания снижает эффективность на 1%.","Employees burn out when working in a bad mood for extended periods. Each percent of burnout reduces efficiency by 1%."
+EFFICIENCY_BREAKDOWN_BURNOUT,🔻 Штраф от выгорания,🔻 Burnout penalty
+LOG_BURNOUT_INCREASED,😮‍💨 %s выгорает! (выгорание: %d%%),😮‍💨 %s is burning out! (burnout: %d%%)

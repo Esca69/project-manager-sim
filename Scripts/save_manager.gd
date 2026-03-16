@@ -221,6 +221,9 @@ func _serialize_employees() -> Array:
 			"neighbor_mod": d.neighbor_mod,
 			# === PROXIMITY CHAT: Кулдауны пар ===
 			"chat_pair_cooldowns": npc._chat_pair_cooldowns.duplicate(),
+			# === BURNOUT SYSTEM ===
+			"burnout_level": d.burnout_level,
+			"burnout_timer": d.burnout_timer,
 		})
 	return result
 
@@ -577,6 +580,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === RELATIONSHIP SYSTEM ===
 			if emp_dict.has("neighbor_mod"):
 				npc.data.neighbor_mod = float(emp_dict["neighbor_mod"])
+			# === BURNOUT SYSTEM ===
+			npc.data.burnout_level = float(emp_dict.get("burnout_level", 0.0))
+			npc.data.burnout_timer = float(emp_dict.get("burnout_timer", 0.0))
 			# === PROXIMITY CHAT: Восстанавливаем кулдауны пар ===
 			var saved_cooldowns = emp_dict.get("chat_pair_cooldowns", {})
 			npc._chat_pair_cooldowns.clear()

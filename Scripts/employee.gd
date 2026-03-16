@@ -594,6 +594,19 @@ func _on_time_tick(_hour, _minute):
 	# === АУРА PM: обновление каждый тик ===
 	_update_pm_aura()
 
+	# === BURNOUT SYSTEM: Тик таймера выгорания ===
+	if _is_work_time() and current_state != State.HOME and current_state != State.GOING_HOME and current_state != State.ON_VACATION:
+		var mood_zone = data.get_mood_zone().name
+		if mood_zone == "MOOD_ZONE_SAD" or mood_zone == "MOOD_ZONE_MISERABLE":
+			data.burnout_timer += 1.0
+			if data.burnout_timer >= data.BURNOUT_TIMER_THRESHOLD:
+				data.burnout_timer = 0.0
+				var increment: float = 2.0 if mood_zone == "MOOD_ZONE_MISERABLE" else 1.0
+				data.burnout_level = minf(data.burnout_level + increment, data.BURNOUT_MAX)
+				show_thought_bubble("😮‍💨", 5.0)
+				if EventLog:
+					EventLog.add(tr("LOG_BURNOUT_INCREASED") % [data.get_display_name(), int(data.burnout_level)], EventLog.LogType.ALERT)
+
 	# === RAISES: Эскалация в 10:00 каждый рабочий день ===
 	if _hour == 10 and _minute == 0:
 		_check_raise_escalation()
