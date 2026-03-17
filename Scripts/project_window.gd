@@ -214,6 +214,7 @@ func _build_crunch_row():
 	_crunch_btn = Button.new()
 	_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
 	_crunch_btn.custom_minimum_size = Vector2(160, 40)
+	_crunch_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER # Исправление растягивания
 	_crunch_btn.visible = false
 	_crunch_btn.focus_mode = Control.FOCUS_NONE
 
@@ -272,6 +273,7 @@ func _build_crunch_row():
 	_crunch_help_btn = Button.new()
 	_crunch_help_btn.text = "?"
 	_crunch_help_btn.custom_minimum_size = Vector2(22, 22)
+	_crunch_help_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER # Исправление растягивания
 	_crunch_help_btn.flat = false
 	_crunch_help_btn.visible = false
 	_crunch_help_btn.focus_mode = Control.FOCUS_NONE
