@@ -39,3 +39,5 @@ position = Vector2(-2, -55)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionZone"]
 position = Vector2(-2, -32)
 shape = SubResource("CircleShape2D_cvnsp")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]

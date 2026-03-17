@@ -232,6 +232,8 @@ func _ready():
 	add_to_group("npc")
 	start_breathing_animation()
 	
+	_apply_volume_materials()
+	
 	nav_agent.path_desired_distance = 20.0
 	nav_agent.target_desired_distance = 20.0
 	
@@ -2332,3 +2334,44 @@ func _unassign_from_desk():
 		if desk.assigned_employee == data:
 			desk.unassign_employee()
 			break
+
+func _apply_volume_materials():
+	# Убираем старую настройку обрезки, чтобы вернуть голову!
+	body_sprite.clip_children = CanvasItem.CLIP_CHILDREN_DISABLED
+
+	# Удаляем старые тестовые спрайты теней, если они вдруг остались в сцене
+	for child in body_sprite.get_children():
+		if child is Sprite2D and child != head_sprite:
+			child.queue_free()
+
+	# Создаем шейдер. Он возьмет оригинальный цвет рубашки и математически идеально
+	# затемнит низ и высветлит верх, вообще не трогая голову.
+	var shader_code = """
+	shader_type canvas_item;
+
+	void fragment() {
+		// Берем оригинальный пиксель спрайта (включая self_modulate)
+		vec4 c = texture(TEXTURE, UV) * COLOR;
+
+		// Создаем идеально плавный градиент для тени снизу (от 0.4 до 1.0 по вертикали)
+		float shadow = smoothstep(0.6, 1.0, UV.y);
+		// Создаем плавный блик сверху (от 0.3 до 0.0)
+		float highlight = smoothstep(0.3, 0.0, UV.y);
+
+		// Умножаем низ на темный цвет (эффект Multiply)
+		c.rgb = mix(c.rgb, c.rgb * 0.4, shadow * 0.4);
+		
+		// Добавляем свет сверху (эффект Add)
+		c.rgb = c.rgb + (vec3(1.0) * highlight * 0.15);
+
+		COLOR = c;
+	}
+	"""
+
+	var mat = ShaderMaterial.new()
+	var shader = Shader.new()
+	shader.code = shader_code
+	mat.shader = shader
+
+	# Шейдер применяется ТОЛЬКО к рубашке, голова его не наследует!
+	body_sprite.material = mat

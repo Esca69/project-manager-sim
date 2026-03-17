@@ -1,4 +1,4 @@
-[gd_scene load_steps=48 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=56 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
@@ -85,6 +85,42 @@ size = Vector2(83, 813)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8yipd"]
 size = Vector2(957.5, 292)
+
+[sub_resource type="Gradient" id="Gradient_1fy8r"]
+offsets = PackedFloat32Array(0, 0.62, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.44666666, 0.44666666, 0.44666666, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_drf25"]
+gradient = SubResource("Gradient_1fy8r")
+fill = 1
+fill_from = Vector2(0.5233645, 0.54672897)
+fill_to = Vector2(1, 1)
+
+[sub_resource type="Gradient" id="Gradient_drf25"]
+offsets = PackedFloat32Array(0, 0.34, 1)
+colors = PackedColorArray(1, 1, 1, 0, 0.85490197, 0.85490197, 0.85490197, 0, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_kwql6"]
+gradient = SubResource("Gradient_drf25")
+fill = 1
+fill_from = Vector2(0.4813084, 0.49532712)
+
+[sub_resource type="Gradient" id="Gradient_kwql6"]
+offsets = PackedFloat32Array(0, 0.5733333)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_hwh3d"]
+gradient = SubResource("Gradient_kwql6")
+fill_from = Vector2(0.5221239, 0)
+fill_to = Vector2(0.5233645, 1)
+
+[sub_resource type="Gradient" id="Gradient_hwh3d"]
+interpolation_mode = 2
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_igjay"]
+gradient = SubResource("Gradient_hwh3d")
+fill_from = Vector2(0.22897196, 0.1542056)
+fill_to = Vector2(0.7196262, 0.682243)
 
 [node name="Office" type="Node2D"]
 z_as_relative = false
@@ -173,6 +209,179 @@ shape = SubResource("RectangleShape2D_2btma")
 [node name="CollisionShape2D18" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
 position = Vector2(-373.75, -236)
 shape = SubResource("RectangleShape2D_8yipd")
+
+[node name="PointLight2D" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-784.99994, 470)
+scale = Vector2(34.250004, 17.4375)
+energy = 0.1
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 0.89411765)
+texture = SubResource("GradientTexture2D_drf25")
+
+[node name="PointLight2D3" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-46, -622)
+scale = Vector2(10.906254, 7.9062495)
+energy = 0.1
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 0.89411765)
+texture = SubResource("GradientTexture2D_drf25")
+
+[node name="PointLight2D4" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(725, -619)
+scale = Vector2(10.906254, 7.9062495)
+energy = 0.1
+shadow_enabled = true
+shadow_color = Color(0, 0, 0, 0.89411765)
+texture = SubResource("GradientTexture2D_drf25")
+
+[node name="PointLight2D2" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-1175.5, -616.5)
+scale = Vector2(21.859375, 7.765624)
+energy = 0.1
+shadow_color = Color(0, 0, 0, 0.89411765)
+texture = SubResource("GradientTexture2D_drf25")
+
+[node name="Sprite2D" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.15686275)
+position = Vector2(-1173.75, -619.74994)
+scale = Vector2(22.085938, 7.8671856)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D2" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.050980393)
+position = Vector2(-784.875, 461.49997)
+scale = Vector2(34.183598, 17.828125)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D3" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.09803922)
+position = Vector2(-44.9375, -621.4375)
+scale = Vector2(10.935548, 7.8886714)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D6" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.09803922)
+position = Vector2(205.76558, -238.99998)
+scale = Vector2(3.2260733, 4.0625005)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D9" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.08235294)
+position = Vector2(977, -239.99998)
+scale = Vector2(3.1396487, 4.0625005)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D10" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.08235294)
+position = Vector2(1235.0001, -241.99997)
+scale = Vector2(2.7224116, 4.125)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D7" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.08235294)
+position = Vector2(-949.5, -238.5)
+scale = Vector2(2.9843757, 4.0468745)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D8" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.08235294)
+position = Vector2(1093.0001, -9.999995)
+scale = Vector2(24.500006, 3.1249998)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D4" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.050980393)
+position = Vector2(727, -618.9688)
+scale = Vector2(10.935548, 7.7802744)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="Sprite2D5" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.08235294)
+position = Vector2(1382.0313, -462.96875)
+scale = Vector2(7.2802734, 2.7802732)
+texture = SubResource("GradientTexture2D_kwql6")
+
+[node name="walltoner" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(-1462.5, -230.5)
+scale = Vector2(13.015625, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner2" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(-373.7499, -232)
+scale = Vector2(14.929687, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner3" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(625.125, -233)
+scale = Vector2(7.7773438, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner4" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(1601.5626, -231)
+scale = Vector2(8.701175, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner5" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(1383.7813, -668.00006)
+scale = Vector2(7.319336, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner6" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(543.8906, -992)
+scale = Vector2(5.284666, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner7" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(139.9453, -990)
+scale = Vector2(5.2517066, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner8" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(-766.00006, -991)
+scale = Vector2(9.360229, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="walltoner9" type="Sprite2D" parent="FullOffice/StaticBody2D"]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(-1474.2637, -991)
+scale = Vector2(1.1957394, 3.796875)
+texture = SubResource("GradientTexture2D_hwh3d")
+
+[node name="Window" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-1697.5, -991.5)
+scale = Vector2(5.4843755, 3.453125)
+color = Color(1, 0.8235294, 0.32156864, 1)
+energy = 0.3
+texture = SubResource("GradientTexture2D_igjay")
+
+[node name="Window2" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-1250, -991)
+scale = Vector2(5.4843755, 3.453125)
+color = Color(1, 0.8235294, 0.32156864, 1)
+energy = 0.3
+texture = SubResource("GradientTexture2D_igjay")
+
+[node name="Window3" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(-212, -989)
+scale = Vector2(5.4843755, 3.453125)
+color = Color(1, 0.8235294, 0.32156864, 1)
+energy = 0.3
+texture = SubResource("GradientTexture2D_igjay")
+
+[node name="Window4" type="PointLight2D" parent="FullOffice/StaticBody2D"]
+position = Vector2(897, -992)
+scale = Vector2(5.4843755, 3.453125)
+color = Color(1, 0.8235294, 0.32156864, 1)
+energy = 0.3
+texture = SubResource("GradientTexture2D_igjay")
 
 [node name="WorldObjects" type="Node2D" parent="." groups=["world_layer"]]
 y_sort_enabled = true
@@ -333,5 +542,5 @@ position = Vector2(2013, -990)
 texture = ExtResource("29_drf25")
 
 [node name="BookcaseSide" type="Sprite2D" parent="."]
-position = Vector2(1916, -587)
+position = Vector2(1913, -577)
 texture = ExtResource("30_kwql6")

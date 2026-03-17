@@ -5,7 +5,7 @@ extends Control
 
 const SETTINGS_PATH = "user://settings.json"
 
-# Цвета в стил�� игры
+# Цвета в стил игры
 const COLOR_PRIMARY = Color(0.17254902, 0.30980393, 0.5686275, 1)  # Синий как в bottom_bar
 const COLOR_PRIMARY_LIGHT = Color(0.25, 0.42, 0.72, 1)
 const COLOR_ACCENT = Color(0.29803923, 0.6862745, 0.3137255, 1)    # Зелёный как end_day_button
@@ -601,7 +601,14 @@ func _save_settings():
 
 func _load_settings():
 	if not FileAccess.file_exists(SETTINGS_PATH):
+		# --- АВТООПРЕДЕЛЕНИЕ ЯЗЫКА ПРИ ПЕРВОМ ЗАПУСКЕ ---
+		var os_lang = OS.get_locale_language()
+		if os_lang == "ru":
+			TranslationServer.set_locale("ru")
+		else:
+			TranslationServer.set_locale("en")
 		return
+		
 	var file = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
 	if not file:
 		return
