@@ -23,7 +23,7 @@ const SFX_VOLUME_MULTIPLIERS = {
 	"bossmeeting": 0.4,
 	"sippingcoffee": 1.3,
 	"typing": 1.0,
-	"startworkingday": 1.0,
+	"startworkingday": 0.6,
 	"buttonclick": 0.7 # <-- ДОБАВЛЕН РЕГУЛЯТОР ДЛЯ КНОПОК
 }
 
@@ -78,11 +78,9 @@ func _ready():
 	_start_music("res://Sound/maintheme.mp3")
 	_start_ambience("res://Sound/ambience.mp3") 
 	
-	# --- Подключаемся к сигналу начала дня ---
-	if Engine.has_singleton("GameTime"):
-		var gt = Engine.get_singleton("GameTime") # или используй глобальное имя GameTime
-		if gt and not gt.work_started.is_connected(_on_work_started):
-			gt.work_started.connect(_on_work_started)
+	# --- Подключаемся к сигналу начала дня (в 9:00) ---
+	if GameTime and not GameTime.work_started.is_connected(_on_work_started):
+		GameTime.work_started.connect(_on_work_started)
 			
 	# === МАГИЯ АВТОМАТИЧЕСКИХ КНОПОК ===
 	# 1. Слушаем появление новых объектов в игре
@@ -95,10 +93,8 @@ func _ready():
 # ============================
 func _on_work_started():
 	# Звук играет только если сегодня не выходной
-	if Engine.has_singleton("GameTime"):
-		var gt = Engine.get_singleton("GameTime")
-		if gt and not gt.is_weekend():
-			play_sfx("startworkingday")
+	if GameTime and not GameTime.is_weekend():
+		play_sfx("startworkingday")
 
 # ============================
 # АВТОМАТИЧЕСКАЯ ОЗВУЧКА UI
