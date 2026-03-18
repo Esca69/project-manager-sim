@@ -127,7 +127,7 @@ func open(event_data: Dictionary):
 	_clear_dynamic_content()
 	_header_label.text = tr("BOSS_EVENT_POPUP_TITLE")
 	_populate_content(event_data, false)
-	_populate_buttons_choice()
+	_populate_buttons_choice(event_data)
 	if UITheme:
 		UITheme.fade_in(self, 0.25)
 	else:
@@ -225,11 +225,27 @@ func _populate_content(event_data: Dictionary, is_active: bool):
 			UITheme.apply_font(trust_reject_lbl, "semibold")
 		_content_vbox.add_child(trust_reject_lbl)
 
-func _populate_buttons_choice():
-	# Кнопка "Принять"
+func _populate_buttons_choice(event_data: Dictionary = {}):
+	var trust_accept = event_data.get("trust_accept", 0)
+
+	# Accept button with trust indicator
+	var accept_vbox = VBoxContainer.new()
+	accept_vbox.add_theme_constant_override("separation", 4)
+	_buttons_hbox.add_child(accept_vbox)
+
 	var accept_btn = _make_button(tr("BOSS_EVENT_POPUP_ACCEPT"), COLOR_GREEN)
 	accept_btn.pressed.connect(_on_accept_pressed)
-	_buttons_hbox.add_child(accept_btn)
+	accept_vbox.add_child(accept_btn)
+
+	if trust_accept > 0:
+		var trust_lbl = Label.new()
+		trust_lbl.text = "+%d 🤝" % trust_accept
+		trust_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		trust_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+		trust_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme:
+			UITheme.apply_font(trust_lbl, "semibold")
+		accept_vbox.add_child(trust_lbl)
 
 	# Кнопка "Отклонить"
 	var reject_btn = _make_button(tr("BOSS_EVENT_POPUP_REJECT"), COLOR_RED)

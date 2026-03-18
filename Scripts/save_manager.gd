@@ -91,6 +91,7 @@ func _serialize_game_state() -> Dictionary:
 	return {
 		"company_balance": GameState.company_balance,
 		"tutorial_completed": GameState.tutorial_completed,
+		"office_upgrades": GameState.office_upgrades.duplicate(),
 	}
 
 # --- PMData ---
@@ -863,6 +864,10 @@ func _load_game_state(d: Dictionary):
 	GameState.levelups_today.clear()
 	GameState.loyalty_changes_today.clear()
 	GameState.tutorial_completed = d.get("tutorial_completed", false)
+	if d.has("office_upgrades"):
+		GameState.office_upgrades = d["office_upgrades"].duplicate()
+	else:
+		GameState.office_upgrades = {"coffee_machine": false, "kitchen": false, "desk_count": 3}
 
 func _load_pm_data(d: Dictionary):
 	if d.is_empty():

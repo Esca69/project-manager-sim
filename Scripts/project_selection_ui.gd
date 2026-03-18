@@ -21,10 +21,12 @@ var _scroll_ready: bool = false
 var _overlay: ColorRect
 
 # === TABS ===
-var _active_tab: String = "projects"  # "projects" | "negotiations"
+var _active_tab: String = "projects"  # "projects" | "negotiations" | "office_dev"
 var _tab_projects_btn: Button
 var _tab_nego_btn: Button
+var _tab_officedev_btn: Button
 var _nego_container: VBoxContainer
+var _office_dev_container: VBoxContainer
 
 var tab_bg_style: StyleBoxFlat
 var tab_active_style: StyleBoxFlat
@@ -140,7 +142,7 @@ func _setup_scroll_container():
 	# Pill-стиль контейнера вкладок
 	var tab_panel = PanelContainer.new()
 	tab_panel.add_theme_stylebox_override("panel", tab_bg_style)
-	tab_panel.custom_minimum_size = Vector2(460, 50)
+	tab_panel.custom_minimum_size = Vector2(660, 50)
 	tab_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	tab_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -182,6 +184,14 @@ func _setup_scroll_container():
 	_tab_nego_btn.pressed.connect(_on_tab_negotiations)
 	tab_hbox.add_child(_tab_nego_btn)
 
+	_tab_officedev_btn = Button.new()
+	_tab_officedev_btn.text = tr("TAB_OFFICE_DEV")
+	_tab_officedev_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_tab_officedev_btn.focus_mode = Control.FOCUS_NONE
+	if UITheme: UITheme.apply_font(_tab_officedev_btn, "bold")
+	_tab_officedev_btn.pressed.connect(_on_tab_office_dev)
+	tab_hbox.add_child(_tab_officedev_btn)
+
 	_update_tab_styles()
 
 	# === PROJECTS SCROLL ===
@@ -212,6 +222,20 @@ func _setup_scroll_container():
 	_nego_container.add_theme_constant_override("separation", 12)
 	nego_scroll.add_child(_nego_container)
 
+	# === OFFICE DEV SCROLL ===
+	var officedev_scroll = ScrollContainer.new()
+	officedev_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	officedev_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	officedev_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	officedev_scroll.clip_contents = true
+	officedev_scroll.visible = false
+	cards_margin.add_child(officedev_scroll)
+
+	_office_dev_container = VBoxContainer.new()
+	_office_dev_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_office_dev_container.add_theme_constant_override("separation", 15)
+	officedev_scroll.add_child(_office_dev_container)
+
 	_scroll_ready = true
 
 func _apply_button_style(btn: Button, box_style: StyleBox, font_color: Color):
@@ -225,13 +249,20 @@ func _apply_button_style(btn: Button, box_style: StyleBox, font_color: Color):
 	btn.add_theme_color_override("font_focus_color", font_color)
 
 func _update_tab_styles():
-	if _tab_projects_btn and _tab_nego_btn:
-		if _active_tab == "projects":
-			_apply_button_style(_tab_projects_btn, tab_active_style, COLOR_BLUE)
-			_apply_button_style(_tab_nego_btn, tab_inactive_style, COLOR_GRAY)
-		else:
-			_apply_button_style(_tab_projects_btn, tab_inactive_style, COLOR_GRAY)
-			_apply_button_style(_tab_nego_btn, tab_active_style, COLOR_BLUE)
+	if _tab_projects_btn and _tab_nego_btn and _tab_officedev_btn:
+		match _active_tab:
+			"projects":
+				_apply_button_style(_tab_projects_btn, tab_active_style, COLOR_BLUE)
+				_apply_button_style(_tab_nego_btn, tab_inactive_style, COLOR_GRAY)
+				_apply_button_style(_tab_officedev_btn, tab_inactive_style, COLOR_GRAY)
+			"negotiations":
+				_apply_button_style(_tab_projects_btn, tab_inactive_style, COLOR_GRAY)
+				_apply_button_style(_tab_nego_btn, tab_active_style, COLOR_BLUE)
+				_apply_button_style(_tab_officedev_btn, tab_inactive_style, COLOR_GRAY)
+			"office_dev":
+				_apply_button_style(_tab_projects_btn, tab_inactive_style, COLOR_GRAY)
+				_apply_button_style(_tab_nego_btn, tab_inactive_style, COLOR_GRAY)
+				_apply_button_style(_tab_officedev_btn, tab_active_style, COLOR_BLUE)
 
 func _on_tab_projects():
 	_active_tab = "projects"
@@ -239,6 +270,8 @@ func _on_tab_projects():
 	if _scroll: _scroll.visible = true
 	if _nego_container and _nego_container.get_parent():
 		_nego_container.get_parent().visible = false
+	if _office_dev_container and _office_dev_container.get_parent():
+		_office_dev_container.get_parent().visible = false
 	_rebuild_cards()
 
 func _on_tab_negotiations():
@@ -247,7 +280,19 @@ func _on_tab_negotiations():
 	if _scroll: _scroll.visible = false
 	if _nego_container and _nego_container.get_parent():
 		_nego_container.get_parent().visible = true
+	if _office_dev_container and _office_dev_container.get_parent():
+		_office_dev_container.get_parent().visible = false
 	_rebuild_negotiations()
+
+func _on_tab_office_dev():
+	_active_tab = "office_dev"
+	_update_tab_styles()
+	if _scroll: _scroll.visible = false
+	if _nego_container and _nego_container.get_parent():
+		_nego_container.get_parent().visible = false
+	if _office_dev_container and _office_dev_container.get_parent():
+		_office_dev_container.get_parent().visible = true
+	_rebuild_office_dev()
 
 func _make_card_style(hover: bool) -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()
@@ -870,3 +915,181 @@ func _make_nego_card_locked(title: String, desc: String) -> PanelContainer:
 	hbox.add_child(locked_lbl)
 
 	return card
+
+
+# ============================================================
+#                OFFICE DEV TAB
+# ============================================================
+
+func _rebuild_office_dev():
+	if _office_dev_container == null:
+		return
+	for child in _office_dev_container.get_children():
+		child.queue_free()
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	_office_dev_container.add_child(margin)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 15)
+	margin.add_child(vbox)
+
+	# Card: Coffee Machine
+	var coffee_bought = GameState.office_upgrades.get("coffee_machine", false)
+	vbox.add_child(_make_upgrade_card(
+		"☕",
+		tr("UPG_COFFEE_TITLE"),
+		tr("UPG_COFFEE_DESC"),
+		1000, 5,
+		coffee_bought,
+		func():
+			var ok = GameState.buy_upgrade("coffee_machine", 1000, 5)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_COFFEE_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				var bm = get_node_or_null("/root/BossManager")
+				if GameState.company_balance < 1000:
+					EventLog.add(tr("TXT_NOT_ENOUGH_MONEY"), EventLog.LogType.ALERT)
+				elif bm and bm.boss_trust < 5:
+					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Kitchen
+	var kitchen_bought = GameState.office_upgrades.get("kitchen", false)
+	vbox.add_child(_make_upgrade_card(
+		"🍽️",
+		tr("UPG_KITCHEN_TITLE"),
+		tr("UPG_KITCHEN_DESC"),
+		5000, 10,
+		kitchen_bought,
+		func():
+			var ok = GameState.buy_upgrade("kitchen", 5000, 10)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_KITCHEN_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				var bm = get_node_or_null("/root/BossManager")
+				if GameState.company_balance < 5000:
+					EventLog.add(tr("TXT_NOT_ENOUGH_MONEY"), EventLog.LogType.ALERT)
+				elif bm and bm.boss_trust < 10:
+					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Desk
+	var desk_count = GameState.office_upgrades.get("desk_count", 3)
+	var desk_bought = desk_count >= 12
+	var desk_desc = tr("UPG_DESK_DESC") + "\n" + tr("TXT_DESKS_COUNT") % [desk_count, 12]
+	vbox.add_child(_make_upgrade_card(
+		"🖥️",
+		tr("UPG_DESK_TITLE"),
+		desk_desc,
+		500, 2,
+		desk_bought,
+		func():
+			var ok = GameState.buy_desk()
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_DESK_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				var bm = get_node_or_null("/root/BossManager")
+				if GameState.company_balance < 500:
+					EventLog.add(tr("TXT_NOT_ENOUGH_MONEY"), EventLog.LogType.ALERT)
+				elif bm and bm.boss_trust < 2:
+					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+func _make_upgrade_card(icon_text: String, title: String, description: String, cost_money: int, cost_trust: int, is_bought: bool, buy_callback: Callable) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.add_theme_stylebox_override("panel", _card_style_normal)
+
+	var card_margin = MarginContainer.new()
+	card_margin.add_theme_constant_override("margin_left", 16)
+	card_margin.add_theme_constant_override("margin_top", 14)
+	card_margin.add_theme_constant_override("margin_right", 16)
+	card_margin.add_theme_constant_override("margin_bottom", 14)
+	card.add_child(card_margin)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 14)
+	card_margin.add_child(hbox)
+
+	# Icon
+	var icon_lbl = Label.new()
+	icon_lbl.text = icon_text
+	icon_lbl.add_theme_font_size_override("font_size", 36)
+	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon_lbl.custom_minimum_size = Vector2(52, 0)
+	hbox.add_child(icon_lbl)
+
+	# Content vbox
+	var content_vbox = VBoxContainer.new()
+	content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_vbox.add_theme_constant_override("separation", 6)
+	hbox.add_child(content_vbox)
+
+	# Title
+	var title_lbl = Label.new()
+	title_lbl.text = title
+	title_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	title_lbl.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(title_lbl, "bold")
+	content_vbox.add_child(title_lbl)
+
+	# Description
+	var desc_lbl = Label.new()
+	desc_lbl.text = description
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	desc_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(desc_lbl, "regular")
+	content_vbox.add_child(desc_lbl)
+
+	if is_bought:
+		var bought_lbl = Label.new()
+		bought_lbl.text = tr("TXT_ALREADY_BOUGHT")
+		bought_lbl.add_theme_color_override("font_color", Color(0.3, 0.65, 0.3, 1))
+		bought_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(bought_lbl, "semibold")
+		content_vbox.add_child(bought_lbl)
+	else:
+		# Cost line
+		var cost_lbl = Label.new()
+		cost_lbl.text = "$%s + 🤝 %d" % [_format_money(cost_money), cost_trust]
+		cost_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+		cost_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(cost_lbl, "regular")
+		content_vbox.add_child(cost_lbl)
+
+		# Buy button
+		var bm = get_node_or_null("/root/BossManager")
+		var can_afford = GameState.company_balance >= cost_money
+		var has_trust = bm == null or bm.boss_trust >= cost_trust
+		var btn_enabled = can_afford and has_trust
+
+		var buy_btn = Button.new()
+		buy_btn.text = tr("BTN_BUY_UPGRADE")
+		buy_btn.custom_minimum_size = Vector2(110, 36)
+		buy_btn.focus_mode = Control.FOCUS_NONE
+		buy_btn.disabled = not btn_enabled
+
+		var btn_s = _btn_style.duplicate() if btn_enabled else _btn_style_disabled.duplicate()
+		buy_btn.add_theme_stylebox_override("normal", btn_s)
+		buy_btn.add_theme_stylebox_override("hover", _btn_style_hover.duplicate() if btn_enabled else btn_s)
+		buy_btn.add_theme_stylebox_override("pressed", _btn_style_hover.duplicate() if btn_enabled else btn_s)
+		buy_btn.add_theme_color_override("font_color", COLOR_BLUE if btn_enabled else COLOR_GRAY)
+		buy_btn.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(buy_btn, "bold")
+		buy_btn.pressed.connect(buy_callback)
+		content_vbox.add_child(buy_btn)
+
+	return card
+
+func _format_money(amount: int) -> String:
+	if amount >= 1000:
+		return "%d,000" % (amount / 1000)
+	return str(amount)

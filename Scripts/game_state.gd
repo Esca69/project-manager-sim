@@ -6,6 +6,48 @@ var company_balance: int = 10000
 # Сигнал изменения денег
 signal balance_changed(new_amount)
 
+# === УЛУЧШЕНИЯ ОФИСА ===
+signal office_upgrade_purchased(upgrade_id: String)
+
+var office_upgrades: Dictionary = {
+	"coffee_machine": false,
+	"kitchen": false,
+	"desk_count": 3
+}
+
+func is_upgrade_bought(upgrade_id: String) -> bool:
+	return office_upgrades.get(upgrade_id, false)
+
+func buy_upgrade(upgrade_id: String, cost_money: int, cost_trust: int) -> bool:
+	var bm = get_node_or_null("/root/BossManager")
+	if company_balance < cost_money:
+		return false
+	if bm and bm.boss_trust < cost_trust:
+		return false
+	add_expense(cost_money)
+	if bm:
+		bm.change_trust(-cost_trust)
+	office_upgrades[upgrade_id] = true
+	daily_event_expenses.append({"reason": tr("SUMMARY_OFFICE_UPGRADES"), "amount": cost_money})
+	emit_signal("office_upgrade_purchased", upgrade_id)
+	return true
+
+func buy_desk() -> bool:
+	if office_upgrades["desk_count"] >= 12:
+		return false
+	var bm = get_node_or_null("/root/BossManager")
+	if company_balance < 500:
+		return false
+	if bm and bm.boss_trust < 2:
+		return false
+	add_expense(500)
+	if bm:
+		bm.change_trust(-2)
+	office_upgrades["desk_count"] += 1
+	daily_event_expenses.append({"reason": tr("SUMMARY_OFFICE_UPGRADES"), "amount": 500})
+	emit_signal("office_upgrade_purchased", "desk")
+	return true
+
 # === ДНЕВНАЯ СТАТИСТИКА ===
 var balance_at_day_start: int = 10000
 var daily_income: int = 0
