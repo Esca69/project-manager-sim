@@ -428,7 +428,9 @@ func _on_pm_xp_changed(_new_xp, _new_sp):
 func _get_player():
 	return get_tree().get_first_node_in_group("player")
 
-# === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ ===
+# ===============================================
+# === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ (ОБНОВЛЕННАЯ) ==
+# ===============================================
 func _start_discussion(proj_data: ProjectData):
 	_is_discussing = true
 	_discuss_project = proj_data
@@ -438,6 +440,9 @@ func _start_discussion(proj_data: ProjectData):
 	var player = _get_player()
 	if player and player.has_method("show_discuss_bar"):
 		player.show_discuss_bar(_discuss_total_minutes)
+
+	# ПРОИГРЫВАЕМ ЗВУК МИТИНГА С БОССОМ 1 РАЗ ПРИ СТАРТЕ
+	AudioManager.play_sfx("bossmeeting")
 
 	print("🤝 Обсуждение начато: %s (%d мин.)" % [proj_data.title, int(_discuss_total_minutes)])
 	EventLog.add(tr("LOG_DISCUSSION_STARTED") % tr(proj_data.title), EventLog.LogType.ROUTINE)

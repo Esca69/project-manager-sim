@@ -1,13 +1,49 @@
 extends StaticBody2D
 
+# =========================================================
+# === НАСТРОЙКА ЗВУКА БОССА ===============================
+# =========================================================
+const BOSS_SOUND_RADIUS: float = 400.0   # Радиус, при входе в который срабатывает звук
+
 var _exclamation_bubble: Node2D = null
+var _boss_player: AudioStreamPlayer = null  # <-- Изменено на обычный AudioStreamPlayer
+var _is_player_in_radius: bool = false # Флаг, чтобы звук играл только 1 раз за подход
 
 func _ready():
 	_build_exclamation_mark()
+	
+	# Настраиваем обычный плеер (без затухания от расстояния)
+	_boss_player = AudioStreamPlayer.new()
+	_boss_player.stream = load("res://Sound/bosssound.mp3")
+	_boss_player.bus = "Master"
+	add_child(_boss_player)
 
 func _process(_delta):
 	if _exclamation_bubble:
 		_exclamation_bubble.visible = BossManager.should_show_quest() or BossManager.should_show_report() or BossEventSystem.has_pending_event()
+
+	# Проверяем дистанцию как триггер
+	_check_proximity_sound()
+
+func _check_proximity_sound():
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+		
+	var dist = global_position.distance_to(player.global_position)
+	
+	if dist <= BOSS_SOUND_RADIUS:
+		# Игрок вошел в радиус
+		if not _is_player_in_radius:
+			_is_player_in_radius = true
+			
+			# Обновляем громкость до текущих настроек SFX
+			_boss_player.volume_db = AudioManager.get_current_sfx_db()
+			# Запускаем звук 1 раз (громкость будет везде одинаковой)
+			_boss_player.play()
+	else:
+		# Игрок вышел из радиуса. Сбрасываем флаг, чтобы при следующем подходе звук снова сыграл
+		_is_player_in_radius = false
 
 func _build_exclamation_mark():
 	# Создаем корневой узел для бабла
