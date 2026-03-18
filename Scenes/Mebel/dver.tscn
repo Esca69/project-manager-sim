@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqc1hlgjhpgm1"]
+
+[ext_resource type="Texture2D" uid="uid://c5kdnm28g4u6v" path="res://Sprites/Office/dver.png" id="1_qs41i"]
+
+[node name="Tumbochka" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="." groups=["desk"]]
+texture = ExtResource("1_qs41i")
+offset = Vector2(0, -129)
