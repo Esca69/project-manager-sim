@@ -1065,7 +1065,11 @@ func _make_upgrade_card(icon_text: String, title: String, description: String, c
 		if UITheme: UITheme.apply_font(cost_lbl, "regular")
 		content_vbox.add_child(cost_lbl)
 
-		# Buy button
+		# Buy button in right_vbox (like negotiations tab!)
+		var right_vbox = VBoxContainer.new()
+		right_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		hbox.add_child(right_vbox)
+
 		var bm = get_node_or_null("/root/BossManager")
 		var can_afford = GameState.company_balance >= cost_money
 		var has_trust = bm == null or bm.boss_trust >= cost_trust
@@ -1073,19 +1077,31 @@ func _make_upgrade_card(icon_text: String, title: String, description: String, c
 
 		var buy_btn = Button.new()
 		buy_btn.text = tr("BTN_BUY_UPGRADE")
-		buy_btn.custom_minimum_size = Vector2(110, 36)
+		buy_btn.custom_minimum_size = Vector2(160, 40)
 		buy_btn.focus_mode = Control.FOCUS_NONE
 		buy_btn.disabled = not btn_enabled
 
-		var btn_s = _btn_style.duplicate() if btn_enabled else _btn_style_disabled.duplicate()
-		buy_btn.add_theme_stylebox_override("normal", btn_s)
-		buy_btn.add_theme_stylebox_override("hover", _btn_style_hover.duplicate() if btn_enabled else btn_s)
-		buy_btn.add_theme_stylebox_override("pressed", _btn_style_hover.duplicate() if btn_enabled else btn_s)
-		buy_btn.add_theme_color_override("font_color", COLOR_BLUE if btn_enabled else COLOR_GRAY)
-		buy_btn.add_theme_font_size_override("font_size", 13)
-		if UITheme: UITheme.apply_font(buy_btn, "bold")
-		buy_btn.pressed.connect(buy_callback)
-		content_vbox.add_child(buy_btn)
+		if btn_enabled:
+			buy_btn.add_theme_stylebox_override("normal", _btn_style)
+			buy_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+			buy_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+			buy_btn.add_theme_color_override("font_color", COLOR_BLUE)
+			buy_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+			buy_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+			buy_btn.pressed.connect(buy_callback)
+		else:
+			buy_btn.add_theme_stylebox_override("normal", _btn_style_disabled)
+			buy_btn.add_theme_stylebox_override("hover", _btn_style_disabled)
+			buy_btn.add_theme_stylebox_override("pressed", _btn_style_disabled)
+			buy_btn.add_theme_stylebox_override("disabled", _btn_style_disabled)
+			buy_btn.add_theme_color_override("font_color", Color(0.55, 0.55, 0.6, 1))
+			buy_btn.add_theme_color_override("font_hover_color", Color(0.55, 0.55, 0.6, 1))
+			buy_btn.add_theme_color_override("font_pressed_color", Color(0.55, 0.55, 0.6, 1))
+			buy_btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.55, 0.6, 1))
+
+		buy_btn.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(buy_btn, "semibold")
+		right_vbox.add_child(buy_btn)
 
 	return card
 
