@@ -208,6 +208,12 @@ func recalculate_mood():
 	if bes and bes.is_boss_event_active("boss_event_no_lunch"):
 		result -= 7.0
 
+	# === OFFICE: coffee_lover без кофемашины → mood ===
+	if "coffee_lover" in traits:
+		var gs = _get_game_state()
+		if gs and not gs.office_upgrades.get("coffee_machine", false):
+			result -= 10.0
+
 	# Временные модификаторы
 	for mod in mood_temp_modifiers:
 		result += mod.value
@@ -334,6 +340,12 @@ func get_mood_breakdown() -> Dictionary:
 	# === BOSS EVENT: Нет обедов ===
 	if bes and bes.is_boss_event_active("boss_event_no_lunch"):
 		permanent_mods.append({"name": tr("MOOD_MOD_NO_LUNCH"), "value": -7.0})
+
+	# === OFFICE: coffee_lover без кофемашины ===
+	if "coffee_lover" in traits:
+		var gs = _get_game_state()
+		if gs and not gs.office_upgrades.get("coffee_machine", false):
+			permanent_mods.append({"name": tr("MOOD_MOD_NO_COFFEE"), "value": -10.0})
 
 	# Временные
 	for mod in mood_temp_modifiers:
@@ -804,6 +816,13 @@ func _get_event_manager():
 	var main_loop = Engine.get_main_loop()
 	if main_loop and main_loop is SceneTree:
 		return main_loop.root.get_node_or_null("/root/EventManager")
+	return null
+
+# === GAME STATE: Безопасный доступ из Resource ===
+func _get_game_state():
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop is SceneTree:
+		return main_loop.root.get_node_or_null("/root/GameState")
 	return null
 
 # === BOSS EVENT SYSTEM: Безопасный доступ из Resource ===

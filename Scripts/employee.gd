@@ -1218,6 +1218,9 @@ func _try_start_coffee_break():
 	if data.current_energy > COFFEE_THRESHOLD:
 		return
 	
+	if not GameState.office_upgrades.get("coffee_machine", false):
+		return
+	
 	var machine = get_tree().get_first_node_in_group("coffee_machine")
 	if machine and machine.try_reserve(self):
 		coffee_machine_ref = machine
@@ -1339,6 +1342,12 @@ func _try_start_lunch():
 	if _in_crunch:
 		return
 	if GameTime.hour < LUNCH_START_HOUR or GameTime.hour >= LUNCH_END_HOUR:
+		return
+	
+	# Если кухня не куплена — просто помечаем обед выполненным и бродим
+	if not GameState.office_upgrades.get("kitchen", false):
+		_lunch_done_today = true
+		_start_wandering()
 		return
 	
 	var fridge = get_tree().get_first_node_in_group("fridge")

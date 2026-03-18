@@ -920,3 +920,19 @@ MODIFIER_EXCELLENT_MOOD,Отличное утро,Excellent Morning Mood
 MODIFIER_TERRIBLE_MOOD,Ужасное утро,Terrible Morning Mood
 LOG_MORNING_MOOD_EXCELLENT,😄 %s пришёл на работу в отличном настроении!,😄 %s came to work in an excellent mood!
 LOG_MORNING_MOOD_TERRIBLE,😣 %s пришёл на работу в ужасном настроении,😣 %s came to work in a terrible mood.
+TAB_OFFICE_DEV,🏗️ Развитие офиса,🏗️ Office Upgrades
+BTN_BUY_UPGRADE,Купить,Buy
+TXT_ALREADY_BOUGHT,✅ Куплено,✅ Purchased
+UPG_COFFEE_TITLE,☕ Кофемашина,☕ Coffee Machine
+UPG_COFFEE_DESC,"Обеспечивает команду кофеином. Позволяет восстанавливать энергию посреди дня.","Provides the team with caffeine. Restores energy during the day."
+UPG_KITCHEN_TITLE,🍽️ Кухня и зона отдыха,🍽️ Kitchen & Break Room
+UPG_KITCHEN_DESC,"Сытый сотрудник - счастливый сотрудник. Предотвращает быстрое выгорание и дает бонус к настроению.","A full employee is a happy employee. Prevents fast burnout and boosts mood."
+UPG_DESK_TITLE,🖥️ Рабочий стол,🖥️ Employee Desk
+UPG_DESK_DESC,"Больше столов — больше сотрудников.","More desks — more employees."
+TXT_DESKS_COUNT,"Столов: %d/%d","Desks: %d/%d"
+TXT_NOT_ENOUGH_MONEY,Недостаточно средств,Not enough funds
+TXT_NOT_ENOUGH_TRUST,Недостаточно лояльности,Not enough trust
+LOG_UPGRADE_PURCHASED,🏗️ Куплено улучшение: %s,🏗️ Upgrade purchased: %s
+SUMMARY_OFFICE_UPGRADES,Улучшения офиса,Office Upgrades
+DEBUFF_NO_COFFEE,Нет кофемашины ☕,No coffee machine ☕
+MOOD_MOD_NO_COFFEE,Нет кофемашины (coffee_lover),No coffee machine (coffee_lover)

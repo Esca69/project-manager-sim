@@ -11,6 +11,12 @@ var _lighting: Node = null
 var _shadows: Node = null
 var _post_effects: Node = null
 
+const DESK_PURCHASE_ORDER = [
+"EmployeeDesk2", "EmployeeDesk4", "EmployeeDesk6", "EmployeeDesk7",
+"EmployeeDesk8", "EmployeeDesk9", "EmployeeDesk11", "EmployeeDesk10", "EmployeeDesk12"
+]
+const STARTING_DESKS = ["EmployeeDesk3", "EmployeeDesk", "EmployeeDesk5"]
+
 func _ready():
 	# === КРИТИЧНО: добавляем в группу "office" для поиска из SaveManager ===
 	add_to_group("office")
@@ -43,10 +49,68 @@ func _ready():
 	add_child(_post_effects)
 	_post_effects.setup(self)
 
+	# === Применяем состояние улучшений офиса ===
+	call_deferred("_apply_and_connect_upgrades")
+
 	# === ЗАГРУЗКА СОХРАНЕНИЯ ===
 	# Используем call_deferred, чтобы вся сцена была готова,
 	# а затем запускаем restore как отдельную корутину
 	call_deferred("_try_restore_save")
+
+func _apply_and_connect_upgrades():
+	apply_office_upgrades()
+	if not GameState.office_upgrade_purchased.is_connected(_on_office_upgrade_purchased):
+		GameState.office_upgrade_purchased.connect(_on_office_upgrade_purchased)
+
+func _on_office_upgrade_purchased(_upgrade_id: String):
+	apply_office_upgrades()
+
+func _set_node_collision(node: Node, enabled: bool):
+	for child in node.get_children():
+		if child is CollisionShape2D or child is CollisionPolygon2D:
+			child.disabled = not enabled
+		_set_node_collision(child, enabled)
+
+func apply_office_upgrades():
+	# Coffee Machine
+	var coffee = find_child("CoffeeMachine", true, false)
+	if coffee:
+		coffee.visible = GameState.office_upgrades.get("coffee_machine", false)
+		_set_node_collision(coffee, coffee.visible)
+
+	# Kitchen objects
+	var kitchen_objects = ["Fridge", "Kitchen", "foodtable", "foodtable2", "foodtable3"]
+	var kitchen_bought = GameState.office_upgrades.get("kitchen", false)
+	for obj_name in kitchen_objects:
+		var obj = find_child(obj_name, true, false)
+		if obj:
+			obj.visible = kitchen_bought
+			_set_node_collision(obj, kitchen_bought)
+
+	# Desks — starting desks always visible
+	for desk_name in STARTING_DESKS:
+		var desk = find_child(desk_name, true, false)
+		if desk:
+			desk.visible = true
+			_set_node_collision(desk, true)
+			if not desk.is_in_group("desk"):
+				desk.add_to_group("desk")
+
+	# Purchased additional desks
+	var desk_count = GameState.office_upgrades.get("desk_count", 3)
+	for i in range(DESK_PURCHASE_ORDER.size()):
+		var desk_name = DESK_PURCHASE_ORDER[i]
+		var desk = find_child(desk_name, true, false)
+		if desk:
+			var should_show = i < (desk_count - 3)
+			desk.visible = should_show
+			_set_node_collision(desk, should_show)
+			if should_show:
+				if not desk.is_in_group("desk"):
+					desk.add_to_group("desk")
+				else:
+					if desk.is_in_group("desk"):
+						desk.remove_from_group("desk")
 
 func _try_restore_save():
 	if SaveManager.pending_restore:
