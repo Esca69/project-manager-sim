@@ -21,7 +21,7 @@ const SFX_LIBRARY = {
 # --- ИНДИВИДУАЛЬНАЯ ГРОМКОСТЬ ЗВУКОВ (Множители от 0.0 до 1.0) ---
 const SFX_VOLUME_MULTIPLIERS = {
 	"bossmeeting": 0.4,
-	"sippingcoffee": 1.0,
+	"sippingcoffee": 1.3,
 	"typing": 1.0,
 	"startworkingday": 1.0,
 	"buttonclick": 0.7 # <-- ДОБАВЛЕН РЕГУЛЯТОР ДЛЯ КНОПОК
