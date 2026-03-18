@@ -16,6 +16,11 @@ const DESK_PURCHASE_ORDER = [
 "EmployeeDesk8", "EmployeeDesk9", "EmployeeDesk11", "EmployeeDesk10", "EmployeeDesk12"
 ]
 const STARTING_DESKS = ["EmployeeDesk3", "EmployeeDesk", "EmployeeDesk5"]
+const DESK_TUMBOCHKA_MAP = {
+	"EmployeeDesk2": "Tumbochka",
+	"EmployeeDesk4": "Tumbochka2",
+	"EmployeeDesk6": "Tumbochka3",
+}
 
 func _ready():
 	# === КРИТИЧНО: добавляем в группу "office" для поиска из SaveManager ===
@@ -111,6 +116,12 @@ func apply_office_upgrades():
 				else:
 					if desk.is_in_group("desk"):
 						desk.remove_from_group("desk")
+			if DESK_TUMBOCHKA_MAP.has(desk_name):
+				var tumb_name = DESK_TUMBOCHKA_MAP[desk_name]
+				var tumb = find_child(tumb_name, true, false)
+				if tumb:
+					tumb.visible = should_show
+					_set_node_collision(tumb, should_show)
 
 func _try_restore_save():
 	if SaveManager.pending_restore:
