@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://rn7ywspbl6ht"]
 
 [ext_resource type="Script" uid="uid://b7dlanyav1647" path="res://Scripts/hr_desk.gd" id="1_spxag"]
-[ext_resource type="Texture2D" uid="uid://bbgu87jfinvbd" path="res://Sprites/table_employee2.png" id="2_spxag"]
+[ext_resource type="Texture2D" uid="uid://c7fwbjuu45tqn" path="res://Sprites/Office/empoloyee_desk2.png" id="2_spxag"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o58de"]
 size = Vector2(257.5, 143.5)
@@ -10,7 +10,8 @@ size = Vector2(257.5, 143.5)
 script = ExtResource("1_spxag")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(1, 1)
+position = Vector2(2.094717, 1.0170746)
+scale = Vector2(0.8644168, 0.9968944)
 texture = ExtResource("2_spxag")
 offset = Vector2(0, -75)
 
