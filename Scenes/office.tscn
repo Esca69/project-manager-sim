@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=53 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
@@ -87,16 +87,6 @@ size = Vector2(83, 813)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8yipd"]
 size = Vector2(997, 292)
 
-[sub_resource type="Gradient" id="Gradient_1fy8r"]
-offsets = PackedFloat32Array(0, 0.62, 1)
-colors = PackedColorArray(1, 1, 1, 1, 0.44666666, 0.44666666, 0.44666666, 1, 0, 0, 0, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_drf25"]
-gradient = SubResource("Gradient_1fy8r")
-fill = 1
-fill_from = Vector2(0.5233645, 0.54672897)
-fill_to = Vector2(1, 1)
-
 [sub_resource type="Gradient" id="Gradient_drf25"]
 offsets = PackedFloat32Array(0, 0.34, 1)
 colors = PackedColorArray(1, 1, 1, 0, 0.85490197, 0.85490197, 0.85490197, 0, 0, 0, 0, 1)
@@ -114,14 +104,6 @@ colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 0)
 gradient = SubResource("Gradient_kwql6")
 fill_from = Vector2(0.5221239, 0)
 fill_to = Vector2(0.5233645, 1)
-
-[sub_resource type="Gradient" id="Gradient_hwh3d"]
-interpolation_mode = 2
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_igjay"]
-gradient = SubResource("Gradient_hwh3d")
-fill_from = Vector2(0.22897196, 0.1542056)
-fill_to = Vector2(0.7196262, 0.682243)
 
 [node name="Office" type="Node2D"]
 z_as_relative = false
@@ -210,37 +192,6 @@ shape = SubResource("RectangleShape2D_2btma")
 [node name="CollisionShape2D18" type="CollisionShape2D" parent="FullOffice/StaticBody2D"]
 position = Vector2(-368.5, -236)
 shape = SubResource("RectangleShape2D_8yipd")
-
-[node name="PointLight2D" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-784.99994, 470)
-scale = Vector2(34.250004, 17.4375)
-energy = 0.1
-shadow_enabled = true
-shadow_color = Color(0, 0, 0, 0.89411765)
-texture = SubResource("GradientTexture2D_drf25")
-
-[node name="PointLight2D3" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-46, -622)
-scale = Vector2(10.906254, 7.9062495)
-energy = 0.1
-shadow_enabled = true
-shadow_color = Color(0, 0, 0, 0.89411765)
-texture = SubResource("GradientTexture2D_drf25")
-
-[node name="PointLight2D4" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(725, -619)
-scale = Vector2(10.906254, 7.9062495)
-energy = 0.1
-shadow_enabled = true
-shadow_color = Color(0, 0, 0, 0.89411765)
-texture = SubResource("GradientTexture2D_drf25")
-
-[node name="PointLight2D2" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-1175.5, -616.5)
-scale = Vector2(21.859375, 7.765624)
-energy = 0.1
-shadow_color = Color(0, 0, 0, 0.89411765)
-texture = SubResource("GradientTexture2D_drf25")
 
 [node name="Sprite2D" type="Sprite2D" parent="FullOffice/StaticBody2D"]
 modulate = Color(1, 1, 1, 0.15686275)
@@ -331,34 +282,6 @@ modulate = Color(1, 1, 1, 0.39215687)
 position = Vector2(-1474.2637, -991)
 scale = Vector2(1.1957394, 3.796875)
 texture = SubResource("GradientTexture2D_hwh3d")
-
-[node name="Window" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-1697.5, -991.5)
-scale = Vector2(5.4843755, 3.453125)
-color = Color(1, 0.8235294, 0.32156864, 1)
-energy = 0.3
-texture = SubResource("GradientTexture2D_igjay")
-
-[node name="Window2" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-1250, -991)
-scale = Vector2(5.4843755, 3.453125)
-color = Color(1, 0.8235294, 0.32156864, 1)
-energy = 0.3
-texture = SubResource("GradientTexture2D_igjay")
-
-[node name="Window3" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(-212, -989)
-scale = Vector2(5.4843755, 3.453125)
-color = Color(1, 0.8235294, 0.32156864, 1)
-energy = 0.3
-texture = SubResource("GradientTexture2D_igjay")
-
-[node name="Window4" type="PointLight2D" parent="FullOffice/StaticBody2D"]
-position = Vector2(897, -992)
-scale = Vector2(5.4843755, 3.453125)
-color = Color(1, 0.8235294, 0.32156864, 1)
-energy = 0.3
-texture = SubResource("GradientTexture2D_igjay")
 
 [node name="WorldObjects" type="Node2D" parent="." groups=["world_layer"]]
 y_sort_enabled = true
