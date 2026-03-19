@@ -78,6 +78,9 @@ var _boss_event_tracker: Control
 var _my_life_panel: Control
 var _personal_balance_label: Label
 
+# >>> ДОБАВЛЕНО: Переменная для FPS
+var _fps_label: Label
+
 # === ИНДИКАТОР СВОБОДНОЙ КАМЕРЫ ===
 var _free_camera_hint: PanelContainer = null
 
@@ -205,6 +208,14 @@ func _ready():
 	# === META: Создаём панель "Моя жизнь" ===
 	_build_my_life_panel()
 	_build_personal_balance_label()
+	
+	# >>> ДОБАВЛЕНО: Создаем лейбл для FPS
+	_build_fps_label()
+
+# >>> ДОБАВЛЕНО: Функция для обновления FPS каждый кадр
+func _process(_delta):
+	if _fps_label:
+		_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 
 func _apply_fonts():
 	if UITheme == null:
@@ -850,6 +861,21 @@ func _build_personal_balance_label():
 func _on_personal_balance_changed(new_amount: int):
 	if _personal_balance_label:
 		_personal_balance_label.text = "💰 $%d" % new_amount
+
+# >>> ДОБАВЛЕНО: Функция сборки FPS лейбла 
+func _build_fps_label():
+	var hbox_container = get_node_or_null("TopBar/MarginContainer/HBoxContainer")
+	if hbox_container == null:
+		return
+		
+	_fps_label = Label.new()
+	_fps_label.add_theme_color_override("font_color", Color(0.2, 0.8, 0.2, 1)) 
+	_fps_label.add_theme_font_size_override("font_size", 14)
+	if UITheme: 
+		UITheme.apply_font(_fps_label, "bold")
+	
+	hbox_container.add_child(_fps_label)
+	hbox_container.move_child(_fps_label, 0)
 
 func open_boss_event(event_data: Dictionary):
 	if _boss_event_popup and _boss_event_popup.has_method("open"):
