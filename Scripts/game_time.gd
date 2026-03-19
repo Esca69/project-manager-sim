@@ -229,7 +229,6 @@ func set_speed(new_scale: float):
 	
 	current_speed_scale = new_scale
 	Engine.time_scale = current_speed_scale
-	print("⏩ Скорость игры: x", current_speed_scale)
 
 func set_paused(state: bool):
 	if is_night_skip:
@@ -237,9 +236,6 @@ func set_paused(state: bool):
 	
 	is_game_paused = state
 	get_tree().paused = is_game_paused
-	
-	if is_game_paused:
-		print("⏸ ИГРА НА ПАУЗЕ")
 
 func speed_pause(): set_speed(0.0)
 func speed_1x(): set_speed(1.0)
