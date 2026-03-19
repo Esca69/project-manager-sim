@@ -24,6 +24,10 @@ var _tracked_npcs: Dictionary = {}
 var _player_tracked: bool = false
 var _scene_root: Node2D = null
 
+# Таймер для периодической проверки новых/удалённых NPC
+var _check_timer: float = 0.0
+const CHECK_INTERVAL: float = 0.5
+
 # Увеличил текстуру и сделал более мягкий градиент
 const SHADOW_TEX_SIZE = 128
 
@@ -37,23 +41,34 @@ func setup(scene_root: Node2D):
 	call_deferred("_add_player_shadow")
 	call_deferred("_add_office_border_shadow")
 
-func _process(_delta):
+func _process(delta):
 	if _scene_root == null:
 		return
 
-	# NPC (Employee) — группа "npc"
+	# Обновление видимости теней — лёгкая операция, можно каждый кадр
+	for npc in _tracked_npcs:
+		if is_instance_valid(npc):
+			var shadow = _tracked_npcs[npc]
+			if is_instance_valid(shadow):
+				shadow.visible = npc.visible
+
+	# Проверка новых/удалённых NPC — раз в 0.5 сек
+	_check_timer += delta
+	if _check_timer >= CHECK_INTERVAL:
+		_check_timer = 0.0
+		_check_npcs()
+
+func _check_npcs():
+	# Добавление новых NPC и очистка удалённых
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
 		if not is_instance_valid(npc):
 			continue
 		if npc in _tracked_npcs:
-			var shadow = _tracked_npcs[npc]
-			if is_instance_valid(shadow):
-				shadow.visible = npc.visible
 			continue
 		_add_npc_shadow(npc)
 
-	# Чистка удалённых
+	# Чистка удалённых NPC
 	var to_remove = []
 	for npc in _tracked_npcs:
 		if not is_instance_valid(npc):
@@ -63,6 +78,16 @@ func _process(_delta):
 		if is_instance_valid(shadow):
 			shadow.queue_free()
 		_tracked_npcs.erase(npc)
+
+# Полная очистка (вызывать при смене сцены)
+func cleanup():
+	for npc in _tracked_npcs:
+		var shadow = _tracked_npcs[npc]
+		if is_instance_valid(shadow):
+			shadow.queue_free()
+	_tracked_npcs.clear()
+	_player_tracked = false
+	_scene_root = null
 
 # === ТЕНЬ ДЛЯ PLAYER ===
 func _add_player_shadow():

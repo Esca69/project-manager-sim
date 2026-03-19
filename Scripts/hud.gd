@@ -29,6 +29,7 @@ extends CanvasLayer
 var _pm_level_label: Label
 var _pm_xp_bar: ProgressBar
 var _pm_xp_label: Label
+var _xp_tween: Tween = null
 
 # --- Day Summary ---
 var _day_summary: Control
@@ -427,8 +428,11 @@ func _update_pm_level_ui():
 	var needed_for_level = progress[1]
 
 	_pm_xp_bar.max_value = needed_for_level
-	var tween = create_tween()
-	tween.tween_property(_pm_xp_bar, "value", current_in_level, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	# Убиваем предыдущий tween, чтобы не накапливались
+	if _xp_tween and _xp_tween.is_valid():
+		_xp_tween.kill()
+	_xp_tween = create_tween()
+	_xp_tween.tween_property(_pm_xp_bar, "value", current_in_level, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
 	_pm_xp_label.text = tr("UI_XP") % [current_in_level, needed_for_level]
 
