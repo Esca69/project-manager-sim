@@ -1395,6 +1395,8 @@ func _get_status_color(npc_node) -> Color:
 		21: return Color(0.29, 0.69, 0.31, 1)    # Зелёный — отпуск
 		# === DAILY REPORTS SYSTEM ===
 		22, 23: return Color(0.9, 0.55, 0.2, 1)  # Оранжевый — ежедневные отчёты
+		# === LUNCH WITHOUT KITCHEN ===
+		24, 25: return Color(0.85, 0.55, 0.0, 1)  # Оранжевый — обед без кухни (LUNCH_WANDERING, LUNCH_WANDER_PAUSE)
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _get_event_effect_text(emp_data: EmployeeData) -> String:
