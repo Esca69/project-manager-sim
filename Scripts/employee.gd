@@ -31,6 +31,9 @@ enum State {
 	# === DAILY REPORTS SYSTEM ===
 	GOING_TO_REPORT,
 	WRITING_REPORT,
+	# === LUNCH WITHOUT KITCHEN: обед-бродилка без кухни ===
+	LUNCH_WANDERING,
+	LUNCH_WANDER_PAUSE,
 }
 
 var current_state = State.IDLE
@@ -158,6 +161,11 @@ var _lunch_minutes_left: float = 0.0
 var _lunch_fridge_ref = null
 var _lunch_kitchen_ref = null
 var _lunch_table_ref = null
+
+# === LUNCH WITHOUT KITCHEN ===
+const LUNCH_WANDER_DURATION_MIN = 30.0  # минимум игровых минут
+const LUNCH_WANDER_DURATION_MAX = 45.0  # максимум игровых минут
+var _lunch_wander_minutes_left := 0.0
 
 # === PROXIMITY CHAT SYSTEM ===
 const PROX_CHAT_RADIUS: float = 700.0        # Радиус обнаружения для мгновенного чата
@@ -951,6 +959,44 @@ func _physics_process(delta):
 			if _lunch_minutes_left <= 0.0:
 				_finish_lunch()
 
+		State.LUNCH_WANDERING:
+			if not _is_work_time():
+				_force_go_home()
+				return
+
+			_lunch_wander_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			if _lunch_wander_minutes_left <= 0.0:
+				_finish_lunch_wander()
+				return
+
+			_stuck_timer -= delta
+			if _stuck_timer <= 0.0:
+				_stuck_timer = 2.0
+				if global_position.distance_to(_last_stuck_pos) < 5.0:
+					_pick_lunch_wander_target()
+				_last_stuck_pos = global_position
+
+			var dist = global_position.distance_to(nav_agent.target_position)
+			if dist < 100.0:
+				_on_lunch_wander_arrived()
+				return
+			_move_along_path_slow(delta)
+
+		State.LUNCH_WANDER_PAUSE:
+			if not _is_work_time():
+				_force_go_home()
+				return
+
+			_lunch_wander_minutes_left -= GameTime.MINUTES_PER_REAL_SECOND * delta
+			if _lunch_wander_minutes_left <= 0.0:
+				_finish_lunch_wander()
+				return
+
+			_wander_pause_timer -= delta
+			_apply_lean(Vector2.ZERO, delta)
+			if _wander_pause_timer <= 0.0:
+				_pick_lunch_wander_target()
+
 		State.GOING_TO_REPORT:
 			if not _is_work_time():
 				_force_go_home()
@@ -1344,10 +1390,17 @@ func _try_start_lunch():
 	if GameTime.hour < LUNCH_START_HOUR or GameTime.hour >= LUNCH_END_HOUR:
 		return
 	
-	# Если кухня не куплена — просто помечаем обед выполненным и бродим
+	# Если кухня не куплена — бродим как "обед без кухни"
 	if not GameState.office_upgrades.get("kitchen", false):
 		_lunch_done_today = true
-		_start_wandering()
+		_lunch_wander_minutes_left = randf_range(LUNCH_WANDER_DURATION_MIN, LUNCH_WANDER_DURATION_MAX)
+		_wander_origin = global_position
+		_stuck_timer = 2.0
+		_last_stuck_pos = global_position
+		_pick_lunch_wander_target()
+		show_thought_bubble("🍔")
+		if data:
+			print("🍔 %s идёт жевать бутерброд (без кухни)" % data.get_display_name())
 		return
 	
 	var fridge = get_tree().get_first_node_in_group("fridge")
@@ -1440,6 +1493,7 @@ func force_cancel_lunch():
 		State.GOING_LUNCH_FRIDGE, State.LUNCH_AT_FRIDGE,
 		State.GOING_LUNCH_KITCHEN, State.LUNCH_AT_KITCHEN,
 		State.GOING_LUNCH_TABLE, State.LUNCH_EATING,
+		State.LUNCH_WANDERING, State.LUNCH_WANDER_PAUSE,
 	]
 	if current_state not in lunch_states:
 		return
@@ -1462,6 +1516,44 @@ func _release_all_lunch_resources():
 	if _lunch_table_ref:
 		_lunch_table_ref.release(self)
 		_lunch_table_ref = null
+
+# === LUNCH WITHOUT KITCHEN: Вспомогательные функции ===
+func _pick_lunch_wander_target():
+	if not _is_work_time():
+		_force_go_home()
+		return
+
+	var random_angle = randf() * TAU
+	var random_dist = randf_range(50.0, WANDER_RADIUS)
+	var raw_target = _wander_origin + Vector2(cos(random_angle), sin(random_angle)) * random_dist
+	var nav_map = get_world_2d().navigation_map
+	var safe_target = NavigationServer2D.map_get_closest_point(nav_map, raw_target)
+
+	if global_position.distance_to(safe_target) < 30.0:
+		_wander_pause_timer = 0.5
+		current_state = State.LUNCH_WANDER_PAUSE
+		return
+
+	nav_agent.target_position = safe_target
+	current_state = State.LUNCH_WANDERING
+	z_index = 0
+
+func _on_lunch_wander_arrived():
+	velocity = Vector2.ZERO
+	current_state = State.LUNCH_WANDER_PAUSE
+	_wander_pause_timer = randf_range(WANDER_PAUSE_MIN, WANDER_PAUSE_MAX)
+
+func _finish_lunch_wander():
+	velocity = Vector2.ZERO
+	if data:
+		print("🍔 %s пожевал бутерброд (без кухни)" % data.get_display_name())
+
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		move_to_desk(my_desk_position)
+	elif _is_work_time():
+		_start_wandering()
+	else:
+		_force_go_home()
 
 func _on_report_arrived():
 	global_position = nav_agent.target_position
@@ -1690,7 +1782,8 @@ func move_to_desk(target_point: Vector2):
 			State.GOING_LUNCH_FRIDGE, State.LUNCH_AT_FRIDGE,
 			State.GOING_LUNCH_KITCHEN, State.LUNCH_AT_KITCHEN,
 			State.GOING_LUNCH_TABLE, State.LUNCH_EATING,
-			State.GOING_TO_REPORT, State.WRITING_REPORT
+			State.GOING_TO_REPORT, State.WRITING_REPORT,
+			State.LUNCH_WANDERING, State.LUNCH_WANDER_PAUSE,
 		]
 		
 		if current_state in do_not_disturb_states:
@@ -1951,6 +2044,8 @@ func get_human_state_name() -> String:
 		State.ON_VACATION: return tr("EMP_ACTION_ON_VACATION")
 		State.GOING_TO_REPORT: return tr("EMP_ACTION_GOING_REPORT")
 		State.WRITING_REPORT: return tr("EMP_ACTION_WRITING_REPORT")
+		State.LUNCH_WANDERING: return tr("EMP_ACTION_LUNCH_WANDERING")
+		State.LUNCH_WANDER_PAUSE: return tr("EMP_ACTION_LUNCH_WANDERING")
 	return "..."
 
 func update_status_label():
