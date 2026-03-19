@@ -10,6 +10,9 @@ const FONT_PATH = "res://Fonts/Inter-VariableFont_opsz,wght.ttf"
 # === АНИМАЦИИ ===
 const FADE_DURATION = 0.2  # Секунд на появление/исчезновение
 
+# Трекинг активных tweens по id ноды, чтобы не накапливались
+var _active_tweens: Dictionary = {}
+
 func _ready():
 	var base_font = load(FONT_PATH) as FontFile
 	if not base_font:
@@ -57,17 +60,33 @@ func _get_font(weight: String) -> Font:
 
 # === АНИМАЦИЯ FADE IN ===
 func fade_in(node: Control, duration: float = FADE_DURATION):
+	_kill_active_tween(node)
 	node.modulate.a = 0.0
 	node.visible = true
 	var tween = node.create_tween()
 	tween.tween_property(node, "modulate:a", 1.0, duration).set_ease(Tween.EASE_OUT)
+	var node_id = node.get_instance_id()
+	_active_tweens[node_id] = tween
+	tween.finished.connect(func(): _active_tweens.erase(node_id))
 
 # === АНИМАЦИЯ FADE OUT ===
 func fade_out(node: Control, duration: float = FADE_DURATION, hide_after: bool = true):
+	_kill_active_tween(node)
 	var tween = node.create_tween()
 	tween.tween_property(node, "modulate:a", 0.0, duration).set_ease(Tween.EASE_IN)
 	if hide_after:
 		tween.tween_callback(func(): node.visible = false)
+	var node_id = node.get_instance_id()
+	_active_tweens[node_id] = tween
+	tween.finished.connect(func(): _active_tweens.erase(node_id))
+
+func _kill_active_tween(node: Control):
+	var id = node.get_instance_id()
+	if _active_tweens.has(id):
+		var old_tween = _active_tweens[id]
+		if old_tween and old_tween.is_valid():
+			old_tween.kill()
+		_active_tweens.erase(id)
 
 # === ТЕНЬ ДЛЯ ПАНЕЛЕЙ ===
 func apply_shadow(style: StyleBoxFlat, soft: bool = true):

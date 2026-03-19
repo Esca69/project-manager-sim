@@ -59,6 +59,9 @@ var projects_finished_today: Array = []  # [{project: ProjectData, payout: int}]
 var projects_failed_today: Array = []    # [ProjectData]
 var tutorial_completed: bool = false
 
+# День последнего сброса дневной статистики (защита от утечки при пропущенном reset)
+var _last_reset_day: int = 0
+
 # === ЛЕВЕЛ-АПЫ ЗА ДЕНЬ ===
 var levelups_today: Array = []  # [{name, role, new_level, grade, skill_gain, new_trait}]
 
@@ -66,6 +69,7 @@ var levelups_today: Array = []  # [{name, role, new_level, grade, skill_gain, ne
 var loyalty_changes_today: Array = []  # [{client_name, emoji, change, new_loyalty, reason}]
 
 func reset_daily_stats():
+	_last_reset_day = GameTime.day if GameTime else 0
 	balance_at_day_start = company_balance
 	daily_income = 0
 	daily_expenses = 0
@@ -162,6 +166,8 @@ func _ready():
 	call_deferred("_connect_signals")
 
 func _connect_signals():
+	if GameTime and not GameTime.day_started.is_connected(_check_stale_data):
+		GameTime.day_started.connect(_check_stale_data)
 	if ProjectManager and not ProjectManager.employee_leveled_up.is_connected(record_levelup):
 		ProjectManager.employee_leveled_up.connect(record_levelup)
 	# ClientManager загружается ПОСЛЕ GameState в autoload,
@@ -169,6 +175,12 @@ func _connect_signals():
 	var cm = get_node_or_null("/root/ClientManager")
 	if cm and not cm.client_loyalty_changed.is_connected(_on_loyalty_changed):
 		cm.client_loyalty_changed.connect(_on_loyalty_changed)
+
+# Аварийный сброс дневных данных, если reset_daily_stats не вызывался более 2 дней
+func _check_stale_data(_day_number = 0):
+	if GameTime and _last_reset_day > 0 and GameTime.day - _last_reset_day > 2:
+		print("⚠️ GameState: Аварийный сброс дневных данных (пропущен reset)")
+		reset_daily_stats()
 
 func _on_loyalty_changed(client, old_value: int, new_value: int):
 	var change = new_value - old_value

@@ -98,6 +98,10 @@ func _connect_signals():
 	GameTime.day_ended.connect(_on_day_ended)
 	GameTime.time_tick.connect(_on_time_tick)
 	GameTime.work_started.connect(_on_work_started)
+	# Чистка данных при завершении/провале проектов
+	if ProjectManager:
+		ProjectManager.project_finished.connect(_on_project_finished_cleanup)
+		ProjectManager.project_failed.connect(_on_project_failed_cleanup)
 
 # =============================================
 # ОБРАБОТКА НОВОГО ДНЯ
@@ -111,6 +115,8 @@ func _on_day_started(_day_number):
 	_project_event_triggered_today = false  # Сброс флага проектных ивентов
 	# Удаляем протухшие отзывы (старше CLIENT_REVIEW_MAX_DAYS)
 	_cleanup_expired_reviews()
+	# Чистка кулдаунов уволенных сотрудников
+	_cleanup_stale_cooldowns()
 
 # =============================================
 # ОБРАБОТКА КОНЦА ДНЯ
@@ -322,6 +328,39 @@ func _cleanup_expired_reviews():
 		else:
 			print("⭐ Отзыв по '%s' протух (прошло %d дней)" % [tr(review["project_title"]), days_since])
 	_pending_reviews = remaining
+
+# =============================================
+# ОЧИСТКА ДАННЫХ ЗАВЕРШЁННЫХ/ПРОВАЛЕННЫХ ПРОЕКТОВ
+# =============================================
+func _on_project_finished_cleanup(project: ProjectData):
+	_cleanup_project_data(project)
+
+func _on_project_failed_cleanup(project: ProjectData):
+	_cleanup_project_data(project)
+
+func _cleanup_project_data(project: ProjectData):
+	# Чистим _scope_expanded_projects
+	_scope_expanded_projects.erase(project.title)
+	# Чистим _junior_mistake_stages (все стадии этого проекта)
+	var to_remove = []
+	for key in _junior_mistake_stages:
+		if key.begins_with(str(project.title) + "::"):
+			to_remove.append(key)
+	for key in to_remove:
+		_junior_mistake_stages.erase(key)
+
+# Чистка кулдаунов уволенных сотрудников
+func _cleanup_stale_cooldowns():
+	var active_names = []
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if npc.data:
+			active_names.append(npc.data.employee_name)
+	var to_erase = []
+	for name_key in employee_cooldowns:
+		if name_key not in active_names:
+			to_erase.append(name_key)
+	for key in to_erase:
+		employee_cooldowns.erase(key)
 
 func _try_client_review() -> bool:
 	if _pending_reviews.is_empty():
