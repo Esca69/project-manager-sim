@@ -10,6 +10,8 @@ var _boss_player: AudioStreamPlayer = null  # <-- Изменено на обыч
 var _is_player_in_radius: bool = false # Флаг, чтобы звук играл только 1 раз за подход
 
 func _ready():
+	add_to_group("boss_desk")
+	add_to_group("desk")
 	_build_exclamation_mark()
 	
 	# Настраиваем обычный плеер (без затухания от расстояния)
@@ -36,6 +38,9 @@ func _check_proximity_sound():
 		# Игрок вошел в радиус
 		if not _is_player_in_radius:
 			_is_player_in_radius = true
+			
+			# === ТУТОРИАЛ: уведомляем о подходе к боссу ===
+			TutorialManager.notify_player_near_boss()
 			
 			# Обновляем громкость до текущих настроек SFX
 			_boss_player.volume_db = AudioManager.get_current_sfx_db()
@@ -98,6 +103,13 @@ func _build_exclamation_mark():
 func interact():
 	var hud = get_tree().get_first_node_in_group("ui")
 	if not hud:
+		return
+
+	# === ТУТОРИАЛ: пропускаем квесты/отчёты на шаге 2, сразу открываем меню проектов ===
+	if TutorialManager.is_active():
+		if TutorialManager.current_step == TutorialManager.Step.STEP_2_TAKE_PROJECT:
+			hud.open_boss_menu()
+		# Ignore interaction on other tutorial steps
 		return
 
 	# Приоритет 1: Показать отчёт за прошлый месяц

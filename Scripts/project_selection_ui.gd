@@ -332,6 +332,16 @@ func open_selection():
 			push_error("project_selection_ui: scroll всё ещё не готов!")
 			return
 
+	# === ТУТОРИАЛ: показываем только 1 хардкодный проект, скрываем вкладки ===
+	if TutorialManager.is_active():
+		_setup_tutorial_mode()
+		_on_tab_projects()
+		if UITheme:
+			UITheme.fade_in(self, 0.2)
+		else:
+			visible = true
+		return
+
 	var current_week = _get_current_week()
 
 	if current_week != _generated_for_week:
@@ -346,7 +356,22 @@ func open_selection():
 	else:
 		visible = true
 
+func _setup_tutorial_mode():
+	# Generate (or reuse) the tutorial project
+	var tut_proj = TutorialManager.create_tutorial_project()
+	current_options.clear()
+	current_options.append(tut_proj)
+	_generated_for_week = -1  # Force re-use next time
+
+	# Hide nego / office-dev tabs
+	if _tab_nego_btn:
+		_tab_nego_btn.visible = false
+	if _tab_officedev_btn:
+		_tab_officedev_btn.visible = false
+
 func _on_close_pressed():
+	if TutorialManager.is_active():
+		return  # Can't close project selection during tutorial
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -606,10 +631,11 @@ func _on_select_pressed(index: int):
 	if selected == null:
 		return
 
-	if _is_project_limit_reached():
-		return
-	if _is_too_late_for_boss():
-		return
+	if not TutorialManager.is_active():
+		if _is_project_limit_reached():
+			return
+		if _is_too_late_for_boss():
+			return
 
 	# ИСПРАВЛЕНИЕ: Берем локализованное имя для логов
 	print("⏱ Начинаем обсуждение проекта: ", selected.get_display_title())
@@ -617,11 +643,18 @@ func _on_select_pressed(index: int):
 	current_options[index] = null
 	_on_close_pressed()
 
+	# === ТУТОРИАЛ: уведомляем о взятии проекта ===
+	if TutorialManager.is_active():
+		TutorialManager.notify_project_taken()
+
 	emit_signal("project_selected", selected)
 
 # === ОБРАБОТКА ВВОДА (ESC) ===
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
+		if TutorialManager.is_active():
+			get_viewport().set_input_as_handled()
+			return
 		_on_close_pressed()
 		get_viewport().set_input_as_handled()
 

@@ -466,6 +466,9 @@ func _on_start_pressed():
 						var el = Engine.get_singleton("EventLog")
 						el.add(tr("LOG_PROJECT_ADAPTATION") % worker.get_display_name(), 2)
 	
+	# === ТУТОРИАЛ: уведомляем о запуске проекта ===
+	TutorialManager.notify_project_started()
+
 	update_buttons_visibility()
 
 func _process(delta):

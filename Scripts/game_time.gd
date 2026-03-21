@@ -57,6 +57,14 @@ func _process(delta):
 	if is_game_paused:
 		return
 
+	# === ДЕНЬ 0: заморозка времени в 17:59, если туториал не завершён ===
+	if day == 0 and not GameState.tutorial_completed:
+		var tm = get_node_or_null("/root/TutorialManager")
+		if tm and tm.current_step < tm.Step.STEP_10_END_DAY:
+			if hour >= 17 and minute >= 59:
+				is_game_paused = true
+				return
+
 	time_accumulator += delta * MINUTES_PER_REAL_SECOND
 	
 	while time_accumulator >= 1.0:
@@ -68,18 +76,20 @@ func _process(delta):
 			hour += 1
 			
 			if hour == START_HOUR:
-				if not is_weekend():
-					# --- Сброс дневной статистики при начале рабочего дня ---
-					GameState.reset_daily_stats()
-					_reset_employee_daily_stats()
-					
-					emit_signal("work_started")
-					print("🔔 09:00: СТАРТ РАБОТЫ (", get_weekday_name(), ")")
-				else:
-					print("🔔 09:00: ВЫХОДНОЙ (", get_weekday_name(), ") — никто не работает")
+				# День 0 не вызывает стандартные рабочие события
+				if day > 0:
+					if not is_weekend():
+						# --- Сброс дневной статистики при начале рабочего дня ---
+						GameState.reset_daily_stats()
+						_reset_employee_daily_stats()
+						
+						emit_signal("work_started")
+						print("🔔 09:00: СТАРТ РАБОТЫ (", get_weekday_name(), ")")
+					else:
+						print("🔔 09:00: ВЫХОДНОЙ (", get_weekday_name(), ") — никто не работает")
 				
 			elif hour == END_HOUR:
-				if not is_weekend():
+				if day > 0 and not is_weekend():
 					emit_signal("work_ended")
 					print("🔔 18:00: КОНЕЦ РАБОТЫ")
 			
@@ -99,8 +109,8 @@ func _process(delta):
 		
 		emit_signal("time_tick", hour, minute)
 
-		# === 09:05: счётчик дней и проверка ухода фрилансеров ===
-		if hour == 9 and minute == 5 and not is_weekend():
+		# === 09:05: счётчик дней и проверка ухода фрилансеров (только day > 0) ===
+		if hour == 9 and minute == 5 and not is_weekend() and day > 0:
 			_increment_days_in_company()
 			if FreelancerManager:
 				FreelancerManager.check_freelancer_departures()
@@ -125,14 +135,18 @@ func _increment_days_in_company():
 
 func get_month(d: int = -1) -> int:
 	if d == -1: d = day
-	return ((d - 1) / DAYS_IN_MONTH) + 1
+	var safe_d = max(d, 1)
+	return ((safe_d - 1) / DAYS_IN_MONTH) + 1
 
 func get_day_in_month(d: int = -1) -> int:
 	if d == -1: d = day
-	return ((d - 1) % DAYS_IN_MONTH) + 1
+	var safe_d = max(d, 1)
+	return ((safe_d - 1) % DAYS_IN_MONTH) + 1
 
 func get_weekday_index(d: int = -1) -> int:
 	if d == -1: d = day
+	if d <= 0:
+		return 0  # Day 0: Monday (index 0, weekday)
 	return (d - 1) % DAYS_IN_WEEK
 
 # Возвращает переведенный короткий день недели (Пн, Вт...)
