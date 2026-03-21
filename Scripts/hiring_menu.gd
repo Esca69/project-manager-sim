@@ -133,12 +133,18 @@ func open_hiring_menu_for_role(role: String):
 	_force_fullscreen_size()
 	generate_candidates_for_role(role)
 	update_ui()
+	# === ТУТОРИАЛ: скрыть кнопку закрытия ===
+	if TutorialManager.is_active() and close_btn:
+		close_btn.visible = false
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
 		visible = true
 
 func _on_close_pressed():
+	# === ТУТОРИАЛ: нельзя закрыть меню найма ===
+	if TutorialManager.is_active():
+		return
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -147,6 +153,12 @@ func _on_close_pressed():
 # === ГЕНЕРАЦИЯ КАНДИДАТОВ ===
 func generate_candidates_for_role(role: String):
 	candidates.clear()
+	# === ТУТОРИАЛ: только 1 специальный кандидат ===
+	if TutorialManager.is_active():
+		var tutorial_candidate = TutorialManager.create_tutorial_candidate()
+		candidates.append(tutorial_candidate)
+		print("👤 Туториал: сгенерирован 1 кандидат")
+		return
 	var count = PMData.get_candidate_count()
 	for i in range(count):
 		var new_human = generator_script.generate_candidate_for_role(role)
@@ -839,6 +851,14 @@ func _on_hire_pressed(index):
 				card.visible = false
 				card.modulate.a = 1.0
 			)
+
+	# === ТУТОРИАЛ: уведомляем о найме и закрываем меню ===
+	if TutorialManager.is_active():
+		TutorialManager.notify_worker_hired()
+		if UITheme:
+			UITheme.fade_out(self, 0.15)
+		else:
+			visible = false
 
 # === АВАРИЙНЫЙ ПОИСК НОДЫ С МЕТОДОМ ===
 func _find_node_with_method(node: Node, method_name: String) -> Node:

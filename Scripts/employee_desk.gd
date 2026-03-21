@@ -10,9 +10,35 @@ var assigned_npc_node = null
 @onready var name_tag = $NameTag
 @onready var seat_point = $SeatPosition # Точка, куда мы направляем человека
 
+const DESK_PROXIMITY_RADIUS: float = 200.0
+var _is_player_in_radius: bool = false
+
 func _ready():
 	add_to_group("desk")
 	update_desk_visuals()
+
+func _process(_delta):
+	if not TutorialManager.is_active():
+		return
+	if TutorialManager.current_step != TutorialManager.Step.STEP_6_SEAT_WORKER:
+		_is_player_in_radius = false
+		return
+	# Only trigger on free desks
+	if assigned_employee != null:
+		return
+	_check_proximity()
+
+func _check_proximity():
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+	var dist = global_position.distance_to(player.global_position)
+	if dist <= DESK_PROXIMITY_RADIUS:
+		if not _is_player_in_radius:
+			_is_player_in_radius = true
+			TutorialManager.notify_player_near_free_desk()
+	else:
+		_is_player_in_radius = false
 
 # Эту функцию вызывает Игрок через interact()
 func interact():

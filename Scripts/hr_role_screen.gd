@@ -53,6 +53,10 @@ func open():
 	_update_time_warning()
 	_update_time_info()
 
+	# === ТУТОРИАЛ: только BA, скрыть кнопку закрытия ===
+	if TutorialManager.is_active():
+		_apply_tutorial_restrictions()
+
 	if get_parent():
 		get_parent().move_child(self, -1)
 
@@ -61,7 +65,26 @@ func open():
 	else:
 		visible = true
 
+func _apply_tutorial_restrictions():
+	# Hide close button
+	if _close_btn:
+		_close_btn.visible = false
+	# Disable non-BA role buttons
+	for rd in _role_buttons:
+		var btn: Button = rd["button"]
+		if rd["role"] != "Business Analyst":
+			btn.disabled = true
+			btn.modulate.a = 0.4
+
 func close():
+	if TutorialManager.is_active():
+		return  # Can't close HR screen during tutorial
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
+
+func _close_forced():
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -401,10 +424,10 @@ func _update_time_warning():
 func _on_search_pressed():
 	if _selected_role == "":
 		return
-	if _is_too_late():
+	if not TutorialManager.is_active() and _is_too_late():
 		return
 
 	print("🔍 HR: Начинаем поиск — %s" % _selected_role)
 
-	close()
+	_close_forced()
 	emit_signal("search_started", _selected_role)

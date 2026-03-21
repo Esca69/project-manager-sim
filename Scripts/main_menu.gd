@@ -524,8 +524,8 @@ func _on_sfx_volume_changed(val: float):
 
 func _reset_all_singletons():
 	# GameTime
-	GameTime.day = 1
-	GameTime.hour = 8
+	GameTime.day = 0
+	GameTime.hour = 9
 	GameTime.minute = 0
 	GameTime.time_accumulator = 0.0
 	GameTime.current_speed_scale = 1.0

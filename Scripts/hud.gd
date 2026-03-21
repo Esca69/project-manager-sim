@@ -62,8 +62,9 @@ var _hr_role_screen: Control
 # >>> ДОБАВЛЕНО: Пауз-меню (Escape)
 var _pause_menu: CanvasLayer
 
-# <<< TUTORIAL: переменная для туториала
+# <<< TUTORIAL: переменная для туториала-оверлея
 var _tutorial: Control
+var _tutorial_overlay: Control
 
 # === EVENT SYSTEM: Попап ивентов ===
 var _event_popup: Control
@@ -194,8 +195,14 @@ func _ready():
 	_pause_menu.set_script(pause_script)
 	add_child(_pause_menu)
 
-	# <<< TUTORIAL: Создаём туториал
-	_build_tutorial()
+	# <<< TUTORIAL: Создаём туториал-оверлей и запускаем туториал если нужно
+	_build_tutorial_overlay()
+	if TutorialManager.is_active():
+		get_tree().create_timer(0.5).timeout.connect(func():
+			if _tutorial_overlay and TutorialManager.is_active():
+				_tutorial_overlay.open()
+				TutorialManager.start_tutorial()
+		)
 
 	# === EVENT SYSTEM: Создаём ивент-попап ===
 	_build_event_popup()
@@ -325,6 +332,10 @@ func _on_hr_search_started(role: String):
 
 	print("🔍 Поиск кандидатов начат: %s (%d мин.)" % [role, int(_search_total_minutes)])
 
+	# === ТУТОРИАЛ: автоускорение до 10x на время поиска ===
+	if TutorialManager.is_active():
+		GameTime.speed_10x()
+
 func _on_search_time_tick(_h, _m):
 	if not _is_searching:
 		return
@@ -351,6 +362,10 @@ func _finish_search():
 
 	print("✅ Поиск завершён! Роль: ", _search_role)
 	EventLog.add(tr("LOG_HR_SEARCH_DONE") % tr(_search_role), EventLog.LogType.PROGRESS)
+
+	# === ТУТОРИАЛ: восстанавливаем 1x после поиска ===
+	if TutorialManager.is_active():
+		GameTime.speed_1x()
 
 	# Открываем HiringMenu с результатами
 	var hiring_menu = get_node_or_null("HiringMenu")
@@ -462,6 +477,10 @@ func _start_discussion(proj_data: ProjectData):
 	print("🤝 Обсуждение начато: %s (%d мин.)" % [proj_data.title, int(_discuss_total_minutes)])
 	EventLog.add(tr("LOG_DISCUSSION_STARTED") % tr(proj_data.title), EventLog.LogType.ROUTINE)
 
+	# === ТУТОРИАЛ: автоускорение до 10x на время обсуждения ===
+	if TutorialManager.is_active():
+		GameTime.speed_10x()
+
 func _on_discuss_time_tick(_h, _m):
 	if not _is_discussing:
 		return
@@ -514,6 +533,11 @@ func _finish_discussion():
 	print("🎯 PM +5 XP за взятие проекта")
 
 	_discuss_project = null
+
+	# === ТУТОРИАЛ: восстанавливаем 1x и переходим к шагу 4 ===
+	if TutorialManager.is_active():
+		GameTime.speed_1x()
+		TutorialManager.notify_discussion_finished()
 
 # === ПРОВЕРКА: PM ЗАНЯТ ===
 func is_pm_busy() -> bool:
@@ -589,6 +613,11 @@ func update_time_label(_hour, _minute):
 	# === CRUNCH TIME: Показываем кнопку «Завершить день» в 20:00 ===
 	if GameTime.hour == 20 and GameTime.minute == 0 and not GameTime.is_weekend() and not GameTime.is_night_skip:
 		if not end_day_button.visible:
+			end_day_button.visible = true
+
+	# === ТУТОРИАЛ: показываем кнопку «Завершить день» когда дошли до шага 10 и время >= 18:00 ===
+	if TutorialManager.is_active() and TutorialManager.current_step == TutorialManager.Step.STEP_10_END_DAY:
+		if GameTime.hour >= 18 and not end_day_button.visible:
 			end_day_button.visible = true
 
 func update_balance_ui(amount):
@@ -735,6 +764,21 @@ func _on_end_day_pressed():
 	if _is_searching:
 		print("Нельзя закончить день: PM ищет кандидатов!")
 		return
+
+	# === ТУТОРИАЛ: обработка завершения дня 0 ===
+	if TutorialManager.is_active():
+		# Show final card, then complete tutorial
+		if _tutorial_overlay:
+			_tutorial_overlay.show_end_day_card()
+		TutorialManager.notify_end_day()
+		# After tutorial completes, day is set to 1 by TutorialManager
+		end_day_button.visible = false
+		_dismiss_all_employees()
+		# Don't pay salaries on day 0 (no real work done)
+		# Skip day summary, go directly to night skip
+		GameTime.start_night_skip()
+		return
+
 	end_day_button.visible = false
 
 	# === ПРИНУДИТЕЛЬНО УБИРАЕМ ВСЕХ СОТРУДНИКОВ ИЗ ОФИСА ===
@@ -767,24 +811,17 @@ func _on_night_skip_finished():
 	# === АВТОСОХРАНЕНИЕ: начало нового рабочего дня ===
 	SaveManager.save_game()
 
-# <<< TUTORIAL: Построение и запуск туториала ===
-func _build_tutorial():
-	var script = load("res://Scripts/tutorial.gd")
-	_tutorial = Control.new()
-	_tutorial.set_script(script)
-	_tutorial.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_tutorial.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(_tutorial)
-
-	if not _tutorial.tutorial_finished.is_connected(_on_tutorial_finished):
-		_tutorial.tutorial_finished.connect(_on_tutorial_finished)
-
-	# Показываем туториал при первом запуске (с задержкой, чтобы сцена загрузилась)
-	if not GameState.tutorial_completed:
-		get_tree().create_timer(0.5).timeout.connect(func():
-			if _tutorial and not GameState.tutorial_completed:
-				_tutorial.open()
-		)
+# <<< TUTORIAL: Построение туториал-оверлея ===
+func _build_tutorial_overlay():
+	var script = load("res://Scripts/tutorial_overlay.gd")
+	if script == null:
+		push_warning("tutorial_overlay.gd не найден")
+		return
+	_tutorial_overlay = Control.new()
+	_tutorial_overlay.set_script(script)
+	_tutorial_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_tutorial_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_tutorial_overlay)
 
 func _on_tutorial_finished():
 	print("📖 Туториал завершён!")

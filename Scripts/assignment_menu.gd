@@ -127,6 +127,9 @@ func _on_item_list_item_activated(index):
 		npc_node.move_to_desk(target_desk.seat_point.global_position)
 		# ИСПРАВЛЕНИЕ: Выводим локализованное имя в лог
 		print(tr("LOG_EMP_ORDER_DESK") % npc_node.data.get_display_name())
+		
+		# === ТУТОРИАЛ: уведомляем о назначении за стол ===
+		TutorialManager.notify_worker_assigned()
 	
 	visible = false
 	target_desk = null

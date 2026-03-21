@@ -937,3 +937,30 @@ LOG_UPGRADE_PURCHASED,🏗️ Куплено улучшение: %s,🏗️ Upgr
 SUMMARY_OFFICE_UPGRADES,Улучшения офиса,Office Upgrades
 DEBUFF_NO_COFFEE,Нет кофемашины ☕,No coffee machine ☕
 MOOD_MOD_NO_COFFEE,Нет кофемашины (coffee_lover),No coffee machine (coffee_lover)
+TUT_TITLE,Обучение,Tutorial
+TUT_BOSS_SAYS,Босс говорит...,Boss says...
+TUT_STEP1_CARD,"Так, ты новенький? Я — твой босс. Повезло тебе, ничего не скажешь. Ладно, сегодня я проведу тебе мини-обучение, а дальше — сам разбирайся.
+
+Двигайся клавишами WASD, камеру приближай колёсиком мыши. А теперь топай ко мне — я за столом в кабинете. Клавиша E — для взаимодействия.","So, you're the new guy? I'm your boss. Lucky you, huh? Fine, today I'll walk you through a mini-training, and after that — you're on your own.
+
+Move with WASD, zoom camera with mouse wheel. Now get over here — I'm at my desk. Press E to interact."
+TUT_STEP2_CARD,"Молодец, дошёл. Не заблудился. Нажми E около меня и выбери проект. Я тебе подобрал один простенький — даже ты не сможешь его завалить. Надеюсь.","Good, you made it. Didn't get lost. Press E near me and pick a project. I've found a simple one for you — even you can't screw it up. Hopefully."
+TUT_STEP3_CARD,"Хорошо, проект обсудили. Раз это бизнес-анализ — тебе нужен бизнес-аналитик. Не стой столбом, иди в HR-кабинет и найми одного.","Alright, project discussed. Since it's business analysis — you need a business analyst. Don't just stand there, go to the HR office and hire one."
+TUT_STEP4_CARD,"Ты у HR. Выбери роль 'Бизнес-аналитик' и начни поиск. Это не ракетостроение, справишься.","You're at HR. Pick the 'Business Analyst' role and start searching. It's not rocket science, you'll manage."
+TUT_STEP5_HIRE_DONE,"Нанял? Ладно. Но он не будет просто так работать — его нужно посадить за рабочий стол. Иди к столам.","Hired? Fine. But they won't just work on their own — you need to seat them at a desk. Go to the work desks."
+TUT_STEP7_DESK_HINT,"Подойди к столу, нажми E и выбери работника двойным кликом. Двойным, понял? Не одинарным.","Approach a desk, press E and double-click on the employee. Double-click, got it? Not a single click."
+TUT_STEP8_CARD,"Отлично, рабочее место готово. Теперь нужно запустить проект. Иди к своему рабочему столу — тому, что побольше.","Great, workspace is set. Now you need to launch the project. Go to your desk — the bigger one."
+TUT_STEP9_CARD,"Открой проект из списка, назначь бизнес-аналитика на этап и нажми 'Начать проект'. Это твой первый проект — не облажайся.","Open the project from the list, assign the business analyst to the stage and press 'Start Project'. This is your first project — don't mess it up."
+TUT_STEP10_CARD,"Ну вот, первый день и закончен. Завтра работаешь сам — ни на кого не рассчитывай. Не забывай брать квесты у меня в начале каждого месяца. Удачи. Она тебе понадобится.","Well, first day is over. Tomorrow you work on your own — don't count on anyone. Don't forget to take quests from me at the start of each month. Good luck. You'll need it."
+TUT_TASK_GO_TO_BOSS,📍 Подойдите к боссу,📍 Go to the boss
+TUT_TASK_TAKE_PROJECT,📍 Нажмите E и возьмите проект,📍 Press E and take a project
+TUT_TASK_WAIT_MEETING,⏳ Обсуждение проекта с боссом...,⏳ Discussing project with boss...
+TUT_TASK_GO_TO_HR,📍 Идите к HR и наймите бизнес-аналитика,📍 Go to HR and hire a business analyst
+TUT_TASK_PICK_BA,📍 Выберите роль BA и начните поиск,📍 Pick BA role and start search
+TUT_TASK_WAIT_SEARCH,⏳ Поиск кандидатов...,⏳ Searching for candidates...
+TUT_TASK_HIRE,📍 Наймите бизнес-аналитика,📍 Hire the business analyst
+TUT_TASK_SEAT_WORKER,📍 Посадите работника за рабочий стол,📍 Seat the worker at a desk
+TUT_TASK_GO_TO_PM_DESK,📍 Идите к своему рабочему столу,📍 Go to your desk
+TUT_TASK_START_PROJECT,📍 Откройте проект и нажмите «Начать»,📍 Open project and press "Start"
+TUT_TASK_END_DAY,📍 Дождитесь 18:00 и завершите день,📍 Wait until 18:00 and end the day
+TUT_BTN_UNDERSTOOD,Понятно,Got it
