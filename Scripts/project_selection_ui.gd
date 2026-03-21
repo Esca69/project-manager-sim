@@ -370,6 +370,8 @@ func _setup_tutorial_mode():
 		_tab_officedev_btn.visible = false
 
 func _on_close_pressed():
+	if TutorialManager.is_active():
+		return  # Can't close project selection during tutorial
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -650,6 +652,9 @@ func _on_select_pressed(index: int):
 # === ОБРАБОТКА ВВОДА (ESC) ===
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
+		if TutorialManager.is_active():
+			get_viewport().set_input_as_handled()
+			return
 		_on_close_pressed()
 		get_viewport().set_input_as_handled()
 

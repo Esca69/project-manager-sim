@@ -575,8 +575,8 @@ func is_any_menu_open() -> bool:
 	if _pause_menu and _pause_menu.is_open():
 		return true
 
-	# <<< TUTORIAL: Проверка туториала
-	if _tutorial and _tutorial.visible: return true
+	# <<< TUTORIAL: Проверка туториала-оверлея
+	if _tutorial_overlay and _tutorial_overlay._card_visible: return true
 
 	# === EVENT SYSTEM: Проверка ивент-попапа ===
 	if _event_popup and _event_popup.visible: return true
