@@ -643,11 +643,11 @@ func _on_select_pressed(index: int):
 	current_options[index] = null
 	_on_close_pressed()
 
-	# === ТУТОРИАЛ: уведомляем о взятии проекта ===
+	emit_signal("project_selected", selected)
+
+	# === ТУТОРИАЛ: уведомляем ПОСЛЕ закрытия окна и emit сигнала ===
 	if TutorialManager.is_active():
 		TutorialManager.notify_project_taken()
-
-	emit_signal("project_selected", selected)
 
 # === ОБРАБОТКА ВВОДА (ESC) ===
 func _input(event: InputEvent) -> void:

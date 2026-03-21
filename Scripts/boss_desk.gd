@@ -4,6 +4,7 @@ extends StaticBody2D
 # === НАСТРОЙКА ЗВУКА БОССА ===============================
 # =========================================================
 const BOSS_SOUND_RADIUS: float = 400.0   # Радиус, при входе в который срабатывает звук
+const TUTORIAL_PROXIMITY_RADIUS: float = 200.0  # Меньший радиус для уведомления туториала
 
 var _exclamation_bubble: Node2D = null
 var _boss_player: AudioStreamPlayer = null  # <-- Изменено на обычный AudioStreamPlayer
@@ -22,7 +23,10 @@ func _ready():
 
 func _process(_delta):
 	if _exclamation_bubble:
-		_exclamation_bubble.visible = BossManager.should_show_quest() or BossManager.should_show_report() or BossEventSystem.has_pending_event()
+		if TutorialManager.is_active():
+			_exclamation_bubble.visible = false
+		else:
+			_exclamation_bubble.visible = BossManager.should_show_quest() or BossManager.should_show_report() or BossEventSystem.has_pending_event()
 
 	# Проверяем дистанцию как триггер
 	_check_proximity_sound()
@@ -39,9 +43,6 @@ func _check_proximity_sound():
 		if not _is_player_in_radius:
 			_is_player_in_radius = true
 			
-			# === ТУТОРИАЛ: уведомляем о подходе к боссу ===
-			TutorialManager.notify_player_near_boss()
-			
 			# Обновляем громкость до текущих настроек SFX
 			_boss_player.volume_db = AudioManager.get_current_sfx_db()
 			# Запускаем звук 1 раз (громкость будет везде одинаковой)
@@ -49,6 +50,10 @@ func _check_proximity_sound():
 	else:
 		# Игрок вышел из радиуса. Сбрасываем флаг, чтобы при следующем подходе звук снова сыграл
 		_is_player_in_radius = false
+	
+	# === ТУТОРИАЛ: отдельный меньший радиус для уведомления ===
+	if dist <= TUTORIAL_PROXIMITY_RADIUS:
+		TutorialManager.notify_player_near_boss()
 
 func _build_exclamation_mark():
 	# Создаем корневой узел для бабла
