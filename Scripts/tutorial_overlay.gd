@@ -66,9 +66,9 @@ func _build_task_panel():
 	_task_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_task_panel.grow_vertical = Control.GROW_DIRECTION_END
 	_task_panel.offset_left = -320
-	_task_panel.offset_top = 65
+	_task_panel.offset_top = 95
 	_task_panel.offset_right = -20
-	_task_panel.offset_bottom = 115
+	_task_panel.offset_bottom = 145
 
 	var panel_style = StyleBoxFlat.new()
 	panel_style.bg_color = COLOR_WHITE
@@ -113,8 +113,12 @@ func _set_task_text(key: String):
 
 func _build_arrow():
 	_arrow_label = Label.new()
-	_arrow_label.add_theme_font_size_override("font_size", 36)
-	_arrow_label.add_theme_color_override("font_color", COLOR_BLUE)
+	var arrow_settings = LabelSettings.new()
+	arrow_settings.font_size = 36
+	arrow_settings.font_color = Color.WHITE
+	arrow_settings.outline_color = Color.BLACK
+	arrow_settings.outline_size = 4
+	_arrow_label.label_settings = arrow_settings
 	_arrow_label.z_index = 96
 	_arrow_label.visible = false
 	_arrow_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -162,7 +166,7 @@ func _update_arrow():
 	if target_on_screen:
 		# Arrow above target on screen
 		_arrow_label.text = "▼"
-		_arrow_label.position = screen_pos + Vector2(-18, -60)
+		_arrow_label.position = screen_pos + Vector2(-18, -130)
 	else:
 		# Directional arrow at screen edge
 		var center = viewport_size / 2.0
