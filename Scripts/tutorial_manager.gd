@@ -178,7 +178,7 @@ func create_tutorial_candidate() -> EmployeeData:
 	emp.monthly_salary = 1200
 	emp.current_energy = 100.0
 	emp.mood = 70.0
-	emp.traits = []
+	emp.traits.clear()
 	emp.trait_text = ""
 	emp.onboarding_hours_left = 0.0  # Skip onboarding for tutorial
 	_tutorial_candidate = emp

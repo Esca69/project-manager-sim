@@ -3,8 +3,7 @@ extends Control
 # ===================================================
 # === TUTORIAL OVERLAY ==============================
 # ===================================================
-# Shows tutorial cards, task panel (top-right), and
-# arrow marker pointing to the current target.
+# Shows tutorial cards and task panel (top-right).
 # Visual style matches tutorial.gd (COLOR_BLUE, etc.)
 
 # === ЦВЕТА (как в проекте) ===
@@ -19,9 +18,6 @@ const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 var _task_panel: PanelContainer
 var _task_label: Label
 
-# Arrow marker
-var _arrow_label: Label
-
 # Card window (reused for each step card)
 var _card_overlay: ColorRect
 var _card_window: PanelContainer
@@ -29,9 +25,6 @@ var _card_emoji: Label
 var _card_text: RichTextLabel
 var _card_btn: Button
 var _card_visible: bool = false
-
-# Target node for arrow
-var _arrow_target: Node = null
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -41,7 +34,6 @@ func _ready():
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	_build_task_panel()
-	_build_arrow()
 	_build_card_ui()
 
 	TutorialManager.tutorial_step_changed.connect(_on_step_changed)
@@ -55,7 +47,6 @@ func close():
 	visible = false
 	_hide_card()
 	_task_panel.visible = false
-	_arrow_label.visible = false
 
 # ─── Task panel ────────────────────────────────────
 
@@ -108,93 +99,6 @@ func _set_task_text(key: String):
 		_task_label.text = tr(key)
 	if _task_panel:
 		_task_panel.visible = true
-
-# ─── Arrow marker ──────────────────────────────────
-
-func _build_arrow():
-	_arrow_label = Label.new()
-	var arrow_settings = LabelSettings.new()
-	arrow_settings.font_size = 36
-	arrow_settings.font_color = Color.WHITE
-	arrow_settings.outline_color = Color.BLACK
-	arrow_settings.outline_size = 4
-	_arrow_label.label_settings = arrow_settings
-	_arrow_label.z_index = 96
-	_arrow_label.visible = false
-	_arrow_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_arrow_label)
-
-func _set_arrow_target(node: Node):
-	_arrow_target = node
-	_arrow_label.visible = (node != null)
-
-func _process(_delta):
-	if not visible:
-		return
-	_update_arrow()
-
-func _update_arrow():
-	if _arrow_target == null or not is_instance_valid(_arrow_target):
-		_arrow_label.visible = false
-		return
-	if not _arrow_label.visible:
-		return
-
-	var target_pos: Vector2
-	if _arrow_target is Node2D:
-		target_pos = _arrow_target.global_position
-	elif _arrow_target is Control:
-		target_pos = _arrow_target.global_position + _arrow_target.size / 2
-	else:
-		_arrow_label.visible = false
-		return
-
-	var viewport = get_viewport()
-	if not viewport:
-		return
-	var canvas_transform = viewport.get_canvas_transform()
-	var screen_pos: Vector2 = canvas_transform * target_pos
-
-	var viewport_size = viewport.get_visible_rect().size
-	var margin := 40.0
-
-	var target_on_screen = (
-		screen_pos.x >= margin and screen_pos.x <= viewport_size.x - margin and
-		screen_pos.y >= margin and screen_pos.y <= viewport_size.y - margin
-	)
-
-	if target_on_screen:
-		# Arrow above target on screen
-		_arrow_label.text = "▼"
-		_arrow_label.position = screen_pos + Vector2(-18, -130)
-	else:
-		# Directional arrow at screen edge
-		var center = viewport_size / 2.0
-		var dir = (screen_pos - center).normalized()
-		var angle = dir.angle()
-
-		# Pick arrow character based on angle
-		var deg = rad_to_deg(angle)
-		if deg < -135 or deg > 135:
-			_arrow_label.text = "◀"
-		elif deg < -45:
-			_arrow_label.text = "▲"
-		elif deg > 45:
-			_arrow_label.text = "▼"
-		else:
-			_arrow_label.text = "▶"
-
-		# Clamp position to screen edges
-		var edge_pos = _clamp_to_edge(screen_pos, viewport_size, margin)
-		_arrow_label.position = edge_pos
-
-func _clamp_to_edge(target: Vector2, vp_size: Vector2, margin: float) -> Vector2:
-	var center = vp_size / 2.0
-	var dir = (target - center)
-	var scale_x = (vp_size.x / 2.0 - margin) / abs(dir.x) if abs(dir.x) > 0.001 else INF
-	var scale_y = (vp_size.y / 2.0 - margin) / abs(dir.y) if abs(dir.y) > 0.001 else INF
-	var scale = min(scale_x, scale_y)
-	return center + dir * scale
 
 # ─── Card UI ───────────────────────────────────────
 
@@ -409,8 +313,6 @@ func _update_for_step(step: int):
 	match step:
 		TutorialManager.Step.STEP_1_MOVE_TO_BOSS:
 			_set_task_text("TUT_TASK_GO_TO_BOSS")
-			var boss = get_tree().get_first_node_in_group("boss_desk")
-			_set_arrow_target(boss)
 			# Show opening card (game paused)
 			_show_card("TUT_STEP1_CARD", true)
 			# After understood → unpause at 1x
@@ -419,80 +321,42 @@ func _update_for_step(step: int):
 
 		TutorialManager.Step.STEP_2_TAKE_PROJECT:
 			_set_task_text("TUT_TASK_TAKE_PROJECT")
-			var boss = get_tree().get_first_node_in_group("boss_desk")
-			_set_arrow_target(boss)
 			_show_card("TUT_STEP2_CARD", false)
 			_pending_after_card = Callable()
 
 		TutorialManager.Step.STEP_3_WAIT_MEETING:
 			_set_task_text("TUT_TASK_WAIT_MEETING")
-			_set_arrow_target(null)
 			# auto-speed to 10x happens in hud.gd
 
 		TutorialManager.Step.STEP_4_GO_TO_HR:
 			_set_task_text("TUT_TASK_GO_TO_HR")
-			var hr = get_tree().get_first_node_in_group("hr_desk")
-			_set_arrow_target(hr)
 			_show_card("TUT_STEP3_CARD", false)
 
 		TutorialManager.Step.STEP_5_HIRE_BA:
 			_set_task_text("TUT_TASK_PICK_BA")
-			var hr = get_tree().get_first_node_in_group("hr_desk")
-			_set_arrow_target(hr)
 			_show_card("TUT_STEP4_CARD", false)
 
 		TutorialManager.Step.STEP_6_SEAT_WORKER:
 			_set_task_text("TUT_TASK_SEAT_WORKER")
-			# Point to nearest free desk
-			var free_desk = _find_free_desk()
-			_set_arrow_target(free_desk)
 			_show_card("TUT_STEP5_HIRE_DONE", false)
 
 		TutorialManager.Step.STEP_7_ASSIGN_DESK:
 			_set_task_text("TUT_TASK_SEAT_WORKER")
-			var free_desk = _find_free_desk()
-			_set_arrow_target(free_desk)
 			_show_card("TUT_STEP7_DESK_HINT", false)
 
 		TutorialManager.Step.STEP_8_GO_TO_PM_DESK:
 			_set_task_text("TUT_TASK_GO_TO_PM_DESK")
-			var pm_desk = get_tree().get_first_node_in_group("pm_desk")
-			_set_arrow_target(pm_desk)
 			_show_card("TUT_STEP8_CARD", false)
 
 		TutorialManager.Step.STEP_9_START_PROJECT:
 			_set_task_text("TUT_TASK_START_PROJECT")
-			var pm_desk = get_tree().get_first_node_in_group("pm_desk")
-			_set_arrow_target(pm_desk)
 			_show_card("TUT_STEP9_CARD", false)
 
 		TutorialManager.Step.STEP_10_END_DAY:
 			_set_task_text("TUT_TASK_END_DAY")
-			_set_arrow_target(null)
 			# card shown after end day button click (from hud.gd)
 
 func show_end_day_card():
 	_show_card("TUT_STEP10_CARD", false)
 	# After press — tutorial completed signal fires from TutorialManager
 	_pending_after_card = Callable()
-
-# ─── Helpers ───────────────────────────────────────
-
-func _find_free_desk() -> Node:
-	var desks = get_tree().get_nodes_in_group("desk")
-	var player = get_tree().get_first_node_in_group("player")
-	var best: Node = null
-	var best_dist: float = INF
-	for d in desks:
-		# Skip computer desk (pm_desk group)
-		if d.is_in_group("pm_desk"):
-			continue
-		if "assigned_employee" in d and d.assigned_employee == null:
-			if player:
-				var dist = player.global_position.distance_to(d.global_position)
-				if dist < best_dist:
-					best_dist = dist
-					best = d
-			else:
-				return d
-	return best
