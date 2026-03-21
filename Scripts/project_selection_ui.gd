@@ -369,13 +369,16 @@ func _setup_tutorial_mode():
 	if _tab_officedev_btn:
 		_tab_officedev_btn.visible = false
 
-func _on_close_pressed():
-	if TutorialManager.is_active():
-		return  # Can't close project selection during tutorial
+func _close_ui():
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
 		visible = false
+
+func _on_close_pressed():
+	if TutorialManager.is_active():
+		return  # Can't close project selection during tutorial
+	_close_ui()
 
 func _get_current_week() -> int:
 	return ((GameTime.day - 1) / GameTime.DAYS_IN_WEEK) + 1
@@ -641,7 +644,12 @@ func _on_select_pressed(index: int):
 	print("⏱ Начинаем обсуждение проекта: ", selected.get_display_title())
 
 	current_options[index] = null
-	_on_close_pressed()
+
+	# During tutorial, force close the UI (bypass _on_close_pressed which blocks during tutorial)
+	if TutorialManager.is_active():
+		_close_ui()
+	else:
+		_on_close_pressed()
 
 	emit_signal("project_selected", selected)
 

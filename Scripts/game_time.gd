@@ -32,7 +32,7 @@ const WEEKDAY_KEYS_FULL = [
 	"WEEKDAY_FULL_THU", "WEEKDAY_FULL_FRI", "WEEKDAY_FULL_SAT", "WEEKDAY_FULL_SUN"
 ]
 
-var day = 1
+var day = 0
 var hour = 8 
 var minute = 0
 
