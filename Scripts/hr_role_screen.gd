@@ -25,6 +25,7 @@ var _time_info_lbl: Label
 var _role_style_normal: StyleBoxFlat
 var _role_style_hover: StyleBoxFlat
 var _role_style_selected: StyleBoxFlat
+var _role_style_disabled: StyleBoxFlat
 
 # Стили для кнопки поиска
 var _search_style_normal: StyleBoxFlat
@@ -69,12 +70,19 @@ func _apply_tutorial_restrictions():
 	# Hide close button
 	if _close_btn:
 		_close_btn.visible = false
-	# Disable non-BA role buttons
+	# Disable non-BA role buttons with proper disabled style
 	for rd in _role_buttons:
 		var btn: Button = rd["button"]
 		if rd["role"] != "Business Analyst":
+			btn.add_theme_stylebox_override("normal", _role_style_disabled)
+			btn.add_theme_stylebox_override("hover", _role_style_disabled)
+			btn.add_theme_stylebox_override("pressed", _role_style_disabled)
+			btn.add_theme_stylebox_override("disabled", _role_style_disabled)
+			btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+			btn.add_theme_color_override("font_hover_color", Color(0.6, 0.6, 0.6, 1))
+			btn.add_theme_color_override("font_pressed_color", Color(0.6, 0.6, 0.6, 1))
+			btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
 			btn.disabled = true
-			btn.modulate.a = 0.4
 
 func close():
 	if TutorialManager.is_active():
@@ -133,6 +141,19 @@ func _build_styles():
 	_role_style_selected.corner_radius_top_right = 16
 	_role_style_selected.corner_radius_bottom_right = 16
 	_role_style_selected.corner_radius_bottom_left = 16
+
+	# Кнопка роли — disabled (туториал)
+	_role_style_disabled = StyleBoxFlat.new()
+	_role_style_disabled.bg_color = Color(0.95, 0.95, 0.95, 1)
+	_role_style_disabled.border_width_left = 2
+	_role_style_disabled.border_width_top = 2
+	_role_style_disabled.border_width_right = 2
+	_role_style_disabled.border_width_bottom = 2
+	_role_style_disabled.border_color = Color(0.8, 0.8, 0.8, 1)
+	_role_style_disabled.corner_radius_top_left = 16
+	_role_style_disabled.corner_radius_top_right = 16
+	_role_style_disabled.corner_radius_bottom_right = 16
+	_role_style_disabled.corner_radius_bottom_left = 16
 
 	# Кнопка поиска — обычная
 	_search_style_normal = StyleBoxFlat.new()
