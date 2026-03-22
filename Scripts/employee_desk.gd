@@ -26,6 +26,9 @@ func _process(_delta):
 	# Only trigger on free desks
 	if assigned_employee != null:
 		return
+	# Skip hidden (not purchased) desks
+	if not visible:
+		return
 	_check_proximity()
 
 func _check_proximity():
