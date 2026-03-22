@@ -39,6 +39,22 @@ func _ready():
 	TutorialManager.tutorial_step_changed.connect(_on_step_changed)
 	TutorialManager.tutorial_completed.connect(_on_tutorial_completed)
 
+func _process(_delta):
+	if not _task_panel:
+		return
+	# Don't touch visibility while card is shown
+	if _card_visible:
+		_task_panel.visible = false
+		return
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_any_menu_open"):
+		var menu_open = hud.is_any_menu_open()
+		if menu_open:
+			_task_panel.visible = false
+		else:
+			# Restore visibility only if tutorial is active
+			_task_panel.visible = TutorialManager.is_active() and TutorialManager.current_step != TutorialManager.Step.NONE
+
 func open():
 	visible = true
 	_update_for_step(TutorialManager.current_step)
