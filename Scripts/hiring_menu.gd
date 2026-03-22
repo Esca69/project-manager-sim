@@ -136,6 +136,8 @@ func open_hiring_menu_for_role(role: String):
 	# === ТУТОРИАЛ: скрыть кнопку закрытия ===
 	if TutorialManager.is_active() and close_btn:
 		close_btn.visible = false
+	elif close_btn:
+		close_btn.visible = true
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
