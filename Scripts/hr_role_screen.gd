@@ -57,6 +57,8 @@ func open():
 	# === ТУТОРИАЛ: только BA, скрыть кнопку закрытия ===
 	if TutorialManager.is_active():
 		_apply_tutorial_restrictions()
+	else:
+		_remove_tutorial_restrictions()
 
 	if get_parent():
 		get_parent().move_child(self, -1)
@@ -83,6 +85,23 @@ func _apply_tutorial_restrictions():
 			btn.add_theme_color_override("font_pressed_color", Color(0.6, 0.6, 0.6, 1))
 			btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
 			btn.disabled = true
+
+func _remove_tutorial_restrictions():
+	# Show close button
+	if _close_btn:
+		_close_btn.visible = true
+	# Re-enable all role buttons and restore normal styles
+	for rd in _role_buttons:
+		var btn: Button = rd["button"]
+		btn.add_theme_stylebox_override("normal", _role_style_normal)
+		btn.add_theme_stylebox_override("hover", _role_style_hover)
+		btn.add_theme_stylebox_override("pressed", _role_style_selected)
+		btn.remove_theme_stylebox_override("disabled")
+		btn.add_theme_color_override("font_color", COLOR_BLUE)
+		btn.add_theme_color_override("font_hover_color", COLOR_BLUE)
+		btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+		btn.remove_theme_color_override("font_disabled_color")
+		btn.disabled = false
 
 func close():
 	if TutorialManager.is_active():

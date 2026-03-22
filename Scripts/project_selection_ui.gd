@@ -341,6 +341,14 @@ func open_selection():
 		else:
 			visible = true
 		return
+	else:
+		# Restore tabs and close button in case tutorial restrictions were applied before
+		if _tab_nego_btn:
+			_tab_nego_btn.visible = true
+		if _tab_officedev_btn:
+			_tab_officedev_btn.visible = true
+		if close_btn:
+			close_btn.visible = true
 
 	var current_week = _get_current_week()
 
