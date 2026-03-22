@@ -58,12 +58,11 @@ func _process(delta):
 		return
 
 	# === ДЕНЬ 0: заморозка времени в 17:59, если туториал не завершён ===
-	if day == 0 and not GameState.tutorial_completed:
-		var tm = get_node_or_null("/root/TutorialManager")
-		if tm and tm.current_step < tm.Step.STEP_10_END_DAY:
-			if hour >= 17 and minute >= 59:
-				is_game_paused = true
-				return
+	# Only freeze before step 10 (End Day); step 10 itself unfreezes time so the player can act.
+	if TutorialManager.is_active() and TutorialManager.current_step < TutorialManager.Step.STEP_10_END_DAY:
+		if hour >= 17 and minute >= 59:
+			is_game_paused = true
+			return
 
 	time_accumulator += delta * MINUTES_PER_REAL_SECOND
 	

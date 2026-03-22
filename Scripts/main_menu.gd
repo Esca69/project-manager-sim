@@ -575,6 +575,9 @@ func _reset_all_singletons():
 	
 	# Tutorial
 	GameState.tutorial_completed = false
+	TutorialManager.current_step = TutorialManager.Step.NONE
+	TutorialManager._tutorial_project = null
+	TutorialManager._tutorial_candidate = null
 
 	# === EVENT SYSTEM: Сброс ивент-системы ===
 	var em = get_node_or_null("/root/EventManager")

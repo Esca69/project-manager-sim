@@ -63,7 +63,6 @@ var _hr_role_screen: Control
 var _pause_menu: CanvasLayer
 
 # <<< TUTORIAL: переменная для туториала-оверлея
-var _tutorial: Control
 var _tutorial_overlay: Control
 
 # === EVENT SYSTEM: Попап ивентов ===
@@ -197,9 +196,9 @@ func _ready():
 
 	# <<< TUTORIAL: Создаём туториал-оверлей и запускаем туториал если нужно
 	_build_tutorial_overlay()
-	if TutorialManager.is_active():
+	if GameTime.day == 0 and not GameState.tutorial_completed:
 		get_tree().create_timer(0.5).timeout.connect(func():
-			if _tutorial_overlay and TutorialManager.is_active():
+			if _tutorial_overlay and not GameState.tutorial_completed:
 				_tutorial_overlay.open()
 				TutorialManager.start_tutorial()
 		)
@@ -822,9 +821,6 @@ func _build_tutorial_overlay():
 	_tutorial_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_tutorial_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_tutorial_overlay)
-
-func _on_tutorial_finished():
-	print("📖 Туториал завершён!")
 
 # === EVENT SYSTEM: Построение попапа ивентов ===
 func _build_event_popup():
