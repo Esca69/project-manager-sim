@@ -363,11 +363,13 @@ func _setup_tutorial_mode():
 	current_options.append(tut_proj)
 	_generated_for_week = -1  # Force re-use next time
 
-	# Hide nego / office-dev tabs
+	# Hide nego / office-dev tabs and close button during tutorial
 	if _tab_nego_btn:
 		_tab_nego_btn.visible = false
 	if _tab_officedev_btn:
 		_tab_officedev_btn.visible = false
+	if close_btn:
+		close_btn.visible = false
 
 func _close_ui():
 	if UITheme:

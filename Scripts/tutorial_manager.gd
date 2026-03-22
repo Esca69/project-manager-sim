@@ -36,8 +36,8 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func is_active() -> bool:
-	# Tutorial is active on day 0 if not yet completed
-	return GameTime.day == 0 and not GameState.tutorial_completed
+	# Tutorial is active as long as it hasn't been completed and a step is in progress
+	return not GameState.tutorial_completed and current_step != Step.NONE
 
 # Start tutorial (called after loading office scene on new game)
 func start_tutorial():
@@ -127,7 +127,6 @@ func notify_end_day():
 		return
 	if current_step == Step.STEP_10_END_DAY:
 		GameState.tutorial_completed = true
-		GameTime.day = 1
 		current_step = Step.NONE
 		emit_signal("tutorial_completed")
 		print("📖 Tutorial completed!")
