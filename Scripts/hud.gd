@@ -196,7 +196,7 @@ func _ready():
 
 	# <<< TUTORIAL: Создаём туториал-оверлей и запускаем туториал если нужно
 	_build_tutorial_overlay()
-	if GameTime.day == 0 and not GameState.tutorial_completed:
+	if GameTime.day == 1 and not GameState.tutorial_completed:
 		get_tree().create_timer(0.5).timeout.connect(func():
 			if _tutorial_overlay and not GameState.tutorial_completed:
 				_tutorial_overlay.open()
@@ -770,10 +770,10 @@ func _on_end_day_pressed():
 		if _tutorial_overlay:
 			_tutorial_overlay.show_end_day_card()
 		TutorialManager.notify_end_day()
-		# After tutorial completes, day is set to 1 by TutorialManager
+		# After tutorial completes (day 1), night skip advances to day 2
 		end_day_button.visible = false
 		_dismiss_all_employees()
-		# Don't pay salaries on day 0 (no real work done)
+		# Don't pay salaries on day 1 (tutorial day — no real work done)
 		# Skip day summary, go directly to night skip
 		GameTime.start_night_skip()
 		return
