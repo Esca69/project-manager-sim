@@ -970,3 +970,24 @@ TUT_TASK_GO_TO_PM_DESK,📍 Идите к своему рабочему стол
 TUT_TASK_START_PROJECT,📍 Откройте проект и нажмите «Начать»,"📍 Open project and press ""Start"""
 TUT_TASK_END_DAY,📍 Дождитесь 18:00 и завершите день,📍 Wait until 18:00 and end the day
 TUT_BTN_UNDERSTOOD,Понятно,Got it
+TOAST_PROJECT_FINISHED,"✅ Проект «%s» завершён! +$%d","✅ Project «%s» completed! +$%d"
+TOAST_PROJECT_FAILED,"❌ Проект «%s» провален!","❌ Project «%s» failed!"
+TOAST_STAGE_COMPLETED,"📋 Этап %s завершён: «%s» (%s)","📋 Stage %s done: «%s» (%s)"
+TOAST_EMPLOYEE_LEVELED_UP,"⬆️ %s → Уровень %d (%s)!","⬆️ %s → Level %d (%s)!"
+TOAST_SICK,🤒 %s заболел(а) на %d дней,🤒 %s is sick for %d days
+TOAST_DAYOFF,🏖️ %s взял(а) отгул,🏖️ %s took a day off
+TOAST_HUNTING,📞 %s получил(а) предложение от конкурентов!,📞 %s got an offer from competitors!
+TOAST_RAISE_REQUEST,💸 %s просит повышение зарплаты,💸 %s is requesting a raise
+TOAST_VACATION_REQUEST,🌴 %s запрашивает отпуск,🌴 %s is requesting vacation
+TOAST_FREELANCER_LEAVE,👋 Фрилансер %s покидает команду,👋 Freelancer %s is leaving the team
+TOAST_SCOPE_CREEP,"📈 Объём работ увеличен: «%s»","📈 Scope expanded: «%s»"
+TOAST_JUNIOR_MISTAKE,"⚠️ Ошибка джуниора на проекте «%s»","⚠️ Junior mistake on project «%s»"
+TOAST_CLIENT_REVIEW,"⭐ Отзыв клиента по проекту «%s»","⭐ Client review for project «%s»"
+TOAST_BOSS_EVENT_GENERATED,🎩 Идея босса: %s,🎩 Boss idea: %s
+TOAST_BOSS_EVENT_ACCEPTED,✅ Вы приняли: %s,✅ You accepted: %s
+TOAST_BOSS_EVENT_REJECTED,❌ Вы отклонили: %s,❌ You rejected: %s
+TOAST_BOSS_QUEST_STARTED,📋 Новый квест от босса!,📋 New quest from boss!
+TOAST_BOSS_REPORT,📊 Босс подводит итоги месяца,📊 Boss is reviewing the month
+TOAST_WORK_STARTED,☀️ День %d — начало работы,☀️ Day %d — work starts
+TOAST_WEEKEND,🏠 Выходной!,🏠 Weekend!
+TOAST_HIRED,"🤝 Нанят: %s (%s, $%d/мес)","🤝 Hired: %s (%s, $%d/mo)"

@@ -84,8 +84,12 @@ func _process(delta):
 						
 						emit_signal("work_started")
 						print("🔔 09:00: СТАРТ РАБОТЫ (", get_weekday_name(), ")")
+						if ScreenJuice:
+							ScreenJuice.show_toast("☀️", tr("TOAST_WORK_STARTED") % day)
 					else:
 						print("🔔 09:00: ВЫХОДНОЙ (", get_weekday_name(), ") — никто не работает")
+						if ScreenJuice:
+							ScreenJuice.show_toast("🏠", tr("TOAST_WEEKEND"))
 				
 			elif hour == END_HOUR:
 				if day > 0 and not is_weekend():

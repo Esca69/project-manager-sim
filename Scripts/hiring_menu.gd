@@ -836,6 +836,9 @@ func _on_hire_pressed(index):
 		# ИСПРАВЛЕНИЕ: Используем переведенное имя в логе
 		EventLog.add(tr("LOG_HIRE_EMPLOYEE") % [type_text, human_to_hire.get_display_name(), human_to_hire.job_title, human_to_hire.monthly_salary])
 
+	if ScreenJuice:
+		ScreenJuice.show_toast("🤝", tr("TOAST_HIRED") % [human_to_hire.get_display_name(), tr(human_to_hire.job_title), human_to_hire.monthly_salary])
+
 	candidates[index] = null
 
 	# Прерываем ивент "Никакого найма!" если он активен

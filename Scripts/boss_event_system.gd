@@ -171,6 +171,8 @@ func _try_generate_event():
 	emit_signal("boss_event_generated", chosen_id)
 	var event = BOSS_EVENTS[chosen_id]
 	EventLog.add(tr("BOSS_EVENT_LOG_GENERATED") % tr(event["title_key"]), EventLog.LogType.ALERT)
+	if ScreenJuice:
+		ScreenJuice.show_toast("🎩", tr("TOAST_BOSS_EVENT_GENERATED") % tr(event["title_key"]))
 
 func _on_ignore():
 	var event = BOSS_EVENTS.get(pending_event_id, {})
@@ -214,6 +216,8 @@ func accept_event():
 	emit_signal("boss_event_accepted", event_id)
 	_apply_event_effects(event_id)
 	EventLog.add(tr("BOSS_EVENT_LOG_ACCEPTED") % tr(event["title_key"]), EventLog.LogType.ALERT)
+	if ScreenJuice:
+		ScreenJuice.show_toast("✅", tr("TOAST_BOSS_EVENT_ACCEPTED") % tr(event["title_key"]))
 	
 	# Если мгновенный ивент — сразу завершаем (функция сама выдаст кулдаун 7 дней)
 	if days <= 0:
@@ -230,6 +234,8 @@ func reject_event():
 	cooldown_days = 7  # ИСПРАВЛЕНИЕ: Жесткий кулдаун 7 дней
 	emit_signal("boss_event_rejected", event_id)
 	EventLog.add(tr("BOSS_EVENT_LOG_REJECTED") % tr(event["title_key"]), EventLog.LogType.ALERT)
+	if ScreenJuice:
+		ScreenJuice.show_toast("❌", tr("TOAST_BOSS_EVENT_REJECTED") % tr(event["title_key"]))
 	_on_reject_custom_log(event_id)
 
 # ============================================================

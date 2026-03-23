@@ -98,6 +98,8 @@ func add_income(amount: int):
 	var bm = get_node_or_null("/root/BossManager")
 	if bm:
 		bm.track_income(amount)
+	if ScreenJuice:
+		ScreenJuice.show_income_float(amount)
 
 # Списание расхода (зарплаты и т.д.)
 func add_expense(amount: int):
@@ -107,6 +109,8 @@ func add_expense(amount: int):
 	var bm = get_node_or_null("/root/BossManager")
 	if bm:
 		bm.track_expense(amount)
+	if ScreenJuice:
+		ScreenJuice.show_expense_float(amount)
 
 # --- ФУНКЦИЯ ВЫПЛАТЫ ЗАРПЛАТ ---
 func pay_daily_salaries():

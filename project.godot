@@ -35,6 +35,7 @@ FreelancerManager="*res://Scripts/freelancer_manager.gd"
 BossEventSystem="*res://Scripts/boss_event_system.gd"
 MemoryMonitor="*res://Scripts/memory_monitor.gd"
 TutorialManager="*res://Scripts/tutorial_manager.gd"
+ScreenJuice="*res://Scripts/screen_juice.gd"
 
 [display]
 
