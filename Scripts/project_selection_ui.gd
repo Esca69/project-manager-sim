@@ -664,8 +664,7 @@ func _on_select_pressed(index: int):
 	emit_signal("project_selected", selected)
 
 	# === ТУТОРИАЛ: уведомляем ПОСЛЕ закрытия окна и emit сигнала ===
-	if TutorialManager.is_active():
-		TutorialManager.notify_project_taken()
+	TutorialManager.notify_any_project_taken()
 
 # === ОБРАБОТКА ВВОДА (ESC) ===
 func _input(event: InputEvent) -> void:

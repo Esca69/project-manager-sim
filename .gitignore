@@ -1,3 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# LibreOffice lock and temp files
+Localization/.~lock*
+Localization/*.tmp

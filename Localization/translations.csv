@@ -925,12 +925,12 @@ TAB_OFFICE_DEV,🏗️ Развитие офиса,🏗️ Office Upgrades
 BTN_BUY_UPGRADE,Купить,Buy
 TXT_ALREADY_BOUGHT,✅ Куплено,✅ Purchased
 UPG_COFFEE_TITLE,☕ Кофемашина,☕ Coffee Machine
-UPG_COFFEE_DESC,"Обеспечивает команду кофеином. Позволяет восстанавливать энергию посреди дня.","Provides the team with caffeine. Restores energy during the day."
+UPG_COFFEE_DESC,Обеспечивает команду кофеином. Позволяет восстанавливать энергию посреди дня.,Provides the team with caffeine. Restores energy during the day.
 UPG_KITCHEN_TITLE,🍽️ Кухня и зона отдыха,🍽️ Kitchen & Break Room
-UPG_KITCHEN_DESC,"Сытый сотрудник - счастливый сотрудник. Предотвращает быстрое выгорание и дает бонус к настроению.","A full employee is a happy employee. Prevents fast burnout and boosts mood."
+UPG_KITCHEN_DESC,Сытый сотрудник - счастливый сотрудник. Предотвращает быстрое выгорание и дает бонус к настроению.,A full employee is a happy employee. Prevents fast burnout and boosts mood.
 UPG_DESK_TITLE,🖥️ Рабочий стол,🖥️ Employee Desk
-UPG_DESK_DESC,"Больше столов — больше сотрудников.","More desks — more employees."
-TXT_DESKS_COUNT,"Столов: %d/%d","Desks: %d/%d"
+UPG_DESK_DESC,Больше столов — больше сотрудников.,More desks — more employees.
+TXT_DESKS_COUNT,Столов: %d/%d,Desks: %d/%d
 TXT_NOT_ENOUGH_MONEY,Недостаточно средств,Not enough funds
 TXT_NOT_ENOUGH_TRUST,Недостаточно лояльности,Not enough trust
 LOG_UPGRADE_PURCHASED,🏗️ Куплено улучшение: %s,🏗️ Upgrade purchased: %s
@@ -939,18 +939,212 @@ DEBUFF_NO_COFFEE,Нет кофемашины ☕,No coffee machine ☕
 MOOD_MOD_NO_COFFEE,Нет кофемашины (coffee_lover),No coffee machine (coffee_lover)
 TUT_TITLE,Обучение,Tutorial
 TUT_BOSS_SAYS,Босс говорит...,Boss says...
-TUT_STEP1_CARD,"Так, ты новенький? Я — твой босс. Повезло тебе, ничего не скажешь. Ладно, сегодня я проведу тебе мини-обучение, а дальше — сам разбирайся.
+TUT_STEP1_CARD,"Так это ты решил стать проджект-менеджером? Ясно…
 
-Двигайся клавишами WASD, камеру приближай колёсиком мыши. А теперь топай ко мне — я за столом в кабинете. Клавиша E — для взаимодействия.","So, you're the new guy? I'm your boss. Lucky you, huh? Fine, today I'll walk you through a mini-training, and after that — you're on your own.
+Я — твой босс. Повезло мне, ничего не скажешь. Ладно, сегодня я проведу тебе мини-обучение, а дальше — сам разбирайся.
 
-Move with WASD, zoom camera with mouse wheel. Now get over here — I'm at my desk. Press E to interact."
-TUT_STEP2_CARD,"Молодец, дошёл. Не заблудился. Нажми E около меня и выбери проект. Я тебе подобрал один простенький — даже ты не сможешь его завалить. Надеюсь.","Good, you made it. Didn't get lost. Press E near me and pick a project. I've found a simple one for you — even you can't screw it up. Hopefully."
-TUT_STEP3_CARD,"Хорошо, проект обсудили. Раз это бизнес-анализ — тебе нужен бизнес-аналитик. Не стой столбом, иди в HR-кабинет и найми одного.","Alright, project discussed. Since it's business analysis — you need a business analyst. Don't just stand there, go to the HR office and hire one."
-TUT_STEP4_CARD,"Ты у HR. Выбери роль 'Бизнес-аналитик' и начни поиск. Это не ракетостроение, справишься.","You're at HR. Pick the 'Business Analyst' role and start searching. It's not rocket science, you'll manage."
-TUT_STEP5_HIRE_DONE,"Нанял? Ладно. Но он не будет просто так работать — его нужно посадить за рабочий стол. Иди к столам.","Hired? Fine. But they won't just work on their own — you need to seat them at a desk. Go to the work desks."
-TUT_STEP7_DESK_HINT,"Подойди к столу, нажми E и выбери работника двойным кликом. Двойным, понял? Не одинарным.","Approach a desk, press E and double-click on the employee. Double-click, got it? Not a single click."
-TUT_STEP8_CARD,"Отлично, рабочее место готово. Теперь нужно запустить проект. Иди к своему рабочему столу — тому, что побольше.","Great, workspace is set. Now you need to launch the project. Go to your desk — the bigger one."
-TUT_STEP9_CARD,"Открой проект из списка, назначь бизнес-аналитика на этап и нажми 'Начать проект'. Это твой первый проект — не облажайся.","Open the project from the list, assign the business analyst to the stage and press 'Start Project'. This is your first project — don't mess it up."
+Двигайся клавишами WASD, камеру приближай колёсиком мыши. А теперь топай ко мне — я за столом в своём кабинете. Клавиша E — для взаимодействия.","So you've decided to become a project manager? I see…
+
+I'm your boss. Lucky me, huh. Fine, today I'll give you a mini-training, and after that — figure it out yourself.
+
+Move with WASD keys, zoom the camera with the mouse wheel. Now get over to me — I'm at my desk in the office. Press E to interact."
+TUT_STEP2_CARD,"Молодец, дошёл. Не заблудился. Ты способнее, чем кажешься.
+
+Теперь поговорим о твоей работе. Раз в неделю я выдаю тебе новый пул проектов, которые мне предложили наши любимые заказчики.
+
+За их выполнение нам платят деньги, а твоя задача — выполнять их как можно больше и заработать мне как можно больше денег.
+
+Нажми E около меня и выбери проект. Я тебе подобрал один простенький — даже ты не сможешь его завалить. Надеюсь.
+
+Но помни, наше обсуждение проекта займёт 4 часа. Поищи переключение скорости игры в интерфейсе на всякий случай.","Good job, you made it. Didn't get lost. You're more capable than you look.
+
+Now let's talk about your work. Once a week I give you a new pool of projects offered by our beloved clients.
+
+They pay us money for completing them, and your job is to complete as many as possible and earn me as much money as you can.
+
+Press E near me and pick a project. I've picked a simple one for you — even you can't mess it up. Hopefully.
+
+But remember, our project discussion will take 4 hours. Look for the game speed controls in the interface, just in case."
+TUT_STEP3_CARD,"Хорошо, проект обсудили. Надеюсь, ты внимательно слушал мою историю про то, как я сегодня с утра разлил кофе в своём BMZ.
+
+Так как ты, очевидно, не самый сообразительный — я не уверен, что ты заметил, но чтобы выполнить этот проект — нам нужен бизнес-аналитик.
+
+Справа от нас кабинет HR. Правда, там нету HR. Но ты сам пойди как-нибудь, открой газету и найди нам подходящего кандидата.
+
+Может быть, когда-нибудь мы наймём кого-нибудь, кто сможет делать это за тебя. Хотя зачем?","Alright, project discussed. I hope you were listening to my story about spilling coffee in my BMZ this morning.
+
+Since you're obviously not the sharpest tool — I'm not sure you noticed, but to complete this project — we need a business analyst.
+
+The HR office is to our right. Though there's no HR there. But go ahead, open the newspaper and find us a suitable candidate.
+
+Maybe someday we'll hire someone who can do this for you. Though why bother?"
+TUT_STEP4_CARD,"А вот и нужный тебе стол. Ещё раз лично для тебя — взаимодействие с предметами на E.
+
+Выбери роль «Бизнес-аналитик» и начни поиск. Это не ракетостроение, справишься (я заблокировал выбор других ролей, на всякий случай).
+
+Это займёт у тебя 2 часа.","Here's the desk you need. Once more, just for you — interact with objects using E.
+
+Pick the ""Business Analyst"" role and start the search. It's not rocket science, you'll manage (I've locked the other roles, just in case).
+
+This will take you 2 hours."
+TUT_STEP5_HIRE_DONE,"Нанял? Ладно. Надеюсь, ты хорошо подумал над кандидатами. Что? Он был один? Ну тогда ты сделал неправильный выбор.
+
+Как ты мог заметить, у сотрудников есть одна главная потребность. Чтобы им платили зарплату за их «работу». Каждый день в конце дня зарплата каждого сотрудника будет высчитываться из бюджета.
+
+Не нанимай ненужных людей, если не хочешь обанкротить МОЮ компанию!
+
+Следующий шаг — найти работнику рабочее место. В левой части офиса есть рабочие столы. Иди к столам.","Hired? Fine. I hope you thought carefully about the candidates. What? There was only one? Well then you made the wrong choice.
+
+As you might have noticed, employees have one main need. To get paid for their ""work"". Every day at the end of the day, each employee's salary will be deducted from the budget.
+
+Don't hire unnecessary people if you don't want to bankrupt MY company!
+
+Next step — find the worker a workspace. There are work desks on the left side of the office. Go to the desks."
+TUT_STEP7_DESK_HINT,"Нашёл, отлично! Может быть, я не зря тебя нанял…
+
+Подойди к столу, нажми E и выбери работника, который будет за ним сидеть, двойным кликом.
+
+Запомни, если у работника не будет стола — работать он не будет.
+
+Понимаю, столов для работы пока мало. Но в будущем, если ты заработаешь достаточно уважения — обратись ко мне и, возможно, я разрешу докупить ещё столов.","Found it, great! Maybe I didn't hire you for nothing…
+
+Approach the desk, press E and double-click on the worker who will sit there.
+
+Remember, if a worker doesn't have a desk — they won't work.
+
+I know there aren't many desks right now. But in the future, if you earn enough respect — come to me and maybe I'll let you buy more."
+TUT_STEP8_CARD,"Отлично, рабочее место готово. Когда ты назначишь проект на сотрудника, он сядет за стол и будет работать.
+
+Теперь нужно запустить проект. Иди к своему рабочему столу — тому, что побольше, он чуть выше, у стены.
+
+Это будет твоя святая святых — только оттуда ты сможешь управлять проектами.","Great, workspace is ready. When you assign a project to an employee, they'll sit at the desk and start working.
+
+Now you need to launch the project. Go to your desk — the bigger one, up a bit, near the wall.
+
+This will be your holy of holies — you can only manage projects from there."
+TUT_STEP9_CARD,"Теперь слушай внимательно. Подойди к столу и открой список проектов.
+
+Выбери первый активный и открой его. Ты увидишь там стандартный таймлайн и роль, которая необходима для выполнения текущего проекта.
+
+Назначь на работы бизнес-аналитика. Ты увидишь, что на таймлайне появится «плановая колбаска». Она покажет, за какое время конкретный исполнитель закончит работы, если будет работать 8 часов в день с 100% эффективностью.
+
+Что же может пойти не так…
+
+На экране проекта есть кнопка «Начать проект». Если ты её не нажмёшь, работы по проекту не начнутся. Не забывай про это!","Now listen carefully. Approach the desk and open the project list.
+
+Select the first active one and open it. You'll see a standard timeline and the role needed to complete the current project.
+
+Assign the business analyst to the work. You'll see a ""planned bar"" appear on the timeline. It shows how long it will take a specific worker to finish if they work 8 hours a day at 100% efficiency.
+
+What could possibly go wrong…
+
+There's a ""Start Project"" button on the project screen. If you don't press it, work on the project won't begin. Don't forget about this!"
+TUT_STEP9B_CARD,"Вот и всё. Твоя работа завершена. За что я вообще собираюсь платить тебе деньги…
+
+Как видишь, бизнес-аналитик собирается сесть за работу и начать заполнять шкалу прогресса.
+
+Сегодня он проект закончить не успеет.
+
+Так что я пошёл домой, а ты дождись 18:00 и нажми «Завершить день».","That's it. Your work is done. Why am I even going to pay you…
+
+As you can see, the business analyst is about to sit down and start filling the progress bar.
+
+They won't finish the project today.
+
+So I'm heading home, and you wait until 18:00 and press ""End Day""."
+HINT_DAY2_MORNING,"Ну что ж. Я вчера наработался, теперь твоя очередь доказать мне, что ты всё понял.
+
+Ты запомнил свои ключевые задачи? Берёшь проекты, нанимаешь людей, сажаешь их за столы, запускаешь проекты — profit!
+
+Я вот сейчас произнёс это и теперь сам не понимаю, за что я буду платить тебе 1000$ в месяц…
+
+Иди ко мне в кабинет и получи задачи на месяц, а дальше принимайся за работу и заработай мне денег!","Well then. I worked hard yesterday, now it's your turn to prove you understood everything.
+
+Remember your key tasks? Take projects, hire people, seat them at desks, launch projects — profit!
+
+I just said that out loud and now I don't understand why I'm going to pay you $1000 a month…
+
+Come to my office and get your monthly tasks, then get to work and make me some money!"
+HINT_SECOND_EMPLOYEE,"О, ты развёл тут целый детский сад. Нам точно нужны такие затраты?
+
+В людях я разбираюсь! Тут слушай меня. Они все разные, но примерно одинаково бестолковые. Пока ты не умеешь «читать людей» или видеть уровень их навыков, т.к. ты не хочешь учиться и прокачивать свои…
+
+Но всё это у сотрудников есть. Пока я советую тебе почаще заглядывать в раздел «Сотрудники». Оттуда ты сможешь понять настроение и эффективность каждого сотрудника. Думаю, даже ты понимаешь, что и первое, и второе сильно влияет на скорость их работы.
+
+Ах да, совет от опытного управленца: если ты встанешь прямо над душой работающего сотрудника, он от страха начнёт работать на 20% эффективнее. Но если будешь пялиться на него слишком долго — он словит дебафф к настроению за микроменеджмент. Но кого это волнует, правда?","Oh, you've started a whole kindergarten here. Do we really need these expenses?
+
+I know people! Listen to me here. They're all different, but roughly equally useless. You can't ""read people"" or see their skill levels yet, since you don't want to learn and level up your own skills…
+
+But employees do have all of that. For now, I suggest you check the ""Employees"" section more often. From there you can understand each employee's mood and efficiency. I think even you understand that both greatly affect their work speed.
+
+Oh, and a tip from an experienced manager: if you stand right over a working employee, they'll work 20% more efficiently out of fear. But if you stare too long — they'll get a mood debuff for micromanagement. But who cares, right?"
+HINT_SECOND_PROJECT,"Ещё один проект? Не порвись от усердия. Смотри на сроки внимательно. У нас есть софт-дедлайн и хард-дедлайн.
+
+Успеешь до софта — клиент будет счастлив, мы получим полный бюджет, а работники — бонусный опыт.
+
+Проворонишь софт — получим штраф к выплате, но проект ещё можно сдать. А вот если провалишь хард-дедлайн… Проект летит в мусорку, репутация падает, и мы не получаем ни копейки. Бюджет не резиновый, следи за таймингами!","Another project? Don't strain yourself. Watch the deadlines carefully. We have a soft deadline and a hard deadline.
+
+Finish before the soft — the client will be happy, we get the full budget, and workers get bonus experience.
+
+Miss the soft — we get a penalty on payment, but the project can still be delivered. But if you fail the hard deadline… The project goes in the trash, reputation drops, and we get nothing. The budget isn't infinite, watch your timings!"
+HINT_SOFT_DEADLINE_FAILED,"Ты что, спишь на ходу?! Мы профукали софт-дедлайн по проекту! Штрафы съедают мою прибыль!
+
+Если видишь, что горим — врубай кранч (Crunch) в меню проекта. Эти ленивцы останутся пахать до 20:00.
+
+Да, на следующий день они придут выжатые как лимоны, с убитым настроением и штрафом к эффективности в 20%, но зато мы вытянем проект.
+
+Используй кранчи с умом, т.е. постоянно!","Are you sleepwalking?! We missed the soft deadline on a project! Penalties are eating my profits!
+
+If you see we're burning — turn on Crunch in the project menu. Those slackers will stay working until 20:00.
+
+Yes, the next day they'll come in squeezed like lemons, with ruined mood and a 20% efficiency penalty, but at least we'll pull through the project.
+
+Use crunches wisely, meaning constantly!"
+HINT_DAY8_MORNING,"Доброе утро. Заметил, что баланс компании тает, как твои надежды на премию? Это нормально. Зарплаты жрут деньги каждый день.
+
+Чтобы выжить, нам нужны довольные клиенты. Сдаёшь проекты вовремя — их лояльность растёт (получаем зелёные сердечки). Косячишь или проваливаешь — лояльность падает. Выше лояльность — жирнее проекты. Всё просто. Не подведи меня.
+
+Открой раздел «Клиенты» и изучи текущую лояльность и бонусы от её повышения.","Good morning. Noticed the company balance melting like your hopes for a bonus? That's normal. Salaries eat money every day.
+
+To survive, we need happy clients. Deliver projects on time — their loyalty grows (we get green hearts). Mess up or fail — loyalty drops. Higher loyalty — bigger projects. Simple. Don't let me down.
+
+Open the ""Clients"" section and check the current loyalty and bonuses from increasing it."
+HINT_FIRST_DAY_OFF_REQUEST,"Охх, уж эти сотрудники… Они постоянно будут чего-то хотеть. Как я устал от этого… Хорошо, что теперь есть ты.
+
+То они заболели, то им отгул подавай, то, не дай бог, зарплату повысить! Будешь игнорировать их просьбы — они обидятся, начнут выгорать, а потом и вовсе уволятся. Решай сам, потакать им или гнать в шею, но помни — прибыль важнее всего!","Ohh, these employees… They always want something. I'm so tired of this… Good thing I have you now.
+
+First they're sick, then they want a day off, then, god forbid, a raise! If you ignore their requests — they'll get upset, start burning out, and eventually quit. Decide for yourself whether to indulge them or show them the door, but remember — profit above all!"
+HINT_FIRST_BOSS_TRUST,"Ого, кажется, ты сделал что-то полезное и заработал капельку моего доверия. Очки доверия босса, видел такие?
+
+Не обольщайся. Эти очки ты можешь потратить на развитие офиса. Захочешь купить кофемашину, чтобы эти зомби бегали быстрее, поставить кухню или расширить количество столов — придётся тратить и деньги, и мою лояльность. Подойди ко мне и посмотри таб «Развитие офиса». Может быть, я что-нибудь и одобрю…
+
+А может быть, ты хочешь повышение зарплаты? Зайди в таб «Переговоры» у меня и поговорим.","Wow, looks like you did something useful and earned a tiny bit of my trust. Boss trust points, seen those?
+
+Don't flatter yourself. You can spend these points on office development. Want to buy a coffee machine so these zombies move faster, set up a kitchen, or add more desks — you'll need to spend both money and my trust. Come to me and check the ""Office Development"" tab. Maybe I'll approve something…
+
+Or maybe you want a raise? Check the ""Negotiations"" tab with me and we'll talk."
+HINT_DAY15_MORNING,"Середина месяца. Задачи от босса помнишь? Что-то ты двигаешься так себе.
+
+Ладно, не реви. Это нормально — не закрыть их все в первый же месяц. Бизнес — это тебе не в песочнице играть. Пробуй дальше, развивайся и пытайся не обанкротить меня окончательно.
+
+Надеюсь, в следующем месяце ты меня не разочаруешь!
+
+Зайди в раздел «Босс» и посмотри, как у тебя дела.","Middle of the month. Remember the boss's tasks? You're not exactly crushing it.
+
+Fine, don't cry. It's normal not to complete them all in the first month. Business isn't a sandbox game. Keep trying, level up, and try not to bankrupt me completely.
+
+I hope you won't disappoint me next month!
+
+Check the ""Boss"" section and see how you're doing."
+HINT_FIRST_PM_LEVEL,"Невероятно. Ты как-то умудрился повысить свой уровень ПМа. Я в шоке.
+
+Видел, что ты можешь прокачивать навыки? Загляни в своё дерево скиллов. Там можно открыть кучу полезных штук, которые хоть как-то компенсируют твою некомпетентность. Не забывай тратить очки, гений.
+
+Я бы посоветовал открыть «Оценку продуктивности», так тебе будет проще понять, кто из твоих сотрудников более, а кто менее бесполезный.","Incredible. You somehow managed to level up your PM level. I'm shocked.
+
+Seen that you can upgrade skills? Check your skill tree. You can unlock a bunch of useful things that might at least somewhat compensate for your incompetence. Don't forget to spend your points, genius.
+
+I'd recommend unlocking ""Productivity Assessment"", it'll help you understand which of your employees are more or less useless."
 TUT_STEP10_CARD,"Ну вот, первый день и закончен. Завтра работаешь сам — ни на кого не рассчитывай. Не забывай брать квесты у меня в начале каждого месяца. Удачи. Она тебе понадобится.","Well, first day is over. Tomorrow you work on your own — don't count on anyone. Don't forget to take quests from me at the start of each month. Good luck. You'll need it."
 TUT_TASK_GO_TO_BOSS,📍 Подойдите к боссу,📍 Go to the boss
 TUT_TASK_TAKE_PROJECT,📍 Нажмите E и возьмите проект,📍 Press E and take a project
@@ -961,6 +1155,6 @@ TUT_TASK_WAIT_SEARCH,⏳ Поиск кандидатов...,⏳ Searching for ca
 TUT_TASK_HIRE,📍 Наймите бизнес-аналитика,📍 Hire the business analyst
 TUT_TASK_SEAT_WORKER,📍 Посадите работника за рабочий стол,📍 Seat the worker at a desk
 TUT_TASK_GO_TO_PM_DESK,📍 Идите к своему рабочему столу,📍 Go to your desk
-TUT_TASK_START_PROJECT,📍 Откройте проект и нажмите «Начать»,📍 Open project and press "Start"
+TUT_TASK_START_PROJECT,📍 Откройте проект и нажмите «Начать»,"📍 Open project and press ""Start"""
 TUT_TASK_END_DAY,📍 Дождитесь 18:00 и завершите день,📍 Wait until 18:00 and end the day
 TUT_BTN_UNDERSTOOD,Понятно,Got it

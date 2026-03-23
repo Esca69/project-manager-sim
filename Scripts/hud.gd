@@ -678,6 +678,7 @@ func _on_project_list_opened(proj_data: ProjectData):
 
 func _on_project_window_closed():
 	project_list_menu.open_menu()
+	TutorialManager.notify_project_screen_closed()
 
 func _on_bottom_tab_pressed(tab_name: String):
 	match tab_name:
@@ -766,9 +767,7 @@ func _on_end_day_pressed():
 
 	# === ТУТОРИАЛ: обработка завершения дня 0 ===
 	if TutorialManager.is_active():
-		# Show final card, then complete tutorial
-		if _tutorial_overlay:
-			_tutorial_overlay.show_end_day_card()
+		# Complete tutorial (step 9B card already told the player to end the day)
 		TutorialManager.notify_end_day()
 		# After tutorial completes (day 1), night skip advances to day 2
 		end_day_button.visible = false

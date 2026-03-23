@@ -92,6 +92,7 @@ func _serialize_game_state() -> Dictionary:
 		"company_balance": GameState.company_balance,
 		"tutorial_completed": GameState.tutorial_completed,
 		"office_upgrades": GameState.office_upgrades.duplicate(),
+		"tutorial_hints_shown": TutorialManager.shown_hints.duplicate(),
 	}
 
 # --- PMData ---
@@ -868,6 +869,10 @@ func _load_game_state(d: Dictionary):
 		GameState.office_upgrades = d["office_upgrades"].duplicate()
 	else:
 		GameState.office_upgrades = {"coffee_machine": false, "kitchen": false, "desk_count": 3}
+	if d.has("tutorial_hints_shown"):
+		TutorialManager.shown_hints = d["tutorial_hints_shown"].duplicate()
+	else:
+		TutorialManager.shown_hints = {}
 
 func _load_pm_data(d: Dictionary):
 	if d.is_empty():
