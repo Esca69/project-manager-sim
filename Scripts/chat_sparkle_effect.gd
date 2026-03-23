@@ -12,6 +12,7 @@ var _particles: Array = []
 
 const PARTICLE_COUNT: int = 5
 const FLIGHT_DURATION: float = 1.5
+const MAX_CASCADE_DELAY: float = 0.3  # максимальная задержка старта для каскадного эффекта
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -25,8 +26,8 @@ func setup(from: Vector2, to: Vector2, color: Color):
 func _spawn_particles():
 	for i in range(PARTICLE_COUNT):
 		_particles.append({
-			"progress": 0.0,
-			"arc_offset": randf_range(-30.0, 30.0),
+			"progress": -randf_range(0.0, MAX_CASCADE_DELAY),  # разброс старта для каскадного эффекта
+			"arc_offset": randf_range(-35.0, 35.0),
 		})
 
 func _process(delta: float):
@@ -43,9 +44,11 @@ func _process(delta: float):
 
 func _draw():
 	for p in _particles:
+		if p["progress"] < 0.0:
+			continue  # ещё не стартовала
 		var t = minf(p["progress"], 1.0)
 		var pos = start_pos.lerp(end_pos, t) + Vector2(0.0, p["arc_offset"] * sin(t * PI))
 		var local_pos = pos - global_position
 		var c = spark_color
 		c.a = 1.0 - t
-		draw_circle(local_pos, 3.0, c)
+		draw_circle(local_pos, 4.0, c)

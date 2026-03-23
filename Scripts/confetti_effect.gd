@@ -5,14 +5,14 @@ extends Node2D
 # ============================================================
 
 var _particles: Array = []
-var _lifetime: float = 2.5
+var _lifetime: float = 4.0
 var _elapsed: float = 0.0
 var _alpha: float = 1.0
 
 const GRAVITY: float = 280.0
-const PARTICLE_COUNT_MIN: int = 40
-const PARTICLE_COUNT_MAX: int = 60
-const FADE_START: float = 1.8
+const PARTICLE_COUNT_MIN: int = 50
+const PARTICLE_COUNT_MAX: int = 80
+const FADE_START: float = 2.8
 const PARTICLE_COLORS: Array = [
 	Color(0.2, 0.8, 0.3),    # зелёный
 	Color(0.2, 0.7, 1.0),    # голубой
