@@ -85,6 +85,11 @@ func init_vacation_timer():
 # Никакого дрейфа. Полная прозрачность для игрока.
 var mood: float = 55.0  # Будет пересчитан при первом recalculate_mood()
 
+# === MOOD SHIFT FLASH ===
+var _previous_mood_zone_high: bool = false  # Был ли mood >= 70 на прошлом тике
+var _previous_mood_zone_low: bool = false   # Был ли mood <= 40 на прошлом тике
+signal mood_threshold_crossed(is_positive: bool)
+
 const MOOD_BASE: float = 50.0  # Базовое значение настроения
 
 # Зоны настроения → множитель эффективности
@@ -219,6 +224,18 @@ func recalculate_mood():
 		result += mod.value
 
 	mood = clampf(result, 0.0, 100.0)
+
+	# === MOOD SHIFT FLASH: проверка пересечения порогов ===
+	var now_high = mood >= 70.0
+	var now_low = mood <= 40.0
+
+	if now_high and not _previous_mood_zone_high:
+		mood_threshold_crossed.emit(true)
+	if now_low and not _previous_mood_zone_low:
+		mood_threshold_crossed.emit(false)
+
+	_previous_mood_zone_high = now_high
+	_previous_mood_zone_low = now_low
 
 # === MOOD: Тик временных модификаторов (каждую игровую минуту) ===
 func tick_mood_modifiers():
