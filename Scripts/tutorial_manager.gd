@@ -42,6 +42,7 @@ var _total_projects_taken: int = 0
 
 # === Day 2+ one-time hint system ===
 var shown_hints: Dictionary = {}  # {String hint_id: bool}
+var _pending_morning_hint: String = ""
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -50,6 +51,7 @@ func _ready():
 
 func _connect_hint_signals():
 	GameTime.day_started.connect(_on_day_started_hint)
+	GameTime.time_tick.connect(_on_time_tick_hint)
 	BossManager.trust_changed.connect(_on_boss_trust_changed_hint)
 	ProjectManager.project_finished.connect(_on_project_finished_hint)
 	EventManager.event_triggered.connect(_on_event_triggered_hint)
@@ -194,11 +196,17 @@ func show_hint(hint_id: String):
 
 func _on_day_started_hint(day_number: int):
 	if day_number == 2:
-		show_hint("hint_day2_morning")
+		_pending_morning_hint = "hint_day2_morning"
 	elif day_number == 8:
-		show_hint("hint_day8_morning")
+		_pending_morning_hint = "hint_day8_morning"
 	elif day_number == 15:
-		show_hint("hint_day15_morning")
+		_pending_morning_hint = "hint_day15_morning"
+
+func _on_time_tick_hint(h: int, _m: int):
+	if _pending_morning_hint != "" and h >= 8 and not GameTime.is_night_skip:
+		var hint_id = _pending_morning_hint
+		_pending_morning_hint = ""
+		show_hint(hint_id)
 
 func _on_boss_trust_changed_hint(new_trust: int):
 	if new_trust > 0:

@@ -55,6 +55,9 @@ func _process(_delta):
 		else:
 			# Restore visibility only if tutorial is active
 			_task_panel.visible = TutorialManager.is_active() and TutorialManager.current_step != TutorialManager.Step.NONE
+			# Show any pending hint now that menus are closed
+			if _pending_hint_id != "":
+				_show_hint_card(_pending_hint_id)
 
 func open():
 	visible = true
@@ -312,6 +315,7 @@ func _on_card_btn_pressed():
 
 # Called after the "Understood" button is pressed on a card
 var _pending_after_card: Callable = Callable()
+var _pending_hint_id: String = ""
 
 func _after_card_closed():
 	if _pending_after_card.is_valid():
@@ -328,6 +332,15 @@ func _on_tutorial_completed():
 
 func _on_hint_triggered(hint_id: String):
 	# hint_ids are lowercase (e.g. "hint_day2_morning"); CSV keys use uppercase (e.g. "HINT_DAY2_MORNING")
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_any_menu_open") and hud.is_any_menu_open():
+		# Queue the hint — it will be shown when menus close
+		_pending_hint_id = hint_id
+		return
+	_show_hint_card(hint_id)
+
+func _show_hint_card(hint_id: String):
+	_pending_hint_id = ""
 	visible = true
 	_show_card(hint_id.to_upper(), true)
 	# After dismissal, hide the overlay again (no active tutorial)
