@@ -285,6 +285,8 @@ func _ready():
 		update_visuals()
 		data.current_energy = 100.0
 		_setup_early_bird()
+		if not data.mood_threshold_crossed.is_connected(_on_mood_threshold_crossed):
+			data.mood_threshold_crossed.connect(_on_mood_threshold_crossed)
 
 	coffee_cup_holder.visible = false
 
@@ -1650,6 +1652,10 @@ func _execute_proximity_chat(partner_npc):
 	_personal_chat_cooldown = random_cd
 	partner_npc._personal_chat_cooldown = random_cd
 
+	# === SCREEN JUICE: Искры при чате ===
+	if ScreenJuice:
+		ScreenJuice.show_chat_sparkles(self, partner_npc, result.is_positive)
+
 	_show_chat_reaction(result.is_positive)
 	if is_instance_valid(partner_npc):
 		partner_npc._show_chat_reaction(result.is_positive)
@@ -1676,6 +1682,14 @@ func _show_chat_reaction(is_positive: bool):
 			else:
 				show_thought_bubble("💢", 2.0)
 	)
+
+func _on_mood_threshold_crossed(is_positive: bool):
+	if not is_instance_valid(self):
+		return
+	if not visible:
+		return
+	if ScreenJuice:
+		ScreenJuice.show_mood_ring(self, is_positive)
 
 func _get_pair_cooldown(partner_name: String) -> float:
 	return _chat_pair_cooldowns.get(partner_name, 0.0)

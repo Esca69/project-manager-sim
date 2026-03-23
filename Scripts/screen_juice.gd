@@ -243,3 +243,39 @@ func show_levelup_effect(npc_node: Node2D, level: int):
 	tween.tween_interval(2.0)
 	tween.tween_property(effect, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(effect.queue_free)
+
+# ============================================================
+# ФИЧА 6: Mood Ring — кольцо-пульс при смене зоны настроения NPC
+# ============================================================
+func show_mood_ring(npc_node: Node2D, is_positive: bool):
+	if not is_instance_valid(npc_node):
+		return
+	var ring_script = load("res://Scripts/mood_ring_effect.gd")
+	if not ring_script:
+		return
+	var ring = Node2D.new()
+	ring.set_script(ring_script)
+	ring.process_mode = Node.PROCESS_MODE_ALWAYS
+	ring.ring_color = Color(0.2, 0.9, 0.3, 1.0) if is_positive else Color(1.0, 0.3, 0.3, 1.0)
+	ring.position = Vector2(0.0, -80.0)
+	ring.z_index = 100
+	npc_node.add_child(ring)
+
+# ============================================================
+# ФИЧА 7: Chat Sparkles — искры при proximity chat между NPC
+# ============================================================
+func show_chat_sparkles(npc_a: Node2D, npc_b: Node2D, is_positive: bool):
+	if not is_instance_valid(npc_a) or not is_instance_valid(npc_b):
+		return
+	var sparkle_script = load("res://Scripts/chat_sparkle_effect.gd")
+	if not sparkle_script:
+		return
+	var sparkle = Node2D.new()
+	sparkle.set_script(sparkle_script)
+	sparkle.process_mode = Node.PROCESS_MODE_ALWAYS
+	sparkle.z_index = 99
+	npc_a.add_child(sparkle)
+	var color = Color(0.2, 0.9, 0.3, 1.0) if is_positive else Color(1.0, 0.3, 0.3, 1.0)
+	var from = npc_a.global_position + Vector2(0.0, -60.0)
+	var to = npc_b.global_position + Vector2(0.0, -60.0)
+	sparkle.setup(from, to, color)
