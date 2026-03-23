@@ -2221,6 +2221,8 @@ func open_raise_dialog():
 	}
 
 	EventManager._show_event_popup(event_data)
+	if ScreenJuice:
+		ScreenJuice.show_toast("💸", tr("TOAST_RAISE_REQUEST") % data.get_display_name())
 
 func _check_raise_escalation():
 	if not data: return
@@ -2373,6 +2375,8 @@ func _trigger_vacation_request():
 		],
 	}
 	EventManager._show_event_popup(event_data)
+	if ScreenJuice:
+		ScreenJuice.show_toast("🌴", tr("TOAST_VACATION_REQUEST") % data.get_display_name())
 
 func _remove_from_all_projects():
 	for project in ProjectManager.active_projects:

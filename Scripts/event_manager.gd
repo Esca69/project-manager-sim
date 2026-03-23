@@ -297,6 +297,8 @@ func _trigger_scope_expansion(project: ProjectData, stage: Dictionary):
 
 	_scope_expanded_projects.append(project.title)
 	_project_event_triggered_today = true
+	if ScreenJuice:
+		ScreenJuice.show_toast("📈", tr("TOAST_SCOPE_CREEP") % project.get_display_title())
 	_show_event_popup(event_data)
 
 # =============================================
@@ -419,6 +421,8 @@ func _trigger_client_review(review: Dictionary):
 	# Удаляем этот отзыв из очереди
 	_pending_reviews.erase(review)
 	_project_event_triggered_today = true
+	if ScreenJuice:
+		ScreenJuice.show_toast("⭐", tr("TOAST_CLIENT_REVIEW") % tr(review.get("project_title", "")))
 	_show_event_popup(event_data)
 
 # =============================================
@@ -571,6 +575,8 @@ func _trigger_junior_mistake(info: Dictionary):
 	var stage_key = str(project.title) + "::" + str(stage_index)
 	_junior_mistake_stages.append(stage_key)
 	_project_event_triggered_today = true
+	if ScreenJuice:
+		ScreenJuice.show_toast("⚠️", tr("TOAST_JUNIOR_MISTAKE") % project.get_display_title())
 	_show_event_popup(event_data)
 
 # =============================================
@@ -691,6 +697,8 @@ func _trigger_sick_event(employee_node):
 	last_sick_day = GameTime.day
 	_record_cooldown(emp_name_raw, "last_sick_day")
 
+	if ScreenJuice:
+		ScreenJuice.show_toast("🤒", tr("TOAST_SICK") % [employee_node.data.get_display_name(), event_data["sick_days"]])
 	_show_event_popup(event_data)
 
 func _trigger_dayoff_event(employee_node):
@@ -727,6 +735,8 @@ func _trigger_dayoff_event(employee_node):
 	last_dayoff_day = GameTime.day
 	_record_cooldown(emp_name_raw, "last_dayoff_day")
 
+	if ScreenJuice:
+		ScreenJuice.show_toast("🏖️", tr("TOAST_DAYOFF") % employee_node.data.get_display_name())
 	_show_event_popup(event_data)
 
 # =============================================
@@ -1046,6 +1056,8 @@ func _trigger_hunting_event(employee_node):
 	}
 
 	last_hunting_day = GameTime.day
+	if ScreenJuice:
+		ScreenJuice.show_toast("📞", tr("TOAST_HUNTING") % emp_data.get_display_name())
 	_show_event_popup(event_data)
 
 func _apply_hunting_choice(event_data: Dictionary, choice_id: String):
@@ -1138,6 +1150,9 @@ func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
 func _apply_freelancer_leave(event_data: Dictionary, _choice_id: String):
 	var leave_type = event_data.get("leave_type", "hard")
 	var emp_name = event_data.get("employee_name", "")
+
+	if ScreenJuice and emp_name != "":
+		ScreenJuice.show_toast("👋", tr("TOAST_FREELANCER_LEAVE") % emp_name)
 
 	if leave_type == "soft":
 		var warning_days = event_data.get("warning_days", 1)

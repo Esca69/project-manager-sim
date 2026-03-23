@@ -295,6 +295,8 @@ func start_quest(quest: Dictionary):
 	quest_active = true
 	_quest_shown_this_month = true
 	emit_signal("quest_started", quest)
+	if ScreenJuice:
+		ScreenJuice.show_toast("📋", tr("TOAST_BOSS_QUEST_STARTED"))
 	print("📋 Квест месяца %d запущен! Целей: %d" % [quest["month"], quest["objectives"].size()])
 
 # === ОЦЕНКА КВЕСТА (конец месяца) ===
@@ -422,6 +424,8 @@ func mark_quest_shown():
 
 func mark_report_shown():
 	_report_shown_this_month = true
+	if ScreenJuice:
+		ScreenJuice.show_toast("📊", tr("TOAST_BOSS_REPORT"))
 
 # === ПОЛУЧИТЬ ТЕКСТОВОЕ ОПИСАНИЕ ДОВЕРИЯ ===
 func get_trust_label() -> String:

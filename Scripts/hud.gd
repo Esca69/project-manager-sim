@@ -82,6 +82,10 @@ var _personal_balance_label: Label
 # >>> ДОБАВЛЕНО: Переменная для FPS
 var _fps_label: Label
 
+# === SCREEN JUICE: предыдущие значения баланса для определения направления ===
+var _prev_balance: int = 0
+var _prev_personal_balance: int = 0
+
 # === ИНДИКАТОР СВОБОДНОЙ КАМЕРЫ ===
 var _free_camera_hint: PanelContainer = null
 
@@ -165,8 +169,12 @@ func _ready():
 	btn_5x.pressed.connect(func(): GameTime.speed_5x())
 	btn_10x.pressed.connect(func(): GameTime.speed_10x())
 
+	_prev_balance = GameState.company_balance
 	update_balance_ui(GameState.company_balance)
 	update_time_label(GameTime.hour, GameTime.minute)
+
+	if ScreenJuice:
+		ScreenJuice.register_balance_label(balance_label)
 
 	pm_skill_tree.visible = false
 
@@ -175,6 +183,7 @@ func _ready():
 
 	ProjectManager.project_finished.connect(_on_project_finished_xp)
 	ProjectManager.project_failed.connect(_on_project_failed_xp)
+	ProjectManager.employee_leveled_up.connect(_on_employee_leveled_up_toast)
 
 	PMData.xp_changed.connect(_on_pm_xp_changed)
 
@@ -582,13 +591,23 @@ func is_any_menu_open() -> bool:
 
 	return false
 
-func _on_project_finished_xp(_proj):
+func _on_project_finished_xp(proj):
 	PMData.add_xp(30)
 	print("🎯 PM +30 XP за завершённый проект")
+	if ScreenJuice:
+		var payout = proj.get_final_payout(GameTime.day) if proj else 0
+		ScreenJuice.show_toast("✅", tr("TOAST_PROJECT_FINISHED") % [tr(proj.title), payout])
+		ScreenJuice.show_confetti()
 
-func _on_project_failed_xp(_proj):
+func _on_project_failed_xp(proj):
 	PMData.add_xp(10)
 	print("🎯 PM +10 XP за проваленный проект (опыт всё равно)")
+	if ScreenJuice and proj:
+		ScreenJuice.show_toast("❌", tr("TOAST_PROJECT_FAILED") % tr(proj.title))
+
+func _on_employee_leveled_up_toast(emp: EmployeeData, new_level: int, _skill_gain: int, _new_trait: String):
+	if ScreenJuice and emp:
+		ScreenJuice.show_toast("⬆️", tr("TOAST_EMPLOYEE_LEVELED_UP") % [emp.get_display_name(), new_level, emp.get_grade_name()])
 
 # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ---
 
@@ -622,10 +641,12 @@ func update_time_label(_hour, _minute):
 func update_balance_ui(amount):
 	balance_label.text = tr("HUD_BALANCE") % amount
 
-	if amount < 0:
-		balance_label.modulate = Color.RED
-	else:
-		balance_label.modulate = Color.GREEN
+	var label_color = Color.RED if amount < 0 else Color.GREEN
+	balance_label.modulate = label_color
+
+	if ScreenJuice:
+		ScreenJuice.bounce_node(balance_label, amount >= _prev_balance, label_color)
+	_prev_balance = amount
 
 # --- ОСТАЛЬНАЯ ЛОГИКА ---
 
@@ -893,10 +914,23 @@ func _build_personal_balance_label():
 	else:
 		hbox_container.add_child(_personal_balance_label)
 	PMData.personal_balance_changed.connect(_on_personal_balance_changed)
+	_prev_personal_balance = PMData.personal_balance
+	if ScreenJuice:
+		ScreenJuice.register_personal_balance_label(_personal_balance_label)
 
 func _on_personal_balance_changed(new_amount: int):
 	if _personal_balance_label:
 		_personal_balance_label.text = "💰 $%d" % new_amount
+		if ScreenJuice:
+			var is_income = new_amount >= _prev_personal_balance
+			ScreenJuice.bounce_node(_personal_balance_label, is_income, Color(0.85, 0.65, 0.13, 1))
+			var diff = abs(new_amount - _prev_personal_balance)
+			if diff > 0:
+				if is_income:
+					ScreenJuice.show_personal_income_float(diff)
+				else:
+					ScreenJuice.show_personal_expense_float(diff)
+		_prev_personal_balance = new_amount
 
 # >>> ДОБАВЛЕНО: Функция сборки FPS лейбла 
 func _build_fps_label():

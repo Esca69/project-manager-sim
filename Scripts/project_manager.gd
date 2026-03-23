@@ -120,6 +120,14 @@ func _physics_process(delta):
 				_award_stage_xp(active_stage, project)
 				_freeze_stage_workers(active_stage)
 				EventLog.add(tr("LOG_STAGE_COMPLETED") % [tr("STAGE_SHORT_" + active_stage.type), tr(project.title)], EventLog.LogType.PROGRESS)
+				# === SCREEN JUICE: Toast завершения этапа ===
+				if ScreenJuice:
+					var worker_names = []
+					for w in active_stage.workers:
+						if w is EmployeeData:
+							worker_names.append(w.get_display_name())
+					var workers_str = ", ".join(worker_names) if worker_names.size() > 0 else "—"
+					ScreenJuice.show_toast("📋", tr("TOAST_STAGE_COMPLETED") % [tr("STAGE_SHORT_" + active_stage.type), tr(project.title), workers_str])
 		else:
 			_finish_project(project)
 
@@ -151,6 +159,10 @@ func _award_stage_xp(stage: Dictionary, project: ProjectData):
 				emit_signal("employee_leveled_up", worker_data, result["new_level"], result["skill_gain"], result["new_trait"])
 				# === MOOD SYSTEM v2: Левел-ап → +7 на 24 часа (1440 мин) ===
 				worker_data.add_mood_modifier("level_up", "MOOD_MOD_LEVEL_UP", 7.0, 2880.0)
+				# === SCREEN JUICE: Level-up эффект над головой NPC ===
+				if ScreenJuice:
+					var npc_node = _get_employee_node(worker_data)
+					ScreenJuice.show_levelup_effect(npc_node, result["new_level"])
 
 # === БОНУС XP ЗА ПРОЕКТ ВОВРЕМЯ ===
 func _award_on_time_bonus(project: ProjectData):
@@ -260,6 +272,9 @@ func _finish_project(project: ProjectData):
 	var em = get_node_or_null("/root/EventManager")
 	if em:
 		em.register_finished_project(project)
+	# === SCREEN JUICE: Конфетти при завершении проекта ===
+	if ScreenJuice:
+		ScreenJuice.show_confetti()
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):
