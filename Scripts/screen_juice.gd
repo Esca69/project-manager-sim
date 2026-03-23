@@ -6,11 +6,11 @@ extends Node
 # ============================================================
 
 const MAX_TOASTS: int = 5
-const TOAST_WIDTH: float = 320.0
+const TOAST_WIDTH: float = 360.0
 const TOAST_MARGIN_RIGHT: float = 12.0
 const TOAST_MARGIN_TOP: float = 60.0
 const TOAST_SPACING: float = 8.0
-const TOAST_SHOW_DURATION: float = 3.5
+const TOAST_SHOW_DURATION: float = 6.0
 const TOAST_FADE_DURATION: float = 0.5
 const TOAST_SLIDE_DURATION: float = 0.3
 
@@ -48,7 +48,7 @@ func show_floating_text(anchor_node: Control, text: String, color: Color):
 	var label = Label.new()
 	label.text = text
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_font_size_override("font_size", 24)
 	if UITheme:
 		UITheme.apply_font(label, "bold")
 	label.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -61,8 +61,8 @@ func show_floating_text(anchor_node: Control, text: String, color: Color):
 
 	var tween = label.create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(label, "position", start_pos + Vector2(0.0, -40.0), 1.2)
-	tween.tween_property(label, "modulate:a", 0.0, 1.2)
+	tween.tween_property(label, "position", start_pos + Vector2(0.0, -55.0), 2.0)
+	tween.tween_property(label, "modulate:a", 0.0, 2.0)
 	tween.chain().tween_callback(label.queue_free)
 
 # Хелперы для game_state.gd (нет прямого доступа к лейблам)
@@ -128,34 +128,48 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	toast.custom_minimum_size = Vector2(TOAST_WIDTH, 0.0)
 
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.08, 0.12, 0.85)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
-	style.content_margin_left = 12.0
-	style.content_margin_right = 12.0
-	style.content_margin_top = 8.0
-	style.content_margin_bottom = 8.0
+	# Синий фон вместо чёрного, под стиль игры
+	style.bg_color = Color(0.14, 0.25, 0.45, 0.93)
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 12
+	style.corner_radius_bottom_right = 12
+	style.content_margin_left = 14.0
+	style.content_margin_right = 14.0
+	style.content_margin_top = 10.0
+	style.content_margin_bottom = 10.0
+	# Тонкая светлая рамка для стиля
+	style.border_width_top = 1
+	style.border_width_bottom = 1
+	style.border_width_left = 1
+	style.border_width_right = 1
+	style.border_color = Color(0.4, 0.55, 0.8, 0.5)
+	# Тень
+	style.shadow_color = Color(0, 0, 0, 0.2)
+	style.shadow_size = 4
 	toast.add_theme_stylebox_override("panel", style)
 
 	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 8)
+	hbox.add_theme_constant_override("separation", 10)
 	toast.add_child(hbox)
 
 	var emoji_label = Label.new()
 	emoji_label.text = emoji
-	emoji_label.add_theme_font_size_override("font_size", 16)
+	emoji_label.add_theme_font_size_override("font_size", 20)
 	emoji_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(emoji_label)
 
 	var text_label = Label.new()
 	text_label.text = text
-	text_label.add_theme_color_override("font_color", Color.WHITE)
-	text_label.add_theme_font_size_override("font_size", 13)
+	text_label.add_theme_color_override("font_color", Color(0.95, 0.95, 1.0, 1.0))
+	text_label.add_theme_font_size_override("font_size", 14)
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	# Ограничиваем макс ширину текста чтобы панель не растягивалась
+	# 80 = emoji_width(~24) + margins(14*2) + separation(10) + buffer(18)
+	text_label.custom_minimum_size = Vector2(0, 0)
+	text_label.custom_maximum_size = Vector2(TOAST_WIDTH - 80, 60)
 	if UITheme:
 		UITheme.apply_font(text_label, "semibold")
 	hbox.add_child(text_label)
@@ -203,12 +217,12 @@ func bounce_node(node: Control, is_positive: bool, reset_color: Color = Color.WH
 		return
 	var flash_color = Color(0.3, 1.0, 0.4) if is_positive else Color(1.0, 0.35, 0.35)
 	var tween = node.create_tween()
-	# Фаза 1: scale up + flash (параллельно, 0.1с)
-	tween.tween_property(node, "scale", Vector2(1.15, 1.15), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(node, "modulate", flash_color, 0.1)
+	# Фаза 1: scale up + flash (параллельно, 0.15с)
+	tween.tween_property(node, "scale", Vector2(1.3, 1.3), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(node, "modulate", flash_color, 0.15)
 	# Фаза 2: scale back + fade to reset_color (параллельно, 0.2с)
-	tween.tween_property(node, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(node, "modulate", reset_color, 0.3)
+	tween.tween_property(node, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(node, "modulate", reset_color, 0.2)
 
 # ============================================================
 # ФИЧА 5: Level-Up эффект над головой NPC
@@ -274,7 +288,12 @@ func show_chat_sparkles(npc_a: Node2D, npc_b: Node2D, is_positive: bool):
 	sparkle.set_script(sparkle_script)
 	sparkle.process_mode = Node.PROCESS_MODE_ALWAYS
 	sparkle.z_index = 99
-	npc_a.add_child(sparkle)
+	# Добавляем в мировую сцену, а не в NPC, чтобы координаты не плыли
+	var world = npc_a.get_tree().current_scene
+	if world:
+		world.add_child(sparkle)
+	else:
+		npc_a.add_child(sparkle)
 	var color = Color(0.2, 0.9, 0.3, 1.0) if is_positive else Color(1.0, 0.3, 0.3, 1.0)
 	var from = npc_a.global_position + Vector2(0.0, -60.0)
 	var to = npc_b.global_position + Vector2(0.0, -60.0)
