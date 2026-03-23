@@ -854,9 +854,9 @@ func _on_hire_pressed(index):
 				card.modulate.a = 1.0
 			)
 
-	# === ТУТОРИАЛ: уведомляем о найме и закрываем меню ===
+	# === ТУТОРИАЛ: уведомляем о найме ===
+	TutorialManager.notify_any_worker_hired()
 	if TutorialManager.is_active():
-		TutorialManager.notify_worker_hired()
 		if UITheme:
 			UITheme.fade_out(self, 0.15)
 		else:

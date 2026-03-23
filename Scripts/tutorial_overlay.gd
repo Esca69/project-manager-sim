@@ -38,6 +38,7 @@ func _ready():
 
 	TutorialManager.tutorial_step_changed.connect(_on_step_changed)
 	TutorialManager.tutorial_completed.connect(_on_tutorial_completed)
+	TutorialManager.hint_triggered.connect(_on_hint_triggered)
 
 func _process(_delta):
 	if not _task_panel:
@@ -325,6 +326,14 @@ func _on_step_changed(step: int):
 func _on_tutorial_completed():
 	close()
 
+func _on_hint_triggered(hint_id: String):
+	# hint_ids are lowercase (e.g. "hint_day2_morning"); CSV keys use uppercase (e.g. "HINT_DAY2_MORNING")
+	visible = true
+	_show_card(hint_id.to_upper(), true)
+	# After dismissal, hide the overlay again (no active tutorial)
+	_pending_after_card = func():
+		visible = false
+
 func _update_for_step(step: int):
 	match step:
 		TutorialManager.Step.STEP_1_MOVE_TO_BOSS:
@@ -368,11 +377,13 @@ func _update_for_step(step: int):
 			_set_task_text("TUT_TASK_START_PROJECT")
 			_show_card("TUT_STEP9_CARD", false)
 
+		TutorialManager.Step.STEP_9B_PROJECT_LAUNCHED:
+			_set_task_text("TUT_TASK_END_DAY")
+			_show_card("TUT_STEP9B_CARD", true)
+			_pending_after_card = func():
+				TutorialManager.advance_to_step(TutorialManager.Step.STEP_10_END_DAY)
+
 		TutorialManager.Step.STEP_10_END_DAY:
 			_set_task_text("TUT_TASK_END_DAY")
-			# card shown after end day button click (from hud.gd)
+			# No card — step 9B already instructed the player to end the day
 
-func show_end_day_card():
-	_show_card("TUT_STEP10_CARD", false)
-	# After press — tutorial completed signal fires from TutorialManager
-	_pending_after_card = Callable()
