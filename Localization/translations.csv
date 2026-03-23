@@ -974,7 +974,7 @@ TOAST_PROJECT_FINISHED,"✅ Проект «%s» завершён! +$%d","✅ Pro
 TOAST_PROJECT_FAILED,"❌ Проект «%s» провален!","❌ Project «%s» failed!"
 TOAST_STAGE_COMPLETED,"📋 Этап %s завершён: «%s» (%s)","📋 Stage %s done: «%s» (%s)"
 TOAST_EMPLOYEE_LEVELED_UP,"⬆️ %s → Уровень %d (%s)!","⬆️ %s → Level %d (%s)!"
-TOAST_SICK,🤒 %s заболел(а) на %d дня,🤒 %s is sick for %d days
+TOAST_SICK,🤒 %s заболел(а) на %d дней,🤒 %s is sick for %d days
 TOAST_DAYOFF,🏖️ %s взял(а) отгул,🏖️ %s took a day off
 TOAST_HUNTING,📞 %s получил(а) предложение от конкурентов!,📞 %s got an offer from competitors!
 TOAST_RAISE_REQUEST,💸 %s просит повышение зарплаты,💸 %s is requesting a raise

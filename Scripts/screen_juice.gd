@@ -42,9 +42,7 @@ func register_personal_balance_label(label: Control):
 # ФИЧА 1: Floating Money Text
 # ============================================================
 func show_floating_text(anchor_node: Control, text: String, color: Color):
-	if not is_instance_valid(anchor_node):
-		return
-	if not _ui_layer:
+	if not is_instance_valid(anchor_node) or not _ui_layer:
 		return
 
 	var label = Label.new()

@@ -272,9 +272,6 @@ func _finish_project(project: ProjectData):
 	var em = get_node_or_null("/root/EventManager")
 	if em:
 		em.register_finished_project(project)
-	# === SCREEN JUICE: Конфетти при завершении проекта ===
-	if ScreenJuice:
-		ScreenJuice.show_confetti()
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):
