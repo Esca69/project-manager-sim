@@ -169,7 +169,6 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	# Ограничиваем макс ширину текста чтобы панель не растягивалась
 	# 80 = emoji_width(~24) + margins(14*2) + separation(10) + buffer(18)
 	text_label.custom_minimum_size = Vector2(0, 0)
-	text_label.custom_maximum_size = Vector2(TOAST_WIDTH - 80, 60)
 	if UITheme:
 		UITheme.apply_font(text_label, "semibold")
 	hbox.add_child(text_label)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=52 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" uid="uid://482i8led1rx1" path="res://Scenes/flipchart.tscn" id="12_s31ab"]
 [ext_resource type="PackedScene" uid="uid://dat7m0ulfvmf1" path="res://Scenes/Toilet.tscn" id="13_kn5q7"]
 [ext_resource type="Texture2D" uid="uid://dy6d1s1xdgt4g" path="res://Sprites/Office/bossplate.png" id="13_v47wj"]
-[ext_resource type="Texture2D" uid="uid://dyma46sdd5epu" path="res://Sprites/Office/HR.png" id="14_lsk72"]
 [ext_resource type="Texture2D" uid="uid://bo23r50hc6iec" path="res://Sprites/Office/hrplate.png" id="14_s31ab"]
 [ext_resource type="PackedScene" uid="uid://dbkt45r0pwr26" path="res://Scenes/Mebel/tumbochka.tscn" id="16_ari0y"]
 [ext_resource type="PackedScene" uid="uid://ss2qipw67vmd" path="res://Scenes/Mebel/sofa.tscn" id="17_oqaoe"]
@@ -364,10 +363,6 @@ position = Vector2(2720, -544)
 [node name="Panel" type="Sprite2D" parent="WorldObjects"]
 position = Vector2(63, -214)
 texture = ExtResource("18_ari0y")
-
-[node name="Hr" type="Sprite2D" parent="WorldObjects"]
-position = Vector2(2410, -828)
-texture = ExtResource("14_lsk72")
 
 [node name="Tumbochka2" parent="WorldObjects" groups=["desk"] instance=ExtResource("16_ari0y")]
 position = Vector2(405, 604)
