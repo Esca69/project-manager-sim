@@ -3,8 +3,13 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 1
+const SAVE_VERSION = 2
 const SAVE_META_PATH = "user://save_meta.json"
+
+# Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
+const MIGRATIONS = {
+	1: "_migrate_v1_to_v2",
+}
 
 # Слот, в который сохраняется/загружается текущая игра
 var current_slot: int = 1
@@ -14,6 +19,7 @@ var pending_restore: bool = false
 
 signal game_saved
 signal game_loaded
+signal save_incompatible(slot: int, reason: String)
 
 func _ready():
 	# Удаляем старый файл сохранения при первом запуске новой версии (миграция не нужна)
@@ -505,8 +511,18 @@ func load_game(slot: int = -1) -> bool:
 		return false
 
 	var version = data.get("save_version", 0)
-	if version != SAVE_VERSION:
-		push_warning("Версия сохранения (%d) отличается от текущей (%d)" % [version, SAVE_VERSION])
+
+	if version > SAVE_VERSION:
+		push_warning("Сохранение слота %d создано в более новой версии игры (%d > %d)" % [slot, version, SAVE_VERSION])
+		emit_signal("save_incompatible", slot, "Сохранение создано в более новой версии игры. Обновите игру.")
+		return false
+
+	if version < SAVE_VERSION:
+		var migrated = _run_migrations(data, version, slot)
+		if not migrated:
+			push_error("Миграция сохранения слота %d не удалась" % slot)
+			emit_signal("save_incompatible", slot, "Сохранение повреждено или несовместимо. Начните новую игру.")
+			return false
 
 	current_slot = slot
 
@@ -533,7 +549,67 @@ func load_game(slot: int = -1) -> bool:
 	emit_signal("game_loaded")
 	return true
 
-# Этот метод вызывается из office.gd ПОСЛЕ того как сцена полностью загружена
+# ============================================================
+#                   СИСТЕМА МИГРАЦИЙ
+# ============================================================
+
+# Последовательно прогоняет все миграции от версии сейва до SAVE_VERSION.
+# Возвращает true при успехе, false при ошибке.
+# После успешной миграции пересохраняет файл с новой версией.
+func _run_migrations(data: Dictionary, from_version: int, slot: int) -> bool:
+	var version = from_version
+	while version < SAVE_VERSION:
+		if not MIGRATIONS.has(version):
+			push_error("Нет миграции для версии %d → %d" % [version, version + 1])
+			return false
+		var method_name = MIGRATIONS[version]
+		print("🔄 Запуск миграции сохранения v%d → v%d (%s)" % [version, version + 1, method_name])
+		var ok = call(method_name, data)
+		if not ok:
+			push_error("Миграция %s завершилась с ошибкой" % method_name)
+			return false
+		version += 1
+		data["save_version"] = version
+		print("✅ Миграция до v%d успешна" % version)
+	# Пересохраняем файл, чтобы миграция не гонялась повторно
+	var save_path = _get_slot_path(slot)
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data, "\t"))
+		file.close()
+		print("💾 Файл сохранения пересохранён после миграции (слот %d)" % slot)
+	else:
+		push_warning("Не удалось пересохранить файл после миграции (слот %d)" % slot)
+	return true
+
+# --- Миграция v1 → v2 ---
+# Содержит структурированные версии ad-hoc фиксов из restore_employees_and_projects()
+func _migrate_v1_to_v2(data: Dictionary) -> bool:
+	var employees = data.get("employees", [])
+	var cand_gen = load("res://Scripts/candidate_generator.gd").new()
+	for emp_dict in employees:
+		# Фикс: если name_en отсутствует или совпадает с name_ru — сгенерировать EN имя
+		var name_ru = emp_dict.get("name_ru", emp_dict.get("employee_name", ""))
+		var name_en = emp_dict.get("name_en", name_ru)
+		if name_en == name_ru:
+			var gender = str(emp_dict.get("gender", "male"))
+			var new_names = cand_gen._generate_random_names(gender)
+			emp_dict["name_en"] = new_names.en
+			print("🔄 Миграция v1→v2: %s получил EN имя %s" % [name_ru, emp_dict["name_en"]])
+
+		# Фикс: vacation_days_until_request == -1 для контрактников с опытом
+		if emp_dict.get("vacation_days_until_request", 0) == -1:
+			var employment_type = str(emp_dict.get("employment_type", "contractor"))
+			var days_in_company = int(emp_dict.get("days_in_company", 0))
+			if employment_type == "contractor" and days_in_company >= 10:
+				# Воспроизводим логику init_vacation_timer(): рандомный диапазон 20–45
+				emp_dict["vacation_days_until_request"] = randi_range(20, 45)
+				var emp_name = emp_dict.get("name_ru", emp_dict.get("employee_name", "?"))
+				print("🔄 Миграция v1→v2: инициализирован vacation_days_until_request для %s" % emp_name)
+	cand_gen.free()
+	return true
+
+
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
 	if not data_override.is_empty():
@@ -579,15 +655,6 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		# ИСПРАВЛЕНИЕ: Восстанавливаем локализованные имена. Если сохранение старое (нет name_ru), берём employee_name
 		emp_data.name_ru = emp_dict.get("name_ru", emp_data.employee_name)
 		emp_data.name_en = emp_dict.get("name_en", emp_data.employee_name)
-		
-		# === ЖЕЛЕЗОБЕТОННАЯ МИГРАЦИЯ СТАРЫХ СОХРАНЕНИЙ ===
-		if emp_data.name_en == emp_data.name_ru:
-			var cand_gen = load("res://Scripts/candidate_generator.gd").new()
-			var gender = str(emp_dict.get("gender", "male"))
-			var new_names = cand_gen._generate_random_names(gender)
-			emp_data.name_en = new_names.en
-			cand_gen.free() # Очищаем память
-			print("🔄 Миграция сейва успешна: %s получил EN имя %s" % [emp_data.name_ru, emp_data.name_en])
 		
 		emp_data.job_title = emp_dict.get("job_title", "Junior Developer")
 		emp_data.monthly_salary = int(emp_dict.get("monthly_salary", 3000))
@@ -706,9 +773,6 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
 				npc.current_state = 21
-			# Инициализация таймера для сотрудников из старых сохранений
-			if npc.data.vacation_days_until_request == -1 and npc.data.employment_type == "contractor" and npc.data.days_in_company >= 10:
-				npc.data.init_vacation_timer()
 
 			employee_map[emp_data.employee_name] = emp_data
 			npc_map[emp_data.employee_name] = npc
