@@ -598,6 +598,8 @@ func is_any_menu_open() -> bool:
 	# === EVENT SYSTEM: Проверка ивент-попапа ===
 	if _event_popup and _event_popup.visible: return true
 
+	if _reports_panel and _reports_panel.visible: return true
+
 	return false
 
 func _on_project_finished_xp(proj):

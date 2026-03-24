@@ -11,12 +11,19 @@ const COLOR_GRAY   = Color(0.5, 0.5, 0.5, 1)
 const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 const COLOR_BORDER = Color(0.8784314, 0.8784314, 0.8784314, 1)
 
+var _overlay: ColorRect
 var _window: PanelContainer
+var _title_label: Label
+var _close_btn: Button
 var _content_area: Control
 var _finance_tab_btn: Button
 var _people_tab_btn: Button
 var _finance_content: Control
 var _people_placeholder: Control
+
+var _tab_bg_style: StyleBoxFlat
+var _tab_active_style: StyleBoxFlat
+var _tab_inactive_style: StyleBoxFlat
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -46,11 +53,11 @@ func close():
 
 func _build_ui():
 	# === OVERLAY ===
-	var overlay = ColorRect.new()
-	overlay.color = Color(0, 0, 0, 0.45)
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(overlay)
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
 
 	# === WINDOW ===
 	_window = PanelContainer.new()
@@ -82,70 +89,117 @@ func _build_ui():
 
 	# === HEADER ===
 	var header_panel = Panel.new()
-	header_panel.custom_minimum_size = Vector2(0, 48)
+	header_panel.custom_minimum_size = Vector2(0, 40)
 	var header_style = StyleBoxFlat.new()
 	header_style.bg_color = COLOR_BLUE
+	header_style.border_color = COLOR_WINDOW_BORDER
 	header_style.corner_radius_top_left = 20
 	header_style.corner_radius_top_right = 20
 	header_panel.add_theme_stylebox_override("panel", header_style)
 	main_vbox.add_child(header_panel)
 
-	var title_lbl = Label.new()
-	title_lbl.text = tr("REPORTS_TITLE")
-	title_lbl.set_anchors_preset(Control.PRESET_CENTER)
-	title_lbl.add_theme_color_override("font_color", COLOR_WHITE)
-	title_lbl.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(title_lbl, "bold")
-	header_panel.add_child(title_lbl)
+	_title_label = Label.new()
+	_title_label.text = tr("REPORTS_TITLE")
+	_title_label.set_anchors_preset(Control.PRESET_CENTER)
+	_title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_title_label.offset_left = -120
+	_title_label.offset_top = -11.5
+	_title_label.offset_right = 120
+	_title_label.offset_bottom = 11.5
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	_title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(_title_label, "bold")
+	header_panel.add_child(_title_label)
 
 	# Close button
-	var close_btn = Button.new()
-	close_btn.text = "✕"
-	close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	close_btn.offset_left = -48
-	close_btn.offset_top = -14
-	close_btn.offset_right = -8
-	close_btn.offset_bottom = 14
-	close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn = Button.new()
+	_close_btn.text = "X"
+	_close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_close_btn.offset_left = -51
+	_close_btn.offset_top = -15
+	_close_btn.offset_right = -24
+	_close_btn.offset_bottom = 16
+	_close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_close_btn.add_theme_color_override("font_color", COLOR_BLUE)
 	var close_style = StyleBoxFlat.new()
 	close_style.bg_color = COLOR_WHITE
-	close_style.corner_radius_top_left = 6
-	close_style.corner_radius_top_right = 6
-	close_style.corner_radius_bottom_right = 6
-	close_style.corner_radius_bottom_left = 6
-	close_btn.add_theme_stylebox_override("normal", close_style)
-	close_btn.add_theme_stylebox_override("hover", close_style)
-	close_btn.add_theme_stylebox_override("pressed", close_style)
-	close_btn.add_theme_color_override("font_color", COLOR_BLUE)
-	close_btn.add_theme_color_override("font_hover_color", COLOR_BLUE)
-	close_btn.add_theme_font_size_override("font_size", 14)
-	if UITheme: UITheme.apply_font(close_btn, "bold")
-	close_btn.pressed.connect(close)
-	header_panel.add_child(close_btn)
+	close_style.corner_radius_top_left = 10
+	close_style.corner_radius_top_right = 10
+	close_style.corner_radius_bottom_right = 10
+	close_style.corner_radius_bottom_left = 10
+	_close_btn.add_theme_stylebox_override("normal", close_style)
+	if UITheme: UITheme.apply_font(_close_btn, "semibold")
+	_close_btn.pressed.connect(close)
+	header_panel.add_child(_close_btn)
 
-	# === TAB BAR ===
-	var tab_bar = HBoxContainer.new()
-	tab_bar.add_theme_constant_override("separation", 0)
-	tab_bar.custom_minimum_size = Vector2(0, 42)
-	var tab_bar_style = StyleBoxFlat.new()
-	tab_bar_style.bg_color = Color(0.93, 0.95, 0.98, 1)
-	var tab_bar_panel = PanelContainer.new()
-	tab_bar_panel.add_theme_stylebox_override("panel", tab_bar_style)
-	main_vbox.add_child(tab_bar_panel)
-	tab_bar_panel.add_child(tab_bar)
+	# === PILL TABS ===
+	_tab_bg_style = StyleBoxFlat.new()
+	_tab_bg_style.bg_color = Color(0.92, 0.94, 0.96, 1)
+	_tab_bg_style.corner_radius_top_left = 24
+	_tab_bg_style.corner_radius_top_right = 24
+	_tab_bg_style.corner_radius_bottom_right = 24
+	_tab_bg_style.corner_radius_bottom_left = 24
 
-	_finance_tab_btn = _make_tab_btn(tr("REPORTS_TAB_FINANCE"), true)
+	_tab_active_style = StyleBoxFlat.new()
+	_tab_active_style.bg_color = Color(1, 1, 1, 1)
+	_tab_active_style.corner_radius_top_left = 20
+	_tab_active_style.corner_radius_top_right = 20
+	_tab_active_style.corner_radius_bottom_right = 20
+	_tab_active_style.corner_radius_bottom_left = 20
+
+	_tab_inactive_style = StyleBoxFlat.new()
+	_tab_inactive_style.bg_color = Color(0, 0, 0, 0)
+	_tab_inactive_style.corner_radius_top_left = 20
+	_tab_inactive_style.corner_radius_top_right = 20
+	_tab_inactive_style.corner_radius_bottom_right = 20
+	_tab_inactive_style.corner_radius_bottom_left = 20
+
+	var tab_outer_margin = MarginContainer.new()
+	tab_outer_margin.add_theme_constant_override("margin_top", 10)
+	tab_outer_margin.add_theme_constant_override("margin_left", 16)
+	tab_outer_margin.add_theme_constant_override("margin_right", 16)
+	tab_outer_margin.add_theme_constant_override("margin_bottom", 0)
+	main_vbox.add_child(tab_outer_margin)
+
+	var tab_panel = PanelContainer.new()
+	tab_panel.add_theme_stylebox_override("panel", _tab_bg_style)
+	tab_panel.custom_minimum_size = Vector2(400, 50)
+	tab_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	tab_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	tab_outer_margin.add_child(tab_panel)
+
+	var tab_margin = MarginContainer.new()
+	tab_margin.add_theme_constant_override("margin_left", 6)
+	tab_margin.add_theme_constant_override("margin_top", 6)
+	tab_margin.add_theme_constant_override("margin_right", 6)
+	tab_margin.add_theme_constant_override("margin_bottom", 6)
+	tab_panel.add_child(tab_margin)
+
+	var tab_hbox = HBoxContainer.new()
+	tab_hbox.add_theme_constant_override("separation", 8)
+	tab_margin.add_child(tab_hbox)
+
+	_finance_tab_btn = Button.new()
+	_finance_tab_btn.text = tr("REPORTS_TAB_FINANCE")
+	_finance_tab_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_finance_tab_btn.focus_mode = Control.FOCUS_NONE
+	if UITheme: UITheme.apply_font(_finance_tab_btn, "bold")
 	_finance_tab_btn.pressed.connect(_on_finance_tab)
-	tab_bar.add_child(_finance_tab_btn)
+	tab_hbox.add_child(_finance_tab_btn)
 
-	_people_tab_btn = _make_tab_btn(tr("REPORTS_TAB_PEOPLE"), false)
+	_people_tab_btn = Button.new()
+	_people_tab_btn.text = tr("REPORTS_TAB_PEOPLE")
+	_people_tab_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_people_tab_btn.focus_mode = Control.FOCUS_NONE
+	if UITheme: UITheme.apply_font(_people_tab_btn, "bold")
 	_people_tab_btn.pressed.connect(_on_people_tab)
-	tab_bar.add_child(_people_tab_btn)
+	tab_hbox.add_child(_people_tab_btn)
 
-	# Spacer
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	tab_bar.add_child(spacer)
+	_apply_tab_styles(true)
 
 	# === CONTENT AREA ===
 	var content_margin = MarginContainer.new()
@@ -184,44 +238,35 @@ func _build_ui():
 	_people_placeholder.add_child(coming_soon_lbl)
 	_content_area.add_child(_people_placeholder)
 
-func _make_tab_btn(text: String, active: bool) -> Button:
-	var btn = Button.new()
-	btn.text = text
-	btn.custom_minimum_size = Vector2(160, 40)
-	btn.focus_mode = Control.FOCUS_NONE
-	_apply_tab_style(btn, active)
-	if UITheme: UITheme.apply_font(btn, "semibold")
-	return btn
+func _apply_tab_styles(finance_active: bool):
+	_apply_button_style(_finance_tab_btn, _tab_active_style if finance_active else _tab_inactive_style, COLOR_BLUE if finance_active else COLOR_GRAY)
+	_apply_button_style(_people_tab_btn, _tab_inactive_style if finance_active else _tab_active_style, COLOR_GRAY if finance_active else COLOR_BLUE)
 
-func _apply_tab_style(btn: Button, active: bool):
-	var s = StyleBoxFlat.new()
-	s.bg_color = COLOR_BLUE if active else Color(0.93, 0.95, 0.98, 1)
-	s.corner_radius_top_left = 0
-	s.corner_radius_top_right = 0
-	s.corner_radius_bottom_right = 0
-	s.corner_radius_bottom_left = 0
-	if active:
-		s.border_width_bottom = 3
-		s.border_color = COLOR_BLUE
-	btn.add_theme_stylebox_override("normal", s)
-	btn.add_theme_stylebox_override("hover", s)
-	btn.add_theme_stylebox_override("pressed", s)
-	btn.add_theme_color_override("font_color", COLOR_WHITE if active else COLOR_DARK)
-	btn.add_theme_color_override("font_hover_color", COLOR_WHITE if active else COLOR_DARK)
-	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE if active else COLOR_DARK)
+func _apply_button_style(btn: Button, box_style: StyleBox, font_color: Color):
+	btn.add_theme_stylebox_override("normal", box_style)
+	btn.add_theme_stylebox_override("hover", box_style)
+	btn.add_theme_stylebox_override("pressed", box_style)
+	btn.add_theme_stylebox_override("focus", box_style)
+	btn.add_theme_color_override("font_color", font_color)
+	btn.add_theme_color_override("font_hover_color", font_color)
+	btn.add_theme_color_override("font_pressed_color", font_color)
+	btn.add_theme_color_override("font_focus_color", font_color)
 
 func _on_finance_tab():
-	_apply_tab_style(_finance_tab_btn, true)
-	_apply_tab_style(_people_tab_btn, false)
+	_apply_tab_styles(true)
 	_finance_content.visible = true
 	_people_placeholder.visible = false
 	_refresh_finance()
 
 func _on_people_tab():
-	_apply_tab_style(_finance_tab_btn, false)
-	_apply_tab_style(_people_tab_btn, true)
+	_apply_tab_styles(false)
 	_finance_content.visible = false
 	_people_placeholder.visible = true
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		close()
+		get_viewport().set_input_as_handled()
 
 func _refresh_content():
 	_refresh_finance()
