@@ -54,6 +54,10 @@ var _confirm_panel: PanelContainer
 var _confirm_slot: int = 0
 var _confirm_mode: String = ""  # "overwrite" или "delete"
 
+# === ПОПАП ОШИБКИ СОХРАНЕНИЯ ===
+var _error_dim: ColorRect
+var _error_panel: PanelContainer
+
 # Анимационные иконки (плавающие эмодзи офиса)
 var _floating_icons: Array = []
 const FLOATING_EMOJIS = ["💼", "📊", "🏢", "📋", "💻", "☕", "📁", "🖥️", "📈", "🤝", "⏰", "📝"]
@@ -64,6 +68,8 @@ func _ready():
 	# Останавливаем игровое время
 	GameTime.is_game_paused = true
 	Engine.time_scale = 1.0
+
+	SaveManager.save_incompatible.connect(_on_save_incompatible)
 
 	_load_settings()
 	_build_ui()
@@ -218,6 +224,9 @@ func _build_ui():
 
 	# === ДИАЛОГ ПОДТВЕРЖДЕНИЯ ===
 	_build_confirm_dialog()
+
+	# === ПОПАП ОШИБКИ СОХРАНЕНИЯ ===
+	_build_error_popup()
 
 # === СОЗДАНИЕ КНОПОК ===
 
@@ -1193,3 +1202,117 @@ func _on_confirm_action():
 		# Обновляем видимость кнопок главного меню
 		_btn_continue.visible = SaveManager.has_any_save()
 		_btn_load_game.visible = SaveManager.has_any_save()
+
+# ============================================================
+#              ПОПАП ОШИБКИ СОХРАНЕНИЯ
+# ============================================================
+
+func _build_error_popup():
+	_error_dim = ColorRect.new()
+	_error_dim.name = "ErrorDim"
+	_error_dim.set_anchors_preset(PRESET_FULL_RECT)
+	_error_dim.color = Color(0, 0, 0, 0.6)
+	_error_dim.visible = false
+	_error_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_error_dim)
+
+	_error_panel = PanelContainer.new()
+	_error_panel.name = "ErrorPanel"
+	_error_panel.set_anchors_preset(PRESET_CENTER)
+	_error_panel.custom_minimum_size = Vector2(400, 0)
+	_error_panel.offset_left = -200
+	_error_panel.offset_right = 200
+	_error_panel.offset_top = -120
+	_error_panel.offset_bottom = 120
+
+	var e_style = StyleBoxFlat.new()
+	e_style.bg_color = Color.WHITE
+	e_style.corner_radius_top_left = 18
+	e_style.corner_radius_top_right = 18
+	e_style.corner_radius_bottom_right = 18
+	e_style.corner_radius_bottom_left = 18
+	e_style.shadow_color = Color(0, 0, 0, 0.25)
+	e_style.shadow_size = 18
+	e_style.shadow_offset = Vector2(0, 6)
+	e_style.content_margin_left = 28
+	e_style.content_margin_right = 28
+	e_style.content_margin_top = 24
+	e_style.content_margin_bottom = 24
+	_error_panel.add_theme_stylebox_override("panel", e_style)
+	_error_panel.visible = false
+	add_child(_error_panel)
+
+func _on_save_incompatible(slot: int, reason: String):
+	# Очищаем предыдущее содержимое
+	for c in _error_panel.get_children():
+		_error_panel.remove_child(c)
+		c.queue_free()
+	_error_panel.reset_size()
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 14)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	_error_panel.add_child(vbox)
+
+	# Иконка
+	var icon_label = Label.new()
+	icon_label.text = "⚠️"
+	icon_label.add_theme_font_size_override("font_size", 36)
+	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(icon_label)
+
+	# Заголовок
+	var title = Label.new()
+	title.text = "Слот %d — ошибка загрузки" % slot
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", COLOR_DANGER)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme:
+		UITheme.apply_font(title, "bold")
+	vbox.add_child(title)
+
+	# Текст причины
+	var body = Label.new()
+	body.text = reason
+	body.add_theme_font_size_override("font_size", 14)
+	body.add_theme_color_override("font_color", COLOR_TEXT_DARK)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if UITheme:
+		UITheme.apply_font(body, "regular")
+	vbox.add_child(body)
+
+	# Кнопка ОК
+	var btn_ok = Button.new()
+	btn_ok.text = "ОК"
+	btn_ok.custom_minimum_size = Vector2(130, 44)
+	btn_ok.focus_mode = Control.FOCUS_NONE
+	var ok_style = StyleBoxFlat.new()
+	ok_style.bg_color = COLOR_PRIMARY
+	ok_style.corner_radius_top_left = 12
+	ok_style.corner_radius_top_right = 12
+	ok_style.corner_radius_bottom_right = 12
+	ok_style.corner_radius_bottom_left = 12
+	ok_style.shadow_color = Color(COLOR_PRIMARY.r, COLOR_PRIMARY.g, COLOR_PRIMARY.b, 0.3)
+	ok_style.shadow_size = 5
+	ok_style.shadow_offset = Vector2(0, 2)
+	btn_ok.add_theme_stylebox_override("normal", ok_style)
+	btn_ok.add_theme_color_override("font_color", Color.WHITE)
+	btn_ok.add_theme_font_size_override("font_size", 14)
+	if UITheme:
+		UITheme.apply_font(btn_ok, "semibold")
+	btn_ok.pressed.connect(_close_error_popup)
+	vbox.add_child(btn_ok)
+
+	_error_dim.visible = true
+	_error_panel.visible = true
+	_error_panel.modulate.a = 0.0
+	create_tween().tween_property(_error_panel, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+
+func _close_error_popup():
+	var tween = create_tween()
+	tween.tween_property(_error_panel, "modulate:a", 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		_error_panel.visible = false
+		_error_dim.visible = false
+	)
