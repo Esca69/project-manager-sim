@@ -602,9 +602,9 @@ func _apply_window_mode(index: int):
 			var win_size = DisplayServer.window_get_size()
 			DisplayServer.window_set_position(Vector2i((screen_size.x - win_size.x) / 2, (screen_size.y - win_size.y) / 2))
 		1:
-			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-		2:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+		2:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 # === НАСТРОЙКИ: ЗВУК ===
 
@@ -936,13 +936,28 @@ func _refresh_slot_card_info(slot: int, info_vbox: VBoxContainer, btn_vbox: VBox
 		del_btn.custom_minimum_size = Vector2(40, 32)
 		del_btn.focus_mode = Control.FOCUS_NONE
 		var style_d = StyleBoxFlat.new()
-		style_d.bg_color = COLOR_DANGER
+		style_d.bg_color = Color.WHITE
+		style_d.border_width_left = 2
+		style_d.border_width_top = 2
+		style_d.border_width_right = 2
+		style_d.border_width_bottom = 2
+		style_d.border_color = COLOR_DANGER.lightened(0.3)
 		style_d.corner_radius_top_left = 10
 		style_d.corner_radius_top_right = 10
 		style_d.corner_radius_bottom_right = 10
 		style_d.corner_radius_bottom_left = 10
+		var style_d_hover = style_d.duplicate()
+		style_d_hover.bg_color = COLOR_DANGER
+		style_d_hover.border_color = COLOR_DANGER
+		var style_d_pressed = style_d.duplicate()
+		style_d_pressed.bg_color = COLOR_DANGER.darkened(0.1)
+		style_d_pressed.border_color = COLOR_DANGER.darkened(0.1)
 		del_btn.add_theme_stylebox_override("normal", style_d)
-		del_btn.add_theme_color_override("font_color", Color.WHITE)
+		del_btn.add_theme_stylebox_override("hover", style_d_hover)
+		del_btn.add_theme_stylebox_override("pressed", style_d_pressed)
+		del_btn.add_theme_color_override("font_color", COLOR_DANGER)
+		del_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+		del_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
 		del_btn.add_theme_font_size_override("font_size", 14)
 		del_btn.pressed.connect(func(): _on_slot_delete_pressed(slot))
 		btn_vbox.add_child(del_btn)
@@ -1069,7 +1084,9 @@ func _open_confirm_dialog(mode: String, slot: int):
 
 	# Очищаем предыдущее содержимое
 	for c in _confirm_panel.get_children():
+		_confirm_panel.remove_child(c)
 		c.queue_free()
+	_confirm_panel.reset_size()
 
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 14)
