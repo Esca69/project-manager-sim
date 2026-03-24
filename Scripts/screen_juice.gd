@@ -8,7 +8,7 @@ extends Node
 const MAX_TOASTS: int = 5
 const TOAST_WIDTH: float = 360.0
 const TOAST_MARGIN_RIGHT: float = 12.0
-const TOAST_MARGIN_TOP: float = 60.0
+const TOAST_MARGIN_TOP: float = 120.0  # Опущено ниже, чтобы не залезать на верхнюю панель
 const TOAST_SPACING: float = 8.0
 const TOAST_SHOW_DURATION: float = 6.0
 const TOAST_FADE_DURATION: float = 0.5
@@ -125,7 +125,11 @@ func show_toast(emoji: String, text: String):
 func _build_toast(emoji: String, text: String) -> PanelContainer:
 	var toast = PanelContainer.new()
 	toast.process_mode = Node.PROCESS_MODE_ALWAYS
+	# Фиксированная ширина: min = max = TOAST_WIDTH → тост не растянется
 	toast.custom_minimum_size = Vector2(TOAST_WIDTH, 0.0)
+	toast.size = Vector2(TOAST_WIDTH, 0.0)
+	# Запрещаем контейнеру расти больше заданной ширины
+	toast.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 
 	var style = StyleBoxFlat.new()
 	# Синий фон вместо чёрного, под стиль игры
@@ -166,8 +170,8 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	# Ограничиваем макс ширину текста чтобы панель не растягивалась
-	# 80 = emoji_width(~24) + margins(14*2) + separation(10) + buffer(18)
+	# Ограничиваем ширину текста через custom_minimum_size (custom_maximum_size НЕ существует у Label)
+	# TOAST_WIDTH - margins(14*2) - emoji(~30) - separation(10) ≈ 292
 	text_label.custom_minimum_size = Vector2(0, 0)
 	if UITheme:
 		UITheme.apply_font(text_label, "semibold")
@@ -176,6 +180,10 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	# Начальная позиция — за правым краем экрана
 	var vp_size = _ui_layer.get_viewport().get_visible_rect().size
 	toast.position = Vector2(vp_size.x + 10.0, TOAST_MARGIN_TOP)
+
+	# КЛЮЧЕВОЙ ФИКС: принудительно задаём размер после добавления всех дочерних элементов
+	# Это предотвращает авто-расширение PanelContainer
+	toast.set_deferred("size", Vector2(TOAST_WIDTH, 0.0))
 	return toast
 
 func _reposition_toasts():
@@ -185,7 +193,9 @@ func _reposition_toasts():
 		var t = _active_toasts[i]
 		if not is_instance_valid(t):
 			continue
-		# Target X: right-aligned with margin (set immediately for correct positioning)
+		# Принудительно держим ширину
+		t.size.x = TOAST_WIDTH
+		# Target X: right-aligned with margin
 		t.position.x = vp_size.x - TOAST_WIDTH - TOAST_MARGIN_RIGHT
 		t.position.y = current_y
 		# Use actual size if available, otherwise estimate height
@@ -197,6 +207,8 @@ func _animate_toast_in(toast: PanelContainer):
 	var target_x = vp_size.x - TOAST_WIDTH - TOAST_MARGIN_RIGHT
 	# Start from off-screen right, then slide to target
 	toast.position.x = vp_size.x + 10.0
+	# Принудительно фиксируем ширину перед анимацией
+	toast.size.x = TOAST_WIDTH
 	var tween = toast.create_tween()
 	tween.tween_property(toast, "position:x", target_x, TOAST_SLIDE_DURATION).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 
