@@ -417,6 +417,10 @@ MENU_LANGUAGE,Язык,Language
 MENU_MUSIC_VOLUME,Музыка,Music
 MENU_SFX_VOLUME,Эффекты,SFX
 MENU_BACK,Назад,Back
+MENU_WINDOW_MODE,Режим окна,Window Mode
+WINDOW_MODE_WINDOWED,Оконный,Windowed
+WINDOW_MODE_FULLSCREEN,Полный экран,Fullscreen
+WINDOW_MODE_BORDERLESS,Безрамочный,Borderless
 PAUSE_TITLE,Пауза,Pause
 PAUSE_RESUME,Продолжить,Resume
 PAUSE_SAVE,Сохранить,Save Game
