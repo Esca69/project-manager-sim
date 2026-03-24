@@ -3,8 +3,11 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_PATH = "user://savegame.json"
 const SAVE_VERSION = 1
+const SAVE_META_PATH = "user://save_meta.json"
+
+# Слот, в который сохраняется/загружается текущая игра
+var current_slot: int = 1
 
 # >>> Флаг — синглтоны загружены, нужно восстановить сотрудников после загрузки сцены
 var pending_restore: bool = false
@@ -12,21 +15,104 @@ var pending_restore: bool = false
 signal game_saved
 signal game_loaded
 
+func _ready():
+	# Удаляем старый файл сохранения при первом запуске новой версии (миграция не нужна)
+	var old_path = "user://savegame.json"
+	if FileAccess.file_exists(old_path):
+		DirAccess.remove_absolute(old_path)
+		print("🗑️ Старый файл сохранения удалён при миграции")
+
+# === ПУТИ К СЛОТАМ ===
+func _get_slot_path(slot: int) -> String:
+	return "user://savegame_slot%d.json" % slot
+
 # === ПРОВЕРКА НАЛИЧИЯ СОХРАНЕНИЯ ===
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+	return has_any_save()
+
+func has_any_save() -> bool:
+	for i in range(1, 4):
+		if FileAccess.file_exists(_get_slot_path(i)):
+			return true
+	return false
+
+func has_save_in_slot(slot: int) -> bool:
+	return FileAccess.file_exists(_get_slot_path(slot))
 
 # === УДАЛЕНИЕ СОХРАНЕНИЯ ===
-func delete_save():
-	if has_save():
-		DirAccess.remove_absolute(SAVE_PATH)
-		print("🗑️ Сохранение удалено")
+func delete_save(slot: int = -1):
+	if slot == -1:
+		slot = current_slot
+	var path = _get_slot_path(slot)
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+		print("🗑️ Сохранение слота %d удалено" % slot)
+	_update_meta_after_delete(slot)
+
+func _update_meta_after_delete(slot: int):
+	var meta = _load_meta()
+	meta["slots"].erase(str(slot))
+	# Если удалённый слот был последним — обнуляем last_slot
+	if meta.get("last_slot", 0) == slot:
+		# Ищем следующий доступный слот
+		var found = 0
+		for i in range(1, 4):
+			if has_save_in_slot(i):
+				found = i
+				break
+		meta["last_slot"] = found
+	_save_meta(meta)
+
+# === МЕТАДАННЫЕ СЛОТОВ ===
+func get_slot_meta(slot: int) -> Dictionary:
+	var meta = _load_meta()
+	return meta.get("slots", {}).get(str(slot), {})
+
+func get_last_slot() -> int:
+	var meta = _load_meta()
+	return int(meta.get("last_slot", 0))
+
+func _load_meta() -> Dictionary:
+	if not FileAccess.file_exists(SAVE_META_PATH):
+		return {"last_slot": 0, "slots": {}}
+	var file = FileAccess.open(SAVE_META_PATH, FileAccess.READ)
+	if not file:
+		return {"last_slot": 0, "slots": {}}
+	var json = JSON.new()
+	if json.parse(file.get_as_text()) != OK:
+		return {"last_slot": 0, "slots": {}}
+	var data = json.data
+	if not data is Dictionary:
+		return {"last_slot": 0, "slots": {}}
+	if not data.has("slots"):
+		data["slots"] = {}
+	return data
+
+func _save_meta(meta: Dictionary):
+	var file = FileAccess.open(SAVE_META_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(meta, "\t"))
+		file.close()
+
+func _update_slot_meta(slot: int):
+	var meta = _load_meta()
+	meta["last_slot"] = slot
+	var slot_info = {
+		"day": GameTime.get_day_in_month(),
+		"month": GameTime.get_month(),
+		"company_balance": GameState.company_balance,
+		"pm_level": PMData.xp,
+		"timestamp": Time.get_datetime_string_from_system(),
+	}
+	meta["slots"][str(slot)] = slot_info
+	_save_meta(meta)
 
 # ============================================================
 #                        СОХРАНЕНИЕ
 # ============================================================
 
 func save_game():
+	var save_path = _get_slot_path(current_slot)
 	var data = {
 		"save_version": SAVE_VERSION,
 		"timestamp": Time.get_datetime_string_from_system(),
@@ -69,14 +155,15 @@ func save_game():
 	}
 
 	var json_string = JSON.stringify(data, "\t")
-	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if file:
 		file.store_string(json_string)
 		file.close()
-		print("💾 Игра сохранена: ", SAVE_PATH)
+		print("💾 Игра сохранена в слот %d: %s" % [current_slot, save_path])
+		_update_slot_meta(current_slot)
 		emit_signal("game_saved")
 	else:
-		push_error("Не удалось открыть файл для сохранения: " + SAVE_PATH)
+		push_error("Не удалось открыть файл для сохранения: " + save_path)
 
 # --- GameTime ---
 func _serialize_game_time() -> Dictionary:
@@ -390,14 +477,17 @@ func _serialize_boss_event_system() -> Dictionary:
 #                        ЗАГРУЗКА
 # ============================================================
 
-func load_game() -> bool:
-	if not has_save():
-		print("⚠️ Нет сохранения для загрузки")
+func load_game(slot: int = -1) -> bool:
+	if slot == -1:
+		slot = current_slot
+	if not has_save_in_slot(slot):
+		print("⚠️ Нет сохранения в слоте %d" % slot)
 		return false
 
-	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var save_path = _get_slot_path(slot)
+	var file = FileAccess.open(save_path, FileAccess.READ)
 	if not file:
-		push_error("Не удалось открыть файл сохранения")
+		push_error("Не удалось открыть файл сохранения: " + save_path)
 		return false
 
 	var json_string = file.get_as_text()
@@ -418,6 +508,8 @@ func load_game() -> bool:
 	if version != SAVE_VERSION:
 		push_warning("Версия сохранения (%d) отличается от текущей (%d)" % [version, SAVE_VERSION])
 
+	current_slot = slot
+
 	_load_game_time(data.get("game_time", {}))
 	_load_game_state(data.get("game_state", {}))
 	_load_pm_data(data.get("pm_data", {}))
@@ -436,7 +528,7 @@ func load_game() -> bool:
 	# === BOSS EVENT SYSTEM ===
 	_load_boss_event_system(data.get("boss_event_system", {}))
 
-	print("📂 Данные синглтонов восстановлены")
+	print("📂 Данные синглтонов восстановлены (слот %d)" % slot)
 	pending_restore = true
 	emit_signal("game_loaded")
 	return true
@@ -447,9 +539,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	if not data_override.is_empty():
 		data = data_override
 	else:
-		if not has_save():
+		if not has_save_in_slot(current_slot):
 			return
-		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+		var file = FileAccess.open(_get_slot_path(current_slot), FileAccess.READ)
 		if not file:
 			return
 		var json_string = file.get_as_text()

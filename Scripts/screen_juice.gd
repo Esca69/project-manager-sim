@@ -132,6 +132,8 @@ func show_toast(emoji: String, text: String):
 	# Wait one frame for the container to compute its content size with reset anchors
 	await get_tree().process_frame
 	if is_instance_valid(toast):
+		# Force height recalculation: reset to 0 so PanelContainer measures minimum by content
+		toast.size.y = 0.0
 		toast.reset_size()
 		_reposition_toasts()
 

@@ -26,6 +26,7 @@ var _title_label: Label
 var _subtitle_label: Label
 var _btn_continue: Button
 var _btn_new_game: Button
+var _btn_load_game: Button
 var _btn_settings: Button
 var _btn_quit: Button
 var _version_label: Label
@@ -40,6 +41,18 @@ var _sfx_slider: HSlider
 
 # Флаг загрузки
 var _loading_save: bool = false
+
+# === ПАНЕЛЬ ВЫБОРА СЛОТА ===
+var _slot_panel_dim: ColorRect
+var _slot_panel: PanelContainer
+var _slot_mode: String = ""  # "new_game" или "load_game"
+var _slot_cards: Array = []  # массив PanelContainer для каждого слота
+
+# === ДИАЛОГ ПОДТВЕРЖДЕНИЯ ===
+var _confirm_dim: ColorRect
+var _confirm_panel: PanelContainer
+var _confirm_slot: int = 0
+var _confirm_mode: String = ""  # "overwrite" или "delete"
 
 # Анимационные иконки (плавающие эмодзи офиса)
 var _floating_icons: Array = []
@@ -135,7 +148,7 @@ func _build_ui():
 
 	# === ЗАГОЛОВОК ===
 	_title_label = Label.new()
-	_title_label.text = "Project Manager"
+	_title_label.text = "Project Manager SIM"
 	_title_label.add_theme_font_size_override("font_size", 34)
 	_title_label.add_theme_color_override("font_color", COLOR_PRIMARY)
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -164,12 +177,18 @@ func _build_ui():
 	vbox.add_child(_btn_continue)
 
 	# Показываем только если есть сохранение
-	_btn_continue.visible = SaveManager.has_save()
+	_btn_continue.visible = SaveManager.has_any_save()
 
 	# === КНОПКА "НОВАЯ ИГРА" ===
 	_btn_new_game = _create_menu_button(tr("MENU_NEW_GAME"), COLOR_PRIMARY, COLOR_PRIMARY_LIGHT, Color.WHITE, "🆕  ")
 	_btn_new_game.pressed.connect(_on_new_game_pressed)
 	vbox.add_child(_btn_new_game)
+
+	# === КНОПКА "ЗАГРУЗИТЬ ИГРУ" ===
+	_btn_load_game = _create_menu_button(tr("MENU_LOAD_GAME"), COLOR_PRIMARY, COLOR_PRIMARY_LIGHT, Color.WHITE, "📂  ")
+	_btn_load_game.pressed.connect(_on_load_game_pressed)
+	vbox.add_child(_btn_load_game)
+	_btn_load_game.visible = SaveManager.has_any_save()
 
 	# === КНОПКА "НАСТРОЙКИ" ===
 	_btn_settings = _create_menu_button_outline(tr("MENU_SETTINGS"), COLOR_PRIMARY, "⚙  ")
@@ -193,6 +212,12 @@ func _build_ui():
 
 	# === ПАНЕЛЬ НАСТРОЕК (оверлей) ===
 	_build_settings_panel()
+
+	# === ПАНЕЛЬ ВЫБОРА СЛОТА (оверлей) ===
+	_build_slot_panel()
+
+	# === ДИАЛОГ ПОДТВЕРЖДЕНИЯ ===
+	_build_confirm_dialog()
 
 # === СОЗДАНИЕ КНОПОК ===
 
@@ -496,7 +521,20 @@ func _on_continue_pressed():
 	_btn_continue.text = "⏳  " + tr("MENU_LOADING")
 	_btn_continue.disabled = true
 
-	var success = SaveManager.load_game()
+	var last_slot = SaveManager.get_last_slot()
+	# If meta is missing but saves exist, find first available slot
+	if last_slot == 0:
+		for i in range(1, 4):
+			if SaveManager.has_save_in_slot(i):
+				last_slot = i
+				break
+	if last_slot == 0:
+		# No valid save found
+		_btn_continue.text = "▶  " + tr("MENU_CONTINUE")
+		_btn_continue.disabled = false
+		_loading_save = false
+		return
+	var success = SaveManager.load_game(last_slot)
 	if success:
 		get_tree().change_scene_to_file("res://Scenes/office.tscn")
 	else:
@@ -505,14 +543,12 @@ func _on_continue_pressed():
 		_loading_save = false
 
 func _on_new_game_pressed():
-	# Удаляем сохранение
-	SaveManager.delete_save()
+	_slot_mode = "new_game"
+	_open_slot_panel()
 
-	# Сбрасываем все синглтоны
-	_reset_all_singletons()
-
-	# Переходим на отдельную сцену интро (чтобы main_menu не мелькал за интро)
-	get_tree().change_scene_to_file("res://Scenes/intro_screen.tscn")
+func _on_load_game_pressed():
+	_slot_mode = "load_game"
+	_open_slot_panel()
 
 func _on_settings_pressed():
 	var dim = get_node_or_null("SettingsDim")
@@ -693,3 +729,456 @@ func _load_settings():
 	# Режим окна
 	var win_mode = int(data.get("window_mode", 1))
 	_apply_window_mode(win_mode)
+
+# ============================================================
+# === ПАНЕЛЬ ВЫБОРА СЛОТА ===
+# ============================================================
+
+func _build_slot_panel():
+	# Затемнение
+	_slot_panel_dim = ColorRect.new()
+	_slot_panel_dim.name = "SlotPanelDim"
+	_slot_panel_dim.set_anchors_preset(PRESET_FULL_RECT)
+	_slot_panel_dim.color = Color(0, 0, 0, 0.5)
+	_slot_panel_dim.visible = false
+	_slot_panel_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_slot_panel_dim)
+
+	# Белая карточка
+	_slot_panel = PanelContainer.new()
+	_slot_panel.name = "SlotPanel"
+	_slot_panel.set_anchors_preset(PRESET_CENTER)
+	_slot_panel.custom_minimum_size = Vector2(480, 0)
+	_slot_panel.offset_left = -240
+	_slot_panel.offset_right = 240
+	_slot_panel.offset_top = -300
+	_slot_panel.offset_bottom = 300
+
+	var s_style = StyleBoxFlat.new()
+	s_style.bg_color = Color.WHITE
+	s_style.corner_radius_top_left = 20
+	s_style.corner_radius_top_right = 20
+	s_style.corner_radius_bottom_right = 20
+	s_style.corner_radius_bottom_left = 20
+	s_style.shadow_color = Color(0, 0, 0, 0.2)
+	s_style.shadow_size = 20
+	s_style.shadow_offset = Vector2(0, 8)
+	s_style.content_margin_left = 32
+	s_style.content_margin_right = 32
+	s_style.content_margin_top = 28
+	s_style.content_margin_bottom = 28
+	_slot_panel.add_theme_stylebox_override("panel", s_style)
+	_slot_panel.visible = false
+	add_child(_slot_panel)
+
+	var vbox = VBoxContainer.new()
+	vbox.name = "SlotVBox"
+	vbox.add_theme_constant_override("separation", 14)
+	_slot_panel.add_child(vbox)
+
+	# Заголовок
+	var title = Label.new()
+	title.name = "SlotTitle"
+	title.text = tr("SLOT_SELECT_TITLE")
+	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_color_override("font_color", COLOR_PRIMARY)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme:
+		UITheme.apply_font(title, "bold")
+	vbox.add_child(title)
+
+	# 3 карточки слотов
+	_slot_cards = []
+	for i in range(1, 4):
+		var card = _build_slot_card(i)
+		vbox.add_child(card)
+		_slot_cards.append(card)
+
+	# Кнопка "Назад"
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(spacer)
+
+	var btn_back = _create_menu_button_outline(tr("MENU_BACK"), COLOR_PRIMARY, "←  ")
+	btn_back.custom_minimum_size.x = 0
+	btn_back.pressed.connect(_close_slot_panel)
+	vbox.add_child(btn_back)
+
+func _build_slot_card(slot: int) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.name = "SlotCard%d" % slot
+
+	var card_style = StyleBoxFlat.new()
+	card_style.bg_color = Color(0.96, 0.97, 0.99, 1)
+	card_style.border_width_left = 2
+	card_style.border_width_top = 2
+	card_style.border_width_right = 2
+	card_style.border_width_bottom = 2
+	card_style.border_color = COLOR_CARD_BORDER
+	card_style.corner_radius_top_left = 14
+	card_style.corner_radius_top_right = 14
+	card_style.corner_radius_bottom_right = 14
+	card_style.corner_radius_bottom_left = 14
+	card_style.content_margin_left = 16
+	card_style.content_margin_right = 16
+	card_style.content_margin_top = 12
+	card_style.content_margin_bottom = 12
+	card.add_theme_stylebox_override("panel", card_style)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 12)
+	card.add_child(hbox)
+
+	# Левая колонка: инфо
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.add_theme_constant_override("separation", 4)
+	hbox.add_child(info_vbox)
+
+	# Правая колонка: кнопки
+	var btn_vbox = VBoxContainer.new()
+	btn_vbox.add_theme_constant_override("separation", 6)
+	btn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_child(btn_vbox)
+
+	_refresh_slot_card_info(slot, info_vbox, btn_vbox)
+
+	return card
+
+func _refresh_slot_card_info(slot: int, info_vbox: VBoxContainer, btn_vbox: VBoxContainer):
+	# Очищаем
+	for c in info_vbox.get_children():
+		c.queue_free()
+	for c in btn_vbox.get_children():
+		c.queue_free()
+
+	var has_save = SaveManager.has_save_in_slot(slot)
+	var slot_meta = SaveManager.get_slot_meta(slot)
+
+	# Заголовок слота
+	var slot_title = Label.new()
+	slot_title.text = tr("SLOT_NUMBER") % slot
+	slot_title.add_theme_font_size_override("font_size", 15)
+	slot_title.add_theme_color_override("font_color", COLOR_PRIMARY)
+	if UITheme:
+		UITheme.apply_font(slot_title, "bold")
+	info_vbox.add_child(slot_title)
+
+	if has_save and slot_meta.size() > 0:
+		# Дата/месяц
+		var day_label = Label.new()
+		var month_val = int(slot_meta.get("month", 1))
+		var day_val = int(slot_meta.get("day", 1))
+		day_label.text = "📅 " + tr("SLOT_DAY_INFO") % [month_val, day_val]
+		day_label.add_theme_font_size_override("font_size", 13)
+		day_label.add_theme_color_override("font_color", COLOR_TEXT_DARK)
+		if UITheme:
+			UITheme.apply_font(day_label, "regular")
+		info_vbox.add_child(day_label)
+
+		# Баланс
+		var balance_label = Label.new()
+		balance_label.text = "💰 " + tr("SLOT_BALANCE") % int(slot_meta.get("company_balance", 0))
+		balance_label.add_theme_font_size_override("font_size", 13)
+		balance_label.add_theme_color_override("font_color", COLOR_TEXT_DARK)
+		if UITheme:
+			UITheme.apply_font(balance_label, "regular")
+		info_vbox.add_child(balance_label)
+
+		# Дата сохранения
+		var ts = str(slot_meta.get("timestamp", ""))
+		if ts != "":
+			var save_label = Label.new()
+			# Форматируем ISO timestamp в читаемый вид (YYYY-MM-DDTHH:MM:SS → DD.MM.YYYY HH:MM)
+			var formatted = _format_timestamp(ts)
+			save_label.text = "🕐 " + tr("SLOT_LAST_SAVE") % formatted
+			save_label.add_theme_font_size_override("font_size", 12)
+			save_label.add_theme_color_override("font_color", COLOR_TEXT_MUTED)
+			if UITheme:
+				UITheme.apply_font(save_label, "regular")
+			info_vbox.add_child(save_label)
+	else:
+		# Пустой слот
+		var empty_label = Label.new()
+		empty_label.text = "➕  " + tr("SLOT_EMPTY")
+		empty_label.add_theme_font_size_override("font_size", 13)
+		empty_label.add_theme_color_override("font_color", COLOR_TEXT_MUTED)
+		if UITheme:
+			UITheme.apply_font(empty_label, "regular")
+		info_vbox.add_child(empty_label)
+
+	# Кнопка выбора
+	var select_btn = Button.new()
+	if _slot_mode == "new_game":
+		select_btn.text = "▶"
+	else:
+		select_btn.text = "📂"
+	select_btn.custom_minimum_size = Vector2(40, 36)
+	select_btn.focus_mode = Control.FOCUS_NONE
+	if _slot_mode == "load_game" and not has_save:
+		select_btn.disabled = true
+	var style_s = StyleBoxFlat.new()
+	style_s.bg_color = COLOR_ACCENT if (_slot_mode == "new_game" or has_save) else Color(0.8, 0.8, 0.85)
+	style_s.corner_radius_top_left = 10
+	style_s.corner_radius_top_right = 10
+	style_s.corner_radius_bottom_right = 10
+	style_s.corner_radius_bottom_left = 10
+	select_btn.add_theme_stylebox_override("normal", style_s)
+	select_btn.add_theme_color_override("font_color", Color.WHITE)
+	select_btn.add_theme_font_size_override("font_size", 14)
+	select_btn.pressed.connect(func(): _on_slot_selected(slot))
+	btn_vbox.add_child(select_btn)
+
+	# Кнопка удаления (только если слот занят)
+	if has_save:
+		var del_btn = Button.new()
+		del_btn.text = "🗑"
+		del_btn.custom_minimum_size = Vector2(40, 32)
+		del_btn.focus_mode = Control.FOCUS_NONE
+		var style_d = StyleBoxFlat.new()
+		style_d.bg_color = COLOR_DANGER
+		style_d.corner_radius_top_left = 10
+		style_d.corner_radius_top_right = 10
+		style_d.corner_radius_bottom_right = 10
+		style_d.corner_radius_bottom_left = 10
+		del_btn.add_theme_stylebox_override("normal", style_d)
+		del_btn.add_theme_color_override("font_color", Color.WHITE)
+		del_btn.add_theme_font_size_override("font_size", 14)
+		del_btn.pressed.connect(func(): _on_slot_delete_pressed(slot))
+		btn_vbox.add_child(del_btn)
+
+func _format_timestamp(ts: String) -> String:
+	# ISO: "2024-01-15T14:30:00" → locale-aware date/time
+	if ts.length() >= 16:
+		var date_part = ts.substr(0, 10)
+		var time_part = ts.substr(11, 5)
+		var parts = date_part.split("-")
+		if parts.size() == 3:
+			var locale = TranslationServer.get_locale()
+			if locale.begins_with("en"):
+				return "%s/%s/%s %s" % [parts[1], parts[2], parts[0], time_part]
+			else:
+				return "%s.%s.%s %s" % [parts[2], parts[1], parts[0], time_part]
+	return ts
+
+func _open_slot_panel():
+	_slot_panel_dim.visible = true
+	_slot_panel.visible = true
+	_refresh_all_slot_cards()
+	_slot_panel.modulate.a = 0.0
+	create_tween().tween_property(_slot_panel, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+
+func _close_slot_panel():
+	var tween = create_tween()
+	tween.tween_property(_slot_panel, "modulate:a", 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		_slot_panel.visible = false
+		_slot_panel_dim.visible = false
+	)
+
+func _refresh_all_slot_cards():
+	# Обновляем содержимое карточек после изменений
+	var vbox = _slot_panel.get_node_or_null("SlotVBox")
+	if not vbox:
+		return
+	for i in range(1, 4):
+		var card = _slot_cards[i - 1]
+		if not is_instance_valid(card):
+			continue
+		var hbox = card.get_child(0) as HBoxContainer
+		if not hbox:
+			continue
+		var info_vbox = hbox.get_child(0) as VBoxContainer
+		var btn_vbox = hbox.get_child(1) as VBoxContainer
+		if info_vbox and btn_vbox:
+			_refresh_slot_card_info(i, info_vbox, btn_vbox)
+
+func _on_slot_selected(slot: int):
+	if _slot_mode == "new_game":
+		if SaveManager.has_save_in_slot(slot):
+			# Предупреждение о перезаписи
+			_open_confirm_dialog("overwrite", slot)
+		else:
+			# Пустой слот — сразу начинаем
+			_start_new_game_in_slot(slot)
+	elif _slot_mode == "load_game":
+		if SaveManager.has_save_in_slot(slot):
+			_load_from_slot(slot)
+
+func _start_new_game_in_slot(slot: int):
+	SaveManager.current_slot = slot
+	SaveManager.delete_save(slot)
+	_reset_all_singletons()
+	get_tree().change_scene_to_file("res://Scenes/intro_screen.tscn")
+
+func _load_from_slot(slot: int):
+	if _loading_save:
+		return
+	_loading_save = true
+	var success = SaveManager.load_game(slot)
+	if success:
+		get_tree().change_scene_to_file("res://Scenes/office.tscn")
+	else:
+		_loading_save = false
+
+func _on_slot_delete_pressed(slot: int):
+	_open_confirm_dialog("delete", slot)
+
+# ============================================================
+# === ДИАЛОГ ПОДТВЕРЖДЕНИЯ ===
+# ============================================================
+
+func _build_confirm_dialog():
+	_confirm_dim = ColorRect.new()
+	_confirm_dim.name = "ConfirmDim"
+	_confirm_dim.set_anchors_preset(PRESET_FULL_RECT)
+	_confirm_dim.color = Color(0, 0, 0, 0.6)
+	_confirm_dim.visible = false
+	_confirm_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_confirm_dim)
+
+	_confirm_panel = PanelContainer.new()
+	_confirm_panel.name = "ConfirmPanel"
+	_confirm_panel.set_anchors_preset(PRESET_CENTER)
+	_confirm_panel.custom_minimum_size = Vector2(380, 0)
+	_confirm_panel.offset_left = -190
+	_confirm_panel.offset_right = 190
+	_confirm_panel.offset_top = -120
+	_confirm_panel.offset_bottom = 120
+
+	var c_style = StyleBoxFlat.new()
+	c_style.bg_color = Color.WHITE
+	c_style.corner_radius_top_left = 18
+	c_style.corner_radius_top_right = 18
+	c_style.corner_radius_bottom_right = 18
+	c_style.corner_radius_bottom_left = 18
+	c_style.shadow_color = Color(0, 0, 0, 0.25)
+	c_style.shadow_size = 18
+	c_style.shadow_offset = Vector2(0, 6)
+	c_style.content_margin_left = 28
+	c_style.content_margin_right = 28
+	c_style.content_margin_top = 24
+	c_style.content_margin_bottom = 24
+	_confirm_panel.add_theme_stylebox_override("panel", c_style)
+	_confirm_panel.visible = false
+	add_child(_confirm_panel)
+
+func _open_confirm_dialog(mode: String, slot: int):
+	_confirm_mode = mode
+	_confirm_slot = slot
+
+	# Очищаем предыдущее содержимое
+	for c in _confirm_panel.get_children():
+		c.queue_free()
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 14)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	_confirm_panel.add_child(vbox)
+
+	# Заголовок
+	var title = Label.new()
+	if mode == "overwrite":
+		title.text = tr("SLOT_OVERWRITE_TITLE")
+	else:
+		title.text = tr("SLOT_DELETE_TITLE")
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", COLOR_PRIMARY)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme:
+		UITheme.apply_font(title, "bold")
+	vbox.add_child(title)
+
+	# Текст
+	var body = Label.new()
+	if mode == "overwrite":
+		body.text = tr("SLOT_OVERWRITE_TEXT") % slot
+	else:
+		body.text = tr("SLOT_DELETE_TEXT") % slot
+	body.add_theme_font_size_override("font_size", 14)
+	body.add_theme_color_override("font_color", COLOR_TEXT_DARK)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if UITheme:
+		UITheme.apply_font(body, "regular")
+	vbox.add_child(body)
+
+	# Кнопки
+	var btn_hbox = HBoxContainer.new()
+	btn_hbox.add_theme_constant_override("separation", 10)
+	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(btn_hbox)
+
+	var btn_cancel = Button.new()
+	if mode == "overwrite":
+		btn_cancel.text = tr("SLOT_OVERWRITE_CANCEL")
+	else:
+		btn_cancel.text = tr("SLOT_DELETE_CANCEL")
+	btn_cancel.custom_minimum_size = Vector2(130, 44)
+	btn_cancel.focus_mode = Control.FOCUS_NONE
+	var cancel_style = StyleBoxFlat.new()
+	cancel_style.bg_color = Color.WHITE
+	cancel_style.border_width_left = 2
+	cancel_style.border_width_top = 2
+	cancel_style.border_width_right = 2
+	cancel_style.border_width_bottom = 2
+	cancel_style.border_color = COLOR_TEXT_MUTED
+	cancel_style.corner_radius_top_left = 12
+	cancel_style.corner_radius_top_right = 12
+	cancel_style.corner_radius_bottom_right = 12
+	cancel_style.corner_radius_bottom_left = 12
+	btn_cancel.add_theme_stylebox_override("normal", cancel_style)
+	btn_cancel.add_theme_color_override("font_color", COLOR_TEXT_MUTED)
+	btn_cancel.add_theme_font_size_override("font_size", 14)
+	if UITheme:
+		UITheme.apply_font(btn_cancel, "semibold")
+	btn_cancel.pressed.connect(_close_confirm_dialog)
+	btn_hbox.add_child(btn_cancel)
+
+	var btn_confirm = Button.new()
+	if mode == "overwrite":
+		btn_confirm.text = tr("SLOT_OVERWRITE_CONFIRM")
+	else:
+		btn_confirm.text = tr("SLOT_DELETE_CONFIRM")
+	btn_confirm.custom_minimum_size = Vector2(130, 44)
+	btn_confirm.focus_mode = Control.FOCUS_NONE
+	var confirm_style = StyleBoxFlat.new()
+	confirm_style.bg_color = COLOR_DANGER
+	confirm_style.corner_radius_top_left = 12
+	confirm_style.corner_radius_top_right = 12
+	confirm_style.corner_radius_bottom_right = 12
+	confirm_style.corner_radius_bottom_left = 12
+	confirm_style.shadow_color = Color(COLOR_DANGER.r, COLOR_DANGER.g, COLOR_DANGER.b, 0.3)
+	confirm_style.shadow_size = 5
+	confirm_style.shadow_offset = Vector2(0, 2)
+	btn_confirm.add_theme_stylebox_override("normal", confirm_style)
+	btn_confirm.add_theme_color_override("font_color", Color.WHITE)
+	btn_confirm.add_theme_font_size_override("font_size", 14)
+	if UITheme:
+		UITheme.apply_font(btn_confirm, "semibold")
+	btn_confirm.pressed.connect(_on_confirm_action)
+	btn_hbox.add_child(btn_confirm)
+
+	_confirm_dim.visible = true
+	_confirm_panel.visible = true
+	_confirm_panel.modulate.a = 0.0
+	create_tween().tween_property(_confirm_panel, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+
+func _close_confirm_dialog():
+	var tween = create_tween()
+	tween.tween_property(_confirm_panel, "modulate:a", 0.0, 0.15).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		_confirm_panel.visible = false
+		_confirm_dim.visible = false
+	)
+
+func _on_confirm_action():
+	_close_confirm_dialog()
+	if _confirm_mode == "overwrite":
+		_start_new_game_in_slot(_confirm_slot)
+	elif _confirm_mode == "delete":
+		SaveManager.delete_save(_confirm_slot)
+		_refresh_all_slot_cards()
+		# Обновляем видимость кнопок главного меню
+		_btn_continue.visible = SaveManager.has_any_save()
+		_btn_load_game.visible = SaveManager.has_any_save()
