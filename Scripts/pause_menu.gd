@@ -23,6 +23,7 @@ var _btn_main_menu: Button
 # Настройки (вложенная панель)
 var _settings_panel: PanelContainer
 var _settings_open: bool = false
+var _window_option: OptionButton
 
 const SETTINGS_PATH = "user://settings.json"
 
@@ -239,6 +240,31 @@ func _build_settings_panel():
 		UITheme.apply_font(title, "bold")
 	vbox.add_child(title)
 
+	# --- Режим окна ---
+	var win_hbox = HBoxContainer.new()
+	win_hbox.add_theme_constant_override("separation", 12)
+
+	var win_label = Label.new()
+	win_label.text = tr("MENU_WINDOW_MODE")
+	win_label.add_theme_font_size_override("font_size", 15)
+	win_label.add_theme_color_override("font_color", COLOR_TEXT_DARK)
+	win_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if UITheme:
+		UITheme.apply_font(win_label, "semibold")
+	win_hbox.add_child(win_label)
+
+	_window_option = OptionButton.new()
+	_window_option.add_item(tr("WINDOW_MODE_WINDOWED"), 0)
+	_window_option.add_item(tr("WINDOW_MODE_FULLSCREEN"), 1)
+	_window_option.add_item(tr("WINDOW_MODE_BORDERLESS"), 2)
+	_window_option.custom_minimum_size = Vector2(160, 36)
+	_window_option.add_theme_font_size_override("font_size", 14)
+	if UITheme:
+		UITheme.apply_font(_window_option, "regular")
+	_window_option.item_selected.connect(_on_window_mode_changed)
+	win_hbox.add_child(_window_option)
+	vbox.add_child(win_hbox)
+
 	# Музыка
 	vbox.add_child(_make_slider_row(tr("MENU_MUSIC_VOLUME"), AudioManager.music_volume, func(val): AudioManager.set_music_volume(val)))
 
@@ -352,6 +378,19 @@ func _open_settings():
 	_settings_panel.modulate.a = 0.0
 	create_tween().tween_property(_settings_panel, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
 
+	# Синхронизируем режим окна с текущим состоянием
+	if _window_option:
+		var current_mode = DisplayServer.window_get_mode()
+		match current_mode:
+			DisplayServer.WINDOW_MODE_WINDOWED:
+				_window_option.select(0)
+			DisplayServer.WINDOW_MODE_FULLSCREEN:
+				_window_option.select(1)
+			DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
+				_window_option.select(2)
+			_:
+				_window_option.select(1)
+
 func _close_settings():
 	_settings_open = false
 	_save_settings()
@@ -364,8 +403,25 @@ func _save_settings():
 		"music_volume": AudioManager.music_volume,
 		"sfx_volume": AudioManager.sfx_volume,
 		"master_volume": AudioManager.master_volume,
+		"window_mode": _window_option.selected if _window_option else 1,
 	}
 	var file = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
 	if file:
 		file.store_string(JSON.stringify(data, "\t"))
 		file.close()
+
+# === НАСТРОЙКИ: РЕЖИМ ОКНА ===
+
+func _on_window_mode_changed(index: int):
+	match index:
+		0:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+			DisplayServer.window_set_size(Vector2i(1280, 720))
+			var screen_size = DisplayServer.screen_get_size()
+			var win_size = DisplayServer.window_get_size()
+			DisplayServer.window_set_position(Vector2i((screen_size.x - win_size.x) / 2, (screen_size.y - win_size.y) / 2))
+		1:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		2:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+	_save_settings()
