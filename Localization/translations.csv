@@ -995,3 +995,8 @@ TOAST_BOSS_REPORT,📊 Босс подводит итоги месяца,📊 Bo
 TOAST_WORK_STARTED,☀️ День %d — начало работы,☀️ Day %d — work starts
 TOAST_WEEKEND,🏠 Выходной!,🏠 Weekend!
 TOAST_HIRED,"🤝 Нанят: %s (%s, $%d/мес)","🤝 Hired: %s (%s, $%d/mo)"
+GAMEOVER_TITLE,🚪 Вас уволили!,🚪 You're Fired!
+GAMEOVER_BOSS_SAYS,Босс говорит...,Boss says...
+GAMEOVER_BTN_MAIN_MENU,В главное меню,Main Menu
+GAMEOVER_REASON_TRUST,"Ну всё, я терпел достаточно. Ты ухитрился облажаться так, что даже я удивлён — а меня удивить сложно. Собирай вещи. Вон коробка в углу — можешь забрать свой кактус и кружку «Лучший менеджер». Хотя нет, кружку оставь — она врёт.","That's it, I've been patient enough. You managed to screw up so badly that even I'm impressed — and I'm hard to impress. Pack your things. There's a box in the corner — you can take your cactus and that ""Best Manager"" mug. Actually, leave the mug — it lies."
+GAMEOVER_REASON_BANKRUPT,"Поздравляю. Ты сделал то, что не удавалось никому за 15 лет — обанкротил компанию. Я даже не злюсь, я впечатлён. Теперь мы оба безработные. Разница в том, что я найду работу к понедельнику. А ты... ну, удачи с резюме «довёл компанию до банкротства».","Congratulations. You've done what no one managed in 15 years — bankrupted the company. I'm not even angry, I'm impressed. Now we're both unemployed. The difference is I'll find a job by Monday. As for you... well, good luck with a resume that says ""drove the company into bankruptcy."""

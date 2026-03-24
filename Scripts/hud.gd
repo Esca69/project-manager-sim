@@ -65,6 +65,9 @@ var _pause_menu: CanvasLayer
 # <<< TUTORIAL: переменная для туториала-оверлея
 var _tutorial_overlay: Control
 
+# === GAME OVER ===
+var _game_over_screen: Control
+
 # === EVENT SYSTEM: Попап ивентов ===
 var _event_popup: Control
 
@@ -805,6 +808,11 @@ func _on_end_day_pressed():
 
 	GameState.pay_daily_salaries()
 
+	# === GAME OVER: Банкротство ===
+	if GameState.company_balance < 0 and GameState.tutorial_completed:
+		show_game_over("GAMEOVER_REASON_BANKRUPT")
+		return
+
 	if _day_summary:
 		_day_summary.open()
 	else:
@@ -841,6 +849,21 @@ func _build_tutorial_overlay():
 	_tutorial_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_tutorial_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_tutorial_overlay)
+
+# === GAME OVER: Показать экран увольнения ===
+func show_game_over(reason_key: String):
+	if _game_over_screen:
+		return
+	var script = load("res://Scripts/game_over_screen.gd")
+	if script == null:
+		push_warning("game_over_screen.gd не найден")
+		return
+	_game_over_screen = Control.new()
+	_game_over_screen.set_script(script)
+	_game_over_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_game_over_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_game_over_screen)
+	_game_over_screen.setup(tr(reason_key))
 
 # === EVENT SYSTEM: Построение попапа ивентов ===
 func _build_event_popup():

@@ -398,10 +398,17 @@ func get_objective_progress(obj: Dictionary) -> Dictionary:
 # === УПРАВЛЕНИЕ ДОВЕРИЕМ ===
 func change_trust(amount: int):
 	var old = boss_trust
-	boss_trust = clampi(boss_trust + amount, -20, MAX_TRUST)
+	boss_trust = clampi(boss_trust + amount, -30, MAX_TRUST)
 	emit_signal("trust_changed", boss_trust)
 	if boss_trust != old:
 		print("🤝 Доверие босса: %d → %d (%+d)" % [old, boss_trust, amount])
+	if boss_trust <= -30 and GameState.tutorial_completed:
+		_trigger_game_over("GAMEOVER_REASON_TRUST")
+
+func _trigger_game_over(reason_key: String):
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("show_game_over"):
+		hud.show_game_over(reason_key)
 
 # === НУЖНО ЛИ ПОКАЗАТЬ КВЕСТ / ОТЧЁТ ===
 func should_show_quest() -> bool:
