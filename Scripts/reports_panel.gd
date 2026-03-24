@@ -167,8 +167,8 @@ func _build_ui():
 
 	var tab_panel = PanelContainer.new()
 	tab_panel.add_theme_stylebox_override("panel", _tab_bg_style)
-	tab_panel.custom_minimum_size = Vector2(400, 50)
-	tab_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	tab_panel.custom_minimum_size = Vector2(660, 50)
+	tab_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	tab_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	tab_outer_margin.add_child(tab_panel)
 
