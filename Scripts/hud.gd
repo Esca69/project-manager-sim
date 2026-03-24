@@ -837,6 +837,8 @@ func _on_night_skip_finished():
 	end_day_button.visible = false
 	# === АВТОСОХРАНЕНИЕ: начало нового рабочего дня ===
 	SaveManager.save_game()
+	if ScreenJuice:
+		ScreenJuice.show_toast("💾", tr("TOAST_AUTOSAVE"))
 
 # <<< TUTORIAL: Построение туториал-оверлея ===
 func _build_tutorial_overlay():

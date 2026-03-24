@@ -1011,6 +1011,7 @@ TOAST_BOSS_REPORT,📊 Босс подводит итоги месяца,📊 Bo
 TOAST_WORK_STARTED,☀️ День %d — начало работы,☀️ Day %d — work starts
 TOAST_WEEKEND,🏠 Выходной!,🏠 Weekend!
 TOAST_HIRED,"🤝 Нанят: %s (%s, $%d/мес)","🤝 Hired: %s (%s, $%d/mo)"
+TOAST_AUTOSAVE,Игра сохранена,Game saved
 GAMEOVER_TITLE,🚪 Вас уволили!,🚪 You're Fired!
 GAMEOVER_BOSS_SAYS,Босс говорит...,Boss says...
 GAMEOVER_BTN_MAIN_MENU,В главное меню,Main Menu
