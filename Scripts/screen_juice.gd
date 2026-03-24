@@ -130,6 +130,8 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	toast.size = Vector2(TOAST_WIDTH, 0.0)
 	# Запрещаем контейнеру расти больше заданной ширины
 	toast.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	toast.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	toast.set_anchors_preset(Control.PRESET_TOP_LEFT)
 
 	var style = StyleBoxFlat.new()
 	# Синий фон вместо чёрного, под стиль игры
@@ -181,9 +183,9 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	var vp_size = _ui_layer.get_viewport().get_visible_rect().size
 	toast.position = Vector2(vp_size.x + 10.0, TOAST_MARGIN_TOP)
 
-	# КЛЮЧЕВОЙ ФИКС: принудительно задаём размер после добавления всех дочерних элементов
-	# Это предотвращает авто-расширение PanelContainer
-	toast.set_deferred("size", Vector2(TOAST_WIDTH, 0.0))
+	# КЛЮЧЕВОЙ ФИКС: сбрасываем размер после добавления всех дочерних элементов,
+	# чтобы PanelContainer обвернул содержимое и не растягивался по вертикали
+	toast.call_deferred("reset_size")
 	return toast
 
 func _reposition_toasts():
