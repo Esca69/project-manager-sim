@@ -12,7 +12,7 @@ const COLOR_DARK   = Color(0.2, 0.2, 0.2, 1)
 const COLOR_WHITE  = Color(1, 1, 1, 1)
 
 # Period selector state shared across widgets 1-3
-var _selected_period: int = 30   # days (7 / 30 / 90 / 360 / 0=all)
+var _selected_period: int = 7    # days (7 / 30)
 
 # Cash Flow graph node
 var _cash_flow_graph: Control
@@ -103,9 +103,6 @@ func _build_period_selector() -> Control:
 	var periods = [
 		[tr("REPORTS_PERIOD_WEEK"), 7],
 		[tr("REPORTS_PERIOD_MONTH"), 30],
-		[tr("REPORTS_PERIOD_QUARTER"), 90],
-		[tr("REPORTS_PERIOD_YEAR"), 360],
-		[tr("REPORTS_PERIOD_ALL"), 0],
 	]
 
 	_period_buttons.clear()
