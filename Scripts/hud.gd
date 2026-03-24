@@ -82,6 +82,9 @@ var _boss_event_tracker: Control
 var _my_life_panel: Control
 var _personal_balance_label: Label
 
+# === REPORTS PANEL ===
+var _reports_panel: Control
+
 # >>> ДОБАВЛЕНО: Переменная для FPS
 var _fps_label: Label
 
@@ -230,6 +233,9 @@ func _ready():
 	
 	# >>> ДОБАВЛЕНО: Создаем лейбл для FPS
 	_build_fps_label()
+
+	# === REPORTS: Создаём панель отчётов ===
+	_build_reports_panel()
 
 # >>> ДОБАВЛЕНО: Функция для обновления FPS каждый кадр
 func _process(_delta):
@@ -717,6 +723,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				client_panel.visible = false
 				if _boss_panel: _boss_panel.visible = false
 				if _my_life_panel: _my_life_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
 				employee_roster.open()
 				if UITheme and employee_roster.modulate.a < 1.0:
 					employee_roster.modulate.a = 1.0
@@ -731,6 +738,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				client_panel.visible = false
 				if _boss_panel: _boss_panel.visible = false
 				if _my_life_panel: _my_life_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
 				pm_skill_tree.open()
 				if UITheme and pm_skill_tree.modulate.a < 1.0:
 					pm_skill_tree.modulate.a = 1.0
@@ -745,6 +753,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				pm_skill_tree.visible = false
 				if _boss_panel: _boss_panel.visible = false
 				if _my_life_panel: _my_life_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
 				client_panel.open()
 		"boss":
 			if _boss_panel and _boss_panel.visible:
@@ -757,6 +766,7 @@ func _on_bottom_tab_pressed(tab_name: String):
 				pm_skill_tree.visible = false
 				client_panel.visible = false
 				if _my_life_panel: _my_life_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
 				_boss_panel.open()
 		"my_life":
 			if _my_life_panel and _my_life_panel.visible:
@@ -769,7 +779,21 @@ func _on_bottom_tab_pressed(tab_name: String):
 				pm_skill_tree.visible = false
 				client_panel.visible = false
 				if _boss_panel: _boss_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
 				_my_life_panel.open()
+		"reports":
+			if _reports_panel and _reports_panel.visible:
+				if UITheme:
+					UITheme.fade_out(_reports_panel)
+				else:
+					_reports_panel.visible = false
+			elif _reports_panel:
+				employee_roster.visible = false
+				pm_skill_tree.visible = false
+				client_panel.visible = false
+				if _boss_panel: _boss_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
+				_reports_panel.open()
 
 # === ПРИНУДИТЕЛЬНАЯ ОТПРАВКА ВСЕХ СОТРУДНИКОВ ДОМОЙ ===
 func _dismiss_all_employees():
@@ -807,6 +831,10 @@ func _on_end_day_pressed():
 	_dismiss_all_employees()
 
 	GameState.pay_daily_salaries()
+
+	# === ФИНАНСОВАЯ ИСТОРИЯ: Записать снимок дня ===
+	if FinancialHistory:
+		FinancialHistory.record_day()
 
 	# === GAME OVER: Банкротство ===
 	if GameState.company_balance < 0 and GameState.tutorial_completed:
@@ -971,6 +999,14 @@ func _build_fps_label():
 	
 	hbox_container.add_child(_fps_label)
 	hbox_container.move_child(_fps_label, 0)
+
+func _build_reports_panel():
+	var script = load("res://Scripts/reports_panel.gd")
+	_reports_panel = Control.new()
+	_reports_panel.set_script(script)
+	_reports_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_reports_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_reports_panel)
 
 func open_boss_event(event_data: Dictionary):
 	if _boss_event_popup and _boss_event_popup.has_method("open"):
