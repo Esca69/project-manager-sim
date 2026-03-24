@@ -158,6 +158,9 @@ func save_game():
 
 		# === BOSS EVENT SYSTEM ===
 		"boss_event_system": _serialize_boss_event_system(),
+
+		# === ФИНАНСОВАЯ ИСТОРИЯ ===
+		"financial_history": _serialize_financial_history(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -479,6 +482,13 @@ func _serialize_boss_event_system() -> Dictionary:
 		return {}
 	return bes.serialize()
 
+# === ФИНАНСОВАЯ ИСТОРИЯ: Сериализация ===
+func _serialize_financial_history() -> Dictionary:
+	var fh = get_node_or_null("/root/FinancialHistory")
+	if fh == null:
+		return {"daily_records": []}
+	return {"daily_records": fh.daily_records.duplicate(true)}
+
 # ============================================================
 #                        ЗАГРУЗКА
 # ============================================================
@@ -543,6 +553,9 @@ func load_game(slot: int = -1) -> bool:
 
 	# === BOSS EVENT SYSTEM ===
 	_load_boss_event_system(data.get("boss_event_system", {}))
+
+	# === ФИНАНСОВАЯ ИСТОРИЯ ===
+	_deserialize_financial_history(data.get("financial_history", {}))
 
 	print("📂 Данные синглтонов восстановлены (слот %d)" % slot)
 	pending_restore = true
@@ -1110,6 +1123,13 @@ func _load_boss_event_system(d: Dictionary):
 	if d.is_empty():
 		return
 	bes.deserialize(d)
+
+# === ФИНАНСОВАЯ ИСТОРИЯ: Десериализация ===
+func _deserialize_financial_history(d: Dictionary):
+	var fh = get_node_or_null("/root/FinancialHistory")
+	if fh == null:
+		return
+	fh.daily_records = d.get("daily_records", [])
 
 # ============================================================
 #                        УТИЛИТЫ
