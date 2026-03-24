@@ -421,6 +421,22 @@ MENU_WINDOW_MODE,Режим окна,Window Mode
 WINDOW_MODE_WINDOWED,Оконный,Windowed
 WINDOW_MODE_FULLSCREEN,Полный экран,Fullscreen
 WINDOW_MODE_BORDERLESS,Безрамочный,Borderless
+MENU_LOAD_GAME,Загрузить игру,Load Game
+SLOT_SELECT_TITLE,Выберите слот,Select Slot
+SLOT_EMPTY,Пустой,Empty
+SLOT_NUMBER,Слот %d,Slot %d
+SLOT_DAY_INFO,"Мес. %d, День %d","Month %d, Day %d"
+SLOT_BALANCE,Баланс: $%d,Balance: $%d
+SLOT_PM_LEVEL,Уровень PM: %d,PM Level: %d
+SLOT_LAST_SAVE,Сохранено: %s,Saved: %s
+SLOT_OVERWRITE_TITLE,Перезаписать?,Overwrite?
+SLOT_OVERWRITE_TEXT,Сохранение в слоте %d будет удалено!,Save in slot %d will be deleted!
+SLOT_OVERWRITE_CONFIRM,Перезаписать,Overwrite
+SLOT_OVERWRITE_CANCEL,Отмена,Cancel
+SLOT_DELETE_TITLE,Удалить сохранение?,Delete Save?
+"SLOT_DELETE_TEXT","Вы уверены, что хотите удалить сохранение в слоте %d?","Are you sure you want to delete the save in slot %d?"
+SLOT_DELETE_CONFIRM,Удалить,Delete
+SLOT_DELETE_CANCEL,Отмена,Cancel
 PAUSE_TITLE,Пауза,Pause
 PAUSE_RESUME,Продолжить,Resume
 PAUSE_SAVE,Сохранить,Save Game

@@ -16,7 +16,6 @@ var _is_open: bool = false
 var _dim: ColorRect
 var _panel: PanelContainer
 var _btn_resume: Button
-var _btn_save: Button
 var _btn_settings: Button
 var _btn_main_menu: Button
 
@@ -105,11 +104,6 @@ func _build_ui():
 	_btn_resume = _make_button_filled(tr("PAUSE_RESUME"), COLOR_ACCENT, COLOR_ACCENT_HOVER, "▶  ")
 	_btn_resume.pressed.connect(close)
 	vbox.add_child(_btn_resume)
-
-	# --- Кнопка "Сохранить" ---
-	_btn_save = _make_button_filled(tr("PAUSE_SAVE"), COLOR_PRIMARY, COLOR_PRIMARY_LIGHT, "💾  ")
-	_btn_save.pressed.connect(_on_save_pressed)
-	vbox.add_child(_btn_save)
 
 	# --- Кнопка "Настройки" ---
 	_btn_settings = _make_button_outline(tr("MENU_SETTINGS"), COLOR_PRIMARY, "⚙  ")
@@ -351,16 +345,6 @@ func is_open() -> bool:
 	return _is_open
 
 # === ОБРАБОТЧИКИ ===
-
-func _on_save_pressed():
-	SaveManager.save_game()
-	# Мигаем текстом кнопки
-	var original = _btn_save.text
-	_btn_save.text = "✅  " + tr("PAUSE_SAVED")
-	_btn_save.disabled = true
-	await get_tree().create_timer(1.2).timeout
-	_btn_save.text = original
-	_btn_save.disabled = false
 
 func _on_main_menu_pressed():
 	# === FIX: НЕ сохраняем при выходе в меню ===
