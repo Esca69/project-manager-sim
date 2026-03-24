@@ -112,10 +112,28 @@ func show_toast(emoji: String, text: String):
 
 	var toast = _build_toast(emoji, text)
 	_ui_layer.add_child(toast)
+
+	# CRITICAL: Reset anchors AFTER adding to tree.
+	# CanvasLayer automatically sets anchors to full-rect when a Control is added.
+	# We must override this to prevent vertical stretching.
+	toast.anchor_left = 0.0
+	toast.anchor_top = 0.0
+	toast.anchor_right = 0.0
+	toast.anchor_bottom = 0.0
+	toast.offset_left = 0.0
+	toast.offset_top = 0.0
+	toast.offset_right = TOAST_WIDTH
+	toast.offset_bottom = 0.0
+
 	_active_toasts.append(toast)
 
-	_reposition_toasts()
 	_animate_toast_in(toast)
+
+	# Wait one frame for the container to compute its content size with reset anchors
+	await get_tree().process_frame
+	if is_instance_valid(toast):
+		toast.reset_size()
+		_reposition_toasts()
 
 	get_tree().create_timer(TOAST_SHOW_DURATION).timeout.connect(func():
 		if is_instance_valid(toast):
@@ -131,7 +149,6 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	# Запрещаем контейнеру расти больше заданной ширины
 	toast.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	toast.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	toast.set_anchors_preset(Control.PRESET_TOP_LEFT)
 
 	var style = StyleBoxFlat.new()
 	# Синий фон вместо чёрного, под стиль игры
@@ -183,9 +200,6 @@ func _build_toast(emoji: String, text: String) -> PanelContainer:
 	var vp_size = _ui_layer.get_viewport().get_visible_rect().size
 	toast.position = Vector2(vp_size.x + 10.0, TOAST_MARGIN_TOP)
 
-	# КЛЮЧЕВОЙ ФИКС: сбрасываем размер после добавления всех дочерних элементов,
-	# чтобы PanelContainer обвернул содержимое и не растягивался по вертикали
-	toast.call_deferred("reset_size")
 	return toast
 
 func _reposition_toasts():
