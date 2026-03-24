@@ -250,7 +250,6 @@ func _build_settings_panel():
 	_window_option = OptionButton.new()
 	_window_option.add_item(tr("WINDOW_MODE_WINDOWED"), 0)
 	_window_option.add_item(tr("WINDOW_MODE_FULLSCREEN"), 1)
-	_window_option.add_item(tr("WINDOW_MODE_BORDERLESS"), 2)
 	_window_option.custom_minimum_size = Vector2(160, 36)
 	_window_option.add_theme_font_size_override("font_size", 14)
 	if UITheme:
@@ -258,16 +257,10 @@ func _build_settings_panel():
 	# Sync with current window mode before connecting the signal.
 	# OptionButton.select() does not emit item_selected, so this is safe.
 	var _cur_mode = DisplayServer.window_get_mode()
-	match _cur_mode:
-		DisplayServer.WINDOW_MODE_WINDOWED:
-			_window_option.select(0)
-		DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
-			_window_option.select(1)
-		DisplayServer.WINDOW_MODE_FULLSCREEN:
-			_window_option.select(2)
-		_:
-			# Default to fullscreen (index 1) for any other/unknown mode
-			_window_option.select(1)
+	if _cur_mode == DisplayServer.WINDOW_MODE_WINDOWED:
+		_window_option.select(0)
+	else:
+		_window_option.select(1)
 	_window_option.item_selected.connect(_on_window_mode_changed)
 	win_hbox.add_child(_window_option)
 	vbox.add_child(win_hbox)
@@ -378,16 +371,10 @@ func _open_settings():
 	# Синхронизируем режим окна с текущим состоянием
 	if _window_option:
 		var current_mode = DisplayServer.window_get_mode()
-		match current_mode:
-			DisplayServer.WINDOW_MODE_WINDOWED:
-				_window_option.select(0)
-			DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
-				_window_option.select(1)
-			DisplayServer.WINDOW_MODE_FULLSCREEN:
-				_window_option.select(2)
-			_:
-				# Default to fullscreen (index 1) for any other/unknown mode
-				_window_option.select(1)
+		if current_mode == DisplayServer.WINDOW_MODE_WINDOWED:
+			_window_option.select(0)
+		else:
+			_window_option.select(1)
 
 func _close_settings():
 	_settings_open = false
@@ -419,7 +406,5 @@ func _on_window_mode_changed(index: int):
 			var win_size = DisplayServer.window_get_size()
 			DisplayServer.window_set_position(Vector2i((screen_size.x - win_size.x) / 2, (screen_size.y - win_size.y) / 2))
 		1:
-			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
-		2:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	_save_settings()
