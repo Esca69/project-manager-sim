@@ -1042,3 +1042,15 @@ REPORTS_TOTAL,ИТОГО,TOTAL
 REPORTS_NO_DATA,Нет данных,No data
 REPORTS_PROFIT,Прибыль,Profit
 REPORTS_LOSS,Убыток,Loss
+REPORTS_KPI_INCOME,Доход,Revenue
+REPORTS_KPI_EXPENSES,Расходы,Expenses
+REPORTS_KPI_PROFIT,Прибыль,Profit
+REPORTS_KPI_PROJECTS_DONE,Проектов завершено,Projects Completed
+REPORTS_KPI_PROJECTS_FAILED,Проектов провалено,Projects Failed
+REPORTS_KPI_MARGIN,Маржа,Margin
+REPORTS_KPI_VS_PREV,vs пред. период,vs prev. period
+REPORTS_WEEK_NUM,Неделя %d,Week %d
+REPORTS_MONTH_NUM,Месяц %d,Month %d
+REPORTS_QUARTER_NUM,Квартал %d,Quarter %d
+REPORTS_YEAR_NUM,Год %d,Year %d
+REPORTS_MARGIN,Маржа,Margin

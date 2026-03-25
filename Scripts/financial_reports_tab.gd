@@ -11,8 +11,15 @@ const COLOR_GRAY   = Color(0.5, 0.5, 0.5, 1)
 const COLOR_DARK   = Color(0.2, 0.2, 0.2, 1)
 const COLOR_WHITE  = Color(1, 1, 1, 1)
 
+# === КОДЫ ПЕРИОДОВ ===
+# 1 = Неделя, 2 = Месяц, 3 = Квартал, 4 = Год
+const PERIOD_WEEK    = 1
+const PERIOD_MONTH   = 2
+const PERIOD_QUARTER = 3
+const PERIOD_YEAR    = 4
+
 # Period selector state shared across widgets 1-3
-var _selected_period: int = 7    # days (7 / 30)
+var _selected_period: int = PERIOD_WEEK
 
 # Cash Flow graph node
 var _cash_flow_graph: Control
@@ -31,6 +38,9 @@ var _roi_scroll: ScrollContainer
 
 # Period buttons for widgets 1-3
 var _period_buttons: Array = []
+
+# KPI summary cards container (Widget 0)
+var _kpi_container: HBoxContainer
 
 # P&L month buttons
 var _pnl_prev_btn: Button
@@ -59,6 +69,9 @@ func _build_ui():
 	# --- Period selector (shared for widgets 1-3) ---
 	var period_panel = _build_period_selector()
 	vbox.add_child(period_panel)
+
+	# --- Widget 0: KPI Summary Cards ---
+	vbox.add_child(_build_kpi_card())
 
 	# --- Widget 1: Cash Flow ---
 	vbox.add_child(_build_cash_flow_card())
@@ -101,8 +114,10 @@ func _build_period_selector() -> Control:
 	hbox.add_child(lbl)
 
 	var periods = [
-		[tr("REPORTS_PERIOD_WEEK"), 7],
-		[tr("REPORTS_PERIOD_MONTH"), 30],
+		[tr("REPORTS_PERIOD_WEEK"),    PERIOD_WEEK],
+		[tr("REPORTS_PERIOD_MONTH"),   PERIOD_MONTH],
+		[tr("REPORTS_PERIOD_QUARTER"), PERIOD_QUARTER],
+		[tr("REPORTS_PERIOD_YEAR"),    PERIOD_YEAR],
 	]
 
 	_period_buttons.clear()
@@ -111,10 +126,10 @@ func _build_period_selector() -> Control:
 		btn.text = p[0]
 		btn.custom_minimum_size = Vector2(90, 28)
 		btn.focus_mode = Control.FOCUS_NONE
-		var days = p[1]
-		btn.pressed.connect(func(): _on_period_selected(days))
-		_period_buttons.append({"btn": btn, "days": days})
-		_style_period_btn(btn, days == _selected_period)
+		var code = p[1]
+		btn.pressed.connect(func(): _on_period_selected(code))
+		_period_buttons.append({"btn": btn, "code": code})
+		_style_period_btn(btn, code == _selected_period)
 		if UITheme: UITheme.apply_font(btn, "semibold")
 		hbox.add_child(btn)
 
@@ -135,27 +150,230 @@ func _style_period_btn(btn: Button, active: bool):
 	btn.add_theme_color_override("font_hover_color", COLOR_WHITE if active else COLOR_BLUE)
 	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE if active else COLOR_BLUE)
 
-func _on_period_selected(days: int):
-	_selected_period = days
+func _on_period_selected(code: int):
+	_selected_period = code
 	for entry in _period_buttons:
-		_style_period_btn(entry["btn"], entry["days"] == days)
+		_style_period_btn(entry["btn"], entry["code"] == code)
+	_refresh_kpi()
 	_refresh_cash_flow()
 	_refresh_structure()
 	_refresh_daily_bars()
 
 func _get_filtered_records() -> Array:
+	return _get_period_records(_selected_period, GameTime.day)
+
+# === ВЫЧИСЛЕНИЕ ГРАНИЦ ПЕРИОДА ===
+func _get_period_bounds(period_code: int, ref_day: int) -> Array:
+	# Возвращает [start_day, end_day] для заданного периода
+	match period_code:
+		PERIOD_WEEK:
+			var wn = GameTime.get_week_number(ref_day)
+			return [GameTime.get_week_start_day(wn), GameTime.get_week_end_day(wn)]
+		PERIOD_MONTH:
+			var mn = GameTime.get_month(ref_day)
+			return [GameTime.get_month_start_day(mn), GameTime.get_month_end_day(mn)]
+		PERIOD_QUARTER:
+			var qn = GameTime.get_quarter(ref_day)
+			return [GameTime.get_quarter_start_day(qn), GameTime.get_quarter_end_day(qn)]
+		PERIOD_YEAR:
+			var yn = GameTime.get_year(ref_day)
+			return [GameTime.get_year_start_day(yn), GameTime.get_year_end_day(yn)]
+	return [0, ref_day]
+
+func _get_period_records(period_code: int, ref_day: int) -> Array:
 	var all = FinancialHistory.daily_records
-	if _selected_period == 0 or all.is_empty():
-		return all.duplicate()
-
-	var current_day = GameTime.day
-	var cutoff_day = current_day - _selected_period
-
+	if all.is_empty():
+		return []
+	var bounds = _get_period_bounds(period_code, ref_day)
+	var start_day = bounds[0]
+	var end_day   = min(bounds[1], ref_day)
 	var result = []
 	for r in all:
-		if int(r.get("day", 0)) > cutoff_day:
+		var d = int(r.get("day", 0))
+		if d >= start_day and d <= end_day:
 			result.append(r)
 	return result
+
+# === ЗАПИСИ ЗА ПРЕДЫДУЩИЙ ПЕРИОД ДЛЯ ДЕЛЬТЫ KPI ===
+func _get_prev_period_ref_day() -> int:
+	# Возвращает опорный день, который находится внутри предыдущего периода
+	var cur = GameTime.day
+	match _selected_period:
+		PERIOD_WEEK:
+			return max(1, GameTime.get_week_start_day(GameTime.get_week_number(cur)) - 1)
+		PERIOD_MONTH:
+			return max(1, GameTime.get_month_start_day(GameTime.get_month(cur)) - 1)
+		PERIOD_QUARTER:
+			return max(1, GameTime.get_quarter_start_day(GameTime.get_quarter(cur)) - 1)
+		PERIOD_YEAR:
+			return max(1, GameTime.get_year_start_day(GameTime.get_year(cur)) - 1)
+	return max(1, cur - 1)
+
+# === АГРЕГАЦИЯ ДАННЫХ ПО ПЕРИОДУ ДЛЯ ГРАФИКОВ ===
+# Для квартала — группировка по неделям; для года — по месяцам
+func _aggregate_records(records: Array) -> Array:
+	match _selected_period:
+		PERIOD_QUARTER:
+			# 1 точка = 1 неделя
+			var weeks: Dictionary = {}
+			for r in records:
+				var d = int(r.get("day", 0))
+				var wn = GameTime.get_week_number(d)
+				if not weeks.has(wn):
+					weeks[wn] = {"income": 0, "expenses": 0, "balance": 0, "day": GameTime.get_week_start_day(wn), "_last_balance": 0}
+				weeks[wn]["income"]   += int(r.get("income", 0))
+				weeks[wn]["expenses"] += int(r.get("expenses", 0))
+				weeks[wn]["_last_balance"] = int(r.get("balance", 0))
+			var keys = weeks.keys()
+			keys.sort()
+			var result = []
+			for k in keys:
+				var g = weeks[k]
+				g["balance"] = g["_last_balance"]
+				result.append(g)
+			return result
+		PERIOD_YEAR:
+			# 1 точка = 1 месяц
+			var months: Dictionary = {}
+			for r in records:
+				var d = int(r.get("day", 0))
+				var mn = GameTime.get_month(d)
+				if not months.has(mn):
+					months[mn] = {"income": 0, "expenses": 0, "balance": 0, "day": GameTime.get_month_start_day(mn), "_last_balance": 0}
+				months[mn]["income"]   += int(r.get("income", 0))
+				months[mn]["expenses"] += int(r.get("expenses", 0))
+				months[mn]["_last_balance"] = int(r.get("balance", 0))
+			var keys = months.keys()
+			keys.sort()
+			var result = []
+			for k in keys:
+				var g = months[k]
+				g["balance"] = g["_last_balance"]
+				result.append(g)
+			return result
+	# Для недели и месяца — без агрегации
+	return records
+
+# =========================================================
+#  WIDGET 0: KPI SUMMARY CARDS
+# =========================================================
+
+func _build_kpi_card() -> PanelContainer:
+	var card = _make_card()
+	var margin = _make_card_margin()
+	card.add_child(margin)
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
+
+	vbox.add_child(_make_title("📊 KPI"))
+
+	_kpi_container = HBoxContainer.new()
+	_kpi_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_kpi_container.add_theme_constant_override("separation", 8)
+	vbox.add_child(_kpi_container)
+
+	return card
+
+func _refresh_kpi():
+	if not _kpi_container: return
+	for c in _kpi_container.get_children():
+		c.queue_free()
+
+	var records = _get_filtered_records()
+	var prev_day = _get_prev_period_ref_day()
+	var prev_records = _get_period_records(_selected_period, prev_day)
+
+	# Подсчёт текущего периода
+	var cur_income = 0; var cur_expenses = 0
+	var cur_done = 0; var cur_failed = 0
+	for r in records:
+		cur_income   += int(r.get("income", 0))
+		cur_expenses += int(r.get("expenses", 0))
+		cur_done     += int(r.get("projects_completed", 0))
+		cur_failed   += int(r.get("projects_failed", 0))
+	var cur_profit = cur_income - cur_expenses
+
+	# Подсчёт предыдущего периода
+	var prev_income = 0; var prev_expenses = 0
+	var prev_done = 0; var prev_failed = 0
+	for r in prev_records:
+		prev_income   += int(r.get("income", 0))
+		prev_expenses += int(r.get("expenses", 0))
+		prev_done     += int(r.get("projects_completed", 0))
+		prev_failed   += int(r.get("projects_failed", 0))
+	var prev_profit = prev_income - prev_expenses
+
+	var kpis = [
+		{"icon": "💰", "label": tr("REPORTS_KPI_INCOME"),         "value": cur_income,   "prev": prev_income,   "money": true},
+		{"icon": "💸", "label": tr("REPORTS_KPI_EXPENSES"),        "value": cur_expenses, "prev": prev_expenses, "money": true},
+		{"icon": "📈", "label": tr("REPORTS_KPI_PROFIT"),          "value": cur_profit,   "prev": prev_profit,   "money": true},
+		{"icon": "✅", "label": tr("REPORTS_KPI_PROJECTS_DONE"),   "value": cur_done,     "prev": prev_done,     "money": false},
+		{"icon": "❌", "label": tr("REPORTS_KPI_PROJECTS_FAILED"), "value": cur_failed,   "prev": prev_failed,   "money": false},
+	]
+
+	for kpi in kpis:
+		_kpi_container.add_child(_build_kpi_item(kpi))
+
+func _build_kpi_item(kpi: Dictionary) -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 1)
+	style.border_width_left = 1; style.border_width_top = 1
+	style.border_width_right = 1; style.border_width_bottom = 1
+	style.border_color = Color(0.88, 0.88, 0.88, 1)
+	style.corner_radius_top_left = 8; style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8; style.corner_radius_bottom_left = 8
+	panel.add_theme_stylebox_override("panel", style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 4)
+	var inner = MarginContainer.new()
+	inner.add_theme_constant_override("margin_left", 10)
+	inner.add_theme_constant_override("margin_top", 8)
+	inner.add_theme_constant_override("margin_right", 10)
+	inner.add_theme_constant_override("margin_bottom", 8)
+	inner.add_child(vbox)
+	panel.add_child(inner)
+
+	# Иконка + название
+	var head_lbl = Label.new()
+	head_lbl.text = kpi["icon"] + " " + kpi["label"]
+	head_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	head_lbl.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(head_lbl, "regular")
+	vbox.add_child(head_lbl)
+
+	# Значение
+	var val_lbl = Label.new()
+	var val = int(kpi["value"])
+	if kpi["money"]:
+		val_lbl.text = "$" + _format_money(val)
+	else:
+		val_lbl.text = str(val)
+	val_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	val_lbl.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(val_lbl, "semibold")
+	vbox.add_child(val_lbl)
+
+	# Дельта vs предыдущий период
+	var prev = int(kpi["prev"])
+	var delta_lbl = Label.new()
+	delta_lbl.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(delta_lbl, "regular")
+	if prev == 0:
+		delta_lbl.text = tr("REPORTS_KPI_VS_PREV")
+		delta_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	else:
+		var diff = val - prev
+		var pct = int(round(float(diff) / float(abs(prev)) * 100.0))
+		var sign = "+" if pct >= 0 else ""
+		delta_lbl.text = sign + str(pct) + "% " + tr("REPORTS_KPI_VS_PREV")
+		delta_lbl.add_theme_color_override("font_color", COLOR_GREEN if pct >= 0 else COLOR_RED)
+	vbox.add_child(delta_lbl)
+
+	return panel
 
 # =========================================================
 #  WIDGET 1: CASH FLOW
@@ -186,6 +404,8 @@ func _refresh_cash_flow():
 
 func _draw_cash_flow(ctrl: Control):
 	var records = _get_filtered_records()
+	# Агрегируем для квартала и года (берём последний баланс в группе)
+	var agg = _aggregate_records(records)
 	var w = ctrl.size.x
 	var h = ctrl.size.y
 	var pad_left = 80.0
@@ -195,13 +415,13 @@ func _draw_cash_flow(ctrl: Control):
 	var gw = w - pad_left - pad_right
 	var gh = h - pad_top - pad_bottom
 
-	if records.is_empty():
+	if agg.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
 
-	# Gather balance data
+	# Gather balance data from aggregated records
 	var values: Array = []
-	for r in records:
+	for r in agg:
 		values.append(int(r.get("balance", 0)))
 
 	var min_val = values.min()
@@ -283,7 +503,7 @@ func _draw_cash_flow(ctrl: Control):
 	var step = max(1, int(ceil(float(n) / 10.0)))
 	for i in range(0, n, step):
 		var px = pad_left + (float(i) / max(n - 1, 1)) * gw
-		var day_num = int(records[i].get("day", i + 1))
+		var day_num = int(agg[i].get("day", i + 1))
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 10, h - 8), str(day_num), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, COLOR_GRAY)
 
 # =========================================================
@@ -479,6 +699,8 @@ func _refresh_daily_bars():
 
 func _draw_daily_bars(ctrl: Control):
 	var records = _get_filtered_records()
+	# Агрегируем по выбранному периоду
+	var groups = _aggregate_records(records)
 	var w = ctrl.size.x
 	var h = ctrl.size.y
 	var pad_left = 80.0
@@ -488,26 +710,9 @@ func _draw_daily_bars(ctrl: Control):
 	var gw = w - pad_left - pad_right
 	var gh = h - pad_top - pad_bottom
 
-	if records.is_empty():
+	if groups.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-
-	# Group by week if > 30 days
-	var groups: Array = []
-	if records.size() > 30:
-		var week_size = 7
-		var i = 0
-		while i < records.size():
-			var chunk = records.slice(i, min(i + week_size, records.size()))
-			var inc = 0; var exp = 0; var day = int(chunk[0].get("day", 0))
-			for r in chunk:
-				inc += int(r.get("income", 0))
-				exp += int(r.get("expenses", 0))
-			groups.append({"income": inc, "expenses": exp, "day": day})
-			i += week_size
-	else:
-		for r in records:
-			groups.append({"income": int(r.get("income", 0)), "expenses": int(r.get("expenses", 0)), "day": int(r.get("day", 0))})
 
 	var max_val = 1
 	for g in groups:
@@ -691,21 +896,25 @@ func _refresh_pnl():
 
 	var total_expenses = total_salary + total_pm_salary + total_penalties + total_office
 	var net = total_income - total_expenses
+	var margin_pct = 0.0
+	if total_income > 0:
+		margin_pct = float(net) / float(total_income) * 100.0
 
 	var rows = [
-		{"label": tr("REPORTS_PROJECT_INCOME"), "value": total_income, "is_income": true, "bold": false},
-		{"label": "────────────────────────────────────────", "value": -999, "is_income": false, "bold": false},
-		{"label": tr("REPORTS_SALARIES"),   "value": -total_salary,    "is_income": false, "bold": false},
-		{"label": tr("REPORTS_PM_SALARY"),  "value": -total_pm_salary, "is_income": false, "bold": false},
-		{"label": tr("REPORTS_PENALTIES"),  "value": -total_penalties, "is_income": false, "bold": false},
-		{"label": tr("REPORTS_OFFICE"),     "value": -total_office,    "is_income": false, "bold": false},
-		{"label": "────────────────────────────────────────", "value": -999, "is_income": false, "bold": false},
-		{"label": tr("REPORTS_TOTAL"),      "value": net, "is_income": net >= 0, "bold": true},
+		{"label": tr("REPORTS_PROJECT_INCOME"), "value": total_income, "type": "income", "bold": false},
+		{"label": "────────────────────────────────────────", "value": -999, "type": "sep", "bold": false},
+		{"label": tr("REPORTS_SALARIES"),   "value": -total_salary,    "type": "expense", "bold": false},
+		{"label": tr("REPORTS_PM_SALARY"),  "value": -total_pm_salary, "type": "expense", "bold": false},
+		{"label": tr("REPORTS_PENALTIES"),  "value": -total_penalties, "type": "expense", "bold": false},
+		{"label": tr("REPORTS_OFFICE"),     "value": -total_office,    "type": "expense", "bold": false},
+		{"label": "────────────────────────────────────────", "value": -999, "type": "sep", "bold": false},
+		{"label": tr("REPORTS_TOTAL"),      "value": net,              "type": "net",     "bold": true},
+		{"label": tr("REPORTS_MARGIN"),     "value": margin_pct,       "type": "margin",  "bold": true},
 	]
 
 	for idx in range(rows.size()):
 		var row = rows[idx]
-		if row["value"] == -999:
+		if row["type"] == "sep":
 			var sep = HSeparator.new()
 			_pnl_vbox.add_child(sep)
 			continue
@@ -732,13 +941,25 @@ func _refresh_pnl():
 		hbox.add_child(name_lbl)
 
 		var val_lbl = Label.new()
-		var val = int(row["value"])
-		if row["is_income"]:
-			val_lbl.text = "+$%s" % _format_money(val)
-			val_lbl.add_theme_color_override("font_color", COLOR_GREEN)
-		else:
-			val_lbl.text = "-$%s" % _format_money(abs(val))
-			val_lbl.add_theme_color_override("font_color", COLOR_RED)
+		match row["type"]:
+			"income":
+				val_lbl.text = "+$%s" % _format_money(int(row["value"]))
+				val_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+			"expense":
+				val_lbl.text = "-$%s" % _format_money(abs(int(row["value"])))
+				val_lbl.add_theme_color_override("font_color", COLOR_RED)
+			"net":
+				var nv = int(row["value"])
+				if nv >= 0:
+					val_lbl.text = "+$%s" % _format_money(nv)
+					val_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+				else:
+					val_lbl.text = "-$%s" % _format_money(abs(nv))
+					val_lbl.add_theme_color_override("font_color", COLOR_RED)
+			"margin":
+				var mp = row["value"]
+				val_lbl.text = "%.1f%%" % mp
+				val_lbl.add_theme_color_override("font_color", COLOR_GREEN if mp >= 0 else COLOR_RED)
 		val_lbl.add_theme_font_size_override("font_size", 13)
 		val_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		val_lbl.custom_minimum_size = Vector2(140, 0)

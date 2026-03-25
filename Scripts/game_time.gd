@@ -136,6 +136,44 @@ func _increment_days_in_company():
 
 # === ФУНКЦИИ КАЛЕНДАРЯ ===
 
+func get_week_number(d: int = -1) -> int:
+	if d == -1: d = day
+	var safe_d = max(d, 1)
+	return ((safe_d - 1) / DAYS_IN_WEEK) + 1
+
+func get_quarter(d: int = -1) -> int:
+	var m = get_month(d)
+	return ((m - 1) / 3) + 1
+
+func get_year(d: int = -1) -> int:
+	if d == -1: d = day
+	var safe_d = max(d, 1)
+	return ((safe_d - 1) / (DAYS_IN_MONTH * 12)) + 1
+
+func get_week_start_day(week_num: int) -> int:
+	return (week_num - 1) * DAYS_IN_WEEK + 1
+
+func get_week_end_day(week_num: int) -> int:
+	return week_num * DAYS_IN_WEEK
+
+func get_month_start_day(month_num: int) -> int:
+	return (month_num - 1) * DAYS_IN_MONTH + 1
+
+func get_month_end_day(month_num: int) -> int:
+	return month_num * DAYS_IN_MONTH
+
+func get_quarter_start_day(quarter_num: int) -> int:
+	return (quarter_num - 1) * DAYS_IN_MONTH * 3 + 1
+
+func get_quarter_end_day(quarter_num: int) -> int:
+	return quarter_num * DAYS_IN_MONTH * 3
+
+func get_year_start_day(year_num: int) -> int:
+	return (year_num - 1) * DAYS_IN_MONTH * 12 + 1
+
+func get_year_end_day(year_num: int) -> int:
+	return year_num * DAYS_IN_MONTH * 12
+
 func get_month(d: int = -1) -> int:
 	if d == -1: d = day
 	var safe_d = max(d, 1)
