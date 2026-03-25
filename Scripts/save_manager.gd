@@ -3,13 +3,14 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 3
+const SAVE_VERSION = 4
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
 const MIGRATIONS = {
 	1: "_migrate_v1_to_v2",
 	2: "_migrate_v2_to_v3",
+	3: "_migrate_v3_to_v4",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -642,6 +643,11 @@ func _migrate_v1_to_v2(data: Dictionary) -> bool:
 func _migrate_v2_to_v3(data: Dictionary) -> bool:
 	if not data.has("people_history"):
 		data["people_history"] = {"daily_records": []}
+	return true
+
+func _migrate_v3_to_v4(data: Dictionary) -> bool:
+	# Трейты хранятся как строковый массив — обратная совместимость не нарушается.
+	# Старые сейвы просто не будут содержать новые трейты.
 	return true
 
 
