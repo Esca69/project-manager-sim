@@ -1120,3 +1120,17 @@ REPORTS_PEOPLE_CARD_WORK_HOURS,Рабочие часы за день,Daily Work 
 REPORTS_PEOPLE_CARD_PROGRESS_POINTS,Очки прогресса за день,Daily Progress Points
 REPORTS_PEOPLE_CARD_EFFICIENCY_GRAPH,Динамика эффективности,Efficiency Dynamics
 REPORTS_PEOPLE_CARD_EFFICIENCY_DESC,"Эффективность = Очки прогресса / (Месячная ЗП / 22 рабочих дня). Показывает сколько очков прогресса приносит каждый доллар зарплаты.","Efficiency = Progress points / (Monthly salary / 22 work days). Shows how many progress points each salary dollar produces."
+PERSONALITY_AMBIVERT,Амбиверт,Ambivert
+PERSONALITY_DESC_AMBIVERT,"Максимально стабильный сотрудник. Не получает бонусов или штрафов к настроению от бесед. Игнорирует эффекты босс-ивентов, связанных с общением.","Extremely stable employee. Doesn't receive mood bonuses or penalties from conversations. Ignores communication-related boss event effects."
+PERSONALITY_BIOHACKER,Биохакер,Biohacker
+PERSONALITY_DESC_BIOHACKER,"Помешан на продуктивности и ЗОЖ. Отлично ладит со спортсменами, но раздражает родителей и неформалов непрошеными советами.","Obsessed with productivity and healthy living. Gets along great with jocks, but annoys parents and informals with unsolicited advice."
+PERSONALITY_ASTROLOGER,Таролог,Astrologer
+PERSONALITY_DESC_ASTROLOGER,"Сверяет дедлайны по ретроградному Меркурию. Раздражает гиков и финансистов, но отлично находит общий язык с неформалами.","Checks deadlines by Mercury retrograde. Annoys geeks and finance bros, but gets along great with informals."
+PERSONALITY_PET_LOVER,Кошатник,Pet Lover
+PERSONALITY_DESC_PET_LOVER,"Готов часами обсуждать своих питомцев. Эта тема растапливает сердца родителей и фурри.","Ready to talk about pets for hours. This topic melts the hearts of parents and furries."
+PERSONALITY_FOOD_THIEF,Похититель еды,Food Thief
+PERSONALITY_DESC_FOOD_THIEF,"Раз в день может съесть чужой обед. Жертва получает мощный дебафф к настроению.","May eat someone else's lunch once a day. The victim receives a powerful mood debuff."
+PERSONALITY_LOUD,Громкий,Loud
+PERSONALITY_DESC_LOUD,"Очень громко печатает или говорит по телефону. Снижает эффективность всех, кто сидит рядом.","Types very loudly or talks on the phone. Reduces efficiency of all nearby desk neighbors."
+MOOD_MOD_FOOD_STOLEN,Кто съел мой йогурт?!,Who ate my yogurt?!
+LOG_FOOD_STOLEN,%s обнаружил, что кто-то съел его обед!,%s discovered someone ate their lunch!

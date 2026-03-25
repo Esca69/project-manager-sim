@@ -163,6 +163,54 @@ func roll_compatibility_detailed(emp_a: EmployeeData, emp_b: EmployeeData) -> Di
 		total += 2
 		factors.append("+2 flirt")
 
+	# biohacker + jock → кросс-интерес бонус
+	if ("biohacker" in emp_a.personality and "jock" in emp_b.personality) or \
+	   ("biohacker" in emp_b.personality and "jock" in emp_a.personality):
+		total += SHARED_INTEREST_BONUS
+		factors.append("+%d biohacker+jock" % SHARED_INTEREST_BONUS)
+
+	# biohacker + parent → конфликт
+	if ("biohacker" in emp_a.personality and "parent" in emp_b.personality) or \
+	   ("biohacker" in emp_b.personality and "parent" in emp_a.personality):
+		total += CONFLICT_PENALTY
+		factors.append("%d biohacker+parent" % CONFLICT_PENALTY)
+
+	# biohacker + informal → конфликт
+	if ("biohacker" in emp_a.personality and "informal" in emp_b.personality) or \
+	   ("biohacker" in emp_b.personality and "informal" in emp_a.personality):
+		total += CONFLICT_PENALTY
+		factors.append("%d biohacker+informal" % CONFLICT_PENALTY)
+
+	# astrologer + geek → конфликт
+	if ("astrologer" in emp_a.personality and "geek" in emp_b.personality) or \
+	   ("astrologer" in emp_b.personality and "geek" in emp_a.personality):
+		total += CONFLICT_PENALTY
+		factors.append("%d astrologer+geek" % CONFLICT_PENALTY)
+
+	# astrologer + finance_bro → конфликт
+	if ("astrologer" in emp_a.personality and "finance_bro" in emp_b.personality) or \
+	   ("astrologer" in emp_b.personality and "finance_bro" in emp_a.personality):
+		total += CONFLICT_PENALTY
+		factors.append("%d astrologer+finance_bro" % CONFLICT_PENALTY)
+
+	# astrologer + informal → кросс-интерес бонус
+	if ("astrologer" in emp_a.personality and "informal" in emp_b.personality) or \
+	   ("astrologer" in emp_b.personality and "informal" in emp_a.personality):
+		total += SHARED_INTEREST_BONUS
+		factors.append("+%d astrologer+informal" % SHARED_INTEREST_BONUS)
+
+	# pet_lover + parent → бонус
+	if ("pet_lover" in emp_a.personality and "parent" in emp_b.personality) or \
+	   ("pet_lover" in emp_b.personality and "parent" in emp_a.personality):
+		total += 4
+		factors.append("+4 pet_lover+parent")
+
+	# pet_lover + furry → бонус
+	if ("pet_lover" in emp_a.personality and "furry" in emp_b.personality) or \
+	   ("pet_lover" in emp_b.personality and "furry" in emp_a.personality):
+		total += 4
+		factors.append("+4 pet_lover+furry")
+
 	return {
 		"total": total,
 		"base_roll": base_roll,
@@ -187,13 +235,18 @@ func process_chat_result(emp_a: EmployeeData, emp_b: EmployeeData) -> Dictionary
 	# === ПЕРЕЗАПИСЫВАЕМЫЙ MOOD-ЭФФЕКТ ===
 	# Используем единый ID "recent_chat" для всех. 
 	# Функция add_mood_modifier сама найдет старый бафф/дебафф с этим ID и заменит его на новый.
+	# Амбиверт не получает mood-эффектов от чата.
 	var is_positive = delta >= 0
 	if is_positive:
-		emp_a.add_mood_modifier("recent_chat", "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
-		emp_b.add_mood_modifier("recent_chat", "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
+		if "ambivert" not in emp_a.personality:
+			emp_a.add_mood_modifier("recent_chat", "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
+		if "ambivert" not in emp_b.personality:
+			emp_b.add_mood_modifier("recent_chat", "MOOD_MOD_GOOD_CHAT", CHAT_MOOD_POSITIVE_VALUE, CHAT_MOOD_DURATION)
 	else:
-		emp_a.add_mood_modifier("recent_chat", "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
-		emp_b.add_mood_modifier("recent_chat", "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
+		if "ambivert" not in emp_a.personality:
+			emp_a.add_mood_modifier("recent_chat", "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
+		if "ambivert" not in emp_b.personality:
+			emp_b.add_mood_modifier("recent_chat", "MOOD_MOD_BAD_CHAT", CHAT_MOOD_NEGATIVE_VALUE, CHAT_MOOD_DURATION)
 
 	return {
 		"delta": delta,

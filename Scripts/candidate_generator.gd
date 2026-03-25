@@ -172,12 +172,14 @@ func _generate_personality(gender: String) -> Array[String]:
 	var result: Array[String] = []
 	
 	# Категория A: Социальная батарейка (ВСЕГДА 1)
-	# toxic — 20%, extrovert и introvert — по 40%
+	# extrovert 30%, introvert 30%, ambivert 25%, toxic 15%
 	var social_roll = randf()
-	if social_roll < 0.40:
+	if social_roll < 0.30:
 		result.append("extrovert")
-	elif social_roll < 0.80:
+	elif social_roll < 0.60:
 		result.append("introvert")
+	elif social_roll < 0.85:
+		result.append("ambivert")
 	else:
 		result.append("toxic")
 	
@@ -185,9 +187,22 @@ func _generate_personality(gender: String) -> Array[String]:
 	var available_interests = EmployeeData.PERSONALITY_INTERESTS.duplicate()
 	available_interests.shuffle()
 	if randf() < 0.60 and available_interests.size() > 0:
-		result.append(available_interests.pop_front())
-		if randf() < 0.30 and available_interests.size() > 0:
-			result.append(available_interests.pop_front())
+		var picked_interest = ""
+		for interest in available_interests:
+			if not _has_personality_conflict(interest, result):
+				picked_interest = interest
+				break
+		if picked_interest != "":
+			result.append(picked_interest)
+			available_interests.erase(picked_interest)
+			if randf() < 0.30 and available_interests.size() > 0:
+				var picked_second = ""
+				for interest in available_interests:
+					if not _has_personality_conflict(interest, result):
+						picked_second = interest
+						break
+				if picked_second != "":
+					result.append(picked_second)
 	
 	# Категория C: Раздражители (15-20% шанс)
 	if randf() < 0.18:
@@ -198,6 +213,9 @@ func _generate_personality(gender: String) -> Array[String]:
 			if EmployeeData.IRRITANT_GENDER_LOCK.has(irritant):
 				if EmployeeData.IRRITANT_GENDER_LOCK[irritant] != gender:
 					continue
+			# Проверяем конфликты с уже выбранными тегами
+			if _has_personality_conflict(irritant, result):
+				continue
 			result.append(irritant)
 			break  # Максимум 1 раздражитель
 	
@@ -333,5 +351,13 @@ func _has_conflict(new_trait: String, existing: Array[String]) -> bool:
 		if new_trait == pair[0] and pair[1] in existing:
 			return true
 		if new_trait == pair[1] and pair[0] in existing:
+			return true
+	return false
+
+func _has_personality_conflict(new_tag: String, existing: Array[String]) -> bool:
+	for pair in EmployeeData.PERSONALITY_CONFLICTING_PAIRS:
+		if new_tag == pair[0] and pair[1] in existing:
+			return true
+		if new_tag == pair[1] and pair[0] in existing:
 			return true
 	return false
