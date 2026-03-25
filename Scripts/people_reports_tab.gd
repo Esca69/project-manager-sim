@@ -559,8 +559,10 @@ func _refresh_svo():
 		var is_even = (i % 2 == 0)
 		_svo_table_vbox.add_child(_build_svo_row(i + 1, row, roi_color, is_even))
 
-func _build_svo_header() -> HBoxContainer:
-	var hbox = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
+func _build_svo_header() -> PanelContainer:
+	var row = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
+	var panel = row[0] as PanelContainer
+	var hbox  = row[1] as HBoxContainer
 	var cols = [
 		tr("REPORTS_PEOPLE_COL_RANK"),
 		tr("REPORTS_PEOPLE_COL_NAME"),
@@ -580,11 +582,13 @@ func _build_svo_header() -> HBoxContainer:
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "bold")
 		hbox.add_child(lbl)
-	return hbox
+	return panel
 
-func _build_svo_row(rank: int, row: Dictionary, roi_color: Color, is_even: bool) -> HBoxContainer:
+func _build_svo_row(rank: int, row: Dictionary, roi_color: Color, is_even: bool) -> PanelContainer:
 	var bg_color = Color(1, 1, 1, 1) if is_even else Color(0.96, 0.97, 0.99, 1)
-	var hbox = _make_table_row(bg_color)
+	var table_row = _make_table_row(bg_color)
+	var panel = table_row[0] as PanelContainer
+	var hbox  = table_row[1] as HBoxContainer
 	var values = [
 		str(rank),
 		str(row["name"]),
@@ -605,9 +609,9 @@ func _build_svo_row(rank: int, row: Dictionary, roi_color: Color, is_even: bool)
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "regular" if ci > 0 else "semibold")
 		hbox.add_child(lbl)
-	return hbox
+	return panel
 
-func _make_table_row(bg: Color) -> HBoxContainer:
+func _make_table_row(bg: Color) -> Array:
 	var panel = PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var s = StyleBoxFlat.new()
@@ -622,7 +626,7 @@ func _make_table_row(bg: Color) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 8)
 	inner.add_child(hbox)
-	return hbox
+	return [panel, hbox]
 
 # =========================================================
 #  BLOCK 3: TEAM HEALTH TIMELINE
@@ -804,8 +808,10 @@ func _refresh_leaderboard():
 		var avg_mood = s["total_mood"] / max(s["days"], 1)
 		_leaderboard_vbox.add_child(_build_leaderboard_row(idx + 1, ename, s["total_progress"], s["total_work_minutes"] / 60.0, avg_mood, Color(1.0, 0.92, 0.92, 1)))
 
-func _build_leaderboard_header() -> HBoxContainer:
-	var hbox = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
+func _build_leaderboard_header() -> PanelContainer:
+	var row = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
+	var panel = row[0] as PanelContainer
+	var hbox  = row[1] as HBoxContainer
 	var cols = [
 		tr("REPORTS_PEOPLE_COL_RANK"),
 		tr("REPORTS_PEOPLE_COL_NAME"),
@@ -822,10 +828,12 @@ func _build_leaderboard_header() -> HBoxContainer:
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "bold")
 		hbox.add_child(lbl)
-	return hbox
+	return panel
 
-func _build_leaderboard_row(rank: int, name: String, progress: float, hours: float, avg_mood: float, bg: Color) -> HBoxContainer:
-	var hbox = _make_table_row(bg)
+func _build_leaderboard_row(rank: int, name: String, progress: float, hours: float, avg_mood: float, bg: Color) -> PanelContainer:
+	var row = _make_table_row(bg)
+	var panel = row[0] as PanelContainer
+	var hbox  = row[1] as HBoxContainer
 	var values = [
 		str(rank),
 		name,
@@ -843,7 +851,7 @@ func _build_leaderboard_row(rank: int, name: String, progress: float, hours: flo
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		hbox.add_child(lbl)
-	return hbox
+	return panel
 
 # =========================================================
 #  BLOCK 6: EMPLOYEE CARD
@@ -949,12 +957,22 @@ func _refresh_employee_card():
 	if UITheme: UITheme.apply_font(cur_title, "semibold")
 	_card_vbox.add_child(cur_title)
 
-	var stats = [
-		{"label": "😊 " + tr("REPORTS_PEOPLE_HEALTH_MOOD"),    "value": d.mood,          "color_low": COLOR_RED,   "color_high": COLOR_GREEN},
-		{"label": "🔥 " + tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), "value": d.burnout_level, "color_low": COLOR_GREEN, "color_high": COLOR_RED},
-	]
-	for stat in stats:
-		_card_vbox.add_child(_build_stat_bar(stat))
+	var mood_color = COLOR_GREEN if d.mood > 60 else (COLOR_ORANGE if d.mood >= 40 else COLOR_RED)
+	var burnout_color = COLOR_GREEN if d.burnout_level < 20 else (COLOR_ORANGE if d.burnout_level <= 50 else COLOR_RED)
+
+	var mood_lbl = Label.new()
+	mood_lbl.text = "😊 %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_MOOD"), float(d.mood)]
+	mood_lbl.add_theme_color_override("font_color", mood_color)
+	mood_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(mood_lbl, "semibold")
+	_card_vbox.add_child(mood_lbl)
+
+	var burnout_lbl = Label.new()
+	burnout_lbl.text = "🔥 %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), float(d.burnout_level)]
+	burnout_lbl.add_theme_color_override("font_color", burnout_color)
+	burnout_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(burnout_lbl, "semibold")
+	_card_vbox.add_child(burnout_lbl)
 
 	# === Period Dynamics Graph ===
 	var dyn_title = Label.new()
@@ -1036,6 +1054,7 @@ func _refresh_employee_card():
 	var wh_graph = Control.new()
 	wh_graph.custom_minimum_size = Vector2(0, 140)
 	wh_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wh_graph.clip_contents = true
 	var emp_wh_capture = _selected_employee
 	wh_graph.draw.connect(func(): _draw_work_hours_graph(wh_graph, emp_wh_capture))
 	_card_vbox.add_child(wh_graph)
@@ -1215,17 +1234,18 @@ func _draw_work_hours_graph(ctrl: Control, emp_name: String):
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.0f" % (max_hours * (1.0 - frac)), HORIZONTAL_ALIGNMENT_LEFT, pad_left - 2, 9, COLOR_GRAY)
 
 	var n = hours_data.size()
-	var bar_w = max(4.0, (gw / max(n, 1)) - 2.0)
+	var slot_w = gw / max(n, 1)
+	var bar_w = max(4.0, slot_w - 2.0)
 	var bar_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.75)
 	for i in range(n):
-		var px = pad_left + gw * 0.5 if n == 1 else pad_left + (float(i) / float(n - 1)) * gw
+		var px = pad_left + (float(i) + 0.5) * slot_w
 		var val = hours_data[i]["hours"]
 		var bh = gh * (val / max_hours)
 		ctrl.draw_rect(Rect2(px - bar_w * 0.5, pad_top + gh - bh, bar_w, bh), bar_color)
 
 	var step = max(1, int(ceil(float(n) / 8.0)))
 	for i in range(0, n, step):
-		var px = pad_left + gw * 0.5 if n == 1 else pad_left + (float(i) / float(n - 1)) * gw
+		var px = pad_left + (float(i) + 0.5) * slot_w
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(hours_data[i]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
 func _draw_progress_points_graph(ctrl: Control, emp_name: String):
