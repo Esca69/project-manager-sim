@@ -307,7 +307,7 @@ func _refresh_kpi():
 	var kpis = [
 		{"icon": "💰", "label": tr("REPORTS_KPI_INCOME"),         "value": cur_income,   "prev": prev_income,   "money": true},
 		{"icon": "💸", "label": tr("REPORTS_KPI_EXPENSES"),        "value": cur_expenses, "prev": prev_expenses, "money": true},
-		{"icon": "📈", "label": tr("REPORTS_KPI_PROFIT"),          "value": cur_profit,   "prev": prev_profit,   "money": true},
+		{"icon": "📈", "label": tr("REPORTS_KPI_PROFIT"),          "value": cur_profit,   "prev": prev_profit,   "money": true,  "signed": true},
 		{"icon": "✅", "label": tr("REPORTS_KPI_PROJECTS_DONE"),   "value": cur_done,     "prev": prev_done,     "money": false},
 		{"icon": "❌", "label": tr("REPORTS_KPI_PROJECTS_FAILED"), "value": cur_failed,   "prev": prev_failed,   "money": false},
 	]
@@ -348,11 +348,20 @@ func _build_kpi_item(kpi: Dictionary) -> PanelContainer:
 	# Значение
 	var val_lbl = Label.new()
 	var val = int(kpi["value"])
+	var val_color = COLOR_DARK
 	if kpi["money"]:
-		val_lbl.text = "$" + _format_money(val)
+		if kpi.get("signed", false):
+			if val < 0:
+				val_lbl.text = "-$" + _format_money(abs(val))
+				val_color = COLOR_RED
+			else:
+				val_lbl.text = "+$" + _format_money(val)
+				val_color = COLOR_GREEN
+		else:
+			val_lbl.text = "$" + _format_money(val)
 	else:
 		val_lbl.text = str(val)
-	val_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	val_lbl.add_theme_color_override("font_color", val_color)
 	val_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(val_lbl, "semibold")
 	vbox.add_child(val_lbl)
@@ -555,6 +564,21 @@ func _build_structure_card() -> PanelContainer:
 	legend_hbox.add_theme_constant_override("separation", 16)
 	vbox.add_child(legend_hbox)
 
+	# Income legend entry
+	var inc_item = HBoxContainer.new()
+	inc_item.add_theme_constant_override("separation", 4)
+	var inc_rect = ColorRect.new()
+	inc_rect.custom_minimum_size = Vector2(12, 12)
+	inc_rect.color = COLOR_GREEN
+	inc_item.add_child(inc_rect)
+	var inc_lbl = Label.new()
+	inc_lbl.text = tr("REPORTS_PROJECT_INCOME")
+	inc_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	inc_lbl.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(inc_lbl, "regular")
+	inc_item.add_child(inc_lbl)
+	legend_hbox.add_child(inc_item)
+
 	var exp_segs_info = [
 		{"label": tr("REPORTS_SALARIES"),  "color": COLOR_RED},
 		{"label": tr("REPORTS_PM_SALARY"), "color": COLOR_ORANGE},
@@ -745,7 +769,7 @@ func _draw_daily_bars(ctrl: Control):
 		ctrl.draw_rect(Rect2(cx + 1, pad_top + gh - exp_h, bar_w, exp_h), COLOR_RED)
 
 		if i % max(1, int(ceil(float(n) / 10.0))) == 0:
-			ctrl.draw_string(ThemeDB.fallback_font, Vector2(cx - 12, h - 6), str(g["day"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
+			ctrl.draw_string(ThemeDB.fallback_font, Vector2(cx - 12, h - 6), str(int(g["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
 
 # =========================================================
 #  WIDGET 4: P&L TABLE
