@@ -1054,3 +1054,51 @@ REPORTS_MONTH_NUM,Месяц %d,Month %d
 REPORTS_QUARTER_NUM,Квартал %d,Quarter %d
 REPORTS_YEAR_NUM,Год %d,Year %d
 REPORTS_MARGIN,Маржа,Margin
+REPORTS_PEOPLE_PERIOD,Период:,Period:
+REPORTS_PEOPLE_TEAM_VIEW,Вся команда,Entire Team
+REPORTS_PEOPLE_SUMMARY_TITLE,👥 Обзор команды,👥 Team Overview
+REPORTS_PEOPLE_TOTAL,Всего сотрудников,Total Employees
+REPORTS_PEOPLE_CONTRACTORS,Контракторы,Contractors
+REPORTS_PEOPLE_FREELANCERS,Фрилансеры,Freelancers
+REPORTS_PEOPLE_PAYROLL,ФОТ/месяц,Payroll/month
+REPORTS_PEOPLE_AVG_SALARY,Ср. ЗП,Avg Salary
+REPORTS_PEOPLE_AVG_MOOD,Ср. настроение,Avg Mood
+REPORTS_PEOPLE_AVG_ENERGY,Ср. энергия,Avg Energy
+REPORTS_PEOPLE_AVG_BURNOUT,Ср. выгорание,Avg Burnout
+REPORTS_PEOPLE_AVG_TENURE,Ср. стаж (дней),Avg Tenure (days)
+REPORTS_PEOPLE_SALARY_VS_OUTPUT,💰 Зарплата vs Отдача,💰 Salary vs Output
+REPORTS_PEOPLE_COL_RANK,#,#
+REPORTS_PEOPLE_COL_NAME,Фамилия Имя,Name
+REPORTS_PEOPLE_COL_ROLE,Роль,Role
+REPORTS_PEOPLE_COL_SALARY_DAY,ЗП/день,Salary/day
+REPORTS_PEOPLE_COL_PROGRESS_DAY,Очки/день,Points/day
+REPORTS_PEOPLE_COL_HOURS_DAY,Часы/день,Hours/day
+REPORTS_PEOPLE_COL_EFFICIENCY,Эффект.,Efficiency
+REPORTS_PEOPLE_COL_ROI,ROI,ROI
+REPORTS_PEOPLE_FILTER_ALL,Все роли,All Roles
+REPORTS_PEOPLE_HEALTH_TITLE,📈 Здоровье команды,📈 Team Health
+REPORTS_PEOPLE_HEALTH_MOOD,Настроение,Mood
+REPORTS_PEOPLE_HEALTH_ENERGY,Энергия,Energy
+REPORTS_PEOPLE_HEALTH_BURNOUT,Выгорание,Burnout
+REPORTS_PEOPLE_LEADERBOARD_TITLE,🏆 Рейтинг сотрудников,🏆 Employee Ranking
+REPORTS_PEOPLE_TOP_PERFORMERS,🏆 Топ перформеры,🏆 Top Performers
+REPORTS_PEOPLE_RED_FLAGS,🚩 Красные флаги,🚩 Red Flags
+REPORTS_PEOPLE_ALL_EMPLOYEES,Все сотрудники,All Employees
+REPORTS_PEOPLE_COL_PROGRESS_TOTAL,Очки (всего),Points (total)
+REPORTS_PEOPLE_COL_HOURS_TOTAL,Часы (всего),Hours (total)
+REPORTS_PEOPLE_COL_AVG_MOOD,Ср. mood,Avg Mood
+REPORTS_PEOPLE_EMPLOYEE_CARD,👤 Карточка сотрудника,👤 Employee Card
+REPORTS_PEOPLE_CARD_ROLE,Роль:,Role:
+REPORTS_PEOPLE_CARD_TYPE,Тип:,Type:
+REPORTS_PEOPLE_CARD_TENURE,Стаж:,Tenure:
+REPORTS_PEOPLE_CARD_SALARY,Зарплата:,Salary:
+REPORTS_PEOPLE_CARD_DAYS,дней,days
+REPORTS_PEOPLE_CARD_PER_MONTH,/мес,/mo
+REPORTS_PEOPLE_CARD_CURRENT,Текущие показатели,Current Stats
+REPORTS_PEOPLE_CARD_DYNAMICS,Динамика за период,Period Dynamics
+REPORTS_PEOPLE_CARD_COST_VS_OUTPUT,Стоимость vs Отдача,Cost vs Output
+REPORTS_PEOPLE_CARD_AVG_SALARY_DAY,Ср. ЗП/день:,Avg salary/day:
+REPORTS_PEOPLE_CARD_AVG_PROGRESS_DAY,Ср. очков/день:,Avg points/day:
+REPORTS_PEOPLE_CARD_AVG_HOURS_DAY,Ср. часов/день:,Avg hours/day:
+REPORTS_PEOPLE_CARD_EFFICIENCY,Эффективность (очки/$):,Efficiency (pts/$):
+REPORTS_PEOPLE_NO_DATA,Нет данных за выбранный период,No data for selected period

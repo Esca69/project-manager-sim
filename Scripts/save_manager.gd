@@ -3,12 +3,13 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 2
+const SAVE_VERSION = 3
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
 const MIGRATIONS = {
 	1: "_migrate_v1_to_v2",
+	2: "_migrate_v2_to_v3",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -161,6 +162,9 @@ func save_game():
 
 		# === ФИНАНСОВАЯ ИСТОРИЯ ===
 		"financial_history": _serialize_financial_history(),
+
+		# === ИСТОРИЯ СОТРУДНИКОВ ===
+		"people_history": _serialize_people_history(),
 	}
 
 	var json_string = JSON.stringify(data, "\t")
@@ -489,6 +493,13 @@ func _serialize_financial_history() -> Dictionary:
 		return {"daily_records": []}
 	return {"daily_records": fh.daily_records.duplicate(true)}
 
+# === ИСТОРИЯ СОТРУДНИКОВ: Сериализация ===
+func _serialize_people_history() -> Dictionary:
+	var ph = get_node_or_null("/root/PeopleHistory")
+	if ph == null:
+		return {"daily_records": []}
+	return {"daily_records": ph.daily_records.duplicate(true)}
+
 # ============================================================
 #                        ЗАГРУЗКА
 # ============================================================
@@ -557,6 +568,10 @@ func load_game(slot: int = -1) -> bool:
 	# === ФИНАНСОВАЯ ИСТОРИЯ ===
 	_deserialize_financial_history(data.get("financial_history", {}))
 
+	# === ИСТОРИЯ СОТРУДНИКОВ ===
+	if data.has("people_history"):
+		_deserialize_people_history(data["people_history"])
+
 	print("📂 Данные синглтонов восстановлены (слот %d)" % slot)
 	pending_restore = true
 	emit_signal("game_loaded")
@@ -620,6 +635,13 @@ func _migrate_v1_to_v2(data: Dictionary) -> bool:
 				var emp_name = emp_dict.get("name_ru", emp_dict.get("employee_name", "?"))
 				print("🔄 Миграция v1→v2: инициализирован vacation_days_until_request для %s" % emp_name)
 	cand_gen.free()
+	return true
+
+# --- Миграция v2 → v3 ---
+# Добавляет пустую историю сотрудников к старым сохранениям
+func _migrate_v2_to_v3(data: Dictionary) -> bool:
+	if not data.has("people_history"):
+		data["people_history"] = {"daily_records": []}
 	return true
 
 
@@ -1130,6 +1152,13 @@ func _deserialize_financial_history(d: Dictionary):
 	if fh == null:
 		return
 	fh.daily_records = d.get("daily_records", [])
+
+# === ИСТОРИЯ СОТРУДНИКОВ: Десериализация ===
+func _deserialize_people_history(d: Dictionary):
+	var ph = get_node_or_null("/root/PeopleHistory")
+	if ph == null:
+		return
+	ph.daily_records = d.get("daily_records", [])
 
 # ============================================================
 #                        УТИЛИТЫ

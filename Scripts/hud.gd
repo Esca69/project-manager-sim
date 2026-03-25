@@ -838,6 +838,10 @@ func _on_end_day_pressed():
 	if FinancialHistory:
 		FinancialHistory.record_day()
 
+	# === ИСТОРИЯ СОТРУДНИКОВ: Записать снимок дня ===
+	if PeopleHistory:
+		PeopleHistory.record_day()
+
 	# === GAME OVER: Банкротство ===
 	if GameState.company_balance < 0 and GameState.tutorial_completed:
 		show_game_over("GAMEOVER_REASON_BANKRUPT")
