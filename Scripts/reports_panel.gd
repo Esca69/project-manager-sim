@@ -19,7 +19,7 @@ var _content_area: Control
 var _finance_tab_btn: Button
 var _people_tab_btn: Button
 var _finance_content: Control
-var _people_placeholder: Control
+var _people_content: Control
 
 var _tab_bg_style: StyleBoxFlat
 var _tab_active_style: StyleBoxFlat
@@ -225,18 +225,15 @@ func _build_ui():
 	_finance_content.size_flags_vertical   = Control.SIZE_EXPAND_FILL
 	_content_area.add_child(_finance_content)
 
-	# People placeholder
-	_people_placeholder = Control.new()
-	_people_placeholder.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_people_placeholder.visible = false
-	var coming_soon_lbl = Label.new()
-	coming_soon_lbl.text = tr("REPORTS_COMING_SOON")
-	coming_soon_lbl.set_anchors_preset(Control.PRESET_CENTER)
-	coming_soon_lbl.add_theme_color_override("font_color", COLOR_GRAY)
-	coming_soon_lbl.add_theme_font_size_override("font_size", 24)
-	if UITheme: UITheme.apply_font(coming_soon_lbl, "semibold")
-	_people_placeholder.add_child(coming_soon_lbl)
-	_content_area.add_child(_people_placeholder)
+	# People tab content
+	var people_script = load("res://Scripts/people_reports_tab.gd")
+	_people_content = Control.new()
+	_people_content.set_script(people_script)
+	_people_content.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_people_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_people_content.size_flags_vertical   = Control.SIZE_EXPAND_FILL
+	_people_content.visible = false
+	_content_area.add_child(_people_content)
 
 func _apply_tab_styles(finance_active: bool):
 	_apply_button_style(_finance_tab_btn, _tab_active_style if finance_active else _tab_inactive_style, COLOR_BLUE if finance_active else COLOR_GRAY)
@@ -255,13 +252,14 @@ func _apply_button_style(btn: Button, box_style: StyleBox, font_color: Color):
 func _on_finance_tab():
 	_apply_tab_styles(true)
 	_finance_content.visible = true
-	_people_placeholder.visible = false
+	_people_content.visible = false
 	_refresh_finance()
 
 func _on_people_tab():
 	_apply_tab_styles(false)
 	_finance_content.visible = false
-	_people_placeholder.visible = true
+	_people_content.visible = true
+	_refresh_people()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
@@ -269,8 +267,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _refresh_content():
-	_refresh_finance()
+	if _people_content and _people_content.visible:
+		_refresh_people()
+	else:
+		_refresh_finance()
 
 func _refresh_finance():
 	if _finance_content and _finance_content.has_method("refresh"):
 		_finance_content.refresh()
+
+func _refresh_people():
+	if _people_content and _people_content.has_method("refresh"):
+		_people_content.refresh()

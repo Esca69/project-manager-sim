@@ -683,6 +683,16 @@ func _reset_all_singletons():
 		em.last_sick_day = -100
 		em.last_dayoff_day = -100
 
+	# FinancialHistory
+	var fh = get_node_or_null("/root/FinancialHistory")
+	if fh:
+		fh.daily_records.clear()
+
+	# PeopleHistory
+	var ph = get_node_or_null("/root/PeopleHistory")
+	if ph:
+		ph.daily_records.clear()
+
 # === СОХРАНЕНИЕ / ЗАГРУЗКА НАСТРОЕК ===
 
 func _save_settings():
