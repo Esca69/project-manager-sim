@@ -1102,3 +1102,7 @@ REPORTS_PEOPLE_CARD_AVG_PROGRESS_DAY,Ср. очков/день:,Avg points/day:
 REPORTS_PEOPLE_CARD_AVG_HOURS_DAY,Ср. часов/день:,Avg hours/day:
 REPORTS_PEOPLE_CARD_EFFICIENCY,Эффективность (очки/$):,Efficiency (pts/$):
 REPORTS_PEOPLE_NO_DATA,Нет данных за выбранный период,No data for selected period
+REPORTS_PEOPLE_CARD_WORK_HOURS,Рабочие часы за день,Daily Work Hours
+REPORTS_PEOPLE_CARD_PROGRESS_POINTS,Очки прогресса за день,Daily Progress Points
+REPORTS_PEOPLE_CARD_EFFICIENCY_GRAPH,Динамика эффективности,Efficiency Dynamics
+REPORTS_PEOPLE_CARD_EFFICIENCY_DESC,"Эффективность = Очки прогресса / (Месячная ЗП / 22 рабочих дня). Показывает сколько очков прогресса приносит каждый доллар зарплаты.","Efficiency = Progress points / (Monthly salary / 22 work days). Shows how many progress points each salary dollar produces."
