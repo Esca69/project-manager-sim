@@ -148,6 +148,13 @@ const MOOD_TRAIT_EFFICIENCY_MODIFIERS = {
 	"pessimist":     0.0,
 	"athletic":      0.0,
 	"sleepyhead":    0.0,
+	"workaholic":    0.0,
+	"ambitious":     0.0,
+	"sickly":        0.0,
+	"iron_immunity": 0.0,
+	"teachers_pet":  0.0,
+	"rebel":         0.0,
+	"fragile":       0.0,
 }
 
 # === Хелпер: получить текущий игровой час из Resource ===
@@ -383,7 +390,7 @@ func get_mood_breakdown() -> Dictionary:
 @export var employee_level: int = 0
 @export var employee_xp: int = 0
 const MAX_LEVEL = 10
-const MAX_TRAITS = 4
+const MAX_TRAITS = 5
 const TRAIT_ON_LEVELUP_CHANCE = 0.25
 
 const GRADE_NAMES = {
@@ -442,6 +449,9 @@ func add_employee_xp(amount: int) -> Dictionary:
 
 	if employee_level >= MAX_LEVEL:
 		return result
+
+	if has_trait("ambitious"):
+		amount = int(amount * 1.2)
 
 	employee_xp += amount
 
@@ -555,6 +565,13 @@ const TRAIT_NAMES = {
 	"pessimist": "TRAIT_PESSIMIST",
 	"athletic": "TRAIT_ATHLETIC",
 	"sleepyhead": "TRAIT_SLEEPYHEAD",
+	"workaholic": "TRAIT_WORKAHOLIC",
+	"ambitious": "TRAIT_AMBITIOUS",
+	"sickly": "TRAIT_SICKLY",
+	"iron_immunity": "TRAIT_IRON_IMMUNITY",
+	"teachers_pet": "TRAIT_TEACHERS_PET",
+	"rebel": "TRAIT_REBEL",
+	"fragile": "TRAIT_FRAGILE",
 }
 
 const TRAIT_DESCRIPTIONS = {
@@ -570,16 +587,28 @@ const TRAIT_DESCRIPTIONS = {
 	"pessimist": "TRAIT_DESC_PESSIMIST",
 	"athletic": "TRAIT_DESC_ATHLETIC",
 	"sleepyhead": "TRAIT_DESC_SLEEPYHEAD",
+	"workaholic": "TRAIT_DESC_WORKAHOLIC",
+	"ambitious": "TRAIT_DESC_AMBITIOUS",
+	"sickly": "TRAIT_DESC_SICKLY",
+	"iron_immunity": "TRAIT_DESC_IRON_IMMUNITY",
+	"teachers_pet": "TRAIT_DESC_TEACHERS_PET",
+	"rebel": "TRAIT_DESC_REBEL",
+	"fragile": "TRAIT_DESC_FRAGILE",
 }
 
-const POSITIVE_TRAITS = ["fast_learner", "energizer", "early_bird", "cheap_hire", "optimist", "athletic"]
-const NEGATIVE_TRAITS = ["toilet_lover", "coffee_lover", "slowpoke", "expensive", "pessimist", "sleepyhead"]
+const POSITIVE_TRAITS = ["fast_learner", "energizer", "early_bird", "cheap_hire", "optimist", "athletic", "workaholic", "ambitious", "iron_immunity", "teachers_pet"]
+const NEGATIVE_TRAITS = ["toilet_lover", "coffee_lover", "slowpoke", "expensive", "pessimist", "sleepyhead", "sickly", "rebel", "fragile"]
 
 const CONFLICTING_PAIRS = [
 	["fast_learner", "slowpoke"],
 	["cheap_hire", "expensive"],
 	["optimist", "pessimist"],
 	["athletic", "sleepyhead"],
+	["sickly", "athletic"],
+	["sickly", "iron_immunity"],
+	["sickly", "cheap_hire"],
+	["teachers_pet", "rebel"],
+	["fragile", "athletic"],
 ]
 
 # === СИСТЕМА ХАРАКТЕРА (PERSONALITY) ===
@@ -695,11 +724,14 @@ func _get_energy_factor() -> float:
 func get_work_speed_multiplier() -> float:
 	return get_efficiency_multiplier()
 
-# --- Модификатор расхода энергии (учитывает energizer) ---
+# --- Модификатор расхода энергии (учитывает energizer и iron_immunity) ---
 func get_energy_drain_multiplier() -> float:
+	var mult = 1.0
 	if has_trait("energizer"):
-		return 0.7
-	return 1.0
+		mult *= 0.7
+	if has_trait("iron_immunity"):
+		mult *= 0.85
+	return mult
 
 var daily_salary: int:
 	get:
@@ -751,7 +783,7 @@ func get_efficiency_multiplier() -> float:
 
 	# === CRUNCH TIME: Дебафф после кранча ===
 	var crunch_mod: float = 0.0
-	if crunch_efficiency_debuff_hours_left > 0:
+	if crunch_efficiency_debuff_hours_left > 0 and not has_trait("workaholic"):
 		crunch_mod = -0.20
 
 	var motivation_mod = motivation_bonus
@@ -800,7 +832,7 @@ func get_efficiency_breakdown() -> Dictionary:
 
 	# === CRUNCH TIME: Дебафф после кранча ===
 	var crunch_mod: float = 0.0
-	if crunch_efficiency_debuff_hours_left > 0:
+	if crunch_efficiency_debuff_hours_left > 0 and not has_trait("workaholic"):
 		crunch_mod = -0.20
 
 	# === BURNOUT SYSTEM: Штраф от выгорания ===
@@ -859,7 +891,7 @@ func _trigger_raise_request():
 	last_raise_grade = employee_level
 
 	# Случайный процент увеличения от 10% до 25%
-	var percent = randf_range(0.10, 0.25)
+	var percent = 0.25 if has_trait("ambitious") else randf_range(0.10, 0.25)
 	raise_requested_salary = int(monthly_salary * (1.0 + percent))
 
 	# Лог — через EventLog (autoload)

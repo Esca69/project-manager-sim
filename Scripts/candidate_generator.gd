@@ -58,7 +58,11 @@ var last_names_en = [
 
 var roles = ["Business Analyst", "Backend Developer", "QA Engineer"]
 
-var all_traits = ["fast_learner", "energizer", "early_bird", "cheap_hire", "toilet_lover", "coffee_lover", "slowpoke", "expensive"]
+var all_traits = [
+	"fast_learner", "energizer", "early_bird", "cheap_hire", "toilet_lover", "coffee_lover", "slowpoke", "expensive",
+	"optimist", "pessimist", "athletic", "sleepyhead",
+	"workaholic", "ambitious", "sickly", "iron_immunity", "teachers_pet", "rebel", "fragile"
+]
 
 # === ЗАРПЛАТЫ ПО РОЛЯМ ===
 const SALARY_CONFIG = {
@@ -242,23 +246,23 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	new_emp.traits.clear()
 	var trait_count = _pick_trait_count()
 
-	if trait_count > 0:
-		var available = all_traits.duplicate()
-		available.shuffle()
-
-		for i in range(trait_count):
-			if available.is_empty():
-				break
-			var picked = available.pop_front()
-			if _has_conflict(picked, new_emp.traits):
-				continue
-			new_emp.traits.append(picked)
+	var available = all_traits.duplicate()
+	available.shuffle()
+	var assigned = 0
+	while assigned < trait_count and not available.is_empty():
+		var picked = available.pop_front()
+		if _has_conflict(picked, new_emp.traits):
+			continue
+		new_emp.traits.append(picked)
+		assigned += 1
 
 	# 6. Модификация зарплаты трейтами
 	if new_emp.has_trait("cheap_hire"):
 		raw_salary = int(raw_salary * 0.85)
 	if new_emp.has_trait("expensive"):
 		raw_salary = int(raw_salary * 1.20)
+	if new_emp.has_trait("sickly"):
+		raw_salary = int(raw_salary * 0.85)  # Болезненный: зарплата на 15% ниже
 
 	# 7. Тип занятости (50/50)
 	if randf() < 0.5:
@@ -315,14 +319,14 @@ func _calculate_skill_for_level(level: int) -> int:
 
 func _pick_trait_count() -> int:
 	var roll = randf()
-	if roll < 0.30:
-		return 0
-	elif roll < 0.70:
+	if roll < 0.40:
 		return 1
-	elif roll < 0.90:
+	elif roll < 0.75:
 		return 2
-	else:
+	elif roll < 0.95:
 		return 3
+	else:
+		return 4
 
 func _has_conflict(new_trait: String, existing: Array[String]) -> bool:
 	for pair in EmployeeData.CONFLICTING_PAIRS:

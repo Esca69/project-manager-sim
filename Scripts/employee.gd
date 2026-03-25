@@ -421,14 +421,16 @@ func _update_pm_aura():
 	if dist <= PM_AURA_RADIUS:
 		if not _in_pm_aura:
 			_enter_pm_aura()
-		
-		# Тикаем таймер раздражения (1 минута за тик)
-		_pm_aura_annoyance_timer += 1.0
-		
-		# Проверяем порог раздражения
-		if _pm_aura_annoyance_timer >= PM_AURA_ANNOYANCE_THRESHOLD:
-			_pm_aura_annoyance_timer -= PM_AURA_ANNOYANCE_THRESHOLD
-			_apply_micromanagement_stack()
+
+		if not data.has_trait("teachers_pet"):
+			# Тикаем таймер раздражения
+			var annoyance_tick: float = 2.5 if data.has_trait("rebel") else 1.0
+			_pm_aura_annoyance_timer += annoyance_tick
+
+			# Проверяем порог раздражения
+			if _pm_aura_annoyance_timer >= PM_AURA_ANNOYANCE_THRESHOLD:
+				_pm_aura_annoyance_timer -= PM_AURA_ANNOYANCE_THRESHOLD
+				_apply_micromanagement_stack()
 	else:
 		if _in_pm_aura:
 			_exit_pm_aura()
@@ -436,7 +438,10 @@ func _update_pm_aura():
 func _enter_pm_aura():
 	_in_pm_aura = true
 	_pm_aura_annoyance_timer = 0.0
-	data.aura_bonus = PM_AURA_EFFICIENCY_BONUS
+	if data and data.has_trait("teachers_pet"):
+		data.aura_bonus = PM_AURA_EFFICIENCY_BONUS * 1.5
+	else:
+		data.aura_bonus = PM_AURA_EFFICIENCY_BONUS
 	
 	show_thought_bubble("👁️", 2.5)
 	
@@ -451,7 +456,11 @@ func _exit_pm_aura():
 
 func _apply_micromanagement_stack():
 	_pm_aura_stacks += 1
-	var penalty = PM_AURA_MOOD_PENALTY_PER_STACK * _pm_aura_stacks
+	var penalty: float
+	if data and data.has_trait("rebel"):
+		penalty = -10.0 * _pm_aura_stacks
+	else:
+		penalty = PM_AURA_MOOD_PENALTY_PER_STACK * _pm_aura_stacks
 	
 	data.add_mood_modifier(
 		"micromanagement",
@@ -470,6 +479,8 @@ func _apply_micromanagement_stack():
 # === EVENT SYSTEM: БОЛЕЗНЬ ===
 # =============================================
 func start_sick_leave(days: int):
+	if data and data.has_trait("iron_immunity"):
+		return
 	sick_days_left = days
 	is_on_day_off = false
 	
@@ -638,6 +649,9 @@ func _on_day_started(_day_number: int):
 	_chat_pair_cooldowns.clear()
 	_personal_chat_cooldown = 0.0  # Сброс личного кулдауна утром
 
+	if data and data.has_trait("sickly") and randf() < 0.06:
+		start_sick_leave(randi_range(1, 3))
+
 func _on_time_tick(_hour, _minute):
 	if not data: return
 
@@ -660,9 +674,14 @@ func _on_time_tick(_hour, _minute):
 
 	if _is_work_time() and current_state != State.HOME and current_state != State.GOING_HOME and current_state != State.ON_VACATION:
 		var mood_zone = data.get_mood_zone().name
-		if mood_zone == "MOOD_ZONE_SAD" or mood_zone == "MOOD_ZONE_MISERABLE":
-			data.burnout_timer += 1.0
-			if data.burnout_timer >= data.BURNOUT_TIMER_THRESHOLD:
+		var burnout_threshold = data.BURNOUT_TIMER_THRESHOLD * (0.5 if data.has_trait("fragile") else 1.0)
+		var should_tick_burnout = (mood_zone == "MOOD_ZONE_SAD" or mood_zone == "MOOD_ZONE_MISERABLE")
+		if not should_tick_burnout and data.has_trait("fragile") and data.mood < 50.0:
+			should_tick_burnout = true
+		if should_tick_burnout:
+			var tick_amount: float = 3.0 if data.has_trait("workaholic") else 1.0
+			data.burnout_timer += tick_amount
+			if data.burnout_timer >= burnout_threshold:
 				data.burnout_timer = 0.0
 				var increment: float = 2.0 if mood_zone == "MOOD_ZONE_MISERABLE" else 1.0
 				data.burnout_level = minf(data.burnout_level + increment, data.BURNOUT_MAX)
