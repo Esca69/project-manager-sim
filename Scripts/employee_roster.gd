@@ -480,6 +480,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	# Кнопка "?" — breakdown настроения
 	var mood_help_btn = _create_help_button()
+	mood_help_btn.visible = PMData.has_skill("read_mood")
 	var mood_tooltip_ref: Array = [null]
 	var mood_tooltip_label_ref: Array = [null]
 	var emp_ref = emp
@@ -626,6 +627,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	# Кнопка "?" — breakdown эффективности
 	var eff_help_btn = _create_help_button()
+	eff_help_btn.visible = PMData.has_skill("read_efficiency")
 	var eff_tooltip_ref: Array = [null]
 
 	eff_help_btn.mouse_entered.connect(func():

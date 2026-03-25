@@ -23,6 +23,13 @@ const NO_TOILET_DURATION_MINUTES = 240   # 4 игровых часа
 const NO_TOILET_COOLDOWN_MINUTES = 480   # 8 игровых часов перезарядки
 var _no_toilet_cooldown_left: float = 0.0
 
+# === РАБОТА — КАЙФ ===
+const WORK_FUN_RADIUS = 350.0
+const WORK_FUN_MOOD_BONUS = 10.0
+const WORK_FUN_DURATION_MINUTES = 120
+const WORK_FUN_COOLDOWN_MINUTES = 480
+var _work_fun_cooldown_left: float = 0.0
+
 @onready var interaction_zone = $InteractionZone
 @onready var camera = $Camera2D
 @onready var body_sprite = $Sprite2D
@@ -67,6 +74,11 @@ var _no_toilet_btn: Button = null
 var _no_toilet_cooldown_label: Label = null
 var _no_toilet_container: VBoxContainer = null
 
+# --- КНОПКА РАБОТА-КАЙФ НА HUD ---
+var _work_fun_btn: Button = null
+var _work_fun_cooldown_label: Label = null
+var _work_fun_container: VBoxContainer = null
+
 # === КОЛЬЦО АУРЫ PM ===
 var _aura_ring_cooldown: float = 0.0  # Чтобы не спамить кольцами
 
@@ -85,16 +97,19 @@ func _ready():
 	# Подключаем тики времени для кулдаунов
 	GameTime.time_tick.connect(_on_motivate_time_tick)
 	GameTime.time_tick.connect(_on_no_toilet_time_tick)
+	GameTime.time_tick.connect(_on_work_fun_time_tick)
 
 	# Подписываемся на прокачку навыков — чтобы кнопки появлялись сразу
 	PMData.skill_unlocked.connect(_on_pm_skill_unlocked)
 
 	call_deferred("_create_motivate_button")
 	call_deferred("_create_no_toilet_button")
+	call_deferred("_create_work_fun_button")
 
 func _on_pm_skill_unlocked(_skill_id: String):
 	_update_motivate_btn()
 	_update_no_toilet_btn()
+	_update_work_fun_btn()
 
 func _create_interact_hint():
 	_interact_hint = PanelContainer.new()
@@ -308,7 +323,7 @@ func _physics_process(delta):
 
 	var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	if direction:
-		velocity = direction * SPEED
+		velocity = direction * SPEED * (1.0 + PMData.get_movement_bonus())
 	else:
 		velocity = Vector2.ZERO
 	move_and_slide()
@@ -334,6 +349,10 @@ func _physics_process(delta):
 	# === АКТИВАЦИЯ ЗАПРЕТА ТУАЛЕТА ПО R ===
 	if Input.is_action_just_pressed("no_toilet"):
 		_activate_no_toilet()
+
+	# === АКТИВАЦИЯ РАБОТА-КАЙФ ПО T ===
+	if Input.is_action_just_pressed("work_is_fun"):
+		_activate_work_fun()
 
 func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
@@ -893,6 +912,162 @@ func _update_no_toilet_btn():
 	else:
 		_no_toilet_btn.disabled = false
 		_no_toilet_cooldown_label.text = tr("PLAYER_SKILL_READY")
+
+# ====================================
+# === РАБОТА — КАЙФ: ЛОГИКА ===
+# ====================================
+
+func _activate_work_fun():
+	if not PMData.has_skill("work_is_fun"):
+		return
+
+	if _work_fun_cooldown_left > 0:
+		print("🎉 Работа-кайф на перезарядке! Осталось %d мин." % int(_work_fun_cooldown_left))
+		return
+
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud and hud.has_method("is_pm_busy") and hud.is_pm_busy():
+		print("🎉 PM занят!")
+		return
+
+	AudioManager.play_sfx("interact")
+
+	var affected_count = 0
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if not npc.visible: continue
+		if not npc.data: continue
+		var dist = global_position.distance_to(npc.global_position)
+		if dist <= WORK_FUN_RADIUS:
+			npc.apply_mood_boost(WORK_FUN_MOOD_BONUS, WORK_FUN_DURATION_MINUTES)
+			affected_count += 1
+
+	_work_fun_cooldown_left = WORK_FUN_COOLDOWN_MINUTES
+	_update_work_fun_btn()
+	_show_work_fun_wave()
+	_show_radius_circle(WORK_FUN_RADIUS, Color(0.2, 0.8, 0.3, 0.6))
+
+	if affected_count > 0:
+		print("🎉 Работа-кайф! Затронуто: %d сотрудников" % affected_count)
+	else:
+		print("🎉 Работа-кайф! Никого рядом.")
+
+func _on_work_fun_time_tick(_h, _m):
+	if _work_fun_cooldown_left > 0:
+		_work_fun_cooldown_left -= 1.0
+		_update_work_fun_btn()
+		if _work_fun_cooldown_left <= 0:
+			_work_fun_cooldown_left = 0
+			_update_work_fun_btn()
+			print("🎉 Работа-кайф снова доступна!")
+
+func _show_work_fun_wave():
+	var bubble = Node2D.new()
+	add_child(bubble)
+	bubble.position = Vector2(0, -210)
+	bubble.z_index = 100
+	var panel = Panel.new()
+	bubble.add_child(panel)
+	panel.size = Vector2(65, 65)
+	panel.position = Vector2(-32, -32)
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.2, 0.8, 0.3, 0.9)
+	panel_style.corner_radius_top_left = 32
+	panel_style.corner_radius_top_right = 32
+	panel_style.corner_radius_bottom_right = 32
+	panel_style.corner_radius_bottom_left = 32
+	panel.add_theme_stylebox_override("panel", panel_style)
+	var label = Label.new()
+	panel.add_child(label)
+	label.text = "🎉"
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var label_settings = LabelSettings.new()
+	label_settings.font_size = 42
+	label.label_settings = label_settings
+	bubble.scale = Vector2.ZERO
+	var tween = create_tween()
+	tween.tween_property(bubble, "scale", Vector2(1.3, 1.3), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(bubble, "scale", Vector2.ONE, 0.2)
+	tween.tween_interval(2.0)
+	tween.tween_property(bubble, "modulate:a", 0.0, 0.5)
+	tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
+	tween.tween_callback(bubble.queue_free)
+
+# === КНОПКА РАБОТА-КАЙФ НА HUD ===
+func _create_work_fun_button():
+	var hud = get_tree().get_first_node_in_group("ui")
+	if not hud:
+		return
+
+	_work_fun_container = VBoxContainer.new()
+	_work_fun_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	_work_fun_container.position = Vector2(20, -60)
+	_work_fun_container.add_theme_constant_override("separation", 2)
+	hud.add_child(_work_fun_container)
+
+	_work_fun_btn = Button.new()
+	_work_fun_btn.text = tr("SKILL_WORK_FUN_NAME") + " [T]"
+	_work_fun_btn.custom_minimum_size = Vector2(200, 40)
+	_work_fun_btn.pressed.connect(_activate_work_fun)
+
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.2, 0.6, 0.25, 1)
+	btn_style.corner_radius_top_left = 10
+	btn_style.corner_radius_top_right = 10
+	btn_style.corner_radius_bottom_right = 10
+	btn_style.corner_radius_bottom_left = 10
+	btn_style.content_margin_left = 12
+	btn_style.content_margin_right = 12
+	btn_style.content_margin_top = 6
+	btn_style.content_margin_bottom = 6
+	_work_fun_btn.add_theme_stylebox_override("normal", btn_style)
+
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = Color(0.25, 0.7, 0.3, 1)
+	_work_fun_btn.add_theme_stylebox_override("hover", btn_hover)
+
+	var btn_disabled = btn_style.duplicate()
+	btn_disabled.bg_color = Color(0.5, 0.5, 0.5, 0.6)
+	_work_fun_btn.add_theme_stylebox_override("disabled", btn_disabled)
+
+	_work_fun_btn.add_theme_color_override("font_color", Color.WHITE)
+	_work_fun_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	_work_fun_btn.add_theme_color_override("font_disabled_color", Color(0.8, 0.8, 0.8, 0.6))
+	_work_fun_btn.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(_work_fun_btn, "semibold")
+
+	_work_fun_container.add_child(_work_fun_btn)
+
+	_work_fun_cooldown_label = Label.new()
+	_work_fun_cooldown_label.text = ""
+	_work_fun_cooldown_label.add_theme_font_size_override("font_size", 11)
+	_work_fun_cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+	_work_fun_cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_work_fun_cooldown_label, "regular")
+	_work_fun_container.add_child(_work_fun_cooldown_label)
+
+	_update_work_fun_btn()
+
+func _update_work_fun_btn():
+	if _work_fun_btn == null:
+		return
+
+	if not PMData.has_skill("work_is_fun"):
+		_work_fun_container.visible = false
+		return
+	_work_fun_container.visible = true
+
+	if _work_fun_cooldown_left > 0:
+		_work_fun_btn.disabled = true
+		var hours = int(_work_fun_cooldown_left) / 60
+		var mins = int(_work_fun_cooldown_left) % 60
+		_work_fun_cooldown_label.text = tr("PLAYER_COOLDOWN_FORMAT") % [hours, mins]
+	else:
+		_work_fun_btn.disabled = false
+		_work_fun_cooldown_label.text = tr("PLAYER_SKILL_READY")
 
 # =================================================================
 # === ИСПРАВЛЕННЫЙ ОБЪЕМНЫЙ СВЕТ И ТЕНЬ (ЧЕРЕЗ ШЕЙДЕР) ===

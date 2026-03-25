@@ -1134,3 +1134,21 @@ PERSONALITY_LOUD,Громкий,Loud
 PERSONALITY_DESC_LOUD,"Очень громко печатает или говорит по телефону. Снижает эффективность всех, кто сидит рядом.",Types very loudly or talks on the phone. Reduces efficiency of all nearby desk neighbors.
 MOOD_MOD_FOOD_STOLEN,Кто съел мой йогурт?!,Who ate my yogurt?!
 LOG_FOOD_STOLEN,%s обнаружил что кто-то съел его обед!,%s discovered someone ate their lunch!
+SKILL_CATEGORY_PASSIVE,🛡 Пассивные,🛡 Passive
+SKILL_MOVE_SPEED_1_NAME,🏃 Быстрые ноги I,🏃 Fast Pace I
+SKILL_MOVE_SPEED_1_DESC,+20% к скорости передвижения PM,+20% PM movement speed
+SKILL_MOVE_SPEED_2_NAME,🏃 Быстрые ноги II,🏃 Fast Pace II
+SKILL_MOVE_SPEED_2_DESC,+40% к скорости передвижения PM,+40% PM movement speed
+SKILL_READ_MOOD_NAME,👁 Анализ настроения,👁 Mood Analysis
+SKILL_READ_MOOD_DESC,"Позволяет видеть детальный разбор настроения сотрудника (кнопка ""?"" в реестре)","Shows detailed mood breakdown for employees (""?"" button in roster)"
+SKILL_READ_EFFICIENCY_NAME,📊 Анализ эффективности,📊 Efficiency Analysis
+SKILL_READ_EFFICIENCY_DESC,"Позволяет видеть детальный разбор эффективности сотрудника (кнопка ""?"" в реестре)","Shows detailed efficiency breakdown for employees (""?"" button in roster)"
+SKILL_REPORT_FINANCE_TAB_NAME,💰 Фин. отчёт,💰 Finance Report
+SKILL_REPORT_FINANCE_TAB_DESC,"Открывает вкладку финансов в отчётах. Требует все 3 базовых навыка аналитики.","Unlocks the finance tab in reports. Requires all 3 base analytics skills."
+SKILL_REPORT_PEOPLE_TAB_NAME,👥 Отчёт: команда,👥 People Report
+SKILL_REPORT_PEOPLE_TAB_DESC,"Открывает вкладку сотрудников в отчётах. Требует все 3 базовых навыка аналитики.","Unlocks the people tab in reports. Requires all 3 base analytics skills."
+SKILL_CRISIS_MANAGEMENT_NAME,🔥 Антикризис,🔥 Crisis Mgmt
+SKILL_CRISIS_MANAGEMENT_DESC,"Штрафы кранча снижены в 2 раза: -10% эфф. вместо -20%, -5 настроение вместо -10.","Crunch penalties halved: -10% eff instead of -20%, -5 mood instead of -10."
+SKILL_WORK_FUN_NAME,🎉 Работа — кайф!,🎉 Work is Fun!
+SKILL_WORK_FUN_DESC,"Активный навык [T]: +10 настроения сотрудникам в радиусе на 2 часа. Перезарядка: 8 часов.","Active skill [T]: +10 mood to nearby employees for 2 hours. Cooldown: 8 hours."
+MOOD_MOD_WORK_FUN,Работа — кайф!,Work is Fun!

@@ -368,6 +368,14 @@ func remove_motivation():
 		data.motivation_bonus = 0.0
 	_motivation_minutes_left = 0.0
 
+# === РАБОТА — КАЙФ: ПРИМЕНИТЬ БОНУС НАСТРОЕНИЯ ===
+func apply_mood_boost(bonus: float, duration_minutes: float):
+	if not data: return
+	data.add_mood_modifier("work_fun_boost", "MOOD_MOD_WORK_FUN", bonus, duration_minutes)
+	show_thought_bubble("🎉", 5.0)
+	_play_motivation_reaction()
+	print("🎉 %s получил буст настроения! +%.0f на %d мин." % [data.get_display_name(), bonus, int(duration_minutes)])
+
 # === ЗАПРЕТ ТУАЛЕТА: ПРИМЕНИТЬ БАН ===
 func apply_toilet_ban(duration_minutes: float):
 	_toilet_ban_minutes_left = duration_minutes
@@ -1195,8 +1203,15 @@ func _leave_desk_to_wander():
 
 func _apply_crunch_penalties():
 	if not data: return
-	data.crunch_efficiency_debuff_hours_left = 24.0
-	data.add_mood_modifier("crunch_exhausted", "MOOD_MOD_CRUNCH_EXHAUSTED", -10.0, 2880.0)
+	var eff_hours = 24.0
+	var mood_penalty = -10.0
+	var mood_duration = 2880.0
+	if PMData.has_skill("crisis_management"):
+		eff_hours = 12.0
+		mood_penalty = -5.0
+		mood_duration = 1440.0
+	data.crunch_efficiency_debuff_hours_left = eff_hours
+	data.add_mood_modifier("crunch_exhausted", "MOOD_MOD_CRUNCH_EXHAUSTED", mood_penalty, mood_duration)
 	var daily_work = data.get_meta("daily_work_minutes", 0.0) if data.has_meta("daily_work_minutes") else 0.0
 	var normal_work_max = float((GameTime.END_HOUR - GameTime.START_HOUR) * 60)
 	var overtime = max(0.0, daily_work - normal_work_max)
