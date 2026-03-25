@@ -1436,6 +1436,10 @@ func _try_start_lunch():
 	if data:
 		print("🍽️ %s идёт на обед" % data.get_display_name())
 
+	# === FOOD THIEF: 20% шанс украсть обед случайного сотрудника ===
+	if data and "food_thief" in data.personality:
+		_attempt_food_theft()
+
 func _start_fridge_phase():
 	current_state = State.LUNCH_AT_FRIDGE
 	velocity = Vector2.ZERO
@@ -1508,6 +1512,26 @@ func _cancel_lunch():
 	_release_all_lunch_resources()
 	if data:
 		print("🍽️ %s: обед прерван" % data.get_display_name())
+
+func _attempt_food_theft():
+	if randf() >= 0.20:
+		return
+	var npcs = get_tree().get_nodes_in_group("npc")
+	var victims = []
+	for npc in npcs:
+		if npc == self: continue
+		if not npc.data: continue
+		victims.append(npc)
+	if victims.is_empty():
+		return
+	var victim_npc = victims[randi() % victims.size()]
+	var victim_data = victim_npc.data
+	victim_data.remove_mood_modifier("lunch_boost")
+	victim_data.add_mood_modifier("food_stolen", "MOOD_MOD_FOOD_STOLEN", -20.0, 480.0)
+	if is_instance_valid(victim_npc):
+		victim_npc.show_thought_bubble("😤")
+	EventLog.add(tr("LOG_FOOD_STOLEN") % victim_data.get_display_name())
+	print("🍽️❌ %s украл обед у %s!" % [data.get_display_name(), victim_data.get_display_name()])
 
 func force_cancel_lunch():
 	var lunch_states = [
@@ -1635,6 +1659,7 @@ func _try_proximity_chat():
 		chance *= PROX_CHAT_EXTROVERT_MULT
 	elif "introvert" in data.personality:
 		chance *= PROX_CHAT_INTROVERT_MULT
+	# ambivert: no multiplier applied (neutral chat frequency)
 		
 	if BossEventSystem.is_boss_event_active("boss_event_total_communication"):
 		chance *= 3.0
@@ -1766,7 +1791,7 @@ func _update_neighbor_bonus():
 			if not is_instance_valid(desk.assigned_npc_node): continue
 			if not desk.assigned_npc_node.data: continue
 			var dist_to_desk = my_desk.global_position.distance_to(desk.global_position)
-			if dist_to_desk > 500.0: continue
+			if dist_to_desk > 700.0: continue
 			if "smelly" in desk.assigned_npc_node.data.personality:
 				data.add_mood_modifier(
 					"smelly_neighbor_" + desk.assigned_employee.employee_name,
@@ -1775,6 +1800,17 @@ func _update_neighbor_bonus():
 					480.0
 				)
 				data.neighbor_mod -= 0.03
+
+	if "loud" not in data.personality:
+		for desk in desks:
+			if desk == my_desk: continue
+			if not ("assigned_employee" in desk) or desk.assigned_employee == null: continue
+			if not is_instance_valid(desk.assigned_npc_node): continue
+			if not desk.assigned_npc_node.data: continue
+			var dist_to_desk = my_desk.global_position.distance_to(desk.global_position)
+			if dist_to_desk > 700.0: continue
+			if "loud" in desk.assigned_npc_node.data.personality:
+				data.neighbor_mod -= 0.05
 
 func _clear_smelly_neighbor_mods():
 	if not data: return

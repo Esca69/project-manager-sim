@@ -201,10 +201,11 @@ func recalculate_mood():
 	# === BOSS EVENT: Тотальная коммуникация → mood ===
 	var bes = _get_boss_event_system()
 	if bes and bes.is_boss_event_active("boss_event_total_communication"):
-		if "extrovert" in personality:
-			result += 10.0
-		elif "introvert" in personality:
-			result -= 15.0
+		if "ambivert" not in personality:
+			if "extrovert" in personality:
+				result += 10.0
+			elif "introvert" in personality:
+				result -= 15.0
 
 	# === BOSS EVENT: Мы — одна семья → mood ===
 	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
@@ -346,10 +347,11 @@ func get_mood_breakdown() -> Dictionary:
 	# === BOSS EVENT: Тотальная коммуникация ===
 	var bes = _get_boss_event_system()
 	if bes and bes.is_boss_event_active("boss_event_total_communication"):
-		if "extrovert" in personality:
-			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_EXTROVERT"), "value": 10.0})
-		elif "introvert" in personality:
-			permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_INTROVERT"), "value": -15.0})
+		if "ambivert" not in personality:
+			if "extrovert" in personality:
+				permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_EXTROVERT"), "value": 10.0})
+			elif "introvert" in personality:
+				permanent_mods.append({"name": tr("MOOD_MOD_EVENT_COMM_INTROVERT"), "value": -15.0})
 
 	# === BOSS EVENT: Мы — одна семья ===
 	if bes and bes.is_boss_event_active("boss_event_we_are_family"):
@@ -613,13 +615,27 @@ const CONFLICTING_PAIRS = [
 
 # === СИСТЕМА ХАРАКТЕРА (PERSONALITY) ===
 # Категория A: Социальная батарейка (1 из списка, всегда)
-const PERSONALITY_SOCIAL = ["extrovert", "introvert", "toxic"]
+const PERSONALITY_SOCIAL = ["extrovert", "introvert", "toxic", "ambivert"]
 
 # Категория B: Интересы (0-2 из списка)
-const PERSONALITY_INTERESTS = ["geek", "jock", "finance_bro", "parent", "informal", "furry"]
+const PERSONALITY_INTERESTS = ["geek", "jock", "finance_bro", "parent", "informal", "furry", "biohacker", "astrologer", "pet_lover"]
 
 # Категория C: Раздражители (0-1 из списка)
-const PERSONALITY_IRRITANTS = ["smelly", "sexist", "man_hater", "flirt"]
+const PERSONALITY_IRRITANTS = ["smelly", "sexist", "man_hater", "flirt", "food_thief", "loud"]
+
+# Взаимоисключающие пары personality-тегов.
+# Если у сотрудника уже есть один тег из пары, второй не может быть выдан при генерации.
+# Это отражает смысловые конфликты: логики vs мистики, ЗОЖники vs неформалы и т.д.
+const PERSONALITY_CONFLICTING_PAIRS = [
+	["astrologer", "geek"],       # Мистика vs логика
+	["astrologer", "finance_bro"], # Мистика vs рационализм
+	["biohacker", "informal"],     # ЗОЖ-фанатик vs беззаботный неформал
+	["parent", "informal"],        # Ответственный родитель vs неформал
+	["biohacker", "food_thief"],   # Чистое питание несовместимо с воровством еды
+	["parent", "food_thief"],      # Родитель не станет красть чужую еду
+	["geek", "jock"],              # Книжный червь vs спортсмен
+	["geek", "finance_bro"],       # Технарь vs финансист
+]
 
 # Раздражители, ограниченные полом при генерации
 const IRRITANT_GENDER_LOCK = {
@@ -632,16 +648,22 @@ const PERSONALITY_NAMES = {
 	"extrovert": "PERSONALITY_EXTROVERT",
 	"introvert": "PERSONALITY_INTROVERT",
 	"toxic": "PERSONALITY_TOXIC",
+	"ambivert": "PERSONALITY_AMBIVERT",
 	"geek": "PERSONALITY_GEEK",
 	"jock": "PERSONALITY_JOCK",
 	"finance_bro": "PERSONALITY_FINANCE_BRO",
 	"parent": "PERSONALITY_PARENT",
 	"informal": "PERSONALITY_INFORMAL",
 	"furry": "PERSONALITY_FURRY",
+	"biohacker": "PERSONALITY_BIOHACKER",
+	"astrologer": "PERSONALITY_ASTROLOGER",
+	"pet_lover": "PERSONALITY_PET_LOVER",
 	"smelly": "PERSONALITY_SMELLY",
 	"sexist": "PERSONALITY_SEXIST",
 	"man_hater": "PERSONALITY_MAN_HATER",
 	"flirt": "PERSONALITY_FLIRT",
+	"food_thief": "PERSONALITY_FOOD_THIEF",
+	"loud": "PERSONALITY_LOUD",
 }
 
 # Описания personality-тегов (ключи локализации)
@@ -649,23 +671,29 @@ const PERSONALITY_DESCRIPTIONS = {
 	"extrovert": "PERSONALITY_DESC_EXTROVERT",
 	"introvert": "PERSONALITY_DESC_INTROVERT",
 	"toxic": "PERSONALITY_DESC_TOXIC",
+	"ambivert": "PERSONALITY_DESC_AMBIVERT",
 	"geek": "PERSONALITY_DESC_GEEK",
 	"jock": "PERSONALITY_DESC_JOCK",
 	"finance_bro": "PERSONALITY_DESC_FINANCE_BRO",
 	"parent": "PERSONALITY_DESC_PARENT",
 	"informal": "PERSONALITY_DESC_INFORMAL",
 	"furry": "PERSONALITY_DESC_FURRY",
+	"biohacker": "PERSONALITY_DESC_BIOHACKER",
+	"astrologer": "PERSONALITY_DESC_ASTROLOGER",
+	"pet_lover": "PERSONALITY_DESC_PET_LOVER",
 	"smelly": "PERSONALITY_DESC_SMELLY",
 	"sexist": "PERSONALITY_DESC_SEXIST",
 	"man_hater": "PERSONALITY_DESC_MAN_HATER",
 	"flirt": "PERSONALITY_DESC_FLIRT",
+	"food_thief": "PERSONALITY_DESC_FOOD_THIEF",
+	"loud": "PERSONALITY_DESC_LOUD",
 }
 
 # Какие personality-теги считаются "негативными" (раздражители — красный цвет)
-const PERSONALITY_NEGATIVE = ["toxic", "smelly", "sexist", "man_hater"]
+const PERSONALITY_NEGATIVE = ["toxic", "smelly", "sexist", "man_hater", "food_thief", "loud"]
 
 # Какие personality-теги считаются "нейтральными" (социальная батарейка — синий цвет)
-const PERSONALITY_NEUTRAL = ["extrovert", "introvert"]
+const PERSONALITY_NEUTRAL = ["extrovert", "introvert", "ambivert"]
 
 # Всё остальное = позитивное (интересы — зелёный цвет)
 # flirt — особый случай: оранжевый цвет
