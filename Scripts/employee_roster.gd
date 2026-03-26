@@ -227,6 +227,7 @@ func _rebuild_cards():
 	var npcs = get_tree().get_nodes_in_group("npc")
 
 	if npcs.is_empty():
+		empty_label.text = tr("ROSTER_EMPTY")
 		empty_label.visible = true
 		return
 

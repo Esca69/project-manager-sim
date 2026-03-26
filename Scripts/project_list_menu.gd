@@ -378,6 +378,8 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 		progress_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 		if UITheme: UITheme.apply_font(progress_lbl, "semibold")
 		left_info.add_child(progress_lbl)
+		card.set_meta("progress_label", progress_lbl)
+		card.set_meta("project_ref", proj)
 
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -507,3 +509,16 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
 		_on_close_pressed()
 		get_viewport().set_input_as_handled()
+
+func _process(_delta):
+	if not visible:
+		return
+	for child in cards_container.get_children():
+		if child == empty_label:
+			continue
+		if not child.has_meta("progress_label") or not child.has_meta("project_ref"):
+			continue
+		var proj = child.get_meta("project_ref")
+		var lbl = child.get_meta("progress_label")
+		if proj.state == ProjectData.State.IN_PROGRESS and is_instance_valid(lbl):
+			lbl.text = _get_progress_text(proj)

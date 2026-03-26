@@ -1085,8 +1085,8 @@ func _draw_roi_bars(ctrl: Control):
 		ctrl.draw_rect(Rect2(pad_left, bar_y, bar_w, bar_h), color)
 
 		# Profit label
-		var sign = "+" if profit >= 0 else ""
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(pad_left + bar_w + 8, cy + bar_h * 0.5 + 5), sign + "$%s" % _format_money(profit), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+		var sign = "+" if profit >= 0 else "-"
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(pad_left + bar_w + 8, cy + bar_h * 0.5 + 5), sign + "$%s" % _format_money(abs(profit)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
 
 # =========================================================
 #  HELPERS

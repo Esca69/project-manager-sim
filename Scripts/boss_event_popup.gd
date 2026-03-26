@@ -227,6 +227,7 @@ func _populate_content(event_data: Dictionary, is_active: bool):
 
 func _populate_buttons_choice(event_data: Dictionary = {}):
 	var trust_accept = event_data.get("trust_accept", 0)
+	var trust_reject = event_data.get("trust_reject", 0)
 
 	# Accept button with trust indicator
 	var accept_vbox = VBoxContainer.new()
@@ -248,9 +249,23 @@ func _populate_buttons_choice(event_data: Dictionary = {}):
 		accept_vbox.add_child(trust_lbl)
 
 	# Кнопка "Отклонить"
+	var reject_vbox = VBoxContainer.new()
+	reject_vbox.add_theme_constant_override("separation", 4)
+	_buttons_hbox.add_child(reject_vbox)
+
 	var reject_btn = _make_button(tr("BOSS_EVENT_POPUP_REJECT"), COLOR_RED)
 	reject_btn.pressed.connect(_on_reject_pressed)
-	_buttons_hbox.add_child(reject_btn)
+	reject_vbox.add_child(reject_btn)
+
+	if trust_reject < 0:
+		var trust_lbl = Label.new()
+		trust_lbl.text = "%d 🤝" % trust_reject
+		trust_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		trust_lbl.add_theme_color_override("font_color", COLOR_RED)
+		trust_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme:
+			UITheme.apply_font(trust_lbl, "semibold")
+		reject_vbox.add_child(trust_lbl)
 
 func _populate_buttons_info():
 	var ok_btn = _make_button(tr("BOSS_EVENT_POPUP_OK"), COLOR_BLUE)
