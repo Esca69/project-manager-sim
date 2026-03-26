@@ -53,6 +53,13 @@ var _search_total_minutes: float = 0.0
 const HR_SEARCH_HOURS: int = 2
 const HR_CUTOFF_HOUR: int = 16
 
+# === ФОНОВЫЙ ПОИСК HR (когда нанят HR-специалист) ===
+var _is_hr_searching: bool = false
+var _hr_search_role: String = ""
+var _hr_search_minutes_remaining: float = 0.0
+var _hr_search_total_minutes: float = 0.0
+var _hr_search_results_ready: bool = false
+
 # === АВТО-ЗАВЕРШЕНИЕ ДНЯ ===
 const AUTO_END_DAY_HOUR: int = 21
 
@@ -326,11 +333,42 @@ func open_hr_search():
 	if _is_searching:
 		print("HR: PM уже ищет кандидатов.")
 		return
+	if _is_hr_searching:
+		print("HR: Фоновый поиск уже идёт.")
+		return
 	if _hr_role_screen:
 		_hr_role_screen.open()
 
+# === ПУБЛИЧНЫЕ МЕТОДЫ ДЛЯ hr_desk.gd ===
+func is_hr_results_ready() -> bool:
+	return _hr_search_results_ready
+
+func is_hr_searching() -> bool:
+	return _is_hr_searching
+
+func show_hr_results():
+	_hr_search_results_ready = false
+	var hiring_menu = get_node_or_null("HiringMenu")
+	if hiring_menu:
+		hiring_menu.open_hiring_menu_for_role(_hr_search_role)
+	_hr_search_role = ""
+
 # === HR: ПОИСК НАЧАТ (сигнал из hr_role_screen) ===
 func _on_hr_search_started(role: String):
+	# Если HR-специалист нанят — фоновый режим
+	if GameState.office_upgrades.get("hr_specialist", false):
+		_is_hr_searching = true
+		_hr_search_role = role
+		_hr_search_total_minutes = float(PMData.get_hr_search_minutes())
+		_hr_search_minutes_remaining = _hr_search_total_minutes
+		var hr_desk = get_tree().get_first_node_in_group("hr_desk")
+		if hr_desk and hr_desk.has_method("show_search_progress"):
+			hr_desk.show_search_progress(_hr_search_total_minutes)
+		EventLog.add(tr("LOG_HR_SEARCH_STARTED_BG") % tr(role), EventLog.LogType.ROUTINE)
+		print("🔍 HR фоновый поиск начат: %s (%d мин.)" % [role, int(_hr_search_total_minutes)])
+		return
+
+	# Старая механика (PM стоит и ждёт)
 	_is_searching = true
 	_search_role = role
 	_search_total_minutes = float(PMData.get_hr_search_minutes())
@@ -354,6 +392,17 @@ func _on_hr_search_started(role: String):
 		GameTime.speed_10x()
 
 func _on_search_time_tick(_h, _m):
+	# === Фоновый поиск HR-специалиста ===
+	if _is_hr_searching:
+		_hr_search_minutes_remaining -= 1.0
+		var elapsed_bg = _hr_search_total_minutes - _hr_search_minutes_remaining
+		var hr_desk = get_tree().get_first_node_in_group("hr_desk")
+		if hr_desk and hr_desk.has_method("update_search_progress"):
+			hr_desk.update_search_progress(elapsed_bg, _hr_search_minutes_remaining)
+		if _hr_search_minutes_remaining <= 0:
+			_finish_hr_background_search()
+
+	# === Обычный поиск (PM ждёт) ===
 	if not _is_searching:
 		return
 
@@ -369,6 +418,15 @@ func _on_search_time_tick(_h, _m):
 
 	if _search_minutes_remaining <= 0:
 		_finish_search()
+
+func _finish_hr_background_search():
+	_is_hr_searching = false
+	_hr_search_results_ready = true
+	var hr_desk = get_tree().get_first_node_in_group("hr_desk")
+	if hr_desk and hr_desk.has_method("hide_search_progress"):
+		hr_desk.hide_search_progress()
+	EventLog.add(tr("LOG_HR_SEARCH_DONE") % tr(_hr_search_role), EventLog.LogType.PROGRESS)
+	print("✅ HR фоновый поиск завершён! Роль: ", _hr_search_role)
 
 func _finish_search():
 	_is_searching = false

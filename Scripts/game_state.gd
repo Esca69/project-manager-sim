@@ -19,6 +19,7 @@ var office_upgrades: Dictionary = {
 	"dev_tools": false,
 	"corporate_psychologist": false,
 	"corporate_dms": false,
+	"hr_specialist": false,
 	# One-time purchases
 	"ergonomic_furniture": false,
 	"corporate_library": false,
@@ -172,6 +173,7 @@ func pay_daily_services():
 		"dev_tools":               50,
 		"corporate_psychologist":  45,
 		"corporate_dms":           30,
+		"hr_specialist":           45,
 	}
 	const SERVICE_NAME_KEYS = {
 		"legal_consultant":        "UPG_LEGAL_TITLE",
@@ -179,6 +181,7 @@ func pay_daily_services():
 		"dev_tools":               "UPG_DEV_TOOLS_TITLE",
 		"corporate_psychologist":  "UPG_PSYCHOLOGIST_TITLE",
 		"corporate_dms":           "UPG_DMS_TITLE",
+		"hr_specialist":           "UPG_HR_TITLE",
 	}
 	for service_id in SERVICE_COSTS:
 		if office_upgrades.get(service_id, false):

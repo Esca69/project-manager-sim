@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 5
+const SAVE_VERSION = 6
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -12,6 +12,7 @@ const MIGRATIONS = {
 	2: "_migrate_v2_to_v3",
 	3: "_migrate_v3_to_v4",
 	4: "_migrate_v4_to_v5",
+	5: "_migrate_v5_to_v6",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -663,6 +664,16 @@ func _migrate_v4_to_v5(data: Dictionary) -> bool:
 	for key in new_keys:
 		if not upgrades.has(key):
 			upgrades[key] = false
+	gs_data["office_upgrades"] = upgrades
+	data["game_state"] = gs_data
+	return true
+
+func _migrate_v5_to_v6(data: Dictionary) -> bool:
+	# Добавляем hr_specialist в office_upgrades
+	var gs_data = data.get("game_state", {})
+	var upgrades = gs_data.get("office_upgrades", {})
+	if not upgrades.has("hr_specialist"):
+		upgrades["hr_specialist"] = false
 	gs_data["office_upgrades"] = upgrades
 	data["game_state"] = gs_data
 	return true

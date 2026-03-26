@@ -1180,3 +1180,8 @@ MOOD_MOD_PSYCHOLOGIST,Корпоративный психолог,Corporate Psyc
 EFF_MOD_ERGONOMIC,Эргономичная мебель (-10% усталости),Ergonomic furniture (-10% fatigue)
 SERVICE_COST_PER_DAY,$%d/день,$%d/day
 UPG_SERVICE_TRUST_COST,"🤝 %d + %s","🤝 %d + %s"
+UPG_HR_TITLE,👩‍💼 HR-специалист,👩‍💼 HR Specialist
+UPG_HR_DESC,HR ищет кандидатов самостоятельно. Не нужно стоять и ждать у стола,HR searches for candidates independently. You don't need to wait at the desk
+HR_SEARCH_IN_PROGRESS,🔍 HR уже ищет кандидатов...,🔍 HR is already searching for candidates...
+LOG_HR_SEARCH_STARTED_BG,🔍 HR начал поиск: %s,🔍 HR started searching: %s
+HR_DESK_SEARCHING,🔍 Поиск...,🔍 Searching...
