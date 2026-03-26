@@ -279,6 +279,103 @@ const SKILL_TREE = {
 		"branch": "no_toilet",
 		"branch_order": 0,
 	},
+
+	"work_is_fun": {
+		"name": "SKILL_WORK_FUN_NAME",
+		"description": "SKILL_WORK_FUN_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "active",
+		"branch": "work_is_fun",
+		"branch_order": 0,
+	},
+
+	# ================================
+	# === КАТЕГОРИЯ: ПАССИВНЫЕ ===
+	# ================================
+
+	"move_speed_1": {
+		"name": "SKILL_MOVE_SPEED_1_NAME",
+		"description": "SKILL_MOVE_SPEED_1_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "passive",
+		"branch": "move_speed",
+		"branch_order": 0,
+	},
+	"move_speed_2": {
+		"name": "SKILL_MOVE_SPEED_2_NAME",
+		"description": "SKILL_MOVE_SPEED_2_DESC",
+		"cost": 2,
+		"prerequisite": "move_speed_1",
+		"category": "passive",
+		"branch": "move_speed",
+		"branch_order": 1,
+	},
+
+	# ==================================
+	# === НОВЫЕ НАВЫКИ: ЛЮДИ ===
+	# ==================================
+
+	"read_mood": {
+		"name": "SKILL_READ_MOOD_NAME",
+		"description": "SKILL_READ_MOOD_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "people",
+		"branch": "read_mood",
+		"branch_order": 0,
+	},
+
+	"read_efficiency": {
+		"name": "SKILL_READ_EFFICIENCY_NAME",
+		"description": "SKILL_READ_EFFICIENCY_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "people",
+		"branch": "read_efficiency",
+		"branch_order": 0,
+	},
+
+	# ===================================
+	# === НОВЫЕ НАВЫКИ: АНАЛИТИКА ===
+	# ===================================
+
+	"report_finance_tab": {
+		"name": "SKILL_REPORT_FINANCE_TAB_NAME",
+		"description": "SKILL_REPORT_FINANCE_TAB_DESC",
+		"cost": 2,
+		"prerequisite": "",
+		"prerequisites": ["report_expenses", "report_projects", "report_productivity"],
+		"category": "analytics",
+		"branch": "report_finance_tab",
+		"branch_order": 0,
+	},
+
+	"report_people_tab": {
+		"name": "SKILL_REPORT_PEOPLE_TAB_NAME",
+		"description": "SKILL_REPORT_PEOPLE_TAB_DESC",
+		"cost": 2,
+		"prerequisite": "",
+		"prerequisites": ["report_expenses", "report_projects", "report_productivity"],
+		"category": "analytics",
+		"branch": "report_people_tab",
+		"branch_order": 0,
+	},
+
+	# ===================================
+	# === НОВЫЕ НАВЫКИ: ПРОЕКТЫ ===
+	# ===================================
+
+	"crisis_management": {
+		"name": "SKILL_CRISIS_MANAGEMENT_NAME",
+		"description": "SKILL_CRISIS_MANAGEMENT_DESC",
+		"cost": 2,
+		"prerequisite": "",
+		"category": "projects",
+		"branch": "crisis_management",
+		"branch_order": 0,
+	},
 }
 
 # === ИЗУЧЕННЫЕ НАВЫКИ ===
@@ -328,9 +425,15 @@ func can_unlock(skill_id: String) -> bool:
 	var skill = SKILL_TREE[skill_id]
 	if skill_points < skill["cost"]:
 		return false
-	var prereq = skill["prerequisite"]
+	# Одиночный пререквизит (старый формат)
+	var prereq = skill.get("prerequisite", "")
 	if prereq != "" and prereq not in unlocked_skills:
 		return false
+	# Множественные пререквизиты (новый формат)
+	var prereqs = skill.get("prerequisites", [])
+	for p in prereqs:
+		if p not in unlocked_skills:
+			return false
 	return true
 
 func unlock_skill(skill_id: String) -> bool:
@@ -409,6 +512,18 @@ func can_see_project_analytics() -> bool:
 
 func can_see_productivity() -> bool:
 	return has_skill("report_productivity")
+
+func can_see_finance_report() -> bool:
+	return has_skill("report_finance_tab")
+
+func can_see_people_report() -> bool:
+	return has_skill("report_people_tab")
+
+# === ДВИЖЕНИЕ ===
+func get_movement_bonus() -> float:
+	if has_skill("move_speed_2"): return 0.40
+	if has_skill("move_speed_1"): return 0.20
+	return 0.0
 
 # === РАЗМЫТИЕ ===
 func blur_value(real_value: int, spread_percent: float) -> String:
