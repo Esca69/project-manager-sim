@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 4
+const SAVE_VERSION = 5
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -11,6 +11,7 @@ const MIGRATIONS = {
 	1: "_migrate_v1_to_v2",
 	2: "_migrate_v2_to_v3",
 	3: "_migrate_v3_to_v4",
+	4: "_migrate_v4_to_v5",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -648,6 +649,22 @@ func _migrate_v2_to_v3(data: Dictionary) -> bool:
 func _migrate_v3_to_v4(data: Dictionary) -> bool:
 	# Трейты хранятся как строковый массив — обратная совместимость не нарушается.
 	# Старые сейвы просто не будут содержать новые трейты.
+	return true
+
+func _migrate_v4_to_v5(data: Dictionary) -> bool:
+	# Добавляем новые ключи офисных апгрейдов со значением false
+	var gs_data = data.get("game_state", {})
+	var upgrades = gs_data.get("office_upgrades", {})
+	var new_keys = [
+		"legal_consultant", "project_management_soft", "dev_tools",
+		"corporate_psychologist", "corporate_dms",
+		"ergonomic_furniture", "corporate_library",
+	]
+	for key in new_keys:
+		if not upgrades.has(key):
+			upgrades[key] = false
+	gs_data["office_upgrades"] = upgrades
+	data["game_state"] = gs_data
 	return true
 
 

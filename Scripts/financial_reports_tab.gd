@@ -584,6 +584,7 @@ func _build_structure_card() -> PanelContainer:
 		{"label": tr("REPORTS_PM_SALARY"), "color": COLOR_ORANGE},
 		{"label": tr("REPORTS_PENALTIES"), "color": Color(0.7, 0.1, 0.1, 1)},
 		{"label": tr("REPORTS_OFFICE"),    "color": Color(0.9, 0.5, 0.1, 1)},
+		{"label": tr("REPORTS_SERVICES"),  "color": Color(0.3, 0.5, 0.9, 1)},
 	]
 	for seg_info in exp_segs_info:
 		var item = HBoxContainer.new()
@@ -632,17 +633,20 @@ func _draw_expense_bar(ctrl: Control):
 	var total_pm_salary = 0
 	var total_penalties = 0
 	var total_office = 0
+	var total_services = 0
 	for r in records:
 		total_salary    += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 		total_pm_salary += int(r.get("pm_salary", 0))
 		total_penalties += int(r.get("penalties", 0))
 		total_office    += int(r.get("office_costs", 0))
-	var total_exp = total_salary + total_pm_salary + total_penalties + total_office
+		total_services  += int(r.get("service_costs", 0))
+	var total_exp = total_salary + total_pm_salary + total_penalties + total_office + total_services
 	var exp_segs = [
 		{"value": total_salary,    "color": COLOR_RED},
 		{"value": total_pm_salary, "color": COLOR_ORANGE},
 		{"value": total_penalties, "color": Color(0.7, 0.1, 0.1, 1)},
 		{"value": total_office,    "color": Color(0.9, 0.5, 0.1, 1)},
+		{"value": total_services,  "color": Color(0.3, 0.5, 0.9, 1)},
 	]
 	_draw_stacked_bar(ctrl, exp_segs, max(total_exp, 1), 0, 0, w, ctrl.size.y)
 
@@ -911,14 +915,16 @@ func _refresh_pnl():
 	var total_pm_salary = 0
 	var total_penalties = 0
 	var total_office = 0
+	var total_services = 0
 	for r in records:
 		total_income    += int(r.get("income", 0))
 		total_salary    += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 		total_pm_salary += int(r.get("pm_salary", 0))
 		total_penalties += int(r.get("penalties", 0))
 		total_office    += int(r.get("office_costs", 0))
+		total_services  += int(r.get("service_costs", 0))
 
-	var total_expenses = total_salary + total_pm_salary + total_penalties + total_office
+	var total_expenses = total_salary + total_pm_salary + total_penalties + total_office + total_services
 	var net = total_income - total_expenses
 	var margin_pct = 0.0
 	if total_income > 0:
@@ -931,6 +937,7 @@ func _refresh_pnl():
 		{"label": tr("REPORTS_PM_SALARY"),  "value": -total_pm_salary, "type": "expense", "bold": false},
 		{"label": tr("REPORTS_PENALTIES"),  "value": -total_penalties, "type": "expense", "bold": false},
 		{"label": tr("REPORTS_OFFICE"),     "value": -total_office,    "type": "expense", "bold": false},
+		{"label": tr("REPORTS_SERVICES"),   "value": -total_services,  "type": "expense", "bold": false},
 		{"label": "────────────────────────────────────────", "value": -999, "type": "sep", "bold": false},
 		{"label": tr("REPORTS_TOTAL"),      "value": net,              "type": "net",     "bold": true},
 		{"label": tr("REPORTS_MARGIN"),     "value": margin_pct,       "type": "margin",  "bold": true},

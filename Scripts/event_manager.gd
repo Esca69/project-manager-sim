@@ -667,6 +667,10 @@ func _trigger_sick_event(employee_node):
 	# ИСПРАВЛЕНИЕ: Берем локализованное имя
 	var display_name = employee_node.data.get_display_name() + " (" + tr(employee_node.data.job_title) + ")"
 	var cure_cost = randi_range(EXPRESS_CURE_MIN, EXPRESS_CURE_MAX)
+	# Если куплен корпоративный ДМС — стоимость лечения делится на 2
+	var gs_dms = get_node_or_null("/root/GameState")
+	if gs_dms and gs_dms.office_upgrades.get("corporate_dms", false):
+		cure_cost = cure_cost / 2
 	# Округляем до 50
 	cure_cost = int(round(float(cure_cost) / 50.0)) * 50
 	var sick_days = randi_range(2, 3)

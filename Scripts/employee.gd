@@ -665,10 +665,15 @@ func _on_time_tick(_hour, _minute):
 
 	# === ТАЙМЕРЫ АДАПТАЦИИ ===
 	if _minute == 0:
+		var dev_tools_active = false
+		var gs = get_node_or_null("/root/GameState")
+		if gs:
+			dev_tools_active = gs.office_upgrades.get("dev_tools", false)
+		var adapt_tick = 2.0 if dev_tools_active else 1.0
 		if data.onboarding_hours_left > 0:
-			data.onboarding_hours_left -= 1.0
+			data.onboarding_hours_left = max(0.0, data.onboarding_hours_left - adapt_tick)
 		if data.project_adapt_hours_left > 0:
-			data.project_adapt_hours_left -= 1.0
+			data.project_adapt_hours_left = max(0.0, data.project_adapt_hours_left - adapt_tick)
 		if data.crunch_efficiency_debuff_hours_left > 0:
 			data.crunch_efficiency_debuff_hours_left -= 1.0
 

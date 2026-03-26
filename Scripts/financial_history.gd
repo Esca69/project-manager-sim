@@ -37,6 +37,10 @@ func record_day():
 		else:
 			penalties += amt
 
+	var service_costs = 0
+	for svc in GameState.daily_service_details:
+		service_costs += int(svc.get("amount", 0))
+
 	var project_details = []
 	for entry in GameState.projects_finished_today:
 		var proj = entry.get("project", null)
@@ -61,6 +65,7 @@ func record_day():
 		"pm_salary": pm_salary,
 		"penalties": penalties,
 		"office_costs": office_costs,
+		"service_costs": service_costs,
 		"projects_completed": GameState.projects_finished_today.size(),
 		"projects_failed": GameState.projects_failed_today.size(),
 		"project_income_details": project_details,
