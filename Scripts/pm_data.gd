@@ -344,7 +344,7 @@ const SKILL_TREE = {
 	"report_finance_tab": {
 		"name": "SKILL_REPORT_FINANCE_TAB_NAME",
 		"description": "SKILL_REPORT_FINANCE_TAB_DESC",
-		"cost": 2,
+		"cost": 1,
 		"prerequisite": "",
 		"prerequisites": ["report_expenses", "report_projects", "report_productivity"],
 		"category": "analytics",
@@ -355,7 +355,7 @@ const SKILL_TREE = {
 	"report_people_tab": {
 		"name": "SKILL_REPORT_PEOPLE_TAB_NAME",
 		"description": "SKILL_REPORT_PEOPLE_TAB_DESC",
-		"cost": 2,
+		"cost": 1,
 		"prerequisite": "",
 		"prerequisites": ["report_expenses", "report_projects", "report_productivity"],
 		"category": "analytics",

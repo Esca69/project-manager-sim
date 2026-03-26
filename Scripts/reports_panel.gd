@@ -20,6 +20,7 @@ var _finance_tab_btn: Button
 var _people_tab_btn: Button
 var _finance_content: Control
 var _people_content: Control
+var _lock_label: Label
 
 var _tab_bg_style: StyleBoxFlat
 var _tab_active_style: StyleBoxFlat
@@ -235,6 +236,22 @@ func _build_ui():
 	_people_content.visible = false
 	_content_area.add_child(_people_content)
 
+	# Lock placeholder label
+	_lock_label = Label.new()
+	_lock_label.set_anchors_preset(Control.PRESET_CENTER)
+	_lock_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_lock_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_lock_label.offset_left = -300
+	_lock_label.offset_top = -30
+	_lock_label.offset_right = 300
+	_lock_label.offset_bottom = 30
+	_lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_lock_label.add_theme_color_override("font_color", COLOR_GRAY)
+	_lock_label.add_theme_font_size_override("font_size", 18)
+	if UITheme: UITheme.apply_font(_lock_label, "semibold")
+	_lock_label.visible = false
+	_content_area.add_child(_lock_label)
+
 func _apply_tab_styles(finance_active: bool):
 	_apply_button_style(_finance_tab_btn, _tab_active_style if finance_active else _tab_inactive_style, COLOR_BLUE if finance_active else COLOR_GRAY)
 	_apply_button_style(_people_tab_btn, _tab_inactive_style if finance_active else _tab_active_style, COLOR_GRAY if finance_active else COLOR_BLUE)
@@ -251,12 +268,26 @@ func _apply_button_style(btn: Button, box_style: StyleBox, font_color: Color):
 
 func _on_finance_tab():
 	_apply_tab_styles(true)
+	if not PMData.has_skill("report_finance_tab"):
+		_finance_content.visible = false
+		_people_content.visible = false
+		_lock_label.text = tr("REPORTS_LOCK_FINANCE")
+		_lock_label.visible = true
+		return
+	_lock_label.visible = false
 	_finance_content.visible = true
 	_people_content.visible = false
 	_refresh_finance()
 
 func _on_people_tab():
 	_apply_tab_styles(false)
+	if not PMData.has_skill("report_people_tab"):
+		_finance_content.visible = false
+		_people_content.visible = false
+		_lock_label.text = tr("REPORTS_LOCK_PEOPLE")
+		_lock_label.visible = true
+		return
+	_lock_label.visible = false
 	_finance_content.visible = false
 	_people_content.visible = true
 	_refresh_people()
@@ -268,8 +299,20 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _refresh_content():
 	if _people_content and _people_content.visible:
+		if not PMData.has_skill("report_people_tab"):
+			_people_content.visible = false
+			_lock_label.text = tr("REPORTS_LOCK_PEOPLE")
+			_lock_label.visible = true
+			return
+		_lock_label.visible = false
 		_refresh_people()
 	else:
+		if not PMData.has_skill("report_finance_tab"):
+			_finance_content.visible = false
+			_lock_label.text = tr("REPORTS_LOCK_FINANCE")
+			_lock_label.visible = true
+			return
+		_lock_label.visible = false
 		_refresh_finance()
 
 func _refresh_finance():

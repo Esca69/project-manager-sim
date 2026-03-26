@@ -263,6 +263,8 @@ func _rebuild_tree():
 				var branch_skills = _get_branch_skills(branch_id)
 				for skill_entry in branch_skills:
 					var skill_id = skill_entry["id"]
+					if skill_id == "report_finance_tab":
+						x += 20
 					var node = _create_skill_node(skill_id, cat_color)
 					node.position = Vector2(x, cursor_y)
 					_canvas.add_child(node)

@@ -480,40 +480,62 @@ func _create_card(npc_node) -> PanelContainer:
 
 	# Кнопка "?" — breakdown настроения
 	var mood_help_btn = _create_help_button()
-	mood_help_btn.visible = PMData.has_skill("read_mood")
 	var mood_tooltip_ref: Array = [null]
 	var mood_tooltip_label_ref: Array = [null]
 	var emp_ref = emp
 	var parent_ref = self
 
-	mood_help_btn.mouse_entered.connect(func():
-		if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
-			mood_tooltip_ref[0].queue_free()
-		var breakdown_text = _build_mood_breakdown_text(emp_ref)
-		var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
-		parent_ref.add_child(tp)
-		
-		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
-		await parent_ref.get_tree().process_frame
-		if not is_instance_valid(tp): return
-		
-		var btn_global = mood_help_btn.global_position
-		var viewport_height = parent_ref.get_viewport_rect().size.y
-		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
-		
-		if target_pos.y + tp.size.y > viewport_height:
-			target_pos.y = btn_global.y - tp.size.y + 20
+	if not PMData.has_skill("read_mood"):
+		_apply_locked_style_to_help_button(mood_help_btn)
+		mood_help_btn.mouse_entered.connect(func():
+			if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
+				mood_tooltip_ref[0].queue_free()
+			var tp = TraitUIHelper._create_tooltip(tr("ROSTER_LOCK_READ_MOOD"), Color(0.5, 0.5, 0.5, 1))
+			parent_ref.add_child(tp)
+			await parent_ref.get_tree().process_frame
+			if not is_instance_valid(tp): return
+			var btn_global = mood_help_btn.global_position
+			var viewport_height = parent_ref.get_viewport_rect().size.y
+			var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+			if target_pos.y + tp.size.y > viewport_height:
+				target_pos.y = btn_global.y - tp.size.y + 20
+			tp.global_position = target_pos
+			mood_tooltip_ref[0] = tp
+		)
+		mood_help_btn.mouse_exited.connect(func():
+			if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
+				mood_tooltip_ref[0].queue_free()
+			mood_tooltip_ref[0] = null
+		)
+	else:
+		mood_help_btn.mouse_entered.connect(func():
+			if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
+				mood_tooltip_ref[0].queue_free()
+			var breakdown_text = _build_mood_breakdown_text(emp_ref)
+			var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+			parent_ref.add_child(tp)
 			
-		tp.global_position = target_pos
-		mood_tooltip_ref[0] = tp
-		mood_tooltip_label_ref[0] = parent_ref._find_label_in_tooltip(tp)
-	)
-	mood_help_btn.mouse_exited.connect(func():
-		if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
-			mood_tooltip_ref[0].queue_free()
-		mood_tooltip_ref[0] = null
-		mood_tooltip_label_ref[0] = null
-	)
+			# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+			await parent_ref.get_tree().process_frame
+			if not is_instance_valid(tp): return
+			
+			var btn_global = mood_help_btn.global_position
+			var viewport_height = parent_ref.get_viewport_rect().size.y
+			var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+			
+			if target_pos.y + tp.size.y > viewport_height:
+				target_pos.y = btn_global.y - tp.size.y + 20
+				
+			tp.global_position = target_pos
+			mood_tooltip_ref[0] = tp
+			mood_tooltip_label_ref[0] = parent_ref._find_label_in_tooltip(tp)
+		)
+		mood_help_btn.mouse_exited.connect(func():
+			if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
+				mood_tooltip_ref[0].queue_free()
+			mood_tooltip_ref[0] = null
+			mood_tooltip_label_ref[0] = null
+		)
 	mood_hbox.add_child(mood_help_btn)
 	# Сохраняем ссылки в мету карточки для live-обновления
 	card.set_meta("mood_tooltip_ref", mood_tooltip_ref)
@@ -627,35 +649,57 @@ func _create_card(npc_node) -> PanelContainer:
 
 	# Кнопка "?" — breakdown эффективности
 	var eff_help_btn = _create_help_button()
-	eff_help_btn.visible = PMData.has_skill("read_efficiency")
 	var eff_tooltip_ref: Array = [null]
 
-	eff_help_btn.mouse_entered.connect(func():
-		if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
-			eff_tooltip_ref[0].queue_free()
-		var breakdown_text = _build_efficiency_breakdown_text(emp_ref)
-		var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
-		parent_ref.add_child(tp)
-		
-		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
-		await parent_ref.get_tree().process_frame
-		if not is_instance_valid(tp): return
-		
-		var btn_global = eff_help_btn.global_position
-		var viewport_height = parent_ref.get_viewport_rect().size.y
-		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
-		
-		if target_pos.y + tp.size.y > viewport_height:
-			target_pos.y = btn_global.y - tp.size.y + 20
+	if not PMData.has_skill("read_efficiency"):
+		_apply_locked_style_to_help_button(eff_help_btn)
+		eff_help_btn.mouse_entered.connect(func():
+			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+				eff_tooltip_ref[0].queue_free()
+			var tp = TraitUIHelper._create_tooltip(tr("ROSTER_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
+			parent_ref.add_child(tp)
+			await parent_ref.get_tree().process_frame
+			if not is_instance_valid(tp): return
+			var btn_global = eff_help_btn.global_position
+			var viewport_height = parent_ref.get_viewport_rect().size.y
+			var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+			if target_pos.y + tp.size.y > viewport_height:
+				target_pos.y = btn_global.y - tp.size.y + 20
+			tp.global_position = target_pos
+			eff_tooltip_ref[0] = tp
+		)
+		eff_help_btn.mouse_exited.connect(func():
+			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+				eff_tooltip_ref[0].queue_free()
+			eff_tooltip_ref[0] = null
+		)
+	else:
+		eff_help_btn.mouse_entered.connect(func():
+			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+				eff_tooltip_ref[0].queue_free()
+			var breakdown_text = _build_efficiency_breakdown_text(emp_ref)
+			var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+			parent_ref.add_child(tp)
 			
-		tp.global_position = target_pos
-		eff_tooltip_ref[0] = tp
-	)
-	eff_help_btn.mouse_exited.connect(func():
-		if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
-			eff_tooltip_ref[0].queue_free()
-		eff_tooltip_ref[0] = null
-	)
+			# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
+			await parent_ref.get_tree().process_frame
+			if not is_instance_valid(tp): return
+			
+			var btn_global = eff_help_btn.global_position
+			var viewport_height = parent_ref.get_viewport_rect().size.y
+			var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+			
+			if target_pos.y + tp.size.y > viewport_height:
+				target_pos.y = btn_global.y - tp.size.y + 20
+				
+			tp.global_position = target_pos
+			eff_tooltip_ref[0] = tp
+		)
+		eff_help_btn.mouse_exited.connect(func():
+			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+				eff_tooltip_ref[0].queue_free()
+			eff_tooltip_ref[0] = null
+		)
 	eff_hbox.add_child(eff_help_btn)
 
 	var spacer = Control.new()
@@ -679,6 +723,23 @@ func _create_card(npc_node) -> PanelContainer:
 	call_deferred("_set_children_pass_filter", card)
 
 	return card
+
+# === СТИЛЬ ЗАБЛОКИРОВАННОЙ КНОПКИ "?" ===
+func _apply_locked_style_to_help_button(btn: Button) -> void:
+	var gray_bstyle = StyleBoxFlat.new()
+	gray_bstyle.bg_color = Color(0.93, 0.93, 0.93, 1)
+	gray_bstyle.border_width_left = 2
+	gray_bstyle.border_width_top = 2
+	gray_bstyle.border_width_right = 2
+	gray_bstyle.border_width_bottom = 2
+	gray_bstyle.border_color = Color(0.6, 0.6, 0.6, 1)
+	gray_bstyle.corner_radius_top_left = 11
+	gray_bstyle.corner_radius_top_right = 11
+	gray_bstyle.corner_radius_bottom_right = 11
+	gray_bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", gray_bstyle)
+	btn.add_theme_stylebox_override("hover", gray_bstyle)
+	btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 
 # === УНИВЕРСАЛЬНАЯ КНОПКА "?" (стиль как у трейтов) ===
 func _create_help_button() -> Button:
