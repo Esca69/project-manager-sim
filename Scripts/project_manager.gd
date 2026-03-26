@@ -82,7 +82,7 @@ func _physics_process(delta):
 			if active_stage["actual_start"] == -1.0:
 				active_stage["actual_start"] = project.elapsed_days
 
-			if is_working_hours and active_stage.workers.size() > 0:
+			if active_stage.workers.size() > 0:
 				# Вычисляем прошедшее время один раз для всех в этом кадре
 				var minutes_this_tick = GameTime.MINUTES_PER_REAL_SECOND * delta
 
@@ -90,13 +90,16 @@ func _physics_process(delta):
 					# === 1. АЛЛОКАЦИЯ: Списание стоимости времени ===
 					# Происходит всегда, если сотрудник назначен на активный этап 
 					# в рабочее время (даже если он пьет кофе, бродит или болеет дома)
-					var cost_this_tick = minutes_this_tick * (float(worker_data.hourly_rate) / 60.0)
-					project.daily_labor_cost += cost_this_tick
-					project.total_labor_cost += cost_this_tick
+					if is_working_hours:
+						var cost_this_tick = minutes_this_tick * (float(worker_data.hourly_rate) / 60.0)
+						project.daily_labor_cost += cost_this_tick
+						project.total_labor_cost += cost_this_tick
 
 					# === 2. РАБОТА: Начисление прогресса ===
+					# Ранняя пташка добавляет прогресс с момента прихода, даже до START_HOUR
+					var can_work = is_working_hours or worker_data.has_trait("early_bird")
 					var worker_node = _get_employee_node(worker_data)
-					if worker_node and worker_node.current_state == worker_node.State.WORKING:
+					if can_work and worker_node and worker_node.current_state == worker_node.State.WORKING:
 						var skill = _get_skill_for_stage(active_stage.type, worker_data)
 						var efficiency = worker_data.get_efficiency_multiplier()
 						

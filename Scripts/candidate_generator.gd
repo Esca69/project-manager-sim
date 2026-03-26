@@ -288,9 +288,21 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	else:
 		new_emp.employment_type = "contractor"
 
-	# 8. Наценка фрилансера (10%-30% к зарплате)
+	# 8. Фрилансер: максимальный уровень — 4 (middle), скидка ~15% к зарплате
 	if new_emp.employment_type == "freelancer":
-		var freelance_mult = randf_range(1.1, 1.3)
+		if new_emp.employee_level > 4:
+			new_emp.employee_level = 4
+			# Пересчитываем навык и базовую зарплату для нового уровня
+			primary_skill_value = _calculate_skill_for_level(4)
+			match role:
+				"Business Analyst":
+					new_emp.skill_business_analysis = primary_skill_value
+				"Backend Developer":
+					new_emp.skill_backend = primary_skill_value
+				"QA Engineer":
+					new_emp.skill_qa = primary_skill_value
+			raw_salary = cfg["base"] + (primary_skill_value * cfg["mult"]) + randi_range(-cfg["rand"], cfg["rand"])
+		var freelance_mult = randf_range(0.80, 0.90)
 		raw_salary = int(raw_salary * freelance_mult)
 
 	new_emp.monthly_salary = int(round(raw_salary / 50.0)) * 50

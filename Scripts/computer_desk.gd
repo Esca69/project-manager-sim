@@ -1,6 +1,6 @@
 extends StaticBody2D
 
-const PM_DESK_PROXIMITY_RADIUS: float = 120.0
+const PM_DESK_PROXIMITY_RADIUS: float = 156.0
 var _is_player_in_radius: bool = false
 
 func _ready():

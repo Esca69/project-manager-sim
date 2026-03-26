@@ -1,6 +1,6 @@
 extends StaticBody2D
 
-const HR_PROXIMITY_RADIUS: float = 300.0
+const HR_PROXIMITY_RADIUS: float = 390.0
 var _is_player_in_radius: bool = false
 
 # === ВОСКЛИЦАТЕЛЬНЫЙ ЗНАК ===

@@ -84,6 +84,7 @@ var _aura_ring_cooldown: float = 0.0  # Чтобы не спамить коль�
 
 func _ready():
 	add_to_group("player")
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	target_zoom = camera.zoom
 	_create_interact_hint()
 	_create_discuss_bar()
@@ -251,6 +252,35 @@ func _physics_process(delta):
 	# === ПРОВЕРКА LONG ACTION ===
 	var hud = get_tree().get_first_node_in_group("ui")
 	var long_action = hud and hud.has_method("is_long_action_active") and hud.is_long_action_active()
+
+	# === СВОБОДНАЯ КАМЕРА ПРИ ПАУЗЕ ===
+	if GameTime.is_game_paused and not long_action:
+		if not _free_camera_mode:
+			_free_camera_mode = true
+			_free_camera_returning = false
+			_free_camera_offset = Vector2.ZERO
+			_hide_interact_hint()
+			if hud and hud.has_method("show_free_camera_hint"):
+				hud.show_free_camera_hint()
+
+		if _is_ui_blocking():
+			velocity = Vector2.ZERO
+			move_and_slide()
+			return
+
+		var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+		var zoom_factor = 1.0 / camera.zoom.x
+		_free_camera_offset += direction * FREE_CAMERA_BASE_SPEED * zoom_factor * delta
+
+		var cam_global = global_position + _free_camera_offset
+		cam_global.x = clamp(cam_global.x, OFFICE_BOUNDS.position.x, OFFICE_BOUNDS.position.x + OFFICE_BOUNDS.size.x)
+		cam_global.y = clamp(cam_global.y, OFFICE_BOUNDS.position.y, OFFICE_BOUNDS.position.y + OFFICE_BOUNDS.size.y)
+		_free_camera_offset = cam_global - global_position
+		camera.position = _free_camera_offset
+
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
 
 	# === РЕЖИМ СВОБОДНОЙ КАМЕРЫ ===
 	if long_action:
