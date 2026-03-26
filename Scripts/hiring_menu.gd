@@ -17,6 +17,8 @@ var _all_cards: Array = []
 
 var _freeze_warning_label: Label = null
 
+var _boss_preferred_index: int = -1  # -1 = нет рекомендации босса
+
 var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
 
@@ -167,6 +169,13 @@ func generate_candidates_for_role(role: String):
 		candidates.append(new_human)
 	print("👤 Сгенерировано %d кандидатов" % count)
 
+	# === РЕКОМЕНДАЦИЯ БОССА ===
+	_boss_preferred_index = -1
+	if not TutorialManager.is_active() and candidates.size() >= 2:
+		if randf() < 0.5:
+			_boss_preferred_index = randi() % candidates.size()
+			print("⭐ Босс рекомендует кандидата #%d" % _boss_preferred_index)
+
 # === ОБНОВЛЕНИЕ UI ===
 func update_ui():
 	# Очищаем динамические элементы
@@ -303,6 +312,9 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 		_level_containers.append(level_row)
 		var type_badge = _create_employment_type_badge(data)
 		level_row.add_child(type_badge)
+		if _index == _boss_preferred_index:
+			var boss_badge = _create_boss_preferred_badge()
+			level_row.add_child(boss_badge)
 
 	if card_vbox and not data.traits.is_empty():
 		_add_traits_to(card_vbox, data)
@@ -510,6 +522,9 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 	_level_containers.append(level_row)
 	var type_badge = _create_employment_type_badge(data)
 	level_row.add_child(type_badge)
+	if index == _boss_preferred_index:
+		var boss_badge = _create_boss_preferred_badge()
+		level_row.add_child(boss_badge)
 
 	# Трейты
 	if not data.traits.is_empty():
@@ -635,6 +650,62 @@ func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
 	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var tooltip_ref: Array = [null]
+
+	panel.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
+		self.add_child(tp)
+		var panel_global = panel.global_position
+		tp.global_position = Vector2(panel_global.x + panel.size.x + 10, panel_global.y - 5)
+		tooltip_ref[0] = tp
+	)
+
+	panel.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+
+	return panel
+
+func _create_boss_preferred_badge() -> PanelContainer:
+	var panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.bg_color = Color(1.0, 0.97, 0.88, 1)
+	style.border_color = Color(0.85, 0.65, 0.1, 1)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_bottom", 2)
+	panel.add_child(margin)
+
+	var lbl = Label.new()
+	lbl.text = tr("HIRE_BOSS_PREFERRED")
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color(0.75, 0.55, 0.0, 1))
+	if UITheme: UITheme.apply_font(lbl, "semibold")
+	margin.add_child(lbl)
+
+	# === КАСТОМНЫЙ ТУЛТИП ===
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
+	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	var tooltip_ref: Array = [null]
+	var tooltip_description = tr("HIRE_BOSS_PREFERRED_TOOLTIP")
+	var tooltip_color = Color(0.75, 0.55, 0.0, 1)
 
 	panel.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
@@ -829,6 +900,16 @@ func _on_hire_pressed(index):
 	var bm = get_node_or_null("/root/BossManager")
 	if bm:
 		bm.track_hire()
+
+	# === РЕКОМЕНДАЦИЯ БОССА: +1 доверие ===
+	if index == _boss_preferred_index:
+		if bm:
+			bm.change_trust(1)
+		if EventLog:
+			EventLog.add(tr("LOG_BOSS_PREFERRED_HIRED"))
+		if ScreenJuice:
+			ScreenJuice.show_toast("⭐", tr("TOAST_BOSS_PREFERRED_HIRED"))
+		print("⭐ Нанят рекомендованный боссом кандидат! +1 доверие")
 
 	# Лог найма
 	if EventLog:

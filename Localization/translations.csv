@@ -1185,3 +1185,7 @@ UPG_HR_DESC,HR ищет кандидатов самостоятельно. Не 
 HR_SEARCH_IN_PROGRESS,🔍 HR уже ищет кандидатов...,🔍 HR is already searching for candidates...
 LOG_HR_SEARCH_STARTED_BG,🔍 HR начал поиск: %s,🔍 HR started searching: %s
 HR_DESK_SEARCHING,🔍 Поиск...,🔍 Searching...
+HIRE_BOSS_PREFERRED,👔 Босс хочет этого,👔 Boss wants this one
+HIRE_BOSS_PREFERRED_TOOLTIP,Если наймёшь этого кандидата — получишь +1 доверия босса,If you hire this candidate you'll get +1 boss trust
+LOG_BOSS_PREFERRED_HIRED,⭐ Вы наняли рекомендованного боссом кандидата! +1 доверие,⭐ You hired the boss's preferred candidate! +1 trust
+TOAST_BOSS_PREFERRED_HIRED,Босс доволен выбором! +1 доверие,Boss is pleased! +1 trust
