@@ -988,6 +988,9 @@ func _rebuild_office_dev():
 	vbox.add_theme_constant_override("separation", 15)
 	margin.add_child(vbox)
 
+	# === СЕКЦИЯ: РАЗОВЫЕ ПОКУПКИ ===
+	vbox.add_child(_make_section_header(tr("TAB_OFFICE_ONETIME")))
+
 	# Card: Coffee Machine
 	var coffee_bought = GameState.office_upgrades.get("coffee_machine", false)
 	vbox.add_child(_make_upgrade_card(
@@ -1052,6 +1055,237 @@ func _rebuild_office_dev():
 				elif bm and bm.boss_trust < 2:
 					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
 	))
+
+	# Card: Ergonomic Furniture
+	var ergo_bought = GameState.office_upgrades.get("ergonomic_furniture", false)
+	vbox.add_child(_make_upgrade_card(
+		"🪑",
+		tr("UPG_ERGO_TITLE"),
+		tr("UPG_ERGO_DESC"),
+		1000, 4,
+		ergo_bought,
+		func():
+			var ok = GameState.buy_upgrade("ergonomic_furniture", 1000, 4)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_ERGO_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				var bm = get_node_or_null("/root/BossManager")
+				if GameState.company_balance < 1000:
+					EventLog.add(tr("TXT_NOT_ENOUGH_MONEY"), EventLog.LogType.ALERT)
+				elif bm and bm.boss_trust < 4:
+					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Corporate Library
+	var lib_bought = GameState.office_upgrades.get("corporate_library", false)
+	vbox.add_child(_make_upgrade_card(
+		"📚",
+		tr("UPG_LIBRARY_TITLE"),
+		tr("UPG_LIBRARY_DESC"),
+		2000, 8,
+		lib_bought,
+		func():
+			var ok = GameState.buy_upgrade("corporate_library", 2000, 8)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_LIBRARY_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				var bm = get_node_or_null("/root/BossManager")
+				if GameState.company_balance < 2000:
+					EventLog.add(tr("TXT_NOT_ENOUGH_MONEY"), EventLog.LogType.ALERT)
+				elif bm and bm.boss_trust < 8:
+					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# === СЕКЦИЯ: ПАССИВНЫЕ СЕРВИСЫ ===
+	vbox.add_child(_make_section_header(tr("TAB_OFFICE_SERVICES")))
+
+	# Card: Legal Consultant
+	var legal_bought = GameState.office_upgrades.get("legal_consultant", false)
+	vbox.add_child(_make_service_card(
+		"⚖️",
+		tr("UPG_LEGAL_TITLE"),
+		tr("UPG_LEGAL_DESC"),
+		2, 30,
+		legal_bought,
+		func():
+			var ok = GameState.buy_service("legal_consultant", 2)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_LEGAL_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Project Management Software
+	var pm_soft_bought = GameState.office_upgrades.get("project_management_soft", false)
+	vbox.add_child(_make_service_card(
+		"💻",
+		tr("UPG_PM_SOFT_TITLE"),
+		tr("UPG_PM_SOFT_DESC"),
+		2, 20,
+		pm_soft_bought,
+		func():
+			var ok = GameState.buy_service("project_management_soft", 2)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_PM_SOFT_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Developer Tools
+	var dev_tools_bought = GameState.office_upgrades.get("dev_tools", false)
+	vbox.add_child(_make_service_card(
+		"🛠️",
+		tr("UPG_DEV_TOOLS_TITLE"),
+		tr("UPG_DEV_TOOLS_DESC"),
+		2, 50,
+		dev_tools_bought,
+		func():
+			var ok = GameState.buy_service("dev_tools", 2)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_DEV_TOOLS_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Corporate Psychologist
+	var psych_bought = GameState.office_upgrades.get("corporate_psychologist", false)
+	vbox.add_child(_make_service_card(
+		"🧠",
+		tr("UPG_PSYCHOLOGIST_TITLE"),
+		tr("UPG_PSYCHOLOGIST_DESC"),
+		2, 45,
+		psych_bought,
+		func():
+			var ok = GameState.buy_service("corporate_psychologist", 2)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_PSYCHOLOGIST_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+	# Card: Corporate DMS
+	var dms_bought = GameState.office_upgrades.get("corporate_dms", false)
+	vbox.add_child(_make_service_card(
+		"🏥",
+		tr("UPG_DMS_TITLE"),
+		tr("UPG_DMS_DESC"),
+		2, 30,
+		dms_bought,
+		func():
+			var ok = GameState.buy_service("corporate_dms", 2)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_DMS_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
+func _make_service_card(icon_text: String, title: String, description: String, cost_trust: int, daily_cost: int, is_bought: bool, buy_callback: Callable) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.add_theme_stylebox_override("panel", _card_style_normal)
+
+	var card_margin = MarginContainer.new()
+	card_margin.add_theme_constant_override("margin_left", 16)
+	card_margin.add_theme_constant_override("margin_top", 14)
+	card_margin.add_theme_constant_override("margin_right", 16)
+	card_margin.add_theme_constant_override("margin_bottom", 14)
+	card.add_child(card_margin)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 14)
+	card_margin.add_child(hbox)
+
+	# Icon
+	var icon_lbl = Label.new()
+	icon_lbl.text = icon_text
+	icon_lbl.add_theme_font_size_override("font_size", 36)
+	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon_lbl.custom_minimum_size = Vector2(52, 0)
+	hbox.add_child(icon_lbl)
+
+	# Content vbox
+	var content_vbox = VBoxContainer.new()
+	content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_vbox.add_theme_constant_override("separation", 6)
+	hbox.add_child(content_vbox)
+
+	# Title
+	var title_lbl = Label.new()
+	title_lbl.text = title
+	title_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	title_lbl.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(title_lbl, "bold")
+	content_vbox.add_child(title_lbl)
+
+	# Description
+	var desc_lbl = Label.new()
+	desc_lbl.text = description
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	desc_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(desc_lbl, "regular")
+	content_vbox.add_child(desc_lbl)
+
+	if is_bought:
+		var active_lbl = Label.new()
+		active_lbl.text = tr("TXT_ALREADY_BOUGHT")
+		active_lbl.add_theme_color_override("font_color", Color(0.3, 0.65, 0.3, 1))
+		active_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(active_lbl, "semibold")
+		content_vbox.add_child(active_lbl)
+	else:
+		# Cost line: "🤝 X + $Y/день"
+		var cost_lbl = Label.new()
+		cost_lbl.text = tr("UPG_SERVICE_TRUST_COST") % [cost_trust, tr("SERVICE_COST_PER_DAY") % daily_cost]
+		cost_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+		cost_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(cost_lbl, "regular")
+		content_vbox.add_child(cost_lbl)
+
+		# Buy button
+		var right_vbox = VBoxContainer.new()
+		right_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		hbox.add_child(right_vbox)
+
+		var bm = get_node_or_null("/root/BossManager")
+		var has_trust = bm == null or bm.boss_trust >= cost_trust
+		var btn_enabled = has_trust
+
+		var buy_btn = Button.new()
+		buy_btn.text = tr("BTN_BUY_UPGRADE")
+		buy_btn.custom_minimum_size = Vector2(160, 40)
+		buy_btn.focus_mode = Control.FOCUS_NONE
+		buy_btn.disabled = not btn_enabled
+
+		if btn_enabled:
+			buy_btn.add_theme_stylebox_override("normal", _btn_style)
+			buy_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+			buy_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+			buy_btn.add_theme_color_override("font_color", COLOR_BLUE)
+			buy_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+			buy_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+			buy_btn.pressed.connect(buy_callback)
+		else:
+			buy_btn.add_theme_stylebox_override("normal", _btn_style_disabled)
+			buy_btn.add_theme_stylebox_override("hover", _btn_style_disabled)
+			buy_btn.add_theme_stylebox_override("pressed", _btn_style_disabled)
+			buy_btn.add_theme_stylebox_override("disabled", _btn_style_disabled)
+			buy_btn.add_theme_color_override("font_color", Color(0.55, 0.55, 0.6, 1))
+			buy_btn.add_theme_color_override("font_hover_color", Color(0.55, 0.55, 0.6, 1))
+			buy_btn.add_theme_color_override("font_pressed_color", Color(0.55, 0.55, 0.6, 1))
+			buy_btn.add_theme_color_override("font_disabled_color", Color(0.55, 0.55, 0.6, 1))
+
+		buy_btn.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(buy_btn, "semibold")
+		right_vbox.add_child(buy_btn)
+
+	return card
 
 func _make_upgrade_card(icon_text: String, title: String, description: String, cost_money: int, cost_trust: int, is_bought: bool, buy_callback: Callable) -> PanelContainer:
 	var card = PanelContainer.new()

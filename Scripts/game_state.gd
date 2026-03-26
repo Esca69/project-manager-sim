@@ -12,7 +12,16 @@ signal office_upgrade_purchased(upgrade_id: String)
 var office_upgrades: Dictionary = {
 	"coffee_machine": false,
 	"kitchen": false,
-	"desk_count": 3
+	"desk_count": 3,
+	# Passive services
+	"legal_consultant": false,
+	"project_management_soft": false,
+	"dev_tools": false,
+	"corporate_psychologist": false,
+	"corporate_dms": false,
+	# One-time purchases
+	"ergonomic_furniture": false,
+	"corporate_library": false,
 }
 
 func is_upgrade_bought(upgrade_id: String) -> bool:
@@ -29,6 +38,16 @@ func buy_upgrade(upgrade_id: String, cost_money: int, cost_trust: int) -> bool:
 		bm.change_trust(-cost_trust)
 	office_upgrades[upgrade_id] = true
 	daily_event_expenses.append({"reason": tr("SUMMARY_OFFICE_UPGRADES"), "amount": cost_money})
+	emit_signal("office_upgrade_purchased", upgrade_id)
+	return true
+
+func buy_service(upgrade_id: String, cost_trust: int) -> bool:
+	var bm = get_node_or_null("/root/BossManager")
+	if bm and bm.boss_trust < cost_trust:
+		return false
+	if bm:
+		bm.change_trust(-cost_trust)
+	office_upgrades[upgrade_id] = true
 	emit_signal("office_upgrade_purchased", upgrade_id)
 	return true
 
@@ -53,6 +72,7 @@ var balance_at_day_start: int = 10000
 var daily_income: int = 0
 var daily_expenses: int = 0
 var daily_salary_details: Array = []  # [{name: String, amount: int}]
+var daily_service_details: Array = [] # [{name: String, amount: int}]
 var daily_income_details: Array = []  # [{reason: String, amount: int}]
 var daily_event_expenses: Array = []  # [{reason: String, amount: int}]
 var projects_finished_today: Array = []  # [{project: ProjectData, payout: int}]
@@ -74,6 +94,7 @@ func reset_daily_stats():
 	daily_income = 0
 	daily_expenses = 0
 	daily_salary_details.clear()
+	daily_service_details.clear()
 	projects_finished_today.clear()
 	projects_failed_today.clear()
 	levelups_today.clear()
@@ -141,6 +162,31 @@ func pay_daily_salaries():
 	add_expense(daily_pm_salary)
 	PMData.change_personal_balance(daily_pm_salary)
 	daily_salary_details.append({"name": tr("PM_SALARY_NAME"), "amount": daily_pm_salary})
+
+# --- ФУНКЦИЯ ВЫПЛАТЫ ПАССИВНЫХ СЕРВИСОВ ---
+func pay_daily_services():
+	print("\n--- ВЫПЛАТА ПАССИВНЫХ СЕРВИСОВ ---")
+	const SERVICE_COSTS = {
+		"legal_consultant":        30,
+		"project_management_soft": 20,
+		"dev_tools":               50,
+		"corporate_psychologist":  45,
+		"corporate_dms":           30,
+	}
+	const SERVICE_NAME_KEYS = {
+		"legal_consultant":        "UPG_LEGAL_TITLE",
+		"project_management_soft": "UPG_PM_SOFT_TITLE",
+		"dev_tools":               "UPG_DEV_TOOLS_TITLE",
+		"corporate_psychologist":  "UPG_PSYCHOLOGIST_TITLE",
+		"corporate_dms":           "UPG_DMS_TITLE",
+	}
+	for service_id in SERVICE_COSTS:
+		if office_upgrades.get(service_id, false):
+			var cost = SERVICE_COSTS[service_id]
+			var name_str = tr(SERVICE_NAME_KEYS[service_id])
+			add_expense(cost)
+			daily_service_details.append({"name": name_str, "amount": cost})
+			print("Сервис ", name_str, " списал: ", cost, "$")
 
 # === ЗАПИСЬ ЛЕВЕЛ-АПА ===
 func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String):

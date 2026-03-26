@@ -323,6 +323,21 @@ func _build_finance_section():
 				det_lbl.add_theme_font_size_override("font_size", 12)
 				if UITheme: UITheme.apply_font(det_lbl, "regular")
 				_content_vbox.add_child(det_lbl)
+		# === ДЕТАЛИЗАЦИЯ СЕРВИСОВ ОФИСА ===
+		if GameState.daily_service_details.size() > 0:
+			var svc_header = Label.new()
+			svc_header.text = "    " + tr("DAY_SUMMARY_SERVICES")
+			svc_header.add_theme_color_override("font_color", COLOR_GRAY)
+			svc_header.add_theme_font_size_override("font_size", 12)
+			if UITheme: UITheme.apply_font(svc_header, "regular")
+			_content_vbox.add_child(svc_header)
+			for entry in GameState.daily_service_details:
+				var det_lbl = Label.new()
+				det_lbl.text = tr("DAY_SUMMARY_SERVICE_COST") % [entry["amount"], entry["name"]]
+				det_lbl.add_theme_color_override("font_color", COLOR_RED)
+				det_lbl.add_theme_font_size_override("font_size", 12)
+				if UITheme: UITheme.apply_font(det_lbl, "regular")
+				_content_vbox.add_child(det_lbl)
 	else:
 		if GameState.daily_expenses > 0:
 			_add_locked_hint(tr("SKILL_REPORT_EXPENSES_NAME"))

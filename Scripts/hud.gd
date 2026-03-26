@@ -796,6 +796,8 @@ func _on_bottom_tab_pressed(tab_name: String):
 				if _boss_panel: _boss_panel.visible = false
 				if _my_life_panel: _my_life_panel.visible = false
 				_reports_panel.open()
+		"projects_menu":
+			open_work_menu()
 
 # === ПРИНУДИТЕЛЬНАЯ ОТПРАВКА ВСЕХ СОТРУДНИКОВ ДОМОЙ ===
 func _dismiss_all_employees():
@@ -833,6 +835,7 @@ func _on_end_day_pressed():
 	_dismiss_all_employees()
 
 	GameState.pay_daily_salaries()
+	GameState.pay_daily_services()
 
 	# === ФИНАНСОВАЯ ИСТОРИЯ: Записать снимок дня ===
 	if FinancialHistory:

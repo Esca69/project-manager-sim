@@ -1140,6 +1140,11 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	# === RELATIONSHIP SYSTEM: Бонус от соседей ===
 	if bd.has("neighbor_mod"):
 		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _format_mod(bd.neighbor_mod))
+
+	# === OFFICE: Эргономичная мебель ===
+	if bd.has("ergonomic_mod") and bd.ergonomic_mod != 0.0:
+		lines.append(tr("EFF_MOD_ERGONOMIC"))
+
 	lines.append("")
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _format_mult(bd.total))
 
@@ -1498,6 +1503,11 @@ func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 
 	# Рассчитываем severance один раз и сохраняем
 	_pending_severance = emp_data.get_severance_pay()
+
+	# === OFFICE: legal_consultant → компенсация при увольнении -50% ===
+	var gs_legal = get_node_or_null("/root/GameState")
+	if gs_legal and gs_legal.office_upgrades.get("legal_consultant", false) and _pending_severance > 0:
+		_pending_severance = int(_pending_severance * 0.5)
 
 	var projects_list = _get_assigned_projects(emp_data)
 

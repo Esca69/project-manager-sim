@@ -227,6 +227,11 @@ func recalculate_mood():
 		if gs and not gs.office_upgrades.get("coffee_machine", false):
 			result -= 10.0
 
+	# === OFFICE: corporate_psychologist → mood +3 ===
+	var gs_psych = _get_game_state()
+	if gs_psych and gs_psych.office_upgrades.get("corporate_psychologist", false):
+		result += 3.0
+
 	# Временные модификаторы
 	for mod in mood_temp_modifiers:
 		result += mod.value
@@ -373,6 +378,11 @@ func get_mood_breakdown() -> Dictionary:
 		if gs and not gs.office_upgrades.get("coffee_machine", false):
 			permanent_mods.append({"name": tr("MOOD_MOD_NO_COFFEE"), "value": -10.0})
 
+	# === OFFICE: corporate_psychologist → mood +3 ===
+	var gs_psych2 = _get_game_state()
+	if gs_psych2 and gs_psych2.office_upgrades.get("corporate_psychologist", false):
+		permanent_mods.append({"name": tr("MOOD_MOD_PSYCHOLOGIST"), "value": 3.0})
+
 	# Временные
 	for mod in mood_temp_modifiers:
 		temp_mods.append({
@@ -451,6 +461,11 @@ func add_employee_xp(amount: int) -> Dictionary:
 
 	if employee_level >= MAX_LEVEL:
 		return result
+
+	# === OFFICE: corporate_library → +50% XP для Junior/Middle (level <= 4) ===
+	var gs_lib = _get_game_state()
+	if gs_lib and gs_lib.office_upgrades.get("corporate_library", false) and employee_level <= 4:
+		amount = int(amount * 1.5)
 
 	if has_trait("ambitious"):
 		amount = int(amount * 1.2)
@@ -759,6 +774,9 @@ func get_energy_drain_multiplier() -> float:
 		mult *= 0.7
 	if has_trait("iron_immunity"):
 		mult *= 0.85
+	var gs = _get_game_state()
+	if gs and gs.office_upgrades.get("ergonomic_furniture", false):
+		mult *= 0.9
 	return mult
 
 var daily_salary: int:
@@ -884,6 +902,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"crunch_mod": crunch_mod,
 		"burnout_mod": burnout_mod,
 		"total": total,
+		"ergonomic_mod": -0.10 if (_get_game_state() and _get_game_state().office_upgrades.get("ergonomic_furniture", false)) else 0.0,
 	}
 
 # === EVENT SYSTEM: Безопасный доступ к EventManager из Resource ===
