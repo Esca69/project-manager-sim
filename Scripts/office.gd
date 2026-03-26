@@ -123,6 +123,11 @@ func apply_office_upgrades():
 					tumb.visible = should_show
 					_set_node_collision(tumb, should_show)
 
+	# HR Specialist sprite
+	var hr_sprite = find_child("Hr", true, false)
+	if hr_sprite:
+		hr_sprite.visible = GameState.office_upgrades.get("hr_specialist", false)
+
 func _try_restore_save():
 	if SaveManager.pending_restore:
 		SaveManager.pending_restore = false

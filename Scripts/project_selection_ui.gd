@@ -1186,6 +1186,23 @@ func _rebuild_office_dev():
 				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
 	))
 
+	# Card: HR Specialist
+	var hr_spec_bought = GameState.office_upgrades.get("hr_specialist", false)
+	vbox.add_child(_make_service_card(
+		"👩‍💼",
+		tr("UPG_HR_TITLE"),
+		tr("UPG_HR_DESC"),
+		2, 45,
+		hr_spec_bought,
+		func():
+			var ok = GameState.buy_service("hr_specialist", 2)
+			if ok:
+				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_HR_TITLE"), EventLog.LogType.PROGRESS)
+				_rebuild_office_dev()
+			else:
+				EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
+	))
+
 func _make_service_card(icon_text: String, title: String, description: String, cost_trust: int, daily_cost: int, is_bought: bool, buy_callback: Callable) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.add_theme_stylebox_override("panel", _card_style_normal)
