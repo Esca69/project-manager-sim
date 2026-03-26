@@ -31,7 +31,7 @@ var crunch_efficiency_debuff_hours_left: float = 0.0
 var burnout_level: float = 0.0    # Burnout percentage (0.0 to 100.0)
 var burnout_timer: float = 0.0    # Accumulated minutes in bad mood (resets every 480)
 
-const BURNOUT_TIMER_THRESHOLD: float = 480.0  # 8 hours = 480 game minutes
+const BURNOUT_TIMER_THRESHOLD: float = 240.0  # 4 hours = 240 game minutes
 const BURNOUT_MAX: float = 100.0               # Maximum burnout level
 
 const SEVERANCE_MIN_MULTIPLIER: float = 0.5
@@ -111,7 +111,7 @@ const MOOD_TRAIT_MODIFIERS = {
 }
 
 # Ситуационные постоянные
-const MOOD_HAS_DESK_BONUS: float = 10.0
+const MOOD_HAS_DESK_BONUS: float = 5.0
 const MOOD_NO_DESK_PENALTY: float = -5.0
 const MOOD_LOW_ENERGY_PENALTY: float = -5.0        # Энергия 30-50%
 const MOOD_VERY_LOW_ENERGY_PENALTY: float = -10.0  # Энергия <30%

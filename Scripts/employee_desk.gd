@@ -10,7 +10,7 @@ var assigned_npc_node = null
 @onready var name_tag = $NameTag
 @onready var seat_point = $SeatPosition # Точка, куда мы направляем человека
 
-const DESK_PROXIMITY_RADIUS: float = 200.0
+const DESK_PROXIMITY_RADIUS: float = 260.0
 var _is_player_in_radius: bool = false
 
 func _ready():

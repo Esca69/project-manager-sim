@@ -1154,9 +1154,10 @@ func _apply_vacation_choice(event_data: Dictionary, choice_id: String):
 func _apply_freelancer_leave(event_data: Dictionary, _choice_id: String):
 	var leave_type = event_data.get("leave_type", "hard")
 	var emp_name = event_data.get("employee_name", "")
+	var display_name = event_data.get("display_name", emp_name)
 
-	if ScreenJuice and emp_name != "":
-		ScreenJuice.show_toast("👋", tr("TOAST_FREELANCER_LEAVE") % emp_name)
+	if ScreenJuice and display_name != "":
+		ScreenJuice.show_toast("👋", tr("TOAST_FREELANCER_LEAVE") % display_name)
 
 	if leave_type == "soft":
 		var warning_days = event_data.get("warning_days", 1)

@@ -30,8 +30,8 @@ var soft_deadline_line: ColorRect
 var hard_deadline_line: ColorRect
 var _bg_overlay: ColorRect
 
-# Красивый зелёный цвет для кнопки СТАРТ
-var color_green_main = Color(0.29803923, 0.6862745, 0.3137255, 1)
+# Red color for START button
+var color_green_main = Color(0.85, 0.2, 0.2, 1)
 
 func _get_origin_time() -> float:
 	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
@@ -133,6 +133,10 @@ func _ready():
 	if cancel_node:
 		cancel_node.queue_free()
 
+	var footer_node = $MainLayout/ContentWrapper/Body/Footer
+	if footer_node:
+		footer_node.alignment = BoxContainer.ALIGNMENT_CENTER
+
 	start_btn.pressed.connect(_on_start_pressed)
 	start_btn.text = tr("PROJ_WIN_BTN_START")
 	
@@ -169,6 +173,9 @@ func _ready():
 	start_btn.add_theme_color_override("font_color", color_green_main)
 	start_btn.add_theme_color_override("font_hover_color", Color.WHITE)
 	start_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	start_btn.custom_minimum_size = Vector2(280, 50)
+	start_btn.add_theme_font_size_override("font_size", 18)
+	start_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 	var disabled_style = StyleBoxFlat.new()
 	disabled_style.bg_color = Color(0.93, 0.93, 0.93, 1) 

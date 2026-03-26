@@ -691,7 +691,7 @@ LOG_FREELANCER_SUDDEN_LEAVE,🚪 Фрилансер %s внезапно поки
 LOG_FREELANCER_WARN_LEAVE,⚠️ Фрилансер %s собирается уйти через %d дн.,⚠️ Freelancer %s is leaving in %d day(s).
 LOG_FREELANCER_DEPARTED,🚪 Фрилансер %s покинул компанию (отработал %d дн.),🚪 Freelancer %s left the company (worked %d day(s))
 EXPENSE_SEVERANCE,💰 Компенсация: %s,💰 Severance: %s
-TOOLTIP_FREELANCER,"Фрилансер: чуть дороже контрактника, но может уйти в любой момент. Не растёт по опыту (не получает XP). При увольнении не требует компенсации.","Freelancer: slightly more expensive, but may leave at any time. Does not gain experience (no XP). No severance pay when fired."
+TOOLTIP_FREELANCER,"Фрилансер: дешевле контрактника (~15%), но может уйти в любой момент. Максимальный уровень — middle (4). Не растёт по опыту (не получает XP). При увольнении не требует компенсации.","Freelancer: ~15% cheaper than a contractor, but may leave at any time. Maximum level is middle (4). Does not gain experience (no XP). No severance pay when fired."
 TOOLTIP_CONTRACTOR,"Контрактник: стабильный сотрудник, растёт по опыту (получает XP). При увольнении требуется компенсация: $%d–$%d.","Contractor: stable employee, gains experience (earns XP). Cannot leave on their own. Severance pay when fired: $%d–$%d."
 FREE_CAMERA_HINT,Свободная камера — WASD для обзора,Free camera — WASD to look around
 ROSTER_EFF_BREAKDOWN_AURA,👁️ Аура PM: %s,👁️ PM Aura: %s

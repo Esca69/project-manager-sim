@@ -137,7 +137,7 @@ func show_toast(emoji: String, text: String):
 		toast.reset_size()
 		_reposition_toasts()
 
-	get_tree().create_timer(TOAST_SHOW_DURATION).timeout.connect(func():
+	get_tree().create_timer(TOAST_SHOW_DURATION, true, false, true).timeout.connect(func():  # ignore_time_scale=true
 		if is_instance_valid(toast):
 			_animate_toast_out(toast)
 	)

@@ -4,7 +4,7 @@ extends StaticBody2D
 # === НАСТРОЙКА ЗВУКА БОССА ===============================
 # =========================================================
 const BOSS_SOUND_RADIUS: float = 400.0   # Радиус, при входе в который срабатывает звук
-const TUTORIAL_PROXIMITY_RADIUS: float = 200.0  # Меньший радиус для уведомления туториала
+const TUTORIAL_PROXIMITY_RADIUS: float = 260.0  # Меньший радиус для уведомления туториала
 
 var _exclamation_bubble: Node2D = null
 var _boss_player: AudioStreamPlayer = null  # <-- Изменено на обычный AudioStreamPlayer

@@ -29,16 +29,19 @@ func check_freelancer_departures():
 		var leave_chance = 0.0
 		var hard_leave_chance = 0.0  # Шанс уйти БЕЗ предупреждения
 
-		if days >= 10:
+		if days >= 8:
 			# Гарантированный уход
 			_show_departure_popup(npc, "guaranteed")
 			break
-		elif days >= 8:
+		elif days >= 6:
+			leave_chance = 0.30
+			hard_leave_chance = 0.40
+		elif days >= 4:
 			leave_chance = 0.20
-			hard_leave_chance = 0.30  # 30% hard leave
-		elif days >= 5:
+			hard_leave_chance = 0.15
+		elif days >= 3:
 			leave_chance = 0.10
-			hard_leave_chance = 0.0  # Только soft leave
+			hard_leave_chance = 0.0
 		else:
 			continue
 
@@ -65,14 +68,16 @@ func _get_random_reason() -> String:
 
 func _show_soft_leave_popup(npc_node: Node, warning_days: int):
 	var emp_name = npc_node.data.employee_name
+	var emp_display = npc_node.data.get_display_name()
 	var emp_role = tr(npc_node.data.job_title)
 	var reason = _get_random_reason()
-	var desc = tr("EVENT_FREELANCER_SOFT_DESC") % [emp_name, emp_role, reason, warning_days]
+	var desc = tr("EVENT_FREELANCER_SOFT_DESC") % [emp_display, emp_role, reason, warning_days]
 	var event_data = {
 		"id": "freelancer_leave",
 		"leave_type": "soft",
 		"npc_node": npc_node,
 		"employee_name": emp_name,
+		"display_name": emp_display,
 		"warning_days": warning_days,
 		"description_text": desc,
 		"choices": [
@@ -85,19 +90,21 @@ func _show_soft_leave_popup(npc_node: Node, warning_days: int):
 		],
 	}
 	if EventLog:
-		EventLog.add(tr("LOG_FREELANCER_WARN_LEAVE") % [emp_name, warning_days])
+		EventLog.add(tr("LOG_FREELANCER_WARN_LEAVE") % [emp_display, warning_days])
 	EventManager._show_event_popup(event_data)
 
 func _show_departure_popup(npc_node: Node, leave_type: String):
 	var emp_name = npc_node.data.employee_name
+	var emp_display = npc_node.data.get_display_name()
 	var emp_role = tr(npc_node.data.job_title)
 	var reason = _get_random_reason()
-	var desc = tr("EVENT_FREELANCER_HARD_DESC") % [emp_name, emp_role, reason]
+	var desc = tr("EVENT_FREELANCER_HARD_DESC") % [emp_display, emp_role, reason]
 	var event_data = {
 		"id": "freelancer_leave",
 		"leave_type": leave_type,
 		"npc_node": npc_node,
 		"employee_name": emp_name,
+		"display_name": emp_display,
 		"description_text": desc,
 		"choices": [
 			{
@@ -109,7 +116,7 @@ func _show_departure_popup(npc_node: Node, leave_type: String):
 		],
 	}
 	if EventLog:
-		EventLog.add(tr("LOG_FREELANCER_SUDDEN_LEAVE") % emp_name)
+		EventLog.add(tr("LOG_FREELANCER_SUDDEN_LEAVE") % emp_display)
 	EventManager._show_event_popup(event_data)
 
 func register_warned_freelancer(emp_name: String, warning_days: int):

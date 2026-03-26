@@ -166,6 +166,7 @@ var _lunch_table_ref = null
 const LUNCH_WANDER_DURATION_MIN = 30.0  # минимум игровых минут
 const LUNCH_WANDER_DURATION_MAX = 45.0  # максимум игровых минут
 var _lunch_wander_minutes_left := 0.0
+var _no_kitchen_lunch_delay: float = 0.0  # Случайная задержка начала обеда без кухни
 
 # === PROXIMITY CHAT SYSTEM ===
 const PROX_CHAT_RADIUS: float = 700.0        # Радиус обнаружения для мгновенного чата
@@ -648,6 +649,7 @@ func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
 	_setup_early_bird()
 	_lunch_done_today = false
+	_no_kitchen_lunch_delay = randf_range(5.0, 120.0)  # Случайная задержка обеда без кухни
 	_pm_aura_stacks = 0
 	_pm_aura_annoyance_timer = 0.0
 	_in_pm_aura = false
@@ -1433,6 +1435,10 @@ func _try_start_lunch():
 	
 	# Если кухня не куплена — бродим как "обед без кухни"
 	if not GameState.office_upgrades.get("kitchen", false):
+		# Случайная задержка: каждый сотрудник ждёт свой интервал после начала окна обеда
+		var minutes_since_lunch_start = (GameTime.hour - LUNCH_START_HOUR) * 60 + GameTime.minute
+		if minutes_since_lunch_start < _no_kitchen_lunch_delay:
+			return
 		_lunch_done_today = true
 		_lunch_wander_minutes_left = randf_range(LUNCH_WANDER_DURATION_MIN, LUNCH_WANDER_DURATION_MAX)
 		_wander_origin = global_position
