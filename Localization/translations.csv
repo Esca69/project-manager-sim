@@ -1140,9 +1140,9 @@ SKILL_MOVE_SPEED_1_DESC,+20% к скорости передвижения PM,+20
 SKILL_MOVE_SPEED_2_NAME,🏃 Быстрые ноги II,🏃 Fast Pace II
 SKILL_MOVE_SPEED_2_DESC,+40% к скорости передвижения PM,+40% PM movement speed
 SKILL_READ_MOOD_NAME,👁 Анализ настроения,👁 Mood Analysis
-SKILL_READ_MOOD_DESC,"Позволяет видеть детальный разбор настроения сотрудника (кнопка ""?"" в реестре)","Shows detailed mood breakdown for employees (""?"" button in roster)"
+SKILL_READ_MOOD_DESC,"Позволяет видеть детальный разбор настроения сотрудника (кнопка ""?"" в разделе «Сотрудники»)","Shows detailed mood breakdown for employees (""?"" button in Employees section)"
 SKILL_READ_EFFICIENCY_NAME,📊 Анализ эффективности,📊 Efficiency Analysis
-SKILL_READ_EFFICIENCY_DESC,"Позволяет видеть детальный разбор эффективности сотрудника (кнопка ""?"" в реестре)","Shows detailed efficiency breakdown for employees (""?"" button in roster)"
+SKILL_READ_EFFICIENCY_DESC,"Позволяет видеть детальный разбор эффективности сотрудника (кнопка ""?"" в разделе «Сотрудники»)","Shows detailed efficiency breakdown for employees (""?"" button in Employees section)"
 SKILL_REPORT_FINANCE_TAB_NAME,💰 Фин. отчёт,💰 Finance Report
 SKILL_REPORT_FINANCE_TAB_DESC,"Открывает вкладку финансов в отчётах. Требует все 3 базовых навыка аналитики.","Unlocks the finance tab in reports. Requires all 3 base analytics skills."
 SKILL_REPORT_PEOPLE_TAB_NAME,👥 Отчёт: команда,👥 People Report
@@ -1152,3 +1152,7 @@ SKILL_CRISIS_MANAGEMENT_DESC,"Штрафы кранча снижены в 2 ра
 SKILL_WORK_FUN_NAME,🎉 Работа — кайф!,🎉 Work is Fun!
 SKILL_WORK_FUN_DESC,"Активный навык [T]: +10 настроения сотрудникам в радиусе на 2 часа. Перезарядка: 8 часов.","Active skill [T]: +10 mood to nearby employees for 2 hours. Cooldown: 8 hours."
 MOOD_MOD_WORK_FUN,Работа — кайф!,Work is Fun!
+REPORTS_LOCK_FINANCE,🔒 Откройте навык «Фин. отчёт» для доступа,🔒 Unlock the «Finance Report» skill for access
+REPORTS_LOCK_PEOPLE,🔒 Откройте навык «Отчёт: команда» для доступа,🔒 Unlock the «People Report» skill for access
+ROSTER_LOCK_READ_MOOD,🔒 Откройте навык «Анализ настроения» в разделе «Навыки РМ» для просмотра,🔒 Unlock «Mood Analysis» in PM Skills to view
+ROSTER_LOCK_READ_EFFICIENCY,🔒 Откройте навык «Анализ эффективности» в разделе «Навыки РМ» для просмотра,🔒 Unlock «Efficiency Analysis» in PM Skills to view
