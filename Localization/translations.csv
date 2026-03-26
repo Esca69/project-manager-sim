@@ -266,6 +266,7 @@ DAY_SUMMARY_PROJ_DRAFT,📝 Ожидают старта:,📝 Awaiting start:
 DAY_SUMMARY_PROJ_DRAFT_DETAIL,[%s] %s — не начат назначьте людей,[%s] %s — not started assign people
 DAY_SUMMARY_NO_PROJECTS,Нет активных проектов,No active projects
 DAY_SUMMARY_NO_EMPLOYEES,Нет сотрудников,No employees
+ROSTER_EMPTY,Нет сотрудников. Наймите кого-нибудь.,No employees. Hire someone.
 DAY_SUMMARY_EMP_TOTAL_ONLY,👥 Всего сотрудников: %d,👥 Total employees: %d
 DAY_SUMMARY_EMP_STATS,👥 Всего: %d  |  🔧 Работали: %d  |  💤 Простаивали: %d,👥 Total: %d  |  🔧 Worked: %d  |  💤 Idle: %d
 DAY_SUMMARY_EMP_WORKED,🔧 Работали сегодня:,🔧 Worked today:
