@@ -51,7 +51,7 @@ func buy_service(upgrade_id: String, cost_trust: int) -> bool:
 	emit_signal("office_upgrade_purchased", upgrade_id)
 	return true
 
-
+func buy_desk() -> bool:
 	if office_upgrades["desk_count"] >= 12:
 		return false
 	var bm = get_node_or_null("/root/BossManager")

@@ -670,7 +670,7 @@ func _trigger_sick_event(employee_node):
 	# Если куплен корпоративный ДМС — стоимость лечения делится на 2
 	var gs_dms = get_node_or_null("/root/GameState")
 	if gs_dms and gs_dms.office_upgrades.get("corporate_dms", false):
-		cure_cost = cure_cost / 2
+		cure_cost = int(cure_cost / 2)
 	# Округляем до 50
 	cure_cost = int(round(float(cure_cost) / 50.0)) * 50
 	var sick_days = randi_range(2, 3)
