@@ -18,6 +18,7 @@ var _all_cards: Array = []
 var _freeze_warning_label: Label = null
 
 var _boss_preferred_index: int = -1  # -1 = нет рекомендации босса
+var _boss_preferred_checked: bool = false
 
 var _card_style_normal: StyleBoxFlat
 var _card_style_hover: StyleBoxFlat
@@ -171,13 +172,31 @@ func generate_candidates_for_role(role: String):
 
 	# === РЕКОМЕНДАЦИЯ БОССА ===
 	_boss_preferred_index = -1
+	_boss_preferred_checked = false
 	if not TutorialManager.is_active() and candidates.size() >= 2:
 		if randf() < 0.5:
 			_boss_preferred_index = randi() % candidates.size()
 			print("⭐ Босс рекомендует кандидата #%d" % _boss_preferred_index)
+	_boss_preferred_checked = true
 
 # === ОБНОВЛЕНИЕ UI ===
 func update_ui():
+	# Если рекомендация босса ещё не проверялась (альтернативный путь открытия),
+	# запускаем проверку здесь
+	if not _boss_preferred_checked and not TutorialManager.is_active():
+		var non_null_count = 0
+		for c in candidates:
+			if c != null:
+				non_null_count += 1
+		if non_null_count >= 2:
+			if randf() < 0.5:
+				var valid_indices = []
+				for i in range(candidates.size()):
+					if candidates[i] != null:
+						valid_indices.append(i)
+				_boss_preferred_index = valid_indices[randi() % valid_indices.size()]
+				print("⭐ Босс рекомендует кандидата #%d (fallback)" % _boss_preferred_index)
+		_boss_preferred_checked = true
 	# Очищаем динамические элементы
 	for tc in _trait_containers:
 		if is_instance_valid(tc):

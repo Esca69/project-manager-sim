@@ -113,9 +113,9 @@ func apply_office_upgrades():
 			if should_show:
 				if not desk.is_in_group("desk"):
 					desk.add_to_group("desk")
-				else:
-					if desk.is_in_group("desk"):
-						desk.remove_from_group("desk")
+			else:
+				if desk.is_in_group("desk"):
+					desk.remove_from_group("desk")
 			if DESK_TUMBOCHKA_MAP.has(desk_name):
 				var tumb_name = DESK_TUMBOCHKA_MAP[desk_name]
 				var tumb = find_child(tumb_name, true, false)

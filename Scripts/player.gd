@@ -244,6 +244,14 @@ func _is_ui_blocking() -> bool:
 
 func _physics_process(delta):
 	if GameTime.is_night_skip:
+		if _free_camera_mode:
+			_free_camera_mode = false
+			_free_camera_returning = false
+			_free_camera_offset = Vector2.ZERO
+			camera.position = Vector2.ZERO
+			var hud_ref = get_tree().get_first_node_in_group("ui")
+			if hud_ref and hud_ref.has_method("hide_free_camera_hint"):
+				hud_ref.hide_free_camera_hint()
 		velocity = Vector2.ZERO
 		move_and_slide()
 		_hide_interact_hint()
