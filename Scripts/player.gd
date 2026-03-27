@@ -46,6 +46,18 @@ const FREE_CAMERA_RETURN_SPEED: float = 5.0  # Скорость lerp при во
 const FREE_CAMERA_RETURN_THRESHOLD: float = 1.0  # Порог длины смещения для завершения возврата
 const FREE_CAMERA_MIN_TIME_SCALE: float = 0.001  # Защита от деления на ноль при нулевом time_scale
 
+# Принудительно сбрасывает состояние свободной камеры. Вызывается перед снятием паузы/ночной промоткой.
+# Ничего не делает, если свободная камера не была активна.
+func force_reset_camera():
+	if _free_camera_mode:
+		_free_camera_mode = false
+		_free_camera_returning = false
+		_free_camera_offset = Vector2.ZERO
+		camera.position = Vector2.ZERO
+		var hud_ref = get_tree().get_first_node_in_group("ui")
+		if hud_ref and hud_ref.has_method("hide_free_camera_hint"):
+			hud_ref.hide_free_camera_hint()
+
 # Границы офиса для ограничения камеры.
 # Вычислены из office.tscn: NavigationPolygon outlines покрывают область примерно от (-350, -1200) до (3350, 900).
 # Используем эти значения с небольшим запасом.
