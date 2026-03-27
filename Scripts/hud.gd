@@ -31,6 +31,9 @@ var _pm_xp_bar: ProgressBar
 var _pm_xp_label: Label
 var _xp_tween: Tween = null
 
+# --- Boss Trust UI ---
+var _boss_trust_label: Label
+
 # --- Day Summary ---
 var _day_summary: Control
 
@@ -199,6 +202,7 @@ func _ready():
 	ProjectManager.employee_leveled_up.connect(_on_employee_leveled_up_toast)
 
 	PMData.xp_changed.connect(_on_pm_xp_changed)
+	BossManager.trust_changed.connect(_on_boss_trust_changed)
 
 	call_deferred("_apply_fonts")
 
@@ -501,11 +505,20 @@ func _build_pm_level_ui():
 			spacer_index = i
 			break
 
+	_boss_trust_label = Label.new()
+	_boss_trust_label.text = "🤝 %d" % BossManager.boss_trust
+	_boss_trust_label.add_theme_font_size_override("font_size", 13)
+	_boss_trust_label.add_theme_color_override("font_color", BossManager.get_trust_color())
+	_boss_trust_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
 	if spacer_index >= 0:
 		hbox_container.add_child(level_vbox)
 		hbox_container.move_child(level_vbox, spacer_index)
+		hbox_container.add_child(_boss_trust_label)
+		hbox_container.move_child(_boss_trust_label, spacer_index + 1)
 	else:
 		hbox_container.add_child(level_vbox)
+		hbox_container.add_child(_boss_trust_label)
 
 func _update_pm_level_ui():
 	if PMData == null:
@@ -667,12 +680,24 @@ func _on_project_finished_xp(proj):
 		var payout = proj.get_final_payout(GameTime.day) if proj else 0
 		ScreenJuice.show_toast("✅", tr("TOAST_PROJECT_FINISHED") % [tr(proj.title), payout])
 		ScreenJuice.show_confetti()
+		AudioManager.play_projectdone_sfx()
+	if proj and proj.is_finished_on_time(GameTime.day):
+		BossManager.change_trust(1)
+		if ScreenJuice:
+			ScreenJuice.show_toast("🤝", tr("TOAST_TRUST_PROJECT_SUCCESS"))
 
 func _on_project_failed_xp(proj):
 	PMData.add_xp(10)
 	print("🎯 PM +10 XP за проваленный проект (опыт всё равно)")
+	BossManager.change_trust(-2)
 	if ScreenJuice and proj:
 		ScreenJuice.show_toast("❌", tr("TOAST_PROJECT_FAILED") % tr(proj.title))
+		ScreenJuice.show_toast("🤝", tr("TOAST_TRUST_PROJECT_FAILED"))
+
+func _on_boss_trust_changed(new_trust: int):
+	if _boss_trust_label:
+		_boss_trust_label.text = "🤝 %d" % new_trust
+		_boss_trust_label.add_theme_color_override("font_color", BossManager.get_trust_color())
 
 func _on_employee_leveled_up_toast(emp: EmployeeData, new_level: int, _skill_gain: int, _new_trait: String):
 	if ScreenJuice and emp:

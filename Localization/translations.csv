@@ -1190,3 +1190,5 @@ HIRE_BOSS_PREFERRED,👔 Босс хочет этого,👔 Boss wants this one
 HIRE_BOSS_PREFERRED_TOOLTIP,Если наймёшь этого кандидата — получишь +1 доверия босса,If you hire this candidate you'll get +1 boss trust
 LOG_BOSS_PREFERRED_HIRED,⭐ Вы наняли рекомендованного боссом кандидата! +1 доверие,⭐ You hired the boss's preferred candidate! +1 trust
 TOAST_BOSS_PREFERRED_HIRED,Босс доволен выбором! +1 доверие,Boss is pleased! +1 trust
+TOAST_TRUST_PROJECT_SUCCESS,🤝 +1 доверие босса!,🤝 +1 boss trust!
+TOAST_TRUST_PROJECT_FAILED,🤝 -2 доверие босса,🤝 -2 boss trust
