@@ -2,6 +2,8 @@
 .godot/
 /android/
 
+# Godot editor temporary/backup files
+*.tmp
+
 # LibreOffice lock and temp files
 Localization/.~lock*
-Localization/*.tmp
