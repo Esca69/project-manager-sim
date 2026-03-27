@@ -185,10 +185,7 @@ func spawn_new_employee(data: EmployeeData):
 	# 1. Создаем копию
 	var new_npc = employee_scene.instantiate()
 
-	# 2. Настраиваем данные СРАЗУ (до добавления в сцену)
-	new_npc.setup_employee(data)
-
-	# 3. Ищем слой для сортировки
+	# 2. Ищем слой для сортировки
 	var world_layer = get_tree().get_first_node_in_group("world_layer")
 
 	if world_layer:
@@ -197,11 +194,14 @@ func spawn_new_employee(data: EmployeeData):
 		add_child(new_npc)
 		print("ВНИМАНИЕ: Нет группы 'world_layer'! Сортировка может сломаться.")
 
-	# 4. Позиция
+	# 3. Позиция
 	if spawn_point:
 		var random_offset = Vector2(randf_range(-50, 50), randf_range(-50, 50))
 		new_npc.global_position = spawn_point.global_position + random_offset
 	else:
 		new_npc.global_position = Vector2(500, 300)
+
+	# 4. Настраиваем данные ПОСЛЕ добавления в сцену (чтобы get_tree() работал)
+	new_npc.setup_employee(data)
 
 	print("Заспавнен сотрудник: ", data.employee_name)

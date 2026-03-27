@@ -95,6 +95,8 @@ func _get_existing_employee_names() -> Array[String]:
 	var names: Array[String] = []
 	var tree = get_tree()
 	if tree == null:
+		tree = Engine.get_main_loop()
+	if tree == null or not tree.has_method("get_nodes_in_group"):
 		return names
 	for npc in tree.get_nodes_in_group("npc"):
 		if npc.data and npc.data is EmployeeData:
