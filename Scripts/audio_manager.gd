@@ -15,7 +15,9 @@ const SFX_LIBRARY = {
 	"eating": "res://Sound/eatingsound.mp3",
 	"sippingcoffee": "res://Sound/sippingcoffe.mp3",
 	"startworkingday": "res://Sound/startworkingday.mp3",
-	"buttonclick": "res://Sound/buttonclick.mp3" # <-- ДОБАВЛЕН ЗВУК КНОПКИ
+	"buttonclick": "res://Sound/buttonclick.mp3", # <-- ДОБАВЛЕН ЗВУК КНОПКИ
+	"toast": "res://Sound/toast.mp3",
+	"projectdone": "res://Sound/projectdone.mp3",
 }
 
 # --- ИНДИВИДУАЛЬНАЯ ГРОМКОСТЬ ЗВУКОВ (Множители от 0.0 до 1.0) ---
@@ -24,7 +26,9 @@ const SFX_VOLUME_MULTIPLIERS = {
 	"sippingcoffee": 1.3,
 	"typing": 1.0,
 	"startworkingday": 0.6,
-	"buttonclick": 0.7 # <-- ДОБАВЛЕН РЕГУЛЯТОР ДЛЯ КНОПОК
+	"buttonclick": 0.7, # <-- ДОБАВЛЕН РЕГУЛЯТОР ДЛЯ КНОПОК
+	"toast": 0.8,
+	"projectdone": 0.7,
 }
 
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
@@ -53,6 +57,10 @@ const MAX_COFFEE_SOUNDS: int = 1
 var active_coffee_sounds: int = 0
 
 var _sfx_cache: Dictionary = {}
+
+# --- ПРИОРИТЕТЫ ЗВУКОВ ---
+var _is_projectdone_playing: bool = false
+const PROJECTDONE_PRIORITY_DURATION: float = 3.0
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -180,6 +188,35 @@ func play_sfx(sfx_name: String):
 
 func set_sfx_volume(vol: float):
 	sfx_volume = clampf(vol, 0.0, 1.0)
+
+# ============================
+# ПРИОРИТЕТЫ: TOAST / PROJECTDONE
+# ============================
+func is_toast_playing() -> bool:
+	var toast_stream = _sfx_cache.get("toast", null)
+	if not toast_stream:
+		return false
+	for player in _sfx_players:
+		if player.playing and player.stream == toast_stream:
+			return true
+	return false
+
+func is_projectdone_playing() -> bool:
+	return _is_projectdone_playing
+
+func play_toast_sfx():
+	if _is_projectdone_playing:
+		return
+	if is_toast_playing():
+		return
+	play_sfx("toast")
+
+func play_projectdone_sfx():
+	_is_projectdone_playing = true
+	play_sfx("projectdone")
+	get_tree().create_timer(PROJECTDONE_PRIORITY_DURATION).timeout.connect(func():
+		_is_projectdone_playing = false
+	)
 
 # ============================
 # SPATIAL AUDIO ЛИМИТЫ

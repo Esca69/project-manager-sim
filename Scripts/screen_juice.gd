@@ -112,6 +112,7 @@ func show_toast(emoji: String, text: String):
 
 	var toast = _build_toast(emoji, text)
 	_ui_layer.add_child(toast)
+	AudioManager.play_toast_sfx()
 
 	# CRITICAL: Reset anchors AFTER adding to tree.
 	# CanvasLayer automatically sets anchors to full-rect when a Control is added.
