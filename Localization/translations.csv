@@ -213,6 +213,7 @@ UI_SALARY,$ %d,$ %d
 UI_LEVEL,Уровень %d,Level %d
 UI_XP,XP: %d / %d,XP: %d / %d
 UI_PM_LEVEL,PM Уровень %d,PM Level %d
+UI_BOSS_TRUST,Доверие босса: 🤝 %d,Boss Trust: 🤝 %d
 UI_SKILL_POINTS,Очки навыков: %d,Skill points: %d
 UI_SKILL_LOCKED,🔒 Заблокировано,🔒 Locked
 UI_SKILL_UNLOCKED,✅ Изучено,✅ Unlocked

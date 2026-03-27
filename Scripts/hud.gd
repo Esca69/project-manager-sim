@@ -506,7 +506,7 @@ func _build_pm_level_ui():
 			break
 
 	_boss_trust_label = Label.new()
-	_boss_trust_label.text = "🤝 %d" % BossManager.boss_trust
+	_boss_trust_label.text = tr("UI_BOSS_TRUST") % BossManager.boss_trust
 	_boss_trust_label.add_theme_font_size_override("font_size", 13)
 	_boss_trust_label.add_theme_color_override("font_color", BossManager.get_trust_color())
 	_boss_trust_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -696,7 +696,7 @@ func _on_project_failed_xp(proj):
 
 func _on_boss_trust_changed(new_trust: int):
 	if _boss_trust_label:
-		_boss_trust_label.text = "🤝 %d" % new_trust
+		_boss_trust_label.text = tr("UI_BOSS_TRUST") % new_trust
 		_boss_trust_label.add_theme_color_override("font_color", BossManager.get_trust_color())
 
 func _on_employee_leveled_up_toast(emp: EmployeeData, new_level: int, _skill_gain: int, _new_trait: String):
