@@ -39,7 +39,6 @@ func setup(scene_root: Node2D):
 	_scene_root = scene_root
 	call_deferred("_add_furniture_shadows")
 	call_deferred("_add_player_shadow")
-	call_deferred("_add_office_border_shadow")
 
 func _process(delta):
 	if _scene_root == null:

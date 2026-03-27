@@ -932,12 +932,8 @@ func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeDat
 		return null
 
 	var npc = employee_scene.instantiate()
-	
-	if npc.has_method("setup_employee"):
-		npc.setup_employee(emp_data)
-	else:
-		npc.data = emp_data
 
+	# Добавляем в дерево ПЕРВЫМ, чтобы get_tree() работал во время setup
 	if world_layer:
 		world_layer.add_child(npc)
 	else:
@@ -947,6 +943,12 @@ func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeDat
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
 		npc.global_position = entrance.global_position
+
+	# Настраиваем ПОСЛЕ добавления в дерево
+	if npc.has_method("setup_employee"):
+		npc.setup_employee(emp_data)
+	else:
+		npc.data = emp_data
 
 	return npc
 

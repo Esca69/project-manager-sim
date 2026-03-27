@@ -34,8 +34,8 @@ func _ready():
 func _force_fullscreen_size():
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var vp_size = get_viewport().get_visible_rect().size
-	position = Vector2.ZERO
-	size = vp_size
+	set_deferred("position", Vector2.ZERO)
+	set_deferred("size", vp_size)
 
 func open():
 	_force_fullscreen_size()
