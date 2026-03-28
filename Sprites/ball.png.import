@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4llspr1t3000"
-path="res://.godot/imported/ball.png-1b3cf79735ae08e8fd85556823c53f97.ctex"
+path="res://.godot/imported/ball.png-ced949aa27aa6415675b42ae2cf4b2b4.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://Sprites/ball.png"
-dest_files=["res://.godot/imported/ball.png-1b3cf79735ae08e8fd85556823c53f97.ctex"]
+dest_files=["res://.godot/imported/ball.png-ced949aa27aa6415675b42ae2cf4b2b4.ctex"]
 
 [params]
 
