@@ -8,7 +8,7 @@ friction = 0.3
 bounce = 0.7
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ball1"]
-radius = 16.0
+radius = 24.0
 
 [node name="Ball" type="RigidBody2D"]
 mass = 0.5
@@ -21,7 +21,7 @@ max_contacts_reported = 4
 script = ExtResource("1_ball1")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.4, 0.4)
+scale = Vector2(1.5, 1.5)
 texture = ExtResource("2_ball1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
