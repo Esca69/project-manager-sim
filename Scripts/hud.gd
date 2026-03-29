@@ -880,7 +880,19 @@ func _on_bottom_tab_pressed(tab_name: String):
 				if _my_life_panel: _my_life_panel.visible = false
 				_reports_panel.open()
 		"projects_menu":
-			open_work_menu()
+			if project_list_menu.visible:
+				if UITheme:
+					UITheme.fade_out(project_list_menu)
+				else:
+					project_list_menu.visible = false
+			else:
+				employee_roster.visible = false
+				pm_skill_tree.visible = false
+				client_panel.visible = false
+				if _boss_panel: _boss_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
+				project_list_menu.open_menu()
 
 # === ПРИНУДИТЕЛЬНАЯ ОТПРАВКА ВСЕХ СОТРУДНИКОВ ДОМОЙ ===
 func _dismiss_all_employees():

@@ -320,6 +320,9 @@ func _ready():
 	GameTime.time_tick.connect(_on_time_tick)
 	GameTime.day_started.connect(_on_day_started)
 	
+	if _no_kitchen_lunch_delay == 0.0:
+		_no_kitchen_lunch_delay = randf_range(5.0, 120.0)
+	
 	if GameTime.hour < 9 or GameTime.hour >= 20 or GameTime.is_weekend():
 		_go_to_sleep_instant()
 	elif GameTime.hour >= 18:

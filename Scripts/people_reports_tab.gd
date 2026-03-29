@@ -192,6 +192,8 @@ func _populate_employee_dropdown():
 	var npcs = get_tree().get_nodes_in_group("npc")
 	var idx = 1
 	for npc in npcs:
+		if not is_instance_valid(npc):
+			continue
 		if not npc.data:
 			continue
 		var name_str = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
@@ -311,6 +313,8 @@ func _refresh_summary():
 	var role_salary: Dictionary = {}
 
 	for npc in npcs:
+		if not is_instance_valid(npc):
+			continue
 		if not npc.data:
 			continue
 		var d = npc.data
@@ -481,6 +485,8 @@ func _refresh_svo():
 	var all_roles: Array = []
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
+		if not is_instance_valid(npc):
+			continue
 		if not npc.data:
 			continue
 		var jt = str(npc.data.job_title)

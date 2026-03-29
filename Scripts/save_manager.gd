@@ -332,6 +332,8 @@ func _serialize_employees() -> Array:
 			# === MORNING MOOD SYSTEM: Состояние бабла ===
 			"morning_mood_bubble_pending": npc._morning_mood_bubble_pending if "_morning_mood_bubble_pending" in npc else false,
 			"morning_mood_bubble_emoji": npc._morning_mood_bubble_emoji if "_morning_mood_bubble_emoji" in npc else "",
+			# === NO-KITCHEN LUNCH DELAY ===
+			"no_kitchen_lunch_delay": npc._no_kitchen_lunch_delay if "_no_kitchen_lunch_delay" in npc else 0.0,
 		})
 	return result
 
@@ -819,6 +821,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === MORNING MOOD SYSTEM: Состояние бабла ===
 			npc._morning_mood_bubble_pending = emp_dict.get("morning_mood_bubble_pending", false)
 			npc._morning_mood_bubble_emoji = str(emp_dict.get("morning_mood_bubble_emoji", ""))
+			# === NO-KITCHEN LUNCH DELAY ===
+			npc._no_kitchen_lunch_delay = float(emp_dict.get("no_kitchen_lunch_delay", randf_range(5.0, 120.0)))
 			# === PROXIMITY CHAT: Восстанавливаем кулдауны пар ===
 			var saved_cooldowns = emp_dict.get("chat_pair_cooldowns", {})
 			npc._chat_pair_cooldowns.clear()
