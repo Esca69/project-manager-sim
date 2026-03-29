@@ -137,7 +137,13 @@ func open():
 	else:
 		visible = true
 
+func _kill_all_tooltips():
+	for tp in get_tree().get_nodes_in_group("roster_tooltip"):
+		if is_instance_valid(tp):
+			tp.queue_free()
+
 func _on_close_pressed():
+	_kill_all_tooltips()
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -219,6 +225,7 @@ func _update_live_data():
 				lbl.text = _build_mood_breakdown_text(emp_data)
 
 func _rebuild_cards():
+	_kill_all_tooltips()
 	for child in cards_container.get_children():
 		if child == empty_label: continue
 		cards_container.remove_child(child)
@@ -493,6 +500,7 @@ func _create_card(npc_node) -> PanelContainer:
 				mood_tooltip_ref[0].queue_free()
 			var tp = TraitUIHelper._create_tooltip(tr("ROSTER_LOCK_READ_MOOD"), Color(0.5, 0.5, 0.5, 1))
 			parent_ref.add_child(tp)
+			tp.add_to_group("roster_tooltip")
 			await parent_ref.get_tree().process_frame
 			if not is_instance_valid(tp): return
 			var btn_global = mood_help_btn.global_position
@@ -515,6 +523,7 @@ func _create_card(npc_node) -> PanelContainer:
 			var breakdown_text = _build_mood_breakdown_text(emp_ref)
 			var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 			parent_ref.add_child(tp)
+			tp.add_to_group("roster_tooltip")
 			
 			# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 			await parent_ref.get_tree().process_frame
@@ -609,6 +618,7 @@ func _create_card(npc_node) -> PanelContainer:
 			burnout_tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(tr("BURNOUT_TOOLTIP_DESC"), Color(0.17254902, 0.30980393, 0.5686275, 1))
 		parent_ref.add_child(tp)
+		tp.add_to_group("roster_tooltip")
 
 		await parent_ref.get_tree().process_frame
 		if not is_instance_valid(tp): return
@@ -659,6 +669,7 @@ func _create_card(npc_node) -> PanelContainer:
 				eff_tooltip_ref[0].queue_free()
 			var tp = TraitUIHelper._create_tooltip(tr("ROSTER_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
 			parent_ref.add_child(tp)
+			tp.add_to_group("roster_tooltip")
 			await parent_ref.get_tree().process_frame
 			if not is_instance_valid(tp): return
 			var btn_global = eff_help_btn.global_position
@@ -681,6 +692,7 @@ func _create_card(npc_node) -> PanelContainer:
 			var breakdown_text = _build_efficiency_breakdown_text(emp_ref)
 			var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 			parent_ref.add_child(tp)
+			tp.add_to_group("roster_tooltip")
 			
 			# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 			await parent_ref.get_tree().process_frame
@@ -843,6 +855,7 @@ func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
 		parent_ref.add_child(tp)
+		tp.add_to_group("roster_tooltip")
 		
 		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 		await parent_ref.get_tree().process_frame
@@ -925,6 +938,7 @@ func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContaine
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(description, color)
 		parent_ref.add_child(tp)
+		tp.add_to_group("roster_tooltip")
 		
 		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 		await parent_ref.get_tree().process_frame
@@ -981,6 +995,7 @@ func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
 		tp.custom_minimum_size = Vector2(350, 0)
 		
 		parent_ref.add_child(tp)
+		tp.add_to_group("roster_tooltip")
 		
 		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 		await parent_ref.get_tree().process_frame
@@ -1229,6 +1244,7 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(description, color)
 		parent_ref.add_child(tp)
+		tp.add_to_group("roster_tooltip")
 		
 		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 		await parent_ref.get_tree().process_frame
@@ -1294,6 +1310,7 @@ func _create_hidden_trait() -> HBoxContainer:
 			tooltip_ref[0].queue_free()
 		var tp = TraitUIHelper._create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
 		parent_ref.add_child(tp)
+		tp.add_to_group("roster_tooltip")
 		
 		# --- УМНОЕ ПОЗИЦИОНИРОВАНИЕ ---
 		await parent_ref.get_tree().process_frame

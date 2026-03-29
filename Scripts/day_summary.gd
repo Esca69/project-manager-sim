@@ -51,15 +51,12 @@ func _close():
 	
 	visible = false
 	
-	# === FIX: Force reset free camera before unpausing/starting night skip ===
+	# === FIX: Force reset free camera before starting night skip ===
 	var player = get_tree().get_first_node_in_group("player")
 	if player and player.has_method("force_reset_camera"):
 		player.force_reset_camera()
 	
-	# --- ИСПРАВЛЕНИЕ: Снимаем паузу только если её не было до открытия отчёта ---
-	if not _was_paused_before:
-		GameTime.set_paused(false)
-		
+	# Pause state is managed internally by start_night_skip().
 	GameTime.start_night_skip()
 
 # === ПОСТРОЕНИЕ КАРКАСА UI ===

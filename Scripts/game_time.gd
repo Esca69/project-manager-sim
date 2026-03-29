@@ -222,6 +222,7 @@ func start_night_skip():
 	if is_night_skip:
 		return
 	
+	is_game_paused = false  # Clear logical pause flag so night skip time processing works
 	is_night_skip = true
 	
 	var target: int
@@ -267,6 +268,11 @@ func finish_night_skip():
 	Engine.time_scale = current_speed_scale
 	
 	get_tree().paused = false
+	
+	# Safety: reset free camera in case it was activated during skip
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("force_reset_camera"):
+		player.force_reset_camera()
 	
 	emit_signal("night_skip_finished")
 
