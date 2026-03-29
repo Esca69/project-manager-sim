@@ -1054,7 +1054,7 @@ func _create_work_fun_button():
 
 	_work_fun_container = VBoxContainer.new()
 	_work_fun_container.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	_work_fun_container.position = Vector2(20, -60)
+	_work_fun_container.position = Vector2(20, -300)
 	_work_fun_container.add_theme_constant_override("separation", 2)
 	hud.add_child(_work_fun_container)
 

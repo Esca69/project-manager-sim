@@ -132,6 +132,7 @@ func open(event_data: Dictionary):
 		UITheme.fade_in(self, 0.25)
 	else:
 		visible = true
+	move_to_front()
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 # ============================================================
@@ -147,6 +148,7 @@ func open_info(event_data: Dictionary):
 		UITheme.fade_in(self, 0.25)
 	else:
 		visible = true
+	move_to_front()
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 # ============================================================

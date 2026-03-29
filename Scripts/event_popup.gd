@@ -179,6 +179,7 @@ func show_event(event_data: Dictionary):
 
 	# Показываем
 	visible = true
+	move_to_front()
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	if UITheme:
