@@ -12,6 +12,9 @@ const COLOR_BORDER = Color(0.8784314, 0.8784314, 0.8784314, 1)
 const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 const COLOR_GOLD = Color(0.85, 0.65, 0.13, 1)
 const COLOR_TRUST = Color(0.85, 0.55, 0.0, 1)
+const COLOR_SUCCESS_BG = Color(0.93, 0.98, 0.93, 1)
+const COLOR_FAILURE_BG = Color(0.98, 0.94, 0.94, 1)
+const COLOR_NEUTRAL_BG = Color(0.96, 0.96, 0.96, 1)
 
 var _overlay: ColorRect
 var _window: PanelContainer
@@ -19,6 +22,13 @@ var _scroll: ScrollContainer
 var _content_vbox: VBoxContainer
 var _close_btn: Button
 var _title_label: Label
+
+# === НАВИГАЦИЯ ПО МЕСЯЦАМ ===
+var _viewed_month: int = 1
+var _nav_bar: HBoxContainer
+var _btn_prev: Button
+var _btn_next: Button
+var _month_label: Label
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -37,6 +47,8 @@ func open():
 	_force_fullscreen_size()
 	if _title_label:
 		_title_label.text = tr("BOSS_TITLE")
+	# При открытии всегда показываем текущий месяц
+	_viewed_month = BossManager._current_month
 	_populate()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
@@ -173,7 +185,99 @@ func _populate():
 	var sep = HSeparator.new()
 	_content_vbox.add_child(sep)
 
-	# === КВЕСТ ===
+	# === НАВИГАЦИЯ ПО МЕСЯЦАМ ===
+	var current_month = BossManager._current_month
+	var has_history = BossManager.quest_history.size() > 0
+
+	# Показываем навигацию если есть история или уже идёт 2+ месяц
+	if has_history or current_month > 1:
+		_add_month_navigation(current_month)
+		sep = HSeparator.new()
+		_content_vbox.add_child(sep)
+
+	# === КВЕСТ / ИСТОРИЯ ===
+	if _viewed_month == current_month:
+		_populate_current_month()
+	else:
+		_populate_history_month(_viewed_month)
+
+func _add_month_navigation(current_month: int):
+	_nav_bar = HBoxContainer.new()
+	_nav_bar.alignment = BoxContainer.ALIGNMENT_CENTER
+	_nav_bar.add_theme_constant_override("separation", 12)
+	_nav_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_content_vbox.add_child(_nav_bar)
+
+	# Кнопка "<"
+	_btn_prev = _make_arrow_button("<")
+	_btn_prev.pressed.connect(_on_prev_month)
+	_nav_bar.add_child(_btn_prev)
+
+	# Заголовок месяца
+	_month_label = Label.new()
+	_month_label.text = tr("BOSS_PANEL_MONTH") % _viewed_month
+	_month_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_month_label.custom_minimum_size = Vector2(160, 0)
+	_month_label.add_theme_color_override("font_color", COLOR_BLUE)
+	_month_label.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(_month_label, "bold")
+	_nav_bar.add_child(_month_label)
+
+	# Кнопка ">"
+	_btn_next = _make_arrow_button(">")
+	_btn_next.pressed.connect(_on_next_month)
+	_nav_bar.add_child(_btn_next)
+
+	# Скрываем кнопки при необходимости
+	_btn_prev.visible = _viewed_month > 1
+	_btn_next.visible = _viewed_month < current_month
+
+func _make_arrow_button(label: String) -> Button:
+	var btn = Button.new()
+	btn.text = label
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.custom_minimum_size = Vector2(36, 30)
+
+	var s_normal = StyleBoxFlat.new()
+	s_normal.bg_color = COLOR_BLUE
+	s_normal.corner_radius_top_left = 8
+	s_normal.corner_radius_top_right = 8
+	s_normal.corner_radius_bottom_right = 8
+	s_normal.corner_radius_bottom_left = 8
+	btn.add_theme_stylebox_override("normal", s_normal)
+
+	var s_hover = StyleBoxFlat.new()
+	s_hover.bg_color = Color(0.22, 0.40, 0.68, 1)
+	s_hover.corner_radius_top_left = 8
+	s_hover.corner_radius_top_right = 8
+	s_hover.corner_radius_bottom_right = 8
+	s_hover.corner_radius_bottom_left = 8
+	btn.add_theme_stylebox_override("hover", s_hover)
+
+	var s_pressed = StyleBoxFlat.new()
+	s_pressed.bg_color = Color(0.13, 0.24, 0.46, 1)
+	s_pressed.corner_radius_top_left = 8
+	s_pressed.corner_radius_top_right = 8
+	s_pressed.corner_radius_bottom_right = 8
+	s_pressed.corner_radius_bottom_left = 8
+	btn.add_theme_stylebox_override("pressed", s_pressed)
+
+	btn.add_theme_color_override("font_color", COLOR_WHITE)
+	btn.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(btn, "bold")
+	return btn
+
+func _on_prev_month():
+	if _viewed_month > 1:
+		_viewed_month -= 1
+		_populate()
+
+func _on_next_month():
+	if _viewed_month < BossManager._current_month:
+		_viewed_month += 1
+		_populate()
+
+func _populate_current_month():
 	var quest = BossManager.current_quest
 	if quest.is_empty() or not BossManager.quest_active:
 		_add_label(tr("BOSS_NO_QUEST"), COLOR_GRAY, 14, "regular")
@@ -191,6 +295,86 @@ func _populate():
 	for obj in objectives:
 		_add_objective_row(obj)
 
+func _populate_history_month(month: int):
+	# Ищем запись в истории
+	var history_entry: Dictionary = {}
+	for entry in BossManager.quest_history:
+		if entry.get("month", 0) == month:
+			history_entry = entry
+			break
+
+	if history_entry.is_empty():
+		_add_label(tr("BOSS_PANEL_NO_QUEST_HISTORY"), COLOR_GRAY, 14, "regular")
+		return
+
+	var results = history_entry.get("results", [])
+	for result in results:
+		_add_history_objective_row(result)
+
+	# Итог доверия
+	var total_trust = history_entry.get("total_trust", 0)
+	var total_lbl = Label.new()
+	total_lbl.text = tr("BOSS_PANEL_QUEST_TRUST_TOTAL") % total_trust
+	total_lbl.add_theme_color_override("font_color", COLOR_TRUST if total_trust >= 0 else COLOR_RED)
+	total_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(total_lbl, "semibold")
+	_content_vbox.add_child(total_lbl)
+
+# === СТРОКА ЦЕЛИ (ИСТОРИЯ) ===
+func _add_history_objective_row(result: Dictionary):
+	var obj = result.get("objective", {})
+	var achieved = result.get("achieved", false)
+	var trust_gained = result.get("trust_gained", 0)
+
+	var row_panel = PanelContainer.new()
+	row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var row_style = StyleBoxFlat.new()
+	row_style.bg_color = COLOR_SUCCESS_BG if achieved else COLOR_FAILURE_BG
+	row_style.corner_radius_top_left = 8
+	row_style.corner_radius_top_right = 8
+	row_style.corner_radius_bottom_right = 8
+	row_style.corner_radius_bottom_left = 8
+	row_panel.add_theme_stylebox_override("panel", row_style)
+	_content_vbox.add_child(row_panel)
+
+	var row_margin = MarginContainer.new()
+	row_margin.add_theme_constant_override("margin_left", 14)
+	row_margin.add_theme_constant_override("margin_top", 8)
+	row_margin.add_theme_constant_override("margin_right", 14)
+	row_margin.add_theme_constant_override("margin_bottom", 8)
+	row_panel.add_child(row_margin)
+
+	var row_hbox = HBoxContainer.new()
+	row_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row_hbox.add_theme_constant_override("separation", 8)
+	row_margin.add_child(row_hbox)
+
+	# Статус (✅/❌)
+	var status_lbl = Label.new()
+	status_lbl.text = tr("BOSS_PANEL_OBJ_COMPLETED") if achieved else tr("BOSS_PANEL_OBJ_FAILED")
+	status_lbl.add_theme_color_override("font_color", COLOR_GREEN if achieved else COLOR_RED)
+	status_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(status_lbl, "semibold")
+	row_hbox.add_child(status_lbl)
+
+	# Описание цели
+	var goal_text = Label.new()
+	goal_text.text = BossManager._rebuild_label(obj)
+	goal_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	goal_text.add_theme_color_override("font_color", COLOR_DARK)
+	goal_text.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(goal_text, "regular")
+	row_hbox.add_child(goal_text)
+
+	# Награда доверием
+	if trust_gained != 0:
+		var reward_lbl = Label.new()
+		reward_lbl.text = "%+d 🤝" % trust_gained
+		reward_lbl.add_theme_color_override("font_color", COLOR_TRUST if trust_gained > 0 else COLOR_RED)
+		reward_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(reward_lbl, "semibold")
+		row_hbox.add_child(reward_lbl)
+
 # === СТРОКА ЦЕЛИ ===
 func _add_objective_row(obj: Dictionary):
 	var target = obj.get("target", 0)
@@ -204,7 +388,7 @@ func _add_objective_row(obj: Dictionary):
 	var row_panel = PanelContainer.new()
 	row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var row_style = StyleBoxFlat.new()
-	row_style.bg_color = Color(0.93, 0.98, 0.93, 1) if is_done else Color(0.96, 0.96, 0.96, 1)
+	row_style.bg_color = COLOR_SUCCESS_BG if is_done else COLOR_NEUTRAL_BG
 	row_style.corner_radius_top_left = 8
 	row_style.corner_radius_top_right = 8
 	row_style.corner_radius_bottom_right = 8

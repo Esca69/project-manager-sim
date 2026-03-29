@@ -1193,3 +1193,8 @@ LOG_BOSS_PREFERRED_HIRED,⭐ Вы наняли рекомендованного 
 TOAST_BOSS_PREFERRED_HIRED,Босс доволен выбором! +1 доверие,Boss is pleased! +1 trust
 TOAST_TRUST_PROJECT_SUCCESS,🤝 +1 доверие босса!,🤝 +1 boss trust!
 TOAST_TRUST_PROJECT_FAILED,🤝 -2 доверие босса,🤝 -2 boss trust
+BOSS_PANEL_MONTH,📋 Месяц %d,📋 Month %d
+BOSS_PANEL_OBJ_COMPLETED,✅ Выполнено,✅ Completed
+BOSS_PANEL_OBJ_FAILED,❌ Не выполнено,❌ Not completed
+BOSS_PANEL_QUEST_TRUST_TOTAL,Итого доверие за месяц: %+d 🤝,Total trust for month: %+d 🤝
+BOSS_PANEL_NO_QUEST_HISTORY,Нет данных за этот месяц,No data for this month

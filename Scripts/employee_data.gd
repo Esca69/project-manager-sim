@@ -946,6 +946,6 @@ func _trigger_raise_request():
 	if main_loop and main_loop is SceneTree:
 		var el = main_loop.root.get_node_or_null("/root/EventLog")
 		if el:
-			el.add(el.tr("LOG_RAISE_REQUEST") % [employee_name, get_grade_name()], 2)  # 2 = LogType.ALERT
+			el.add(el.tr("LOG_RAISE_REQUEST") % [get_display_name(), get_grade_name()], 2)  # 2 = LogType.ALERT
 
 	print("💰 %s просит повышение ЗП: $%d → $%d (грейд: %s)" % [employee_name, monthly_salary, raise_requested_salary, get_grade_name()])
