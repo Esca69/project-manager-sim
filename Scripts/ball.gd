@@ -1,7 +1,9 @@
 extends RigidBody2D
 
-@export var kick_force: float = 400.0
-@export var kick_distance: float = 80.0
+@export var kick_force: float = 600.0
+@export var kick_distance: float = 70.0
+## Скорость вращения спрайта относительно линейной скорости
+@export var spin_factor: float = 0.015
 
 var _player: CharacterBody2D = null
 var _kick_cooldown: float = 0.0
@@ -23,6 +25,17 @@ func _physics_process(delta):
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if npc is CharacterBody2D:
 			_try_kick_from(npc, kick_force * 0.7)
+
+	# === ВРАЩЕНИЕ: крутим спрайт пока мяч катится ===
+	var speed = linear_velocity.length()
+	if speed > 5.0:
+		# Определяем направление вращения по горизонтальной составляющей скорости
+		# Мяч летит вправо → крутится по часовой (+), влево → против (-)
+		var spin_direction = sign(linear_velocity.x) if abs(linear_velocity.x) > abs(linear_velocity.y) else sign(linear_velocity.y)
+		angular_velocity = speed * spin_factor * spin_direction
+	else:
+		# Мяч почти остановился — гасим вращение
+		angular_velocity = lerp(angular_velocity, 0.0, 5.0 * delta)
 
 func _try_kick_from(body: CharacterBody2D, force: float):
 	if _kick_cooldown > 0.0:

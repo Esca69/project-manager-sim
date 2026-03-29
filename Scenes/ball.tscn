@@ -14,14 +14,15 @@ radius = 19.2
 mass = 0.5
 physics_material_override = SubResource("PhysicsMaterial_ball1")
 gravity_scale = 0.0
-linear_damp = 2.5
-angular_damp = 3.0
 contact_monitor = true
 max_contacts_reported = 4
+linear_damp = 2.5
+angular_damp = 3.0
 script = ExtResource("1_ball1")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(1.2, 1.2)
+position = Vector2(2.3841858e-07, -2.3841858e-07)
+scale = Vector2(0.745946, 0.745946)
 texture = ExtResource("2_ball1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
