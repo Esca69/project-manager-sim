@@ -12,12 +12,17 @@ const COLOR_DANGER_HOVER = Color(0.95, 0.35, 0.35, 1)
 const COLOR_TEXT_DARK = Color(0.15, 0.15, 0.2, 1)
 const COLOR_TEXT_MUTED = Color(0.45, 0.45, 0.55, 1)
 
+const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc0JJVKE4665icJ70x1Ja4zuT2KmqCOHURLNbHD2nMHHXE98A/viewform?usp=dialog"
+
 var _is_open: bool = false
 var _dim: ColorRect
 var _panel: PanelContainer
 var _btn_resume: Button
 var _btn_settings: Button
+var _btn_feedback: Button
 var _btn_main_menu: Button
+
+var _feedback_tween: Tween
 
 # Настройки (вложенная панель)
 var _settings_panel: PanelContainer
@@ -110,6 +115,12 @@ func _build_ui():
 	_btn_settings.pressed.connect(_open_settings)
 	vbox.add_child(_btn_settings)
 
+	# --- Кнопка "Фидбек" ---
+	_btn_feedback = _make_button_outline(tr("MENU_FEEDBACK"), COLOR_PRIMARY, "📝  ")
+	_btn_feedback.pressed.connect(func(): OS.shell_open(FEEDBACK_URL))
+	vbox.add_child(_btn_feedback)
+	_start_feedback_pulse()
+
 	# --- Кнопка "В главное меню" ---
 	_btn_main_menu = _make_button_outline(tr("PAUSE_MAIN_MENU"), COLOR_DANGER, "🏠  ")
 	_btn_main_menu.pressed.connect(_on_main_menu_pressed)
@@ -119,6 +130,14 @@ func _build_ui():
 	_build_settings_panel()
 
 # === КНОПКИ ===
+
+func _start_feedback_pulse():
+	if _feedback_tween:
+		_feedback_tween.kill()
+	_feedback_tween = create_tween()
+	_feedback_tween.set_loops()
+	_feedback_tween.tween_property(_btn_feedback, "modulate:a", 0.6, 0.8).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_feedback_tween.tween_property(_btn_feedback, "modulate:a", 1.0, 0.8).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 func _make_button_filled(text: String, bg_color: Color, hover_color: Color, prefix: String = "") -> Button:
 	var btn = Button.new()

@@ -18,6 +18,8 @@ const COLOR_BG = Color(0.94, 0.95, 0.97, 1)
 const COLOR_CARD_BG = Color(1, 1, 1, 1)
 const COLOR_CARD_BORDER = Color(0.878, 0.878, 0.878, 1)
 
+const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc0JJVKE4665icJ70x1Ja4zuT2KmqCOHURLNbHD2nMHHXE98A/viewform?usp=dialog"
+
 # Ноды
 var _bg: ColorRect
 var _particles_container: Control
@@ -28,8 +30,11 @@ var _btn_continue: Button
 var _btn_new_game: Button
 var _btn_load_game: Button
 var _btn_settings: Button
+var _btn_feedback: Button
 var _btn_quit: Button
 var _version_label: Label
+
+var _feedback_tween: Tween
 
 # Настройки
 var _settings_panel: PanelContainer
@@ -201,6 +206,12 @@ func _build_ui():
 	_btn_settings.pressed.connect(_on_settings_pressed)
 	vbox.add_child(_btn_settings)
 
+	# === КНОПКА "ФИДБЕК" ===
+	_btn_feedback = _create_menu_button_outline(tr("MENU_FEEDBACK"), COLOR_PRIMARY, "📝  ")
+	_btn_feedback.pressed.connect(func(): OS.shell_open(FEEDBACK_URL))
+	vbox.add_child(_btn_feedback)
+	_start_feedback_pulse()
+
 	# === КНОПКА "ВЫХОД" ===
 	_btn_quit = _create_menu_button_outline(tr("MENU_QUIT"), COLOR_DANGER, "✕  ")
 	_btn_quit.pressed.connect(_on_quit_pressed)
@@ -229,6 +240,14 @@ func _build_ui():
 	_build_error_popup()
 
 # === СОЗДАНИЕ КНОПОК ===
+
+func _start_feedback_pulse():
+	if _feedback_tween:
+		_feedback_tween.kill()
+	_feedback_tween = create_tween()
+	_feedback_tween.set_loops()
+	_feedback_tween.tween_property(_btn_feedback, "modulate:a", 0.6, 0.8).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_feedback_tween.tween_property(_btn_feedback, "modulate:a", 1.0, 0.8).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 func _create_menu_button(text: String, bg_color: Color, hover_color: Color, text_color: Color, prefix: String = "") -> Button:
 	var btn = Button.new()

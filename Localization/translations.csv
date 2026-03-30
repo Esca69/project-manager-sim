@@ -413,6 +413,7 @@ MENU_SUBTITLE,Симулятор офисного выживания,Office Surv
 MENU_CONTINUE,Продолжить,Continue
 MENU_NEW_GAME,Новая игра,New Game
 MENU_SETTINGS,Настройки,Settings
+MENU_FEEDBACK,Фидбек,Feedback
 MENU_QUIT,Выход,Quit
 MENU_LOADING,Загрузка...,Loading...
 MENU_LANGUAGE,Язык,Language
