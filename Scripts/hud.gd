@@ -78,6 +78,12 @@ var _tutorial_overlay: Control
 # === GAME OVER ===
 var _game_over_screen: Control
 
+# === PLAYTEST CAP ===
+const PLAYTEST_LAST_DAY = 90  # last playable day (end of month 3)
+var _playtest_label: Label
+var _playtest_label_tween: Tween
+var _playtest_end_screen: Control
+
 # === EVENT SYSTEM: Попап ивентов ===
 var _event_popup: Control
 
@@ -247,6 +253,14 @@ func _ready():
 
 	# === REPORTS: Создаём панель отчётов ===
 	_build_reports_panel()
+
+	# === PLAYTEST CAP: Счётчик дней и экран завершения ===
+	_build_playtest_label()
+	_build_playtest_end_screen()
+
+	# Защита от загрузки сейва за пределами плейтеста
+	if GameTime.day >= 91:
+		call_deferred("_show_playtest_end")
 
 # >>> ДОБАВЛЕНО: Функция для обновления FPS каждый кадр
 func _process(_delta):
@@ -732,6 +746,9 @@ func update_time_label(_hour, _minute):
 		if GameTime.hour >= 18 and not end_day_button.visible:
 			end_day_button.visible = true
 
+	# === PLAYTEST CAP: Обновляем счётчик оставшихся дней ===
+	_update_playtest_label()
+
 func update_balance_ui(amount):
 	balance_label.text = tr("HUD_BALANCE") % amount
 
@@ -960,6 +977,10 @@ func _on_work_started_hide_end_day():
 	end_day_button.visible = false
 
 func _on_new_day(_day_number):
+	# === PLAYTEST CAP: Завершаем на день 91 (Месяц 4, День 1) ===
+	if _day_number >= 91:
+		_show_playtest_end()
+		return
 	end_day_button.visible = false
 
 func _on_night_skip_started():
@@ -1170,3 +1191,71 @@ func hide_free_camera_hint():
 			UITheme.fade_out(_free_camera_hint, 0.3)
 		else:
 			_free_camera_hint.visible = false
+
+# === PLAYTEST CAP: Счётчик оставшихся дней ===
+
+func _build_playtest_label():
+	var hbox_container = get_node_or_null("TopBar/MarginContainer/HBoxContainer")
+	if hbox_container == null:
+		return
+	_playtest_label = Label.new()
+	_playtest_label.add_theme_color_override("font_color", Color.WHITE)
+	_playtest_label.add_theme_font_size_override("font_size", 12)
+	if UITheme:
+		UITheme.apply_font(_playtest_label, "semibold")
+	_playtest_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_playtest_label.visible = false
+
+	var speed_controls = hbox_container.get_node_or_null("SpeedControls")
+	if speed_controls:
+		var idx = speed_controls.get_index()
+		hbox_container.add_child(_playtest_label)
+		hbox_container.move_child(_playtest_label, idx)
+	else:
+		hbox_container.add_child(_playtest_label)
+
+func _update_playtest_label():
+	if _playtest_label == null:
+		return
+	if GameTime.day == 0 or GameTime.day > PLAYTEST_LAST_DAY:
+		_playtest_label.visible = false
+		return
+	_playtest_label.visible = true
+	var days_left = max(0, PLAYTEST_LAST_DAY - GameTime.day)
+	_playtest_label.text = tr("PLAYTEST_DAYS_LEFT") % days_left
+
+	if days_left <= 3:
+		_playtest_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+		if _playtest_label_tween == null or not _playtest_label_tween.is_running():
+			_start_playtest_pulse()
+	elif days_left <= 7:
+		_playtest_label.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))
+		if _playtest_label_tween == null or not _playtest_label_tween.is_running():
+			_start_playtest_pulse()
+	else:
+		_playtest_label.add_theme_color_override("font_color", Color.WHITE)
+		if _playtest_label_tween:
+			_playtest_label_tween.kill()
+			_playtest_label_tween = null
+		_playtest_label.modulate.a = 1.0
+
+func _start_playtest_pulse():
+	if _playtest_label_tween:
+		_playtest_label_tween.kill()
+	_playtest_label_tween = create_tween()
+	_playtest_label_tween.set_loops()
+	_playtest_label_tween.tween_property(_playtest_label, "modulate:a", 0.55, 0.7).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_playtest_label_tween.tween_property(_playtest_label, "modulate:a", 1.0, 0.7).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+func _build_playtest_end_screen():
+	var script = load("res://Scripts/playtest_end_screen.gd")
+	_playtest_end_screen = Control.new()
+	_playtest_end_screen.set_script(script)
+	_playtest_end_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_playtest_end_screen.process_mode = Node.PROCESS_MODE_ALWAYS
+	_playtest_end_screen.visible = false
+	add_child(_playtest_end_screen)
+
+func _show_playtest_end():
+	if _playtest_end_screen:
+		_playtest_end_screen.visible = true
