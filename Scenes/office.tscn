@@ -367,13 +367,13 @@ position = Vector2(63, -214)
 texture = ExtResource("18_ari0y")
 
 [node name="Tumbochka2" parent="WorldObjects" groups=["desk"] instance=ExtResource("16_ari0y")]
-position = Vector2(405, 604)
+position = Vector2(407, 596)
 
 [node name="Tumbochka" parent="WorldObjects" groups=["desk"] instance=ExtResource("16_ari0y")]
-position = Vector2(400, 351)
+position = Vector2(400, 342)
 
 [node name="Tumbochka3" parent="WorldObjects" groups=["desk"] instance=ExtResource("16_ari0y")]
-position = Vector2(407, 869)
+position = Vector2(407, 859)
 
 [node name="Sofa" parent="WorldObjects" groups=["desk"] instance=ExtResource("17_oqaoe")]
 position = Vector2(1659, 350)
@@ -434,6 +434,7 @@ texture = ExtResource("14_lsk72")
 position = Vector2(445, -626)
 
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
+visible = false
 
 [node name="SpawnPoint" type="Marker2D" parent="."]
 position = Vector2(1653, 833)
