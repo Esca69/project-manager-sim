@@ -18,6 +18,8 @@ const SFX_LIBRARY = {
 	"buttonclick": "res://Sound/buttonclick.mp3", # <-- ДОБАВЛЕН ЗВУК КНОПКИ
 	"toast": "res://Sound/toast.mp3",
 	"projectdone": "res://Sound/projectdone.mp3",
+	"funsound": "res://Sound/funsound.mp3",
+	"deadline": "res://Sound/deadline.mp3",
 }
 
 # --- ИНДИВИДУАЛЬНАЯ ГРОМКОСТЬ ЗВУКОВ (Множители от 0.0 до 1.0) ---
@@ -29,6 +31,8 @@ const SFX_VOLUME_MULTIPLIERS = {
 	"buttonclick": 0.7, # <-- ДОБАВЛЕН РЕГУЛЯТОР ДЛЯ КНОПОК
 	"toast": 0.8,
 	"projectdone": 0.7,
+	"funsound": 0.8,
+	"deadline": 0.8,
 }
 
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
@@ -55,6 +59,9 @@ var active_eating_sounds: int = 0
 
 const MAX_COFFEE_SOUNDS: int = 1
 var active_coffee_sounds: int = 0
+
+const MAX_DEADLINE_SOUNDS: int = 1
+var active_deadline_sounds: int = 0
 
 var _sfx_cache: Dictionary = {}
 
@@ -219,6 +226,31 @@ func play_projectdone_sfx():
 	)
 
 # ============================
+# DEADLINE SFX (макс. 1 одновременно)
+# ============================
+func play_deadline_sfx():
+	if active_deadline_sounds >= MAX_DEADLINE_SOUNDS:
+		return
+	if not SFX_LIBRARY.has("deadline"):
+		return
+	var stream = _get_or_load_sfx("deadline")
+	if not stream:
+		return
+	var player = _get_free_sfx_player()
+	if not player:
+		return
+	active_deadline_sounds += 1
+	player.stream = stream
+	var multiplier = SFX_VOLUME_MULTIPLIERS.get("deadline", 1.0)
+	player.volume_db = _volume_to_db(sfx_volume * master_volume * multiplier)
+	if not player.finished.is_connected(_on_deadline_sound_finished):
+		player.finished.connect(_on_deadline_sound_finished, CONNECT_ONE_SHOT)
+	player.play()
+
+func _on_deadline_sound_finished():
+	active_deadline_sounds = max(0, active_deadline_sounds - 1)
+
+# ============================
 # SPATIAL AUDIO ЛИМИТЫ
 # ============================
 func can_play_typing() -> bool: return active_typing_sounds < MAX_TYPING_SOUNDS
@@ -232,6 +264,10 @@ func unregister_eating_sound(): active_eating_sounds = max(0, active_eating_soun
 func can_play_coffee() -> bool: return active_coffee_sounds < MAX_COFFEE_SOUNDS
 func register_coffee_sound(): active_coffee_sounds += 1
 func unregister_coffee_sound(): active_coffee_sounds = max(0, active_coffee_sounds - 1)
+
+func can_play_deadline() -> bool: return active_deadline_sounds < MAX_DEADLINE_SOUNDS
+func register_deadline_sound(): active_deadline_sounds += 1
+func unregister_deadline_sound(): active_deadline_sounds = max(0, active_deadline_sounds - 1)
 
 ## Получить текущую громкость для 2D плееров с учетом индивидуальной настройки
 func get_current_sfx_db(sfx_name: String = "") -> float:

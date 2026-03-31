@@ -351,6 +351,7 @@ func _on_crunch_pressed():
 	if not project or project.state != ProjectData.State.IN_PROGRESS:
 		return
 	project.crunch_active = true
+	AudioManager.play_deadline_sfx()
 	_update_crunch_btn()
 	print("🔥 Кранч активирован для проекта: %s" % project.get_display_title())
 	if Engine.has_singleton("EventLog"):
