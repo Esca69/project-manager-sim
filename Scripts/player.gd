@@ -980,7 +980,7 @@ func _activate_work_fun():
 		print("🎉 PM занят!")
 		return
 
-	AudioManager.play_sfx("interact")
+	AudioManager.play_sfx("funsound")
 
 	var affected_count = 0
 	for npc in get_tree().get_nodes_in_group("npc"):
