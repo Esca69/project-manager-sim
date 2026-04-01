@@ -24,9 +24,6 @@ var _period_nav_prev    : Button
 var _period_nav_next    : Button
 var _period_buttons     : Array = []
 
-var _employee_dropdown : OptionButton
-var _selected_employee : String = ""
-
 var _team_sections  : VBoxContainer
 
 var _kpi_row1 : HBoxContainer
@@ -39,10 +36,6 @@ var _util_graph      : Control
 var _health_graph    : Control
 
 var _table_vbox : VBoxContainer
-
-var _card_section : PanelContainer
-var _card_vbox    : VBoxContainer
-var _card_graph   : Control
 
 var _scatter_filter   : OptionButton
 var _bars_filter      : OptionButton
@@ -60,6 +53,7 @@ var _util_bars      : Array = []
 var _health_pts     : Array = []
 var _multiline_data : Array = []
 var _multiline_legend_container : HBoxContainer
+var _multiline_hidden : Dictionary = {}
 
 # =====================================================================
 #  READY / BUILD
@@ -83,7 +77,6 @@ func _build_ui():
 	vbox.add_theme_constant_override("separation", 16)
 	scroll.add_child(vbox)
 	vbox.add_child(_build_period_selector())
-	vbox.add_child(_build_employee_selector())
 	_team_sections = VBoxContainer.new()
 	_team_sections.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_team_sections.add_theme_constant_override("separation", 16)
@@ -95,9 +88,6 @@ func _build_ui():
 	_team_sections.add_child(_build_util_card())
 	_team_sections.add_child(_build_table_card())
 	_team_sections.add_child(_build_health_card())
-	_card_section = _build_employee_card()
-	_card_section.visible = false
-	vbox.add_child(_card_section)
 	_build_tooltip()
 
 	# =====================================================================
@@ -242,10 +232,15 @@ func _style_option_button(ob: OptionButton):
 	s.border_color = COLOR_BLUE
 	s.corner_radius_top_left = 6; s.corner_radius_top_right = 6
 	s.corner_radius_bottom_right = 6; s.corner_radius_bottom_left = 6
+	s.content_margin_left = 8; s.content_margin_right = 8
+	s.content_margin_top = 4; s.content_margin_bottom = 4
 	ob.add_theme_stylebox_override("normal", s)
 	ob.add_theme_stylebox_override("hover", s)
 	ob.add_theme_stylebox_override("pressed", s)
+	ob.add_theme_stylebox_override("focus", s)
 	ob.add_theme_color_override("font_color", COLOR_DARK)
+	ob.add_theme_color_override("font_hover_color", COLOR_DARK)
+	ob.add_theme_color_override("font_pressed_color", COLOR_DARK)
 	ob.add_theme_font_size_override("font_size", 12)
 	if UITheme: UITheme.apply_font(ob, "regular")
 	var ps = StyleBoxFlat.new()
@@ -255,7 +250,11 @@ func _style_option_button(ob: OptionButton):
 	ps.border_color = COLOR_BLUE
 	ps.corner_radius_top_left = 4; ps.corner_radius_top_right = 4
 	ps.corner_radius_bottom_right = 4; ps.corner_radius_bottom_left = 4
+	ps.content_margin_left = 6; ps.content_margin_right = 6
+	ps.content_margin_top = 4; ps.content_margin_bottom = 4
 	ob.get_popup().add_theme_stylebox_override("panel", ps)
+	ob.get_popup().add_theme_color_override("font_color", COLOR_DARK)
+	ob.get_popup().add_theme_color_override("font_hover_color", COLOR_BLUE)
 
 func _on_period_selected(code: int):
 	_selected_period = code
@@ -286,61 +285,6 @@ func _update_period_range_label():
 		_period_range_label.text = tr("REPORTS_PERIOD_RANGE") % [b[0], b[1]]
 	if _period_nav_next: _period_nav_next.disabled = (_period_offset == 0)
 	if _period_nav_prev: _period_nav_prev.disabled = (_selected_period == PERIOD_ALL)
-
-# =====================================================================
-#  EMPLOYEE SELECTOR
-# =====================================================================
-
-func _build_employee_selector() -> Control:
-	var card = _make_card()
-	var margin = _make_card_margin()
-	card.add_child(margin)
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 10)
-	margin.add_child(hbox)
-	var lbl = Label.new()
-	lbl.text = tr("REPORTS_PEOPLE_TEAM_VIEW") + ":"
-	lbl.add_theme_color_override("font_color", COLOR_GRAY)
-	lbl.add_theme_font_size_override("font_size", 13)
-	if UITheme: UITheme.apply_font(lbl, "semibold")
-	hbox.add_child(lbl)
-	_employee_dropdown = OptionButton.new()
-	_employee_dropdown.custom_minimum_size = Vector2(180, 0)
-	_employee_dropdown.focus_mode = Control.FOCUS_NONE
-	_style_option_button(_employee_dropdown)
-	_employee_dropdown.item_selected.connect(_on_employee_selected)
-	hbox.add_child(_employee_dropdown)
-	return card
-
-func _populate_employee_dropdown():
-	if not _employee_dropdown: return
-	var prev_text = ""
-	if _employee_dropdown.item_count > 0 and _employee_dropdown.selected >= 0:
-		prev_text = _employee_dropdown.get_item_text(_employee_dropdown.selected)
-	_employee_dropdown.clear()
-	_employee_dropdown.add_item(tr("REPORTS_PEOPLE_TEAM_VIEW"))
-	var npcs = get_tree().get_nodes_in_group("npc")
-	for npc in npcs:
-		if not is_instance_valid(npc) or not npc.data: continue
-		var dname = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
-		_employee_dropdown.add_item(dname)
-	if prev_text != "":
-		for i in range(_employee_dropdown.item_count):
-			if _employee_dropdown.get_item_text(i) == prev_text:
-				_employee_dropdown.select(i)
-				break
-
-func _on_employee_selected(index: int):
-	if index == 0:
-		_selected_employee = ""
-	else:
-		_selected_employee = _employee_dropdown.get_item_text(index)
-	_update_view_mode()
-	_refresh_all()
-
-func _update_view_mode():
-	if _team_sections: _team_sections.visible = (_selected_employee == "")
-	if _card_section:  _card_section.visible  = (_selected_employee != "")
 
 # =====================================================================
 #  PERIOD DATA HELPERS
@@ -672,6 +616,7 @@ func _draw_scatter(ctrl: Control):
 	var w = ctrl.size.x; var h = ctrl.size.y
 	const PL = 60.0; const PR = 20.0; const PT = 20.0; const PB = 40.0
 	var gw = w - PL - PR; var gh = h - PT - PB
+	if gw <= 0 or gh <= 0: return
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
@@ -708,16 +653,7 @@ func _draw_scatter(ctrl: Control):
 		var gx = PL + frac * gw
 		ctrl.draw_line(Vector2(gx, PT), Vector2(gx, PT + gh), gc, 1)
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(gx - 12, PT + gh + 14), "$%d" % int(frac * max_sal), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
-	# Median lines
-	var all_sal = []; var all_prog = []
-	for p2 in pts_data: all_sal.append(p2["daily_sal"]); all_prog.append(p2["avg_progress"])
-	all_sal.sort(); all_prog.sort()
-	var med_sal = all_sal[all_sal.size() / 2] if all_sal.size() > 0 else max_sal / 2.0
-	var med_prog = all_prog[all_prog.size() / 2] if all_prog.size() > 0 else max_prog / 2.0
-	var mx = PL + (med_sal / max_sal) * gw
-	var my = PT + (1.0 - med_prog / max_prog) * gh
-	ctrl.draw_line(Vector2(mx, PT), Vector2(mx, PT + gh), Color(0.6, 0.6, 0.6, 0.5), 1)
-	ctrl.draw_line(Vector2(PL, my), Vector2(PL + gw, my), Color(0.6, 0.6, 0.6, 0.5), 1)
+	# Axes drawn as part of grid (i=0 → left/bottom edge, i=4 → right/top edge)
 	for p3 in pts_data:
 		var px = PL + (p3["daily_sal"] / max_sal) * gw
 		var py = PT + (1.0 - p3["avg_progress"] / max_prog) * gh
@@ -776,6 +712,7 @@ func _draw_bars(ctrl: Control):
 	var w = ctrl.size.x; var h = ctrl.size.y
 	const PL = 50.0; const PR = 20.0; const PT = 20.0; const PB = 50.0
 	var gw = w - PL - PR; var gh = h - PT - PB
+	if gw <= 0 or gh <= 0: return
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
@@ -875,6 +812,7 @@ func _draw_multiline(ctrl: Control):
 	var w = ctrl.size.x; var h = ctrl.size.y
 	const PL = 50.0; const PR = 20.0; const PT = 20.0; const PB = 30.0
 	var gw = w - PL - PR; var gh = h - PT - PB
+	if gw <= 0 or gh <= 0: return
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
@@ -920,6 +858,7 @@ func _draw_multiline(ctrl: Control):
 	for ei in range(emp_names.size()):
 		var ename2 = emp_names[ei]
 		var col = palette[ei % palette.size()]
+		if _multiline_hidden.get(ename2, false): continue
 		var series = emp_series[ename2]
 		if series.is_empty(): continue
 		var pts: PackedVector2Array = []
@@ -961,13 +900,27 @@ func _update_multiline_legend(items: Array):
 	if not _multiline_legend_container: return
 	for c in _multiline_legend_container.get_children(): c.queue_free()
 	for item in items:
+		var ename = item["name"]
+		var is_hidden = _multiline_hidden.get(ename, false)
+		var btn = Button.new()
+		btn.focus_mode = Control.FOCUS_NONE
+		btn.flat = true
 		var row = HBoxContainer.new(); row.add_theme_constant_override("separation", 4)
-		var rect = ColorRect.new(); rect.custom_minimum_size = Vector2(12, 12); rect.color = item["color"]
+		var rect = ColorRect.new()
+		rect.custom_minimum_size = Vector2(12, 12)
+		rect.color = item["color"] if not is_hidden else COLOR_GRAY
 		row.add_child(rect)
-		var lbl = Label.new(); lbl.text = item["name"]
-		lbl.add_theme_color_override("font_color", COLOR_DARK); lbl.add_theme_font_size_override("font_size", 11)
-		if UITheme: UITheme.apply_font(lbl, "regular"); row.add_child(lbl)
-		_multiline_legend_container.add_child(row)
+		var lbl = Label.new(); lbl.text = ename
+		lbl.add_theme_color_override("font_color", COLOR_GRAY if is_hidden else COLOR_DARK)
+		lbl.add_theme_font_size_override("font_size", 11)
+		if UITheme: UITheme.apply_font(lbl, "regular")
+		row.add_child(lbl)
+		btn.add_child(row)
+		btn.pressed.connect(func():
+			_multiline_hidden[ename] = not _multiline_hidden.get(ename, false)
+			_refresh_multiline()
+		)
+		_multiline_legend_container.add_child(btn)
 
 # =====================================================================
 #  BLOCK 5: UTILIZATION BAR CHART (HORIZONTAL)
@@ -1021,6 +974,7 @@ func _draw_util(ctrl: Control):
 	_util_bars.clear()
 	var w = ctrl.size.x; var h = ctrl.size.y
 	const PL = 120.0; const PR = 60.0; const PT = 10.0; const PB = 10.0
+	if w <= 0 or h <= 0: return
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
@@ -1085,6 +1039,13 @@ func _build_table_card() -> PanelContainer:
 	_table_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_table_vbox.add_theme_constant_override("separation", 2)
 	vbox.add_child(_table_vbox)
+	var desc = Label.new()
+	desc.text = tr("REPORTS_PEOPLE_TABLE_STATUS_DESC")
+	desc.add_theme_color_override("font_color", COLOR_GRAY)
+	desc.add_theme_font_size_override("font_size", 11)
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if UITheme: UITheme.apply_font(desc, "regular")
+	vbox.add_child(desc)
 	return card
 
 func _refresh_table():
@@ -1138,6 +1099,8 @@ func _build_table_header() -> PanelContainer:
 		lbl.add_theme_color_override("font_color", COLOR_BLUE)
 		lbl.add_theme_font_size_override("font_size", 11)
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
+		lbl.max_lines_visible = 1
+		lbl.clip_text = true
 		if UITheme: UITheme.apply_font(lbl, "bold")
 		if tooltips[ci] != "": lbl.tooltip_text = tooltips[ci]
 		hbox.add_child(lbl)
@@ -1162,6 +1125,8 @@ func _build_table_row(rank: int, row: Dictionary, is_even: bool) -> PanelContain
 		lbl.add_theme_color_override("font_color", colors[ci])
 		lbl.add_theme_font_size_override("font_size", 11)
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
+		lbl.max_lines_visible = 1
+		lbl.clip_text = true
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		hbox.add_child(lbl)
 	return tr_row[0] as PanelContainer    # ✅ return ПОСЛЕ цикла
@@ -1196,6 +1161,7 @@ func _draw_health_graph(ctrl: Control):
 	var w = ctrl.size.x; var h = ctrl.size.y
 	const PL = 40.0; const PR = 20.0; const PT = 16.0; const PB = 30.0
 	var gw = w - PL - PR; var gh = h - PT - PB
+	if gw <= 0 or gh <= 0: return
 	if agg.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, COLOR_GRAY)
 		return
@@ -1240,260 +1206,6 @@ func _on_health_gui_input(event: InputEvent):
 		var p = _health_pts[bi]
 		_show_tooltip_at(tr("REPORTS_PEOPLE_HEALTH_TOOLTIP") % [p["day"], p["mood"], p["burnout"], p["energy"]], _health_graph, mp)
 	else: _hide_tooltip()
-
-		# =====================================================================
-		#  BLOCK 9: EMPLOYEE CARD
-		# =====================================================================
-
-func _build_employee_card() -> PanelContainer:
-	var card = _make_card()
-	var margin = _make_card_margin()
-	card.add_child(margin)
-	_card_vbox = VBoxContainer.new()
-	_card_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_card_vbox.add_theme_constant_override("separation", 12)
-	margin.add_child(_card_vbox)
-	_card_vbox.add_child(_make_title(tr("REPORTS_PEOPLE_EMPLOYEE_CARD")))
-	return card
-
-func _refresh_employee_card():
-	if not _card_vbox: return
-	var children = _card_vbox.get_children()
-	for i in range(1, children.size()): children[i].queue_free()
-	if _selected_employee == "": return
-
-	var emp_npc = null
-	var npcs = get_tree().get_nodes_in_group("npc")
-	for npc in npcs:
-		if not npc.data: continue
-		var dname = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
-		if dname == _selected_employee: emp_npc = npc; break
-	if not emp_npc: _card_vbox.add_child(_make_no_data_label()); return
-	var d = emp_npc.data
-
-	var name_lbl = Label.new(); name_lbl.text = _selected_employee
-	name_lbl.add_theme_font_size_override("font_size", 20)
-	name_lbl.add_theme_color_override("font_color", COLOR_DARK)
-	if UITheme: UITheme.apply_font(name_lbl, "bold")
-	_card_vbox.add_child(name_lbl)
-
-	var meta_hbox = HBoxContainer.new(); meta_hbox.add_theme_constant_override("separation", 16)
-	_card_vbox.add_child(meta_hbox)
-
-	var meta_role = Label.new(); meta_role.text = tr("REPORTS_PEOPLE_CARD_ROLE") + " " + str(d.job_title)
-	meta_role.add_theme_color_override("font_color", COLOR_GRAY); meta_role.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(meta_role, "regular"); meta_hbox.add_child(meta_role)
-
-	var grade_name = d.get_grade_name() if d.has_method("get_grade_name") else ""
-	if grade_name != "":
-		var meta_grade = Label.new(); meta_grade.text = grade_name
-		meta_grade.add_theme_color_override("font_color", COLOR_BLUE); meta_grade.add_theme_font_size_override("font_size", 12)
-		if UITheme: UITheme.apply_font(meta_grade, "regular"); meta_hbox.add_child(meta_grade)
-
-	var meta_type = Label.new(); meta_type.text = tr("REPORTS_PEOPLE_CARD_TYPE") + " " + str(d.employment_type)
-	meta_type.add_theme_color_override("font_color", COLOR_GRAY); meta_type.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(meta_type, "regular"); meta_hbox.add_child(meta_type)
-
-	var meta_tenure = Label.new(); meta_tenure.text = tr("REPORTS_PEOPLE_CARD_TENURE") + " %d %s" % [int(d.days_in_company), tr("REPORTS_PEOPLE_CARD_DAYS")]
-	meta_tenure.add_theme_color_override("font_color", COLOR_GRAY); meta_tenure.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(meta_tenure, "regular"); meta_hbox.add_child(meta_tenure)
-
-	var meta_salary = Label.new(); meta_salary.text = tr("REPORTS_PEOPLE_CARD_SALARY") + " $%s%s" % [_format_money(int(d.monthly_salary)), tr("REPORTS_PEOPLE_CARD_PER_MONTH")]
-	meta_salary.add_theme_color_override("font_color", COLOR_DARK); meta_salary.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(meta_salary, "regular"); meta_hbox.add_child(meta_salary)
-
-	var cur_title = Label.new(); cur_title.text = tr("REPORTS_PEOPLE_CARD_CURRENT")
-	cur_title.add_theme_font_size_override("font_size", 14); cur_title.add_theme_color_override("font_color", COLOR_DARK)
-	if UITheme: UITheme.apply_font(cur_title, "semibold"); _card_vbox.add_child(cur_title)
-
-	var mood_c = COLOR_GREEN if d.mood > 60 else (COLOR_ORANGE if d.mood >= 40 else COLOR_RED)
-	var burn_c = COLOR_GREEN if d.burnout_level < 20 else (COLOR_ORANGE if d.burnout_level <= 50 else COLOR_RED)
-
-	var mood_lbl = Label.new(); mood_lbl.text = "\U0001F60A %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_MOOD"), float(d.mood)]
-	mood_lbl.add_theme_color_override("font_color", mood_c); mood_lbl.add_theme_font_size_override("font_size", 14)
-	if UITheme: UITheme.apply_font(mood_lbl, "semibold"); _card_vbox.add_child(mood_lbl)
-
-	var burn_lbl = Label.new(); burn_lbl.text = "\U0001F525 %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), float(d.burnout_level)]
-	burn_lbl.add_theme_color_override("font_color", burn_c); burn_lbl.add_theme_font_size_override("font_size", 14)
-	if UITheme: UITheme.apply_font(burn_lbl, "semibold"); _card_vbox.add_child(burn_lbl)
-
-	var _energy_raw = d.get("current_energy")
-	var energy_val = float(_energy_raw) if _energy_raw != null else 100.0
-	var energy_c = COLOR_GREEN if energy_val > 60 else (COLOR_ORANGE if energy_val >= 30 else COLOR_RED)
-	var energy_lbl = Label.new(); energy_lbl.text = "\u26A1 %s: %.0f" % [tr("REPORTS_PEOPLE_METRIC_ENERGY"), energy_val]
-	energy_lbl.add_theme_color_override("font_color", energy_c); energy_lbl.add_theme_font_size_override("font_size", 14)
-	if UITheme: UITheme.apply_font(energy_lbl, "semibold"); _card_vbox.add_child(energy_lbl)
-
-	var records = _get_filtered_records()
-	var total_work_min = 0.0; var assigned_days = 0; var days = 0
-	for r in records:
-		for emp in r.get("employees", []):
-			if str(emp.get("name", "")) == _selected_employee:
-				total_work_min += float(emp.get("work_minutes", 0.0))
-				var is_a = emp.get("is_assigned", float(emp.get("work_minutes", 0.0)) > 0)
-				if is_a: assigned_days += 1
-				days += 1
-	var avg_hours = 0.0
-	if days > 0: avg_hours = (total_work_min / float(days)) / 60.0
-	var util = 0.0
-	if days > 0: util = (total_work_min / (float(days) * 480.0)) * 100.0
-
-	var emp_stats = _get_emp_stats(records)
-	var max_h2 = 0.001; var max_util2 = 0.001; var max_mood2 = 0.001
-	for ename in emp_stats:
-		var s = emp_stats[ename]; var sd = max(s["days"], 1)
-		var ah = (s["total_work_min"] / float(sd)) / 60.0
-		var ut = (s["total_work_min"] / (float(sd) * 480.0)) * 100.0
-		var mo = s["total_mood"] / float(sd)
-		max_h2 = max(max_h2, ah); max_util2 = max(max_util2, ut); max_mood2 = max(max_mood2, mo)
-	var scores: Array = []
-	for en4 in emp_stats:
-		var s2 = emp_stats[en4]; var sd2 = max(s2["days"], 1)
-		var ah2 = (s2["total_work_min"] / float(sd2)) / 60.0
-		var ut2 = (s2["total_work_min"] / (float(sd2) * 480.0)) * 100.0
-		var mo2 = s2["total_mood"] / float(sd2); var bu2 = s2["total_burnout"] / float(sd2)
-		var sc2 = (ah2 / max_h2) * 30.0 + (ut2 / max_util2) * 30.0 + (mo2 / max_mood2) * 20.0 + clampf(100.0 - bu2, 0, 100) * 0.20
-		scores.append({"name": en4, "score": sc2})
-	scores.sort_custom(func(a, b): return a["score"] > b["score"])
-	var my_rank = 0; var total_team = scores.size()
-	for j in range(scores.size()):
-		if scores[j]["name"] == _selected_employee: my_rank = j + 1; break
-
-	var perf_grid = GridContainer.new(); perf_grid.columns = 2
-	perf_grid.add_theme_constant_override("h_separation", 16)
-	perf_grid.add_theme_constant_override("v_separation", 4)
-	_card_vbox.add_child(perf_grid)
-
-	var util_c2 = COLOR_GREEN if util >= 60 else (COLOR_ORANGE if util >= 30 else COLOR_RED)
-
-	var k1 = Label.new(); k1.text = tr("REPORTS_PEOPLE_CARD_AVG_SALARY_DAY")
-	k1.add_theme_color_override("font_color", COLOR_GRAY); k1.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(k1, "regular"); perf_grid.add_child(k1)
-	var v1 = Label.new(); v1.text = "$%.2f" % (float(d.monthly_salary) / 22.0)
-	v1.add_theme_color_override("font_color", COLOR_DARK); v1.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(v1, "semibold"); perf_grid.add_child(v1)
-
-	var k2 = Label.new(); k2.text = tr("REPORTS_PEOPLE_CARD_AVG_HOURS_DAY")
-	k2.add_theme_color_override("font_color", COLOR_GRAY); k2.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(k2, "regular"); perf_grid.add_child(k2)
-	var v2 = Label.new(); v2.text = "%.1f h" % avg_hours
-	v2.add_theme_color_override("font_color", COLOR_DARK); v2.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(v2, "semibold"); perf_grid.add_child(v2)
-
-	var k3 = Label.new(); k3.text = tr("REPORTS_PEOPLE_CARD_UTIL")
-	k3.add_theme_color_override("font_color", COLOR_GRAY); k3.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(k3, "regular"); perf_grid.add_child(k3)
-	var v3 = Label.new(); v3.text = "%.0f%%" % util
-	v3.add_theme_color_override("font_color", util_c2); v3.add_theme_font_size_override("font_size", 12)
-	if UITheme: UITheme.apply_font(v3, "semibold"); perf_grid.add_child(v3)
-
-	if my_rank > 0:
-		var k4 = Label.new(); k4.text = tr("REPORTS_PEOPLE_CARD_RANK")
-		k4.add_theme_color_override("font_color", COLOR_GRAY); k4.add_theme_font_size_override("font_size", 12)
-		if UITheme: UITheme.apply_font(k4, "regular"); perf_grid.add_child(k4)
-		var v4 = Label.new(); v4.text = tr("REPORTS_PEOPLE_CARD_RANK_OF") % [my_rank, total_team]
-		v4.add_theme_color_override("font_color", COLOR_DARK); v4.add_theme_font_size_override("font_size", 12)
-		if UITheme: UITheme.apply_font(v4, "semibold"); perf_grid.add_child(v4)
-
-	var dyn_title = Label.new(); dyn_title.text = tr("REPORTS_PEOPLE_CARD_DYNAMICS")
-	dyn_title.add_theme_font_size_override("font_size", 14); dyn_title.add_theme_color_override("font_color", COLOR_DARK)
-	if UITheme: UITheme.apply_font(dyn_title, "semibold"); _card_vbox.add_child(dyn_title)
-
-	_card_graph = Control.new()
-	_card_graph.custom_minimum_size = Vector2(0, 160)
-	_card_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var emp_c = _selected_employee
-	_card_graph.draw.connect(func(): _draw_employee_graph(_card_graph, emp_c))
-	_card_vbox.add_child(_card_graph)
-
-	_card_vbox.add_child(_make_legend([
-	{"label": tr("REPORTS_PEOPLE_HEALTH_MOOD"),    "color": COLOR_BLUE},
-	{"label": tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), "color": COLOR_RED},
-	{"label": tr("REPORTS_PEOPLE_METRIC_ENERGY"),  "color": COLOR_GREEN},
-	]))
-
-	var wh_title = Label.new(); wh_title.text = tr("REPORTS_PEOPLE_CARD_WORK_HOURS")
-	wh_title.add_theme_font_size_override("font_size", 14); wh_title.add_theme_color_override("font_color", COLOR_DARK)
-	if UITheme: UITheme.apply_font(wh_title, "semibold"); _card_vbox.add_child(wh_title)
-
-	var wh_graph = Control.new()
-	wh_graph.custom_minimum_size = Vector2(0, 140)
-	wh_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	wh_graph.clip_contents = true
-	var emp_wh = _selected_employee
-	wh_graph.draw.connect(func(): _draw_work_hours_graph(wh_graph, emp_wh))
-	_card_vbox.add_child(wh_graph)
-
-	_card_vbox.add_child(_make_legend([
-	{"label": tr("REPORTS_PEOPLE_CARD_WORK_HOURS"), "color": COLOR_BLUE},
-	]))
-
-func _draw_employee_graph(ctrl: Control, emp_name: String):
-	var records = _get_filtered_records()
-	var w = ctrl.size.x; var h = ctrl.size.y
-	const PL = 36.0; const PR = 16.0; const PT = 12.0; const PB = 26.0
-	var gw = w - PL - PR; var gh = h - PT - PB
-	var emp_records = []
-	for r in records:
-		for emp in r.get("employees", []):
-			if str(emp.get("name", "")) == emp_name:
-				emp_records.append({"day": r.get("day", 0), "mood": emp.get("mood", 50.0),
-				"burnout": emp.get("burnout", 0.0), "energy": emp.get("energy", 100.0)})
-				break
-	if emp_records.is_empty():
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
-		return
-	var gc = Color(0.88, 0.88, 0.88, 1)
-	for i in range(6):
-		var frac = float(i) / 5.0; var gy = PT + frac * gh
-		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), str(int(100 - frac * 100)), HORIZONTAL_ALIGNMENT_LEFT, PL - 2, 9, COLOR_GRAY)
-	var n = emp_records.size()
-	var mood_pts: PackedVector2Array = []; var burn_pts: PackedVector2Array = []; var energy_pts: PackedVector2Array = []
-	for j in range(n):
-		var px = PL + (float(j) / max(n - 1, 1)) * gw
-		mood_pts.append(  Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[j]["mood"]), 0, 100) / 100.0)))
-		burn_pts.append(  Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[j]["burnout"]), 0, 100) / 100.0)))
-		energy_pts.append(Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[j]["energy"]), 0, 100) / 100.0)))
-	if mood_pts.size() >= 2:    ctrl.draw_polyline(mood_pts,   COLOR_BLUE,  1.5, true)
-	if burn_pts.size() >= 2:    ctrl.draw_polyline(burn_pts,   COLOR_RED,   1.5, true)
-	if energy_pts.size() >= 2:  ctrl.draw_polyline(energy_pts, COLOR_GREEN, 1.5, true)
-	var step = max(1, int(ceil(float(n) / 8.0)))
-	for xi in range(0, n, step):
-		var px = PL + (float(xi) / max(n - 1, 1)) * gw
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(emp_records[xi]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
-
-func _draw_work_hours_graph(ctrl: Control, emp_name: String):
-	var records = _get_filtered_records()
-	var w = ctrl.size.x; var h = ctrl.size.y
-	const PL = 40.0; const PR = 16.0; const PT = 12.0; const PB = 26.0
-	var gw = w - PL - PR; var gh = h - PT - PB
-	var hours_data = []
-	for r in records:
-		for emp in r.get("employees", []):
-			if str(emp.get("name", "")) == emp_name:
-				hours_data.append({"day": r.get("day", 0), "hours": float(emp.get("work_minutes", 0.0)) / 60.0})
-				break
-	if hours_data.is_empty():
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
-		return
-	var max_hours = 8.0
-	for item in hours_data: max_hours = max(max_hours, item["hours"] + 0.5)
-	var gc = Color(0.88, 0.88, 0.88, 1)
-	for i in range(6):
-		var frac = float(i) / 5.0; var gy = PT + frac * gh
-		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.0f" % (max_hours * (1.0 - frac)), HORIZONTAL_ALIGNMENT_LEFT, PL - 2, 9, COLOR_GRAY)
-	var n = hours_data.size(); var slot_w = gw / max(n, 1); var bar_w = max(4.0, slot_w - 2.0)
-	var bar_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.75)
-	for j in range(n):
-		var px = PL + (float(j) + 0.5) * slot_w
-		var val = hours_data[j]["hours"]; var bh = gh * (val / max_hours)
-		ctrl.draw_rect(Rect2(px - bar_w * 0.5, PT + gh - bh, bar_w, bh), bar_color)
-	var step = max(1, int(ceil(float(n) / 8.0)))
-	for xi in range(0, n, step):
-		var px = PL + (float(xi) + 0.5) * slot_w
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(hours_data[xi]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
 # =====================================================================
 # HELPERS
@@ -1614,7 +1326,6 @@ func _populate_role_filters():
 # =====================================================================
 
 func refresh():
-	_populate_employee_dropdown()
 	_update_period_range_label()
 	_refresh_all()
 
@@ -1627,4 +1338,3 @@ func _refresh_all():
 	_refresh_util()
 	_refresh_table()
 	if _health_graph: _health_graph.queue_redraw()
-	if _selected_employee != "": _refresh_employee_card()
