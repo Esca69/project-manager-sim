@@ -1177,10 +1177,10 @@ func _on_health_gui_input(event: InputEvent):
 	for i in range(_health_pts.size()):
 		var d = abs(mp.x - _health_pts[i]["pos"].x)
 		if d < bd: bd = d; bi = i
-		if bi >= 0:
-			var p = _health_pts[bi]
-			_show_tooltip_at(tr("REPORTS_PEOPLE_HEALTH_TOOLTIP") % [p["day"], p["mood"], p["burnout"], p["energy"]], _health_graph, mp)
-		else: _hide_tooltip()
+	if bi >= 0:
+		var p = _health_pts[bi]
+		_show_tooltip_at(tr("REPORTS_PEOPLE_HEALTH_TOOLTIP") % [p["day"], p["mood"], p["burnout"], p["energy"]], _health_graph, mp)
+	else: _hide_tooltip()
 
 # =====================================================================
 #  BLOCK 8: LEADERBOARD WITH COMPOSITE SCORE
@@ -1579,7 +1579,7 @@ func _make_card() -> PanelContainer:
 		s.corner_radius_top_left = 8; s.corner_radius_top_right = 8
 		s.corner_radius_bottom_right = 8; s.corner_radius_bottom_left = 8
 		card.add_theme_stylebox_override("panel", s)
-		return card
+	return card
 
 func _make_card_margin() -> MarginContainer:
 	var m = MarginContainer.new()
@@ -1620,7 +1620,7 @@ func _make_legend(items: Array) -> HBoxContainer:
 		lbl.add_theme_color_override("font_color", COLOR_DARK); lbl.add_theme_font_size_override("font_size", 11)
 		if UITheme: UITheme.apply_font(lbl, "regular"); row.add_child(lbl)
 		hbox.add_child(row)
-		return hbox
+	return hbox
 
 func _make_no_data_label() -> Label:
 	var lbl = Label.new(); lbl.text = tr("REPORTS_PEOPLE_NO_DATA")
@@ -1635,7 +1635,7 @@ func _format_money(amount: int) -> String:
 	for i in range(s.length() - 1, -1, -1):
 		if c > 0 and c % 3 == 0: r = "," + r
 		r = s[i] + r; c += 1
-		return r
+	return r
 
 func _shorten_role(role: String) -> String:
 	if role.length() <= 12: return role
