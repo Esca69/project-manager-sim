@@ -1083,7 +1083,7 @@ func _build_table_header() -> PanelContainer:
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "bold")
 		hbox.add_child(lbl)
-		return row[0] as PanelContainer
+	return row[0] as PanelContainer       # ✅ return ПОСЛЕ цикла
 
 func _build_table_row(rank: int, row: Dictionary, is_even: bool) -> PanelContainer:
 	var bg = Color(1, 1, 1, 1) if is_even else Color(0.96, 0.97, 0.99, 1)
@@ -1105,7 +1105,7 @@ func _build_table_row(rank: int, row: Dictionary, is_even: bool) -> PanelContain
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		hbox.add_child(lbl)
-		return tr_row[0] as PanelContainer
+	return tr_row[0] as PanelContainer    # ✅ return ПОСЛЕ цикла
 
 		# =====================================================================
 		#  BLOCK 7: TEAM HEALTH TIMELINE
@@ -1306,7 +1306,7 @@ func _build_leaderboard_row(rank: int, s: Dictionary, bg: Color) -> PanelContain
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		hbox.add_child(lbl)
-		return row[0] as PanelContainer
+	return row[0] as PanelContainer    # ✅ func вместо dfunc, return ПОСЛЕ цикла
 
 		# =====================================================================
 		#  BLOCK 9: EMPLOYEE CARD
