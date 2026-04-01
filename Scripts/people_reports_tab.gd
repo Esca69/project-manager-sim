@@ -702,9 +702,10 @@ func _draw_health_graph(ctrl: Control):
 	var mood_pts    = _build_pts.call("avg_mood")
 	var burnout_pts = _build_pts.call("avg_burnout")
 
-	ctrl.draw_polyline(mood_pts,    COLOR_BLUE,  2.0, true)
-	ctrl.draw_polyline(burnout_pts, COLOR_RED,   2.0, true)
-
+	if mood_pts.size() >= 2:
+		ctrl.draw_polyline(mood_pts,    COLOR_BLUE,  2.0, true)
+	if burnout_pts.size() >= 2:
+		ctrl.draw_polyline(burnout_pts, COLOR_RED,   2.0, true)
 	for p in mood_pts:    ctrl.draw_circle(p, 3.0, COLOR_BLUE)
 	for p in burnout_pts: ctrl.draw_circle(p, 3.0, COLOR_RED)
 
@@ -1198,8 +1199,10 @@ func _draw_employee_graph(ctrl: Control, emp_name: String):
 		mood_pts.append(   Vector2(px, pad_top + gh * (1.0 - clampf(float(emp_records[i]["mood"]),    0, 100) / 100.0)))
 		burnout_pts.append(Vector2(px, pad_top + gh * (1.0 - clampf(float(emp_records[i]["burnout"]), 0, 100) / 100.0)))
 
-	ctrl.draw_polyline(mood_pts,    COLOR_BLUE,  1.5, true)
-	ctrl.draw_polyline(burnout_pts, COLOR_RED,   1.5, true)
+	if mood_pts.size() >= 2:
+		ctrl.draw_polyline(mood_pts,    COLOR_BLUE,  1.5, true)
+	if burnout_pts.size() >= 2:
+		ctrl.draw_polyline(burnout_pts, COLOR_RED,   1.5, true)
 
 	var step = max(1, int(ceil(float(n) / 8.0)))
 	for i in range(0, n, step):
@@ -1295,7 +1298,8 @@ func _draw_progress_points_graph(ctrl: Control, emp_name: String):
 		var py = pad_top + gh * (1.0 - prog_data[i]["progress"] / max_prog)
 		pts.append(Vector2(px, py))
 
-	ctrl.draw_polyline(pts, COLOR_GREEN, 2.0, true)
+	if pts.size() >= 2:
+		ctrl.draw_polyline(pts, COLOR_GREEN, 2.0, true)
 	for p in pts:
 		ctrl.draw_circle(p, 3.0, COLOR_GREEN)
 
@@ -1347,7 +1351,8 @@ func _draw_efficiency_graph(ctrl: Control, emp_name: String):
 		var py = pad_top + gh * (1.0 - eff_data[i]["efficiency"] / max_eff)
 		pts.append(Vector2(px, py))
 
-	ctrl.draw_polyline(pts, COLOR_ORANGE, 2.0, true)
+	if pts.size() >= 2:
+		ctrl.draw_polyline(pts, COLOR_ORANGE, 2.0, true)
 	for p in pts:
 		ctrl.draw_circle(p, 3.0, COLOR_ORANGE)
 

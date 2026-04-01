@@ -22,6 +22,7 @@ var _personal_balance_label_ref: Control = null
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_ui_layer()
+	GameTime.night_skip_started.connect(cleanup_all_effects)
 
 func _build_ui_layer():
 	_ui_layer = CanvasLayer.new()
@@ -42,6 +43,8 @@ func register_personal_balance_label(label: Control):
 # ФИЧА 1: Floating Money Text
 # ============================================================
 func show_floating_text(anchor_node: Control, text: String, color: Color):
+	if GameTime and GameTime.is_night_skip:
+		return
 	if not is_instance_valid(anchor_node) or not _ui_layer:
 		return
 
@@ -52,6 +55,7 @@ func show_floating_text(anchor_node: Control, text: String, color: Color):
 	if UITheme:
 		UITheme.apply_font(label, "bold")
 	label.process_mode = Node.PROCESS_MODE_ALWAYS
+	label.add_to_group("transient_vfx")
 	_ui_layer.add_child(label)
 
 	# Позиция над anchor_node (в экранных координатах)
@@ -86,6 +90,8 @@ func show_personal_expense_float(amount: int):
 # ФИЧА 2: Конфетти при завершении проекта
 # ============================================================
 func show_confetti():
+	if GameTime and GameTime.is_night_skip:
+		return
 	if not _ui_layer:
 		return
 	var confetti_script = load("res://Scripts/confetti_effect.gd")
@@ -94,6 +100,7 @@ func show_confetti():
 	var c = Node2D.new()
 	c.set_script(confetti_script)
 	c.process_mode = Node.PROCESS_MODE_ALWAYS
+	c.add_to_group("transient_vfx")
 	_ui_layer.add_child(c)
 
 # ============================================================
@@ -258,6 +265,8 @@ func bounce_node(node: Control, is_positive: bool, reset_color: Color = Color.WH
 # ФИЧА 5: Level-Up эффект над головой NPC
 # ============================================================
 func show_levelup_effect(npc_node: Node2D, level: int):
+	if GameTime and GameTime.is_night_skip:
+		return
 	if not is_instance_valid(npc_node):
 		return
 
@@ -266,6 +275,7 @@ func show_levelup_effect(npc_node: Node2D, level: int):
 	effect.position = Vector2(0.0, -130.0)
 	effect.z_index = 101
 	effect.process_mode = Node.PROCESS_MODE_ALWAYS
+	effect.add_to_group("npc_attached_vfx")
 
 	var label = Label.new()
 	effect.add_child(label)
@@ -292,6 +302,8 @@ func show_levelup_effect(npc_node: Node2D, level: int):
 # ФИЧА 6: Mood Ring — кольцо-пульс при смене зоны настроения NPC
 # ============================================================
 func show_mood_ring(npc_node: Node2D, is_positive: bool):
+	if GameTime and GameTime.is_night_skip:
+		return
 	if not is_instance_valid(npc_node):
 		return
 	var ring_script = load("res://Scripts/mood_ring_effect.gd")
@@ -303,12 +315,15 @@ func show_mood_ring(npc_node: Node2D, is_positive: bool):
 	ring.ring_color = Color(0.2, 0.9, 0.3, 1.0) if is_positive else Color(1.0, 0.3, 0.3, 1.0)
 	ring.position = Vector2(0.0, -80.0)
 	ring.z_index = 100
+	ring.add_to_group("npc_attached_vfx")
 	npc_node.add_child(ring)
 
 # ============================================================
 # ФИЧА 7: Chat Sparkles — искры при proximity chat между NPC
 # ============================================================
 func show_chat_sparkles(npc_a: Node2D, npc_b: Node2D, is_positive: bool):
+	if GameTime and GameTime.is_night_skip:
+		return
 	if not is_instance_valid(npc_a) or not is_instance_valid(npc_b):
 		return
 	var sparkle_script = load("res://Scripts/chat_sparkle_effect.gd")
@@ -318,6 +333,7 @@ func show_chat_sparkles(npc_a: Node2D, npc_b: Node2D, is_positive: bool):
 	sparkle.set_script(sparkle_script)
 	sparkle.process_mode = Node.PROCESS_MODE_ALWAYS
 	sparkle.z_index = 99
+	sparkle.add_to_group("npc_attached_vfx")
 	# Добавляем в мировую сцену, а не в NPC, чтобы координаты не плыли
 	var world = npc_a.get_tree().current_scene
 	if world:
@@ -328,3 +344,18 @@ func show_chat_sparkles(npc_a: Node2D, npc_b: Node2D, is_positive: bool):
 	var from = npc_a.global_position + Vector2(0.0, -60.0)
 	var to = npc_b.global_position + Vector2(0.0, -60.0)
 	sparkle.setup(from, to, color)
+
+# ============================================================
+# Cleanup: удаляем все активные визуальные эффекты (кроме тостов)
+# Вызывается при старте ночной промотки
+# ============================================================
+func cleanup_all_effects():
+	if get_tree():
+		# Удаляем плавающие тексты и конфетти на UI-слое
+		for node in get_tree().get_nodes_in_group("transient_vfx"):
+			if is_instance_valid(node):
+				node.queue_free()
+		# Удаляем эффекты на NPC: mood rings, level-up, thought bubbles, sparkles
+		for node in get_tree().get_nodes_in_group("npc_attached_vfx"):
+			if is_instance_valid(node):
+				node.queue_free()

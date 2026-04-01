@@ -105,6 +105,7 @@ var _should_go_home: bool = false
 
 # Ссылка на текущий бабл с мыслями
 var current_bubble: Node2D = null
+var _volume_shader_material: ShaderMaterial = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
 
@@ -1747,9 +1748,13 @@ func _execute_proximity_chat(partner_npc):
 	print("💬 Proximity chat: %s ↔ %s, delta=%d, rel=%d (%s) | %s" % [data.get_display_name(), partner_npc.data.get_display_name(), result.delta, rel_val, level_name, debug_parts])
 
 func _show_chat_reaction(is_positive: bool):
+	if GameTime and GameTime.is_night_skip:
+		return
 	show_thought_bubble("💬", 1.0)
 	get_tree().create_timer(1.0).timeout.connect(func():
 		if is_instance_valid(self):
+			if GameTime and GameTime.is_night_skip:
+				return
 			if is_positive:
 				show_thought_bubble("👍", 2.0)
 			else:
@@ -2173,12 +2178,15 @@ func _show_random_work_thought():
 	show_thought_bubble(emoji, 3.0)
 
 func show_thought_bubble(emoji_text: String, duration: float = 9.0):
+	if GameTime and GameTime.is_night_skip:
+		return
 	if data and data.is_requesting_raise:
 		return
 	if is_instance_valid(current_bubble):
 		current_bubble.queue_free()
 
 	current_bubble = Node2D.new()
+	current_bubble.add_to_group("npc_attached_vfx")
 	add_child(current_bubble)
 
 	current_bubble.position = Vector2(0, -210)
@@ -2502,7 +2510,8 @@ func _apply_volume_materials():
 		if child is Sprite2D and child != head_sprite:
 			child.queue_free()
 
-	var shader_code = """
+	if _volume_shader_material == null:
+		var shader_code = """
 	shader_type canvas_item;
 
 	void fragment() {
@@ -2514,10 +2523,10 @@ func _apply_volume_materials():
 		COLOR = c;
 	}
 	"""
+		var mat = ShaderMaterial.new()
+		var shader = Shader.new()
+		shader.code = shader_code
+		mat.shader = shader
+		_volume_shader_material = mat
 
-	var mat = ShaderMaterial.new()
-	var shader = Shader.new()
-	shader.code = shader_code
-	mat.shader = shader
-
-	body_sprite.material = mat
+	body_sprite.material = _volume_shader_material
