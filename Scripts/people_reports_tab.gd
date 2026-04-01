@@ -397,29 +397,29 @@ func _aggregate_health_records(records: Array) -> Array:
 			return res
 		PERIOD_ALL:
 			var months = {}
-			for r in records:
-				var d = int(r.get("day", 0))
+			for r2 in records:
+				var d = int(r2.get("day", 0))
 				var mn = GameTime.get_month(d)
 				if not months.has(mn):
 					months[mn] = {"day": GameTime.get_month_start_day(mn), "label": "M%d" % mn,
 							  "_mood": 0.0, "_energy": 0.0, "_burnout": 0.0, "_n": 0}
-				months[mn]["_mood"]    += float(r.get("avg_mood", 0))
-				months[mn]["_energy"]  += float(r.get("avg_energy", 0))
-				months[mn]["_burnout"] += float(r.get("avg_burnout", 0))
+				months[mn]["_mood"]    += float(r2.get("avg_mood", 0))
+				months[mn]["_energy"]  += float(r2.get("avg_energy", 0))
+				months[mn]["_burnout"] += float(r2.get("avg_burnout", 0))
 				months[mn]["_n"]       += 1
 			var keys = months.keys(); keys.sort()
 			var res = []
-			for k in keys:
-				var g = months[k]; var n = max(g["_n"], 1)
+			for k2 in keys:
+				var g = months[k2]; var n = max(g["_n"], 1)
 				g["avg_mood"]    = g["_mood"] / n
 				g["avg_energy"]  = g["_energy"] / n
 				g["avg_burnout"] = g["_burnout"] / n
 				res.append(g)
 			return res
 	var res = []
-	for r in records:
-		var rc = r.duplicate()
-		rc["label"] = "D%d" % int(r.get("day", 0))
+	for rec in records:
+		var rc = rec.duplicate()
+		rc["label"] = "D%d" % int(rec.get("day", 0))
 		res.append(rc)
 	return res
 
@@ -544,7 +544,7 @@ func _build_kpi_card() -> PanelContainer:
 func _refresh_kpi():
 	if not _kpi_row1 or not _kpi_row2: return
 	for c in _kpi_row1.get_children(): c.queue_free()
-	for c in _kpi_row2.get_children(): c.queue_free()
+	for c2 in _kpi_row2.get_children(): c2.queue_free()
 	var npcs = get_tree().get_nodes_in_group("npc")
 	var headcount = 0; var payroll = 0; var contractors = 0; var freelancers = 0
 	for npc in npcs:
@@ -574,14 +574,14 @@ func _refresh_kpi():
 	var avg_mood    = total_mood    / max(mood_count, 1)
 	var avg_burnout = total_burnout / max(mood_count, 1)
 	var total_tenure = 0
-	for npc in npcs:
-		if not is_instance_valid(npc) or not npc.data: continue
-		total_tenure += int(npc.data.days_in_company)
+	for npc2 in npcs:
+		if not is_instance_valid(npc2) or not npc2.data: continue
+		total_tenure += int(npc2.data.days_in_company)
 	var avg_tenure = float(total_tenure) / max(headcount, 1)
 	var prev_total_days = 0; var prev_assigned = 0; var prev_work_min = 0.0
 	var prev_mood_sum = 0.0; var prev_burnout_sum = 0.0; var prev_mc = 0
-	for ename in prev_stats:
-		var s = prev_stats[ename]
+	for en5 in prev_stats:
+		var s = prev_stats[en5]
 		prev_total_days += s["days"]; prev_assigned += s["assigned_days"]
 		prev_work_min   += s["total_work_min"]
 		prev_mood_sum += s["total_mood"]; prev_burnout_sum += s["total_burnout"]; prev_mc += s["days"]
@@ -680,7 +680,7 @@ func _draw_scatter(ctrl: Control):
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(gx - 12, PT + gh + 14), "$%d" % int(frac * max_sal), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
 	# Median lines
 	var all_sal = []; var all_hrs = []
-	for p in pts_data: all_sal.append(p["daily_sal"]); all_hrs.append(p["avg_hours"])
+	for p2 in pts_data: all_sal.append(p2["daily_sal"]); all_hrs.append(p2["avg_hours"])
 	all_sal.sort(); all_hrs.sort()
 	var med_sal = all_sal[all_sal.size() / 2] if all_sal.size() > 0 else max_sal / 2.0
 	var med_hrs = all_hrs[all_hrs.size() / 2] if all_hrs.size() > 0 else max_hrs / 2.0
@@ -688,12 +688,12 @@ func _draw_scatter(ctrl: Control):
 	var my = PT + (1.0 - med_hrs / max_hrs) * gh
 	ctrl.draw_line(Vector2(mx, PT), Vector2(mx, PT + gh), Color(0.6, 0.6, 0.6, 0.5), 1)
 	ctrl.draw_line(Vector2(PL, my), Vector2(PL + gw, my), Color(0.6, 0.6, 0.6, 0.5), 1)
-	for p in pts_data:
-		var px = PL + (p["daily_sal"] / max_sal) * gw
-		var py = PT + (1.0 - p["avg_hours"] / max_hrs) * gh
-		var col = _role_color(p["role"])
+	for p3 in pts_data:
+		var px = PL + (p3["daily_sal"] / max_sal) * gw
+		var py = PT + (1.0 - p3["avg_hours"] / max_hrs) * gh
+		var col = _role_color(p3["role"])
 		ctrl.draw_circle(Vector2(px, py), 6.0, col)
-		_scatter_pts.append({"pos": Vector2(px, py), "name": p["name"], "daily_sal": p["daily_sal"], "avg_hours": p["avg_hours"], "role": p["role"]})
+		_scatter_pts.append({"pos": Vector2(px, py), "name": p3["name"], "daily_sal": p3["daily_sal"], "avg_hours": p3["avg_hours"], "role": p3["role"]})
 	ctrl.draw_string(ThemeDB.fallback_font, Vector2(PL + gw / 2 - 20, PT + gh + 28), "$/" + tr("REPORTS_DAY"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, COLOR_GRAY)
 
 func _on_scatter_gui_input(event: InputEvent):
@@ -771,13 +771,13 @@ func _draw_bars(ctrl: Control):
 		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_h), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
 	var n = names.size(); var slot_w = gw / float(n); var bar_w = max(4.0, slot_w * 0.6)
-	for i in range(n):
-		var bx = PL + (float(i) + 0.5) * slot_w; var bh = (hours[i] / max_h) * gh
-		var col = _role_color(roles[i])
+	for j in range(n):
+		var bx = PL + (float(j) + 0.5) * slot_w; var bh = (hours[j] / max_h) * gh
+		var col = _role_color(roles[j])
 		var rect = Rect2(bx - bar_w * 0.5, PT + gh - bh, bar_w, bh)
 		ctrl.draw_rect(rect, col)
-		_bars_data.append({"rect": rect, "name": names[i], "avg_hours": hours[i], "salary": salaries[i], "role": roles[i]})
-		var short_n = names[i].substr(0, min(names[i].length(), 8))
+		_bars_data.append({"rect": rect, "name": names[j], "avg_hours": hours[j], "salary": salaries[j], "role": roles[j]})
+		var short_n = names[j].substr(0, min(names[j].length(), 8))
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(bx - slot_w * 0.4, h - 8), short_n, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
 func _on_bars_gui_input(event: InputEvent):
@@ -870,10 +870,10 @@ func _draw_multiline(ctrl: Control):
 			for pt in emp_series[ename2]: max_val = max(max_val, pt["val"])
 		max_val = max(max_val * 1.1, 0.1)
 	var min_day = 999999; var max_day = 0
-	for ename2 in emp_series:
-		for pt in emp_series[ename2]:
-			min_day = min(min_day, pt["day"])
-			max_day = max(max_day, pt["day"])
+	for en6 in emp_series:
+		for pt2 in emp_series[en6]:
+			min_day = min(min_day, pt2["day"])
+			max_day = max(max_day, pt2["day"])
 	if max_day == min_day: max_day = min_day + 1
 	var gc = Color(0.88, 0.88, 0.88, 1)
 	for i in range(5):
@@ -888,9 +888,9 @@ func _draw_multiline(ctrl: Control):
 		var series = emp_series[ename2]
 		if series.is_empty(): continue
 		var pts: PackedVector2Array = []
-		for pt in series:
-			var px = PL + (float(pt["day"] - min_day) / float(max_day - min_day)) * gw
-			var py = PT + gh * (1.0 - clampf(pt["val"], 0.0, max_val) / max_val)
+		for pt3 in series:
+			var px = PL + (float(pt3["day"] - min_day) / float(max_day - min_day)) * gw
+			var py = PT + gh * (1.0 - clampf(pt3["val"], 0.0, max_val) / max_val)
 			pts.append(Vector2(px, py))
 		if pts.size() >= 2: ctrl.draw_polyline(pts, col, 1.5, true)
 		for p in pts: ctrl.draw_circle(p, 2.5, col)
@@ -1140,35 +1140,35 @@ func _draw_health_graph(ctrl: Control):
 	if agg.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, COLOR_GRAY)
 		return
-		var gc = Color(0.88, 0.88, 0.88, 1)
-		for i in range(6):
-			var frac = float(i) / 5.0; var gy = PT + frac * gh
-			ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-			ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), str(int(100 - frac * 100)), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
-			var n = agg.size()
-			var mood_pts: PackedVector2Array = []; var burnout_pts: PackedVector2Array = []; var energy_pts: PackedVector2Array = []
-			for i in range(n):
-				var r = agg[i]
-				var px = PL + (float(i) / max(n - 1, 1)) * gw
-				var mood_v    = clampf(float(r.get("avg_mood", 0)), 0, 100)
-				var burnout_v = clampf(float(r.get("avg_burnout", 0)), 0, 100)
-				var energy_v  = clampf(float(r.get("avg_energy", 0)), 0, 100)
-				mood_pts.append(   Vector2(px, PT + gh * (1.0 - mood_v / 100.0)))
-				burnout_pts.append(Vector2(px, PT + gh * (1.0 - burnout_v / 100.0)))
-				energy_pts.append( Vector2(px, PT + gh * (1.0 - energy_v / 100.0)))
-				_health_pts.append({"pos": Vector2(px, PT + gh * 0.5), "day": r.get("day", i + 1),
-				"label": r.get("label", "D%d" % r.get("day", i + 1)),
-				"mood": mood_v, "burnout": burnout_v, "energy": energy_v})
-				if mood_pts.size() >= 2:    ctrl.draw_polyline(mood_pts,    COLOR_BLUE,  2.0, true)
-				if burnout_pts.size() >= 2: ctrl.draw_polyline(burnout_pts, COLOR_RED,   2.0, true)
-				if energy_pts.size() >= 2:  ctrl.draw_polyline(energy_pts,  COLOR_GREEN, 2.0, true)
-				for p in mood_pts:    ctrl.draw_circle(p, 3.0, COLOR_BLUE)
-				for p in burnout_pts: ctrl.draw_circle(p, 3.0, COLOR_RED)
-				for p in energy_pts:  ctrl.draw_circle(p, 3.0, COLOR_GREEN)
-				var step = max(1, int(ceil(float(n) / 10.0)))
-				for i in range(0, n, step):
-					var px = PL + (float(i) / max(n - 1, 1)) * gw
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 8, h - 6), str(agg[i].get("label", "D%d" % agg[i].get("day", i + 1))), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
+	var gc = Color(0.88, 0.88, 0.88, 1)
+	for i in range(6):
+		var frac = float(i) / 5.0; var gy = PT + frac * gh
+		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), str(int(100 - frac * 100)), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
+	var n = agg.size()
+	var mood_pts: PackedVector2Array = []; var burnout_pts: PackedVector2Array = []; var energy_pts: PackedVector2Array = []
+	for j in range(n):
+		var r = agg[j]
+		var px = PL + (float(j) / max(n - 1, 1)) * gw
+		var mood_v    = clampf(float(r.get("avg_mood", 0)), 0, 100)
+		var burnout_v = clampf(float(r.get("avg_burnout", 0)), 0, 100)
+		var energy_v  = clampf(float(r.get("avg_energy", 0)), 0, 100)
+		mood_pts.append(   Vector2(px, PT + gh * (1.0 - mood_v / 100.0)))
+		burnout_pts.append(Vector2(px, PT + gh * (1.0 - burnout_v / 100.0)))
+		energy_pts.append( Vector2(px, PT + gh * (1.0 - energy_v / 100.0)))
+		_health_pts.append({"pos": Vector2(px, PT + gh * 0.5), "day": r.get("day", j + 1),
+		"label": r.get("label", "D%d" % r.get("day", j + 1)),
+		"mood": mood_v, "burnout": burnout_v, "energy": energy_v})
+	if mood_pts.size() >= 2:    ctrl.draw_polyline(mood_pts,    COLOR_BLUE,  2.0, true)
+	if burnout_pts.size() >= 2: ctrl.draw_polyline(burnout_pts, COLOR_RED,   2.0, true)
+	if energy_pts.size() >= 2:  ctrl.draw_polyline(energy_pts,  COLOR_GREEN, 2.0, true)
+	for p in mood_pts:    ctrl.draw_circle(p, 3.0, COLOR_BLUE)
+	for p2 in burnout_pts: ctrl.draw_circle(p2, 3.0, COLOR_RED)
+	for p3 in energy_pts:  ctrl.draw_circle(p3, 3.0, COLOR_GREEN)
+	var step = max(1, int(ceil(float(n) / 10.0)))
+	for xi in range(0, n, step):
+		var px = PL + (float(xi) / max(n - 1, 1)) * gw
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 8, h - 6), str(agg[xi].get("label", "D%d" % agg[xi].get("day", xi + 1))), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
 
 func _on_health_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -1215,64 +1215,64 @@ func _refresh_leaderboard():
 		var avg_burn = s["total_burnout"] / float(days)
 		raw[ename] = {"avg_h": avg_h, "util": util, "mood": avg_mood, "burnout": avg_burn}
 
-		var max_h = 0.001; var max_util = 0.001; var max_mood = 0.001
-		for ename in raw:
-			max_h    = max(max_h,    raw[ename]["avg_h"])
-			max_util = max(max_util, raw[ename]["util"])
-			max_mood = max(max_mood, raw[ename]["mood"])
+	var max_h = 0.001; var max_util = 0.001; var max_mood = 0.001
+	for en2 in raw:
+		max_h    = max(max_h,    raw[en2]["avg_h"])
+		max_util = max(max_util, raw[en2]["util"])
+		max_mood = max(max_mood, raw[en2]["mood"])
 
-			var scored: Array = []
-			for ename in raw:
-				var r = raw[ename]
-				var n_h    = (r["avg_h"] / max_h)    * 100.0
-				var n_util = (r["util"]  / max_util) * 100.0
-				var n_mood = (r["mood"]  / max_mood) * 100.0
-				var inv_burn = clampf(100.0 - r["burnout"], 0, 100)
-				var score = n_h * 0.30 + n_util * 0.30 + n_mood * 0.20 + inv_burn * 0.20
-				score = clampf(score, 0, 100)
-				var trend = tr("REPORTS_PEOPLE_TREND_FLAT")
-				if prev_stats.has(ename):
-					var ps = prev_stats[ename]; var pdays = max(ps["days"], 1)
-					var p_h    = (ps["total_work_min"] / float(pdays)) / 60.0
-					var p_util = float(ps["assigned_days"]) / float(pdays) * 100.0
-					var p_mood = ps["total_mood"] / float(pdays)
-					var p_burn = ps["total_burnout"] / float(pdays)
-					var p_n_h    = (p_h / max_h) * 100.0
-					var p_n_util = (p_util / max_util) * 100.0
-					var p_n_mood = (p_mood / max_mood) * 100.0
-					var p_inv_b  = clampf(100.0 - p_burn, 0, 100)
-					var prev_score = p_n_h * 0.30 + p_n_util * 0.30 + p_n_mood * 0.20 + p_inv_b * 0.20
-					if score > prev_score + 2:   trend = tr("REPORTS_PEOPLE_TREND_UP")
-				elif score < prev_score - 2: trend = tr("REPORTS_PEOPLE_TREND_DOWN")
-					scored.append({"name": ename, "score": score, "avg_h": r["avg_h"], "util": r["util"],
-					"mood": r["mood"], "burnout": r["burnout"], "trend": trend,
-					"role": emp_stats[ename]["job_title"]})
+	var scored: Array = []
+	for en3 in raw:
+		var r = raw[en3]
+		var n_h    = (r["avg_h"] / max_h)    * 100.0
+		var n_util = (r["util"]  / max_util) * 100.0
+		var n_mood = (r["mood"]  / max_mood) * 100.0
+		var inv_burn = clampf(100.0 - r["burnout"], 0, 100)
+		var score = n_h * 0.30 + n_util * 0.30 + n_mood * 0.20 + inv_burn * 0.20
+		score = clampf(score, 0, 100)
+		var trend = tr("REPORTS_PEOPLE_TREND_FLAT")
+		if prev_stats.has(en3):
+			var ps = prev_stats[en3]; var pdays = max(ps["days"], 1)
+			var p_h    = (ps["total_work_min"] / float(pdays)) / 60.0
+			var p_util = float(ps["assigned_days"]) / float(pdays) * 100.0
+			var p_mood = ps["total_mood"] / float(pdays)
+			var p_burn = ps["total_burnout"] / float(pdays)
+			var p_n_h    = (p_h / max_h) * 100.0
+			var p_n_util = (p_util / max_util) * 100.0
+			var p_n_mood = (p_mood / max_mood) * 100.0
+			var p_inv_b  = clampf(100.0 - p_burn, 0, 100)
+			var prev_score = p_n_h * 0.30 + p_n_util * 0.30 + p_n_mood * 0.20 + p_inv_b * 0.20
+			if score > prev_score + 2:   trend = tr("REPORTS_PEOPLE_TREND_UP")
+			elif score < prev_score - 2: trend = tr("REPORTS_PEOPLE_TREND_DOWN")
+		scored.append({"name": en3, "score": score, "avg_h": r["avg_h"], "util": r["util"],
+		"mood": r["mood"], "burnout": r["burnout"], "trend": trend,
+		"role": emp_stats[en3]["job_title"]})
 
-					scored.sort_custom(func(a, b): return a["score"] > b["score"])
-					var n = scored.size()
-					var top_n = min(3, n) if n > 1 else 0
-					var bot_n = min(3, n) if n > 1 else 0
+	scored.sort_custom(func(a, b): return a["score"] > b["score"])
+	var n = scored.size()
+	var top_n = min(3, n) if n > 1 else 0
+	var bot_n = min(3, n) if n > 1 else 0
 
-					if n == 1:
-						_leaderboard_vbox.add_child(_make_title(tr("REPORTS_PEOPLE_ALL_EMPLOYEES")))
-						_leaderboard_vbox.add_child(_build_leaderboard_header())
-						_leaderboard_vbox.add_child(_build_leaderboard_row(1, scored[0], Color(0.9, 0.98, 0.9, 1)))
-						return
+	if n == 1:
+		_leaderboard_vbox.add_child(_make_title(tr("REPORTS_PEOPLE_ALL_EMPLOYEES")))
+		_leaderboard_vbox.add_child(_build_leaderboard_header())
+		_leaderboard_vbox.add_child(_build_leaderboard_row(1, scored[0], Color(0.9, 0.98, 0.9, 1)))
+		return
 
-						var top_lbl = _make_title(tr("REPORTS_PEOPLE_TOP_PERFORMERS"))
-						top_lbl.add_theme_color_override("font_color", COLOR_GREEN)
-						_leaderboard_vbox.add_child(top_lbl)
-						_leaderboard_vbox.add_child(_build_leaderboard_header())
-						for i in range(top_n):
-							_leaderboard_vbox.add_child(_build_leaderboard_row(i + 1, scored[i], Color(0.9, 1.0, 0.9, 1)))
+	var top_lbl = _make_title(tr("REPORTS_PEOPLE_TOP_PERFORMERS"))
+	top_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+	_leaderboard_vbox.add_child(top_lbl)
+	_leaderboard_vbox.add_child(_build_leaderboard_header())
+	for i in range(top_n):
+		_leaderboard_vbox.add_child(_build_leaderboard_row(i + 1, scored[i], Color(0.9, 1.0, 0.9, 1)))
 
-							var attn_lbl = _make_title(tr("REPORTS_PEOPLE_ATTENTION"))
-							attn_lbl.add_theme_color_override("font_color", COLOR_RED)
-							_leaderboard_vbox.add_child(attn_lbl)
-							_leaderboard_vbox.add_child(_build_leaderboard_header())
-							for i in range(bot_n):
-								var idx = n - bot_n + i
-								_leaderboard_vbox.add_child(_build_leaderboard_row(idx + 1, scored[idx], Color(1.0, 0.92, 0.92, 1)))
+	var attn_lbl = _make_title(tr("REPORTS_PEOPLE_ATTENTION"))
+	attn_lbl.add_theme_color_override("font_color", COLOR_RED)
+	_leaderboard_vbox.add_child(attn_lbl)
+	_leaderboard_vbox.add_child(_build_leaderboard_header())
+	for j in range(bot_n):
+		var idx = n - bot_n + j
+		_leaderboard_vbox.add_child(_build_leaderboard_row(idx + 1, scored[idx], Color(1.0, 0.92, 0.92, 1)))
 
 func _build_leaderboard_header() -> PanelContainer:
 	var row = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
@@ -1288,7 +1288,7 @@ func _build_leaderboard_header() -> PanelContainer:
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "bold")
 		hbox.add_child(lbl)
-		return row[0] as PanelContainer
+	return row[0] as PanelContainer
 
 func _build_leaderboard_row(rank: int, s: Dictionary, bg: Color) -> PanelContainer:
 	var row = _make_table_row(bg)
@@ -1335,164 +1335,164 @@ func _refresh_employee_card():
 		if not npc.data: continue
 		var dname = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
 		if dname == _selected_employee: emp_npc = npc; break
-		if not emp_npc: _card_vbox.add_child(_make_no_data_label()); return
-		var d = emp_npc.data
+	if not emp_npc: _card_vbox.add_child(_make_no_data_label()); return
+	var d = emp_npc.data
 
-		var name_lbl = Label.new(); name_lbl.text = _selected_employee
-		name_lbl.add_theme_font_size_override("font_size", 20)
-		name_lbl.add_theme_color_override("font_color", COLOR_DARK)
-		if UITheme: UITheme.apply_font(name_lbl, "bold")
-		_card_vbox.add_child(name_lbl)
+	var name_lbl = Label.new(); name_lbl.text = _selected_employee
+	name_lbl.add_theme_font_size_override("font_size", 20)
+	name_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	if UITheme: UITheme.apply_font(name_lbl, "bold")
+	_card_vbox.add_child(name_lbl)
 
-		var meta_hbox = HBoxContainer.new(); meta_hbox.add_theme_constant_override("separation", 16)
-		_card_vbox.add_child(meta_hbox)
+	var meta_hbox = HBoxContainer.new(); meta_hbox.add_theme_constant_override("separation", 16)
+	_card_vbox.add_child(meta_hbox)
 
-		var meta_role = Label.new(); meta_role.text = tr("REPORTS_PEOPLE_CARD_ROLE") + " " + str(d.job_title)
-		meta_role.add_theme_color_override("font_color", COLOR_GRAY); meta_role.add_theme_font_size_override("font_size", 12)
-		if UITheme: UITheme.apply_font(meta_role, "regular"); meta_hbox.add_child(meta_role)
+	var meta_role = Label.new(); meta_role.text = tr("REPORTS_PEOPLE_CARD_ROLE") + " " + str(d.job_title)
+	meta_role.add_theme_color_override("font_color", COLOR_GRAY); meta_role.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(meta_role, "regular"); meta_hbox.add_child(meta_role)
 
-		var grade_name = d.get_grade_name() if d.has_method("get_grade_name") else ""
-		if grade_name != "":
-			var meta_grade = Label.new(); meta_grade.text = grade_name
-			meta_grade.add_theme_color_override("font_color", COLOR_BLUE); meta_grade.add_theme_font_size_override("font_size", 12)
-			if UITheme: UITheme.apply_font(meta_grade, "regular"); meta_hbox.add_child(meta_grade)
+	var grade_name = d.get_grade_name() if d.has_method("get_grade_name") else ""
+	if grade_name != "":
+		var meta_grade = Label.new(); meta_grade.text = grade_name
+		meta_grade.add_theme_color_override("font_color", COLOR_BLUE); meta_grade.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(meta_grade, "regular"); meta_hbox.add_child(meta_grade)
 
-			var meta_type = Label.new(); meta_type.text = tr("REPORTS_PEOPLE_CARD_TYPE") + " " + str(d.employment_type)
-			meta_type.add_theme_color_override("font_color", COLOR_GRAY); meta_type.add_theme_font_size_override("font_size", 12)
-			if UITheme: UITheme.apply_font(meta_type, "regular"); meta_hbox.add_child(meta_type)
+	var meta_type = Label.new(); meta_type.text = tr("REPORTS_PEOPLE_CARD_TYPE") + " " + str(d.employment_type)
+	meta_type.add_theme_color_override("font_color", COLOR_GRAY); meta_type.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(meta_type, "regular"); meta_hbox.add_child(meta_type)
 
-			var meta_tenure = Label.new(); meta_tenure.text = tr("REPORTS_PEOPLE_CARD_TENURE") + " %d %s" % [int(d.days_in_company), tr("REPORTS_PEOPLE_CARD_DAYS")]
-			meta_tenure.add_theme_color_override("font_color", COLOR_GRAY); meta_tenure.add_theme_font_size_override("font_size", 12)
-			if UITheme: UITheme.apply_font(meta_tenure, "regular"); meta_hbox.add_child(meta_tenure)
+	var meta_tenure = Label.new(); meta_tenure.text = tr("REPORTS_PEOPLE_CARD_TENURE") + " %d %s" % [int(d.days_in_company), tr("REPORTS_PEOPLE_CARD_DAYS")]
+	meta_tenure.add_theme_color_override("font_color", COLOR_GRAY); meta_tenure.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(meta_tenure, "regular"); meta_hbox.add_child(meta_tenure)
 
-			var meta_salary = Label.new(); meta_salary.text = tr("REPORTS_PEOPLE_CARD_SALARY") + " $%s%s" % [_format_money(int(d.monthly_salary)), tr("REPORTS_PEOPLE_CARD_PER_MONTH")]
-			meta_salary.add_theme_color_override("font_color", COLOR_DARK); meta_salary.add_theme_font_size_override("font_size", 12)
-			if UITheme: UITheme.apply_font(meta_salary, "regular"); meta_hbox.add_child(meta_salary)
+	var meta_salary = Label.new(); meta_salary.text = tr("REPORTS_PEOPLE_CARD_SALARY") + " $%s%s" % [_format_money(int(d.monthly_salary)), tr("REPORTS_PEOPLE_CARD_PER_MONTH")]
+	meta_salary.add_theme_color_override("font_color", COLOR_DARK); meta_salary.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(meta_salary, "regular"); meta_hbox.add_child(meta_salary)
 
-			var cur_title = Label.new(); cur_title.text = tr("REPORTS_PEOPLE_CARD_CURRENT")
-			cur_title.add_theme_font_size_override("font_size", 14); cur_title.add_theme_color_override("font_color", COLOR_DARK)
-			if UITheme: UITheme.apply_font(cur_title, "semibold"); _card_vbox.add_child(cur_title)
+	var cur_title = Label.new(); cur_title.text = tr("REPORTS_PEOPLE_CARD_CURRENT")
+	cur_title.add_theme_font_size_override("font_size", 14); cur_title.add_theme_color_override("font_color", COLOR_DARK)
+	if UITheme: UITheme.apply_font(cur_title, "semibold"); _card_vbox.add_child(cur_title)
 
-			var mood_c = COLOR_GREEN if d.mood > 60 else (COLOR_ORANGE if d.mood >= 40 else COLOR_RED)
-			var burn_c = COLOR_GREEN if d.burnout_level < 20 else (COLOR_ORANGE if d.burnout_level <= 50 else COLOR_RED)
+	var mood_c = COLOR_GREEN if d.mood > 60 else (COLOR_ORANGE if d.mood >= 40 else COLOR_RED)
+	var burn_c = COLOR_GREEN if d.burnout_level < 20 else (COLOR_ORANGE if d.burnout_level <= 50 else COLOR_RED)
 
-			var mood_lbl = Label.new(); mood_lbl.text = "\U0001F60A %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_MOOD"), float(d.mood)]
-			mood_lbl.add_theme_color_override("font_color", mood_c); mood_lbl.add_theme_font_size_override("font_size", 14)
-			if UITheme: UITheme.apply_font(mood_lbl, "semibold"); _card_vbox.add_child(mood_lbl)
+	var mood_lbl = Label.new(); mood_lbl.text = "\U0001F60A %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_MOOD"), float(d.mood)]
+	mood_lbl.add_theme_color_override("font_color", mood_c); mood_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(mood_lbl, "semibold"); _card_vbox.add_child(mood_lbl)
 
-			var burn_lbl = Label.new(); burn_lbl.text = "\U0001F525 %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), float(d.burnout_level)]
-			burn_lbl.add_theme_color_override("font_color", burn_c); burn_lbl.add_theme_font_size_override("font_size", 14)
-			if UITheme: UITheme.apply_font(burn_lbl, "semibold"); _card_vbox.add_child(burn_lbl)
+	var burn_lbl = Label.new(); burn_lbl.text = "\U0001F525 %s: %.0f" % [tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), float(d.burnout_level)]
+	burn_lbl.add_theme_color_override("font_color", burn_c); burn_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(burn_lbl, "semibold"); _card_vbox.add_child(burn_lbl)
 
-			var energy_val = float(d.get("current_energy", 100.0))
-			var energy_c = COLOR_GREEN if energy_val > 60 else (COLOR_ORANGE if energy_val >= 30 else COLOR_RED)
-			var energy_lbl = Label.new(); energy_lbl.text = "\u26A1 %s: %.0f" % [tr("REPORTS_PEOPLE_METRIC_ENERGY"), energy_val]
-			energy_lbl.add_theme_color_override("font_color", energy_c); energy_lbl.add_theme_font_size_override("font_size", 14)
-			if UITheme: UITheme.apply_font(energy_lbl, "semibold"); _card_vbox.add_child(energy_lbl)
+	var energy_val = float(d.get("current_energy", 100.0))
+	var energy_c = COLOR_GREEN if energy_val > 60 else (COLOR_ORANGE if energy_val >= 30 else COLOR_RED)
+	var energy_lbl = Label.new(); energy_lbl.text = "\u26A1 %s: %.0f" % [tr("REPORTS_PEOPLE_METRIC_ENERGY"), energy_val]
+	energy_lbl.add_theme_color_override("font_color", energy_c); energy_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(energy_lbl, "semibold"); _card_vbox.add_child(energy_lbl)
 
-			var records = _get_filtered_records()
-			var total_work_min = 0.0; var assigned_days = 0; var days = 0
-			for r in records:
-				for emp in r.get("employees", []):
-					if str(emp.get("name", "")) == _selected_employee:
-						total_work_min += float(emp.get("work_minutes", 0.0))
-						var is_a = emp.get("is_assigned", float(emp.get("work_minutes", 0.0)) > 0)
-						if is_a: assigned_days += 1
-						days += 1
-						var avg_hours = 0.0
-						if days > 0: avg_hours = (total_work_min / float(days)) / 60.0
-						var util = 0.0
-						if days > 0: util = float(assigned_days) / float(days) * 100.0
+	var records = _get_filtered_records()
+	var total_work_min = 0.0; var assigned_days = 0; var days = 0
+	for r in records:
+		for emp in r.get("employees", []):
+			if str(emp.get("name", "")) == _selected_employee:
+				total_work_min += float(emp.get("work_minutes", 0.0))
+				var is_a = emp.get("is_assigned", float(emp.get("work_minutes", 0.0)) > 0)
+				if is_a: assigned_days += 1
+				days += 1
+	var avg_hours = 0.0
+	if days > 0: avg_hours = (total_work_min / float(days)) / 60.0
+	var util = 0.0
+	if days > 0: util = float(assigned_days) / float(days) * 100.0
 
-						var emp_stats = _get_emp_stats(records)
-						var max_h2 = 0.001; var max_util2 = 0.001; var max_mood2 = 0.001
-						for ename in emp_stats:
-							var s = emp_stats[ename]; var sd = max(s["days"], 1)
-							var ah = (s["total_work_min"] / float(sd)) / 60.0
-							var ut = float(s["assigned_days"]) / float(sd) * 100.0
-							var mo = s["total_mood"] / float(sd)
-							max_h2 = max(max_h2, ah); max_util2 = max(max_util2, ut); max_mood2 = max(max_mood2, mo)
-							var scores: Array = []
-							for ename in emp_stats:
-								var s = emp_stats[ename]; var sd = max(s["days"], 1)
-								var ah = (s["total_work_min"] / float(sd)) / 60.0
-								var ut = float(s["assigned_days"]) / float(sd) * 100.0
-								var mo = s["total_mood"] / float(sd); var bu = s["total_burnout"] / float(sd)
-								var sc = (ah / max_h2) * 30.0 + (ut / max_util2) * 30.0 + (mo / max_mood2) * 20.0 + clampf(100.0 - bu, 0, 100) * 0.20
-								scores.append({"name": ename, "score": sc})
-								scores.sort_custom(func(a, b): return a["score"] > b["score"])
-								var my_rank = 0; var total_team = scores.size()
-								for i in range(scores.size()):
-									if scores[i]["name"] == _selected_employee: my_rank = i + 1; break
+	var emp_stats = _get_emp_stats(records)
+	var max_h2 = 0.001; var max_util2 = 0.001; var max_mood2 = 0.001
+	for ename in emp_stats:
+		var s = emp_stats[ename]; var sd = max(s["days"], 1)
+		var ah = (s["total_work_min"] / float(sd)) / 60.0
+		var ut = float(s["assigned_days"]) / float(sd) * 100.0
+		var mo = s["total_mood"] / float(sd)
+		max_h2 = max(max_h2, ah); max_util2 = max(max_util2, ut); max_mood2 = max(max_mood2, mo)
+	var scores: Array = []
+	for en4 in emp_stats:
+		var s2 = emp_stats[en4]; var sd2 = max(s2["days"], 1)
+		var ah2 = (s2["total_work_min"] / float(sd2)) / 60.0
+		var ut2 = float(s2["assigned_days"]) / float(sd2) * 100.0
+		var mo2 = s2["total_mood"] / float(sd2); var bu2 = s2["total_burnout"] / float(sd2)
+		var sc2 = (ah2 / max_h2) * 30.0 + (ut2 / max_util2) * 30.0 + (mo2 / max_mood2) * 20.0 + clampf(100.0 - bu2, 0, 100) * 0.20
+		scores.append({"name": en4, "score": sc2})
+	scores.sort_custom(func(a, b): return a["score"] > b["score"])
+	var my_rank = 0; var total_team = scores.size()
+	for j in range(scores.size()):
+		if scores[j]["name"] == _selected_employee: my_rank = j + 1; break
 
-									var perf_grid = GridContainer.new(); perf_grid.columns = 2
-									perf_grid.add_theme_constant_override("h_separation", 16)
-									perf_grid.add_theme_constant_override("v_separation", 4)
-									_card_vbox.add_child(perf_grid)
+	var perf_grid = GridContainer.new(); perf_grid.columns = 2
+	perf_grid.add_theme_constant_override("h_separation", 16)
+	perf_grid.add_theme_constant_override("v_separation", 4)
+	_card_vbox.add_child(perf_grid)
 
-									var util_c2 = COLOR_GREEN if util >= 60 else (COLOR_ORANGE if util >= 30 else COLOR_RED)
+	var util_c2 = COLOR_GREEN if util >= 60 else (COLOR_ORANGE if util >= 30 else COLOR_RED)
 
-									var k1 = Label.new(); k1.text = tr("REPORTS_PEOPLE_CARD_AVG_SALARY_DAY")
-									k1.add_theme_color_override("font_color", COLOR_GRAY); k1.add_theme_font_size_override("font_size", 12)
-									if UITheme: UITheme.apply_font(k1, "regular"); perf_grid.add_child(k1)
-									var v1 = Label.new(); v1.text = "$%.2f" % (float(d.monthly_salary) / 22.0)
-									v1.add_theme_color_override("font_color", COLOR_DARK); v1.add_theme_font_size_override("font_size", 12)
-									if UITheme: UITheme.apply_font(v1, "semibold"); perf_grid.add_child(v1)
+	var k1 = Label.new(); k1.text = tr("REPORTS_PEOPLE_CARD_AVG_SALARY_DAY")
+	k1.add_theme_color_override("font_color", COLOR_GRAY); k1.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(k1, "regular"); perf_grid.add_child(k1)
+	var v1 = Label.new(); v1.text = "$%.2f" % (float(d.monthly_salary) / 22.0)
+	v1.add_theme_color_override("font_color", COLOR_DARK); v1.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(v1, "semibold"); perf_grid.add_child(v1)
 
-									var k2 = Label.new(); k2.text = tr("REPORTS_PEOPLE_CARD_AVG_HOURS_DAY")
-									k2.add_theme_color_override("font_color", COLOR_GRAY); k2.add_theme_font_size_override("font_size", 12)
-									if UITheme: UITheme.apply_font(k2, "regular"); perf_grid.add_child(k2)
-									var v2 = Label.new(); v2.text = "%.1f h" % avg_hours
-									v2.add_theme_color_override("font_color", COLOR_DARK); v2.add_theme_font_size_override("font_size", 12)
-									if UITheme: UITheme.apply_font(v2, "semibold"); perf_grid.add_child(v2)
+	var k2 = Label.new(); k2.text = tr("REPORTS_PEOPLE_CARD_AVG_HOURS_DAY")
+	k2.add_theme_color_override("font_color", COLOR_GRAY); k2.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(k2, "regular"); perf_grid.add_child(k2)
+	var v2 = Label.new(); v2.text = "%.1f h" % avg_hours
+	v2.add_theme_color_override("font_color", COLOR_DARK); v2.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(v2, "semibold"); perf_grid.add_child(v2)
 
-									var k3 = Label.new(); k3.text = tr("REPORTS_PEOPLE_CARD_UTIL")
-									k3.add_theme_color_override("font_color", COLOR_GRAY); k3.add_theme_font_size_override("font_size", 12)
-									if UITheme: UITheme.apply_font(k3, "regular"); perf_grid.add_child(k3)
-									var v3 = Label.new(); v3.text = "%.0f%%" % util
-									v3.add_theme_color_override("font_color", util_c2); v3.add_theme_font_size_override("font_size", 12)
-									if UITheme: UITheme.apply_font(v3, "semibold"); perf_grid.add_child(v3)
+	var k3 = Label.new(); k3.text = tr("REPORTS_PEOPLE_CARD_UTIL")
+	k3.add_theme_color_override("font_color", COLOR_GRAY); k3.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(k3, "regular"); perf_grid.add_child(k3)
+	var v3 = Label.new(); v3.text = "%.0f%%" % util
+	v3.add_theme_color_override("font_color", util_c2); v3.add_theme_font_size_override("font_size", 12)
+	if UITheme: UITheme.apply_font(v3, "semibold"); perf_grid.add_child(v3)
 
-									if my_rank > 0:
-										var k4 = Label.new(); k4.text = tr("REPORTS_PEOPLE_CARD_RANK")
-										k4.add_theme_color_override("font_color", COLOR_GRAY); k4.add_theme_font_size_override("font_size", 12)
-										if UITheme: UITheme.apply_font(k4, "regular"); perf_grid.add_child(k4)
-										var v4 = Label.new(); v4.text = tr("REPORTS_PEOPLE_CARD_RANK_OF") % [my_rank, total_team]
-										v4.add_theme_color_override("font_color", COLOR_DARK); v4.add_theme_font_size_override("font_size", 12)
-										if UITheme: UITheme.apply_font(v4, "semibold"); perf_grid.add_child(v4)
+	if my_rank > 0:
+		var k4 = Label.new(); k4.text = tr("REPORTS_PEOPLE_CARD_RANK")
+		k4.add_theme_color_override("font_color", COLOR_GRAY); k4.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(k4, "regular"); perf_grid.add_child(k4)
+		var v4 = Label.new(); v4.text = tr("REPORTS_PEOPLE_CARD_RANK_OF") % [my_rank, total_team]
+		v4.add_theme_color_override("font_color", COLOR_DARK); v4.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(v4, "semibold"); perf_grid.add_child(v4)
 
-										var dyn_title = Label.new(); dyn_title.text = tr("REPORTS_PEOPLE_CARD_DYNAMICS")
-										dyn_title.add_theme_font_size_override("font_size", 14); dyn_title.add_theme_color_override("font_color", COLOR_DARK)
-										if UITheme: UITheme.apply_font(dyn_title, "semibold"); _card_vbox.add_child(dyn_title)
+	var dyn_title = Label.new(); dyn_title.text = tr("REPORTS_PEOPLE_CARD_DYNAMICS")
+	dyn_title.add_theme_font_size_override("font_size", 14); dyn_title.add_theme_color_override("font_color", COLOR_DARK)
+	if UITheme: UITheme.apply_font(dyn_title, "semibold"); _card_vbox.add_child(dyn_title)
 
-										_card_graph = Control.new()
-										_card_graph.custom_minimum_size = Vector2(0, 160)
-										_card_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-										var emp_c = _selected_employee
-										_card_graph.draw.connect(func(): _draw_employee_graph(_card_graph, emp_c))
-										_card_vbox.add_child(_card_graph)
+	_card_graph = Control.new()
+	_card_graph.custom_minimum_size = Vector2(0, 160)
+	_card_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var emp_c = _selected_employee
+	_card_graph.draw.connect(func(): _draw_employee_graph(_card_graph, emp_c))
+	_card_vbox.add_child(_card_graph)
 
-										_card_vbox.add_child(_make_legend([
-										{"label": tr("REPORTS_PEOPLE_HEALTH_MOOD"),    "color": COLOR_BLUE},
-										{"label": tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), "color": COLOR_RED},
-										{"label": tr("REPORTS_PEOPLE_METRIC_ENERGY"),  "color": COLOR_GREEN},
-										]))
+	_card_vbox.add_child(_make_legend([
+	{"label": tr("REPORTS_PEOPLE_HEALTH_MOOD"),    "color": COLOR_BLUE},
+	{"label": tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), "color": COLOR_RED},
+	{"label": tr("REPORTS_PEOPLE_METRIC_ENERGY"),  "color": COLOR_GREEN},
+	]))
 
-										var wh_title = Label.new(); wh_title.text = tr("REPORTS_PEOPLE_CARD_WORK_HOURS")
-										wh_title.add_theme_font_size_override("font_size", 14); wh_title.add_theme_color_override("font_color", COLOR_DARK)
-										if UITheme: UITheme.apply_font(wh_title, "semibold"); _card_vbox.add_child(wh_title)
+	var wh_title = Label.new(); wh_title.text = tr("REPORTS_PEOPLE_CARD_WORK_HOURS")
+	wh_title.add_theme_font_size_override("font_size", 14); wh_title.add_theme_color_override("font_color", COLOR_DARK)
+	if UITheme: UITheme.apply_font(wh_title, "semibold"); _card_vbox.add_child(wh_title)
 
-										var wh_graph = Control.new()
-										wh_graph.custom_minimum_size = Vector2(0, 140)
-										wh_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-										wh_graph.clip_contents = true
-										var emp_wh = _selected_employee
-										wh_graph.draw.connect(func(): _draw_work_hours_graph(wh_graph, emp_wh))
-										_card_vbox.add_child(wh_graph)
+	var wh_graph = Control.new()
+	wh_graph.custom_minimum_size = Vector2(0, 140)
+	wh_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wh_graph.clip_contents = true
+	var emp_wh = _selected_employee
+	wh_graph.draw.connect(func(): _draw_work_hours_graph(wh_graph, emp_wh))
+	_card_vbox.add_child(wh_graph)
 
-										_card_vbox.add_child(_make_legend([
-										{"label": tr("REPORTS_PEOPLE_CARD_WORK_HOURS"), "color": COLOR_BLUE},
-										]))
+	_card_vbox.add_child(_make_legend([
+	{"label": tr("REPORTS_PEOPLE_CARD_WORK_HOURS"), "color": COLOR_BLUE},
+	]))
 
 func _draw_employee_graph(ctrl: Control, emp_name: String):
 	var records = _get_filtered_records()
@@ -1506,28 +1506,28 @@ func _draw_employee_graph(ctrl: Control, emp_name: String):
 				emp_records.append({"day": r.get("day", 0), "mood": emp.get("mood", 50.0),
 				"burnout": emp.get("burnout", 0.0), "energy": emp.get("energy", 100.0)})
 				break
-				if emp_records.is_empty():
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
-					return
-					var gc = Color(0.88, 0.88, 0.88, 1)
-					for i in range(6):
-						var frac = float(i) / 5.0; var gy = PT + frac * gh
-						ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-						ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), str(int(100 - frac * 100)), HORIZONTAL_ALIGNMENT_LEFT, PL - 2, 9, COLOR_GRAY)
-						var n = emp_records.size()
-						var mood_pts: PackedVector2Array = []; var burn_pts: PackedVector2Array = []; var energy_pts: PackedVector2Array = []
-						for i in range(n):
-							var px = PL + (float(i) / max(n - 1, 1)) * gw
-							mood_pts.append(  Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[i]["mood"]), 0, 100) / 100.0)))
-							burn_pts.append(  Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[i]["burnout"]), 0, 100) / 100.0)))
-							energy_pts.append(Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[i]["energy"]), 0, 100) / 100.0)))
-							if mood_pts.size() >= 2:    ctrl.draw_polyline(mood_pts,   COLOR_BLUE,  1.5, true)
-							if burn_pts.size() >= 2:    ctrl.draw_polyline(burn_pts,   COLOR_RED,   1.5, true)
-							if energy_pts.size() >= 2:  ctrl.draw_polyline(energy_pts, COLOR_GREEN, 1.5, true)
-							var step = max(1, int(ceil(float(n) / 8.0)))
-							for i in range(0, n, step):
-								var px = PL + (float(i) / max(n - 1, 1)) * gw
-								ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(emp_records[i]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
+	if emp_records.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
+		return
+	var gc = Color(0.88, 0.88, 0.88, 1)
+	for i in range(6):
+		var frac = float(i) / 5.0; var gy = PT + frac * gh
+		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), str(int(100 - frac * 100)), HORIZONTAL_ALIGNMENT_LEFT, PL - 2, 9, COLOR_GRAY)
+	var n = emp_records.size()
+	var mood_pts: PackedVector2Array = []; var burn_pts: PackedVector2Array = []; var energy_pts: PackedVector2Array = []
+	for j in range(n):
+		var px = PL + (float(j) / max(n - 1, 1)) * gw
+		mood_pts.append(  Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[j]["mood"]), 0, 100) / 100.0)))
+		burn_pts.append(  Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[j]["burnout"]), 0, 100) / 100.0)))
+		energy_pts.append(Vector2(px, PT + gh * (1.0 - clampf(float(emp_records[j]["energy"]), 0, 100) / 100.0)))
+	if mood_pts.size() >= 2:    ctrl.draw_polyline(mood_pts,   COLOR_BLUE,  1.5, true)
+	if burn_pts.size() >= 2:    ctrl.draw_polyline(burn_pts,   COLOR_RED,   1.5, true)
+	if energy_pts.size() >= 2:  ctrl.draw_polyline(energy_pts, COLOR_GREEN, 1.5, true)
+	var step = max(1, int(ceil(float(n) / 8.0)))
+	for xi in range(0, n, step):
+		var px = PL + (float(xi) / max(n - 1, 1)) * gw
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(emp_records[xi]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
 func _draw_work_hours_graph(ctrl: Control, emp_name: String):
 	var records = _get_filtered_records()
@@ -1540,26 +1540,26 @@ func _draw_work_hours_graph(ctrl: Control, emp_name: String):
 			if str(emp.get("name", "")) == emp_name:
 				hours_data.append({"day": r.get("day", 0), "hours": float(emp.get("work_minutes", 0.0)) / 60.0})
 				break
-				if hours_data.is_empty():
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
-					return
-					var max_hours = 8.0
-					for item in hours_data: max_hours = max(max_hours, item["hours"] + 0.5)
-					var gc = Color(0.88, 0.88, 0.88, 1)
-					for i in range(6):
-						var frac = float(i) / 5.0; var gy = PT + frac * gh
-						ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-						ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.0f" % (max_hours * (1.0 - frac)), HORIZONTAL_ALIGNMENT_LEFT, PL - 2, 9, COLOR_GRAY)
-						var n = hours_data.size(); var slot_w = gw / max(n, 1); var bar_w = max(4.0, slot_w - 2.0)
-						var bar_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.75)
-						for i in range(n):
-							var px = PL + (float(i) + 0.5) * slot_w
-							var val = hours_data[i]["hours"]; var bh = gh * (val / max_hours)
-							ctrl.draw_rect(Rect2(px - bar_w * 0.5, PT + gh - bh, bar_w, bh), bar_color)
-							var step = max(1, int(ceil(float(n) / 8.0)))
-							for i in range(0, n, step):
-								var px = PL + (float(i) + 0.5) * slot_w
-								ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(hours_data[i]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
+	if hours_data.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 60, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
+		return
+	var max_hours = 8.0
+	for item in hours_data: max_hours = max(max_hours, item["hours"] + 0.5)
+	var gc = Color(0.88, 0.88, 0.88, 1)
+	for i in range(6):
+		var frac = float(i) / 5.0; var gy = PT + frac * gh
+		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.0f" % (max_hours * (1.0 - frac)), HORIZONTAL_ALIGNMENT_LEFT, PL - 2, 9, COLOR_GRAY)
+	var n = hours_data.size(); var slot_w = gw / max(n, 1); var bar_w = max(4.0, slot_w - 2.0)
+	var bar_color = Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.75)
+	for j in range(n):
+		var px = PL + (float(j) + 0.5) * slot_w
+		var val = hours_data[j]["hours"]; var bh = gh * (val / max_hours)
+		ctrl.draw_rect(Rect2(px - bar_w * 0.5, PT + gh - bh, bar_w, bh), bar_color)
+	var step = max(1, int(ceil(float(n) / 8.0)))
+	for xi in range(0, n, step):
+		var px = PL + (float(xi) + 0.5) * slot_w
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 6, h - 4), str(int(hours_data[xi]["day"])), HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
 # =====================================================================
 # HELPERS
