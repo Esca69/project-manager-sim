@@ -434,7 +434,6 @@ texture = ExtResource("14_lsk72")
 position = Vector2(445, -626)
 
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
-visible = false
 
 [node name="SpawnPoint" type="Marker2D" parent="."]
 position = Vector2(1653, 833)
