@@ -160,10 +160,10 @@ func _build_period_selector() -> Control:
 	if UITheme: UITheme.apply_font(plbl, "semibold")
 	row1.add_child(plbl)
 	var periods = [
-	[tr("REPORTS_PERIOD_7D"), PERIOD_7D],
-	[tr("REPORTS_PERIOD_30D"), PERIOD_30D],
-	[tr("REPORTS_PERIOD_90D"), PERIOD_90D],
-	[tr("REPORTS_PERIOD_ALL_SHORT"), PERIOD_ALL]
+		[tr("REPORTS_PERIOD_7D"), PERIOD_7D],
+		[tr("REPORTS_PERIOD_30D"), PERIOD_30D],
+		[tr("REPORTS_PERIOD_90D"), PERIOD_90D],
+		[tr("REPORTS_PERIOD_ALL_SHORT"), PERIOD_ALL]
 	]
 	_period_buttons.clear()
 	for p in periods:
@@ -177,32 +177,32 @@ func _build_period_selector() -> Control:
 		_style_period_btn(btn, code == _selected_period)
 		if UITheme: UITheme.apply_font(btn, "semibold")
 		row1.add_child(btn)
-		var row2 = HBoxContainer.new()
-		row2.add_theme_constant_override("separation", 6)
-		vbox.add_child(row2)
-		_period_nav_prev = Button.new()
-		_period_nav_prev.text = "\u25c4"
-		_period_nav_prev.custom_minimum_size = Vector2(30, 26)
-		_period_nav_prev.focus_mode = Control.FOCUS_NONE
-		_period_nav_prev.pressed.connect(_on_period_nav_prev)
-		_style_small_btn(_period_nav_prev)
-		row2.add_child(_period_nav_prev)
-		_period_range_label = Label.new()
-		_period_range_label.text = ""
-		_period_range_label.add_theme_color_override("font_color", COLOR_DARK)
-		_period_range_label.add_theme_font_size_override("font_size", 12)
-		_period_range_label.custom_minimum_size = Vector2(200, 0)
-		_period_range_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		if UITheme: UITheme.apply_font(_period_range_label, "regular")
-		row2.add_child(_period_range_label)
-		_period_nav_next = Button.new()
-		_period_nav_next.text = "\u25ba"
-		_period_nav_next.custom_minimum_size = Vector2(30, 26)
-		_period_nav_next.focus_mode = Control.FOCUS_NONE
-		_period_nav_next.pressed.connect(_on_period_nav_next)
-		_style_small_btn(_period_nav_next)
-		row2.add_child(_period_nav_next)
-		return card
+	var row2 = HBoxContainer.new()
+	row2.add_theme_constant_override("separation", 6)
+	vbox.add_child(row2)
+	_period_nav_prev = Button.new()
+	_period_nav_prev.text = "◀"
+	_period_nav_prev.custom_minimum_size = Vector2(30, 26)
+	_period_nav_prev.focus_mode = Control.FOCUS_NONE
+	_period_nav_prev.pressed.connect(_on_period_nav_prev)
+	_style_small_btn(_period_nav_prev)
+	row2.add_child(_period_nav_prev)
+	_period_range_label = Label.new()
+	_period_range_label.text = ""
+	_period_range_label.add_theme_color_override("font_color", COLOR_DARK)
+	_period_range_label.add_theme_font_size_override("font_size", 12)
+	_period_range_label.custom_minimum_size = Vector2(200, 0)
+	_period_range_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_period_range_label, "regular")
+	row2.add_child(_period_range_label)
+	_period_nav_next = Button.new()
+	_period_nav_next.text = "▶"
+	_period_nav_next.custom_minimum_size = Vector2(30, 26)
+	_period_nav_next.focus_mode = Control.FOCUS_NONE
+	_period_nav_next.pressed.connect(_on_period_nav_next)
+	_style_small_btn(_period_nav_next)
+	row2.add_child(_period_nav_next)
+	return card
 
 func _style_period_btn(btn: Button, active: bool):
 	var s = StyleBoxFlat.new()
@@ -244,8 +244,8 @@ func _on_period_selected(code: int):
 	_period_offset = 0
 	for entry in _period_buttons:
 		_style_period_btn(entry["btn"], entry["code"] == code)
-		_update_period_range_label()
-		_refresh_all()
+	_update_period_range_label()
+	_refresh_all()
 
 func _on_period_nav_prev():
 	if _selected_period == PERIOD_ALL: return
@@ -266,8 +266,8 @@ func _update_period_range_label():
 		_period_range_label.text = tr("REPORTS_PERIOD_RANGE_ALL") % b[1]
 	else:
 		_period_range_label.text = tr("REPORTS_PERIOD_RANGE") % [b[0], b[1]]
-		if _period_nav_next: _period_nav_next.disabled = (_period_offset == 0)
-		if _period_nav_prev: _period_nav_prev.disabled = (_selected_period == PERIOD_ALL)
+	if _period_nav_next: _period_nav_next.disabled = (_period_offset == 0)
+	if _period_nav_prev: _period_nav_prev.disabled = (_selected_period == PERIOD_ALL)
 
 # =====================================================================
 #  EMPLOYEE SELECTOR
@@ -299,26 +299,26 @@ func _populate_employee_dropdown():
 	var prev_text = ""
 	if _employee_dropdown.item_count > 0 and _employee_dropdown.selected >= 0:
 		prev_text = _employee_dropdown.get_item_text(_employee_dropdown.selected)
-		_employee_dropdown.clear()
-		_employee_dropdown.add_item(tr("REPORTS_PEOPLE_TEAM_VIEW"))
-		var npcs = get_tree().get_nodes_in_group("npc")
-		for npc in npcs:
-			if not is_instance_valid(npc) or not npc.data: continue
-			var dname = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
-			_employee_dropdown.add_item(dname)
-			if prev_text != "":
-				for i in range(_employee_dropdown.item_count):
-					if _employee_dropdown.get_item_text(i) == prev_text:
-						_employee_dropdown.select(i)
-						break
+	_employee_dropdown.clear()
+	_employee_dropdown.add_item(tr("REPORTS_PEOPLE_TEAM_VIEW"))
+	var npcs = get_tree().get_nodes_in_group("npc")
+	for npc in npcs:
+		if not is_instance_valid(npc) or not npc.data: continue
+		var dname = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
+		_employee_dropdown.add_item(dname)
+	if prev_text != "":
+		for i in range(_employee_dropdown.item_count):
+			if _employee_dropdown.get_item_text(i) == prev_text:
+				_employee_dropdown.select(i)
+				break
 
 func _on_employee_selected(index: int):
 	if index == 0:
 		_selected_employee = ""
 	else:
 		_selected_employee = _employee_dropdown.get_item_text(index)
-		_update_view_mode()
-		_refresh_all()
+	_update_view_mode()
+	_refresh_all()
 
 func _update_view_mode():
 	if _team_sections: _team_sections.visible = (_selected_employee == "")
@@ -646,55 +646,55 @@ func _draw_scatter(ctrl: Control):
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-		var emp_stats = _get_emp_stats(records)
-		if emp_stats.is_empty():
-			ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
-			return
-			var filter_role = ""
-			if _scatter_filter and _scatter_filter.selected > 0: filter_role = _scatter_filter.get_item_text(_scatter_filter.selected)
-			var pts_data = []
-			for ename in emp_stats:
-				var s = emp_stats[ename]
-				if filter_role != "" and s["job_title"] != filter_role: continue
-				var days = max(s["days"], 1)
-				var avg_hours = (s["total_work_min"] / float(days)) / 60.0
-				var daily_sal = s["daily_salary"]
-				pts_data.append({"name": ename, "daily_sal": daily_sal, "avg_hours": avg_hours, "role": s["job_title"]})
-				if pts_data.is_empty():
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
-					return
-					var max_sal = 0.0; var max_hrs = 0.0
-					for p in pts_data:
-						max_sal = max(max_sal, p["daily_sal"])
-						max_hrs = max(max_hrs, p["avg_hours"])
-						if max_sal < 0.01: max_sal = 1.0
-						if max_hrs < 0.01: max_hrs = 1.0
-						max_sal *= 1.1; max_hrs *= 1.1
-						var gc = Color(0.88, 0.88, 0.88, 1)
-						for i in range(5):
-							var frac = float(i) / 4.0
-							var gy = PT + frac * gh
-							ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-							ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_hrs), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
-							var gx = PL + frac * gw
-							ctrl.draw_line(Vector2(gx, PT), Vector2(gx, PT + gh), gc, 1)
-							ctrl.draw_string(ThemeDB.fallback_font, Vector2(gx - 12, PT + gh + 14), "$%d" % int(frac * max_sal), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
-							var all_sal = []; var all_hrs = []
-							for p in pts_data: all_sal.append(p["daily_sal"]); all_hrs.append(p["avg_hours"])
-							all_sal.sort(); all_hrs.sort()
-							var med_sal = all_sal[all_sal.size() / 2] if all_sal.size() > 0 else max_sal / 2.0
-							var med_hrs = all_hrs[all_hrs.size() / 2] if all_hrs.size() > 0 else max_hrs / 2.0
-							var mx = PL + (med_sal / max_sal) * gw
-							var my = PT + (1.0 - med_hrs / max_hrs) * gh
-							ctrl.draw_line(Vector2(mx, PT), Vector2(mx, PT + gh), Color(0.6, 0.6, 0.6, 0.5), 1)
-							ctrl.draw_line(Vector2(PL, my), Vector2(PL + gw, my), Color(0.6, 0.6, 0.6, 0.5), 1)
-							for p in pts_data:
-								var px = PL + (p["daily_sal"] / max_sal) * gw
-								var py = PT + (1.0 - p["avg_hours"] / max_hrs) * gh
-								var col = _role_color(p["role"])
-								ctrl.draw_circle(Vector2(px, py), 6.0, col)
-								_scatter_pts.append({"pos": Vector2(px, py), "name": p["name"], "daily_sal": p["daily_sal"], "avg_hours": p["avg_hours"], "role": p["role"]})
-								ctrl.draw_string(ThemeDB.fallback_font, Vector2(PL + gw / 2 - 20, PT + gh + 28), "$/%s" % tr("REPORTS_DAY"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, COLOR_GRAY)
+	var emp_stats = _get_emp_stats(records)
+	if emp_stats.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
+		return
+	var filter_role = ""
+	if _scatter_filter and _scatter_filter.selected > 0: filter_role = _scatter_filter.get_item_text(_scatter_filter.selected)
+	var pts_data = []
+	for ename in emp_stats:
+		var s = emp_stats[ename]
+		if filter_role != "" and s["job_title"] != filter_role: continue
+		var days = max(s["days"], 1)
+		var avg_hours = (s["total_work_min"] / float(days)) / 60.0
+		pts_data.append({"name": ename, "daily_sal": s["daily_salary"], "avg_hours": avg_hours, "role": s["job_title"]})
+	if pts_data.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
+		return
+	var max_sal = 0.0; var max_hrs = 0.0
+	for p in pts_data:
+		max_sal = max(max_sal, p["daily_sal"])
+		max_hrs = max(max_hrs, p["avg_hours"])
+	if max_sal < 0.01: max_sal = 1.0
+	if max_hrs < 0.01: max_hrs = 1.0
+	max_sal *= 1.1; max_hrs *= 1.1
+	var gc = Color(0.88, 0.88, 0.88, 1)
+	for i in range(5):
+		var frac = float(i) / 4.0
+		var gy = PT + frac * gh
+		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_hrs), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
+		var gx = PL + frac * gw
+		ctrl.draw_line(Vector2(gx, PT), Vector2(gx, PT + gh), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(gx - 12, PT + gh + 14), "$%d" % int(frac * max_sal), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
+	# Median lines
+	var all_sal = []; var all_hrs = []
+	for p in pts_data: all_sal.append(p["daily_sal"]); all_hrs.append(p["avg_hours"])
+	all_sal.sort(); all_hrs.sort()
+	var med_sal = all_sal[all_sal.size() / 2] if all_sal.size() > 0 else max_sal / 2.0
+	var med_hrs = all_hrs[all_hrs.size() / 2] if all_hrs.size() > 0 else max_hrs / 2.0
+	var mx = PL + (med_sal / max_sal) * gw
+	var my = PT + (1.0 - med_hrs / max_hrs) * gh
+	ctrl.draw_line(Vector2(mx, PT), Vector2(mx, PT + gh), Color(0.6, 0.6, 0.6, 0.5), 1)
+	ctrl.draw_line(Vector2(PL, my), Vector2(PL + gw, my), Color(0.6, 0.6, 0.6, 0.5), 1)
+	for p in pts_data:
+		var px = PL + (p["daily_sal"] / max_sal) * gw
+		var py = PT + (1.0 - p["avg_hours"] / max_hrs) * gh
+		var col = _role_color(p["role"])
+		ctrl.draw_circle(Vector2(px, py), 6.0, col)
+		_scatter_pts.append({"pos": Vector2(px, py), "name": p["name"], "daily_sal": p["daily_sal"], "avg_hours": p["avg_hours"], "role": p["role"]})
+	ctrl.draw_string(ThemeDB.fallback_font, Vector2(PL + gw / 2 - 20, PT + gh + 28), "$/" + tr("REPORTS_DAY"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, COLOR_GRAY)
 
 func _on_scatter_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -703,10 +703,10 @@ func _on_scatter_gui_input(event: InputEvent):
 	for i in range(_scatter_pts.size()):
 		var d = mp.distance_to(_scatter_pts[i]["pos"])
 		if d < bd: bd = d; bi = i
-		if bi >= 0:
-			var p = _scatter_pts[bi]
-			_show_tooltip_at(tr("REPORTS_PEOPLE_SCATTER_TOOLTIP") % [p["name"], p["daily_sal"], p["avg_hours"], p["role"]], _scatter_graph, mp)
-		else: _hide_tooltip()
+	if bi >= 0:
+		var p = _scatter_pts[bi]
+		_show_tooltip_at(tr("REPORTS_PEOPLE_SCATTER_TOOLTIP") % [p["name"], p["daily_sal"], p["avg_hours"], p["role"]], _scatter_graph, mp)
+	else: _hide_tooltip()
 
 # =====================================================================
 #  BLOCK 3: WORK HOURS BY PERSON (BAR CHART)
@@ -749,36 +749,36 @@ func _draw_bars(ctrl: Control):
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-		var emp_stats = _get_emp_stats(records)
-		var filter_role = ""
-		if _bars_filter and _bars_filter.selected > 0: filter_role = _bars_filter.get_item_text(_bars_filter.selected)
-		var names = []; var hours = []; var salaries = []; var roles = []
-		for ename in emp_stats:
-			var s = emp_stats[ename]
-			if filter_role != "" and s["job_title"] != filter_role: continue
-			var days = max(s["days"], 1)
-			var avg_h = (s["total_work_min"] / float(days)) / 60.0
-			names.append(ename); hours.append(avg_h); salaries.append(s["daily_salary"]); roles.append(s["job_title"])
-			if names.is_empty():
-				ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
-				return
-				var max_h = 0.0; for hv in hours: max_h = max(max_h, hv)
-				if max_h < 0.01: max_h = 1.0
-				max_h *= 1.15
-				var gc = Color(0.88, 0.88, 0.88, 1)
-				for i in range(5):
-					var frac = float(i) / 4.0; var gy = PT + frac * gh
-					ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_h), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
-					var n = names.size(); var slot_w = gw / float(n); var bar_w = max(4.0, slot_w * 0.6)
-					for i in range(n):
-						var bx = PL + (float(i) + 0.5) * slot_w; var bh = (hours[i] / max_h) * gh
-						var col = _role_color(roles[i])
-						var rect = Rect2(bx - bar_w * 0.5, PT + gh - bh, bar_w, bh)
-						ctrl.draw_rect(rect, col)
-						_bars_data.append({"rect": rect, "name": names[i], "avg_hours": hours[i], "salary": salaries[i], "role": roles[i]})
-						var short_n = names[i].substr(0, min(names[i].length(), 8))
-						ctrl.draw_string(ThemeDB.fallback_font, Vector2(bx - slot_w * 0.4, h - 8), short_n, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
+	var emp_stats = _get_emp_stats(records)
+	var filter_role = ""
+	if _bars_filter and _bars_filter.selected > 0: filter_role = _bars_filter.get_item_text(_bars_filter.selected)
+	var names = []; var hours = []; var salaries = []; var roles = []
+	for ename in emp_stats:
+		var s = emp_stats[ename]
+		if filter_role != "" and s["job_title"] != filter_role: continue
+		var days = max(s["days"], 1)
+		var avg_h = (s["total_work_min"] / float(days)) / 60.0
+		names.append(ename); hours.append(avg_h); salaries.append(s["daily_salary"]); roles.append(s["job_title"])
+	if names.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
+		return
+	var max_h = 0.0; for hv in hours: max_h = max(max_h, hv)
+	if max_h < 0.01: max_h = 1.0
+	max_h *= 1.15
+	var gc = Color(0.88, 0.88, 0.88, 1)
+	for i in range(5):
+		var frac = float(i) / 4.0; var gy = PT + frac * gh
+		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_h), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
+	var n = names.size(); var slot_w = gw / float(n); var bar_w = max(4.0, slot_w * 0.6)
+	for i in range(n):
+		var bx = PL + (float(i) + 0.5) * slot_w; var bh = (hours[i] / max_h) * gh
+		var col = _role_color(roles[i])
+		var rect = Rect2(bx - bar_w * 0.5, PT + gh - bh, bar_w, bh)
+		ctrl.draw_rect(rect, col)
+		_bars_data.append({"rect": rect, "name": names[i], "avg_hours": hours[i], "salary": salaries[i], "role": roles[i]})
+		var short_n = names[i].substr(0, min(names[i].length(), 8))
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(bx - slot_w * 0.4, h - 8), short_n, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
 func _on_bars_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -787,7 +787,7 @@ func _on_bars_gui_input(event: InputEvent):
 		if bd["rect"].has_point(mp):
 			_show_tooltip_at(tr("REPORTS_PEOPLE_DAILY_BARS_TOOLTIP") % [bd["name"], bd["avg_hours"], _format_money(int(bd["salary"])), bd["role"]], _bars_graph, mp)
 			return
-			_hide_tooltip()
+	_hide_tooltip()
 
 # =====================================================================
 #  BLOCK 4: MULTI-LINE COMPARISON
@@ -843,62 +843,63 @@ func _draw_multiline(ctrl: Control):
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-		var metric_idx = 0
-		if _metric_selector: metric_idx = _metric_selector.selected
-		var metric_key = ["mood", "burnout", "energy", "work_minutes"][metric_idx]
-		var filter_role = ""
-		if _multiline_filter and _multiline_filter.selected > 0: filter_role = _multiline_filter.get_item_text(_multiline_filter.selected)
-		var emp_series: Dictionary = {}
-		for r in records:
-			var day = int(r.get("day", 0))
-			for emp in r.get("employees", []):
-				var ename = str(emp.get("name", ""))
-				if ename.is_empty(): continue
-				if filter_role != "" and str(emp.get("job_title", "")) != filter_role: continue
-				if not emp_series.has(ename): emp_series[ename] = []
-				var val = float(emp.get(metric_key, 0.0))
-				if metric_key == "work_minutes": val = val / 60.0
-				emp_series[ename].append({"day": day, "val": val})
-				if emp_series.is_empty():
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
-					return
-					var max_val = 0.0
-					if metric_key in ["mood", "burnout", "energy"]: max_val = 100.0
-				else:
-					for ename in emp_series:
-						for pt in emp_series[ename]: max_val = max(max_val, pt["val"])
-						max_val = max(max_val * 1.1, 0.1)
-						var min_day = 999999; var max_day = 0
-						for ename in emp_series:
-							for pt in emp_series[ename]:
-								min_day = min(min_day, pt["day"])
-								max_day = max(max_day, pt["day"])
-								if max_day == min_day: max_day = min_day + 1
-								var gc = Color(0.88, 0.88, 0.88, 1)
-								for i in range(5):
-									var frac = float(i) / 4.0; var gy = PT + frac * gh
-									ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-									ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.0f" % ((1.0 - frac) * max_val), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
-									var emp_names = emp_series.keys()
-									var palette = [COLOR_BLUE, COLOR_RED, COLOR_GREEN, COLOR_ORANGE, COLOR_GRAY, Color(0.6, 0.2, 0.8, 1), Color(0.8, 0.5, 0.1, 1)]
-									for ei in range(emp_names.size()):
-										var ename = emp_names[ei]
-										var col = palette[ei % palette.size()]
-										var series = emp_series[ename]; var n = series.size()
-										if n == 0: continue
-										var pts: PackedVector2Array = []
-										for pt in series:
-											var px = PL + (float(pt["day"] - min_day) / float(max_day - min_day)) * gw
-											var py = PT + gh * (1.0 - clampf(pt["val"], 0.0, max_val) / max_val)
-											pts.append(Vector2(px, py))
-											if pts.size() >= 2: ctrl.draw_polyline(pts, col, 1.5, true)
-											for p in pts: ctrl.draw_circle(p, 2.5, col)
-											_multiline_data.append({"pts": pts, "name": ename, "color": col, "series": series})
-											var n_all = max_day - min_day + 1
-											var step = max(1, int(ceil(float(n_all) / 8.0)))
-											for d in range(min_day, max_day + 1, step):
-												var px = PL + (float(d - min_day) / float(max_day - min_day)) * gw
-												ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 8, h - 6), "D%d" % d, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
+	var metric_idx = 0
+	if _metric_selector: metric_idx = _metric_selector.selected
+	var metric_key = ["mood", "burnout", "energy", "work_minutes"][metric_idx]
+	var filter_role = ""
+	if _multiline_filter and _multiline_filter.selected > 0: filter_role = _multiline_filter.get_item_text(_multiline_filter.selected)
+	var emp_series: Dictionary = {}
+	for r in records:
+		var day = int(r.get("day", 0))
+		for emp in r.get("employees", []):
+			var ename = str(emp.get("name", ""))
+			if ename.is_empty(): continue
+			if filter_role != "" and str(emp.get("job_title", "")) != filter_role: continue
+			if not emp_series.has(ename): emp_series[ename] = []
+			var val = float(emp.get(metric_key, 0.0))
+			if metric_key == "work_minutes": val = val / 60.0
+			emp_series[ename].append({"day": day, "val": val})
+	if emp_series.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
+		return
+	var max_val = 0.0
+	if metric_key in ["mood", "burnout", "energy"]:
+		max_val = 100.0
+	else:
+		for ename2 in emp_series:
+			for pt in emp_series[ename2]: max_val = max(max_val, pt["val"])
+		max_val = max(max_val * 1.1, 0.1)
+	var min_day = 999999; var max_day = 0
+	for ename2 in emp_series:
+		for pt in emp_series[ename2]:
+			min_day = min(min_day, pt["day"])
+			max_day = max(max_day, pt["day"])
+	if max_day == min_day: max_day = min_day + 1
+	var gc = Color(0.88, 0.88, 0.88, 1)
+	for i in range(5):
+		var frac = float(i) / 4.0; var gy = PT + frac * gh
+		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.0f" % ((1.0 - frac) * max_val), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
+	var emp_names = emp_series.keys()
+	var palette = [COLOR_BLUE, COLOR_RED, COLOR_GREEN, COLOR_ORANGE, COLOR_GRAY, Color(0.6, 0.2, 0.8, 1), Color(0.8, 0.5, 0.1, 1)]
+	for ei in range(emp_names.size()):
+		var ename2 = emp_names[ei]
+		var col = palette[ei % palette.size()]
+		var series = emp_series[ename2]
+		if series.is_empty(): continue
+		var pts: PackedVector2Array = []
+		for pt in series:
+			var px = PL + (float(pt["day"] - min_day) / float(max_day - min_day)) * gw
+			var py = PT + gh * (1.0 - clampf(pt["val"], 0.0, max_val) / max_val)
+			pts.append(Vector2(px, py))
+		if pts.size() >= 2: ctrl.draw_polyline(pts, col, 1.5, true)
+		for p in pts: ctrl.draw_circle(p, 2.5, col)
+		_multiline_data.append({"pts": pts, "name": ename2, "color": col, "series": series})
+	var n_all = max_day - min_day + 1
+	var step = max(1, int(ceil(float(n_all) / 8.0)))
+	for dd in range(min_day, max_day + 1, step):
+		var px = PL + (float(dd - min_day) / float(max_day - min_day)) * gw
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 8, h - 6), "D%d" % dd, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
 
 func _on_multiline_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -909,13 +910,12 @@ func _on_multiline_gui_input(event: InputEvent):
 		for pi in range(md["pts"].size()):
 			var d = mp.distance_to(md["pts"][pi])
 			if d < bd: bd = d; best_line = li; best_pt = pi
-			if best_line >= 0:
-				var md = _multiline_data[best_line]
-				var series = md["series"]
-				var val = series[best_pt]["val"]
-				var day = series[best_pt]["day"]
-				_show_tooltip_at("Day %d: %s = %.1f" % [day, md["name"], val], _multiline_graph, mp)
-			else: _hide_tooltip()
+	if best_line >= 0:
+		var md2 = _multiline_data[best_line]
+		var val = md2["series"][best_pt]["val"]
+		var day = md2["series"][best_pt]["day"]
+		_show_tooltip_at("Day %d: %s = %.1f" % [day, md2["name"], val], _multiline_graph, mp)
+	else: _hide_tooltip()
 
 # =====================================================================
 #  BLOCK 5: UTILIZATION BAR CHART (HORIZONTAL)
@@ -960,9 +960,9 @@ func _refresh_util():
 	for ename in emp_stats:
 		if filter_role != "" and emp_stats[ename]["job_title"] != filter_role: continue
 		count += 1
-		if _util_graph:
-			_util_graph.custom_minimum_size = Vector2(0, max(120.0, float(count) * 32.0 + 30.0))
-			_util_graph.queue_redraw()
+	if _util_graph:
+		_util_graph.custom_minimum_size = Vector2(0, max(120.0, float(count) * 32.0 + 30.0))
+		_util_graph.queue_redraw()
 
 func _draw_util(ctrl: Control):
 	var records = _get_filtered_records()
@@ -972,34 +972,34 @@ func _draw_util(ctrl: Control):
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-		var emp_stats = _get_emp_stats(records)
-		var filter_role = ""
-		if _util_filter and _util_filter.selected > 0: filter_role = _util_filter.get_item_text(_util_filter.selected)
-		var names = []; var utils = []; var working_d = []; var total_d = []
-		for ename in emp_stats:
-			var s = emp_stats[ename]
-			if filter_role != "" and s["job_title"] != filter_role: continue
-			var days = max(s["days"], 1)
-			var util = float(s["assigned_days"]) / float(days) * 100.0
-			names.append(ename); utils.append(util); working_d.append(s["assigned_days"]); total_d.append(days)
-			if names.is_empty():
-				ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
-				return
-				var bar_h = 20.0; var row_h = 30.0
-				var bw = w - PL - PR
-				for i in range(names.size()):
-					var by = PT + float(i) * row_h
-					var util = utils[i]; var w_days = working_d[i]; var t_days = total_d[i]
-					var working_w = (util / 100.0) * bw
-					var idle_w = bw - working_w
-					var wr = Rect2(PL, by, working_w, bar_h)
-					var ir = Rect2(PL + working_w, by, idle_w, bar_h)
-					ctrl.draw_rect(wr, COLOR_GREEN)
-					ctrl.draw_rect(ir, Color(0.8, 0.8, 0.8, 1))
-					var short = names[i].substr(0, min(names[i].length(), 14))
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, by + bar_h * 0.5 + 4), short, HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 11, COLOR_DARK)
-					ctrl.draw_string(ThemeDB.fallback_font, Vector2(PL + bw + 4, by + bar_h * 0.5 + 4), "%.0f%%" % util, HORIZONTAL_ALIGNMENT_LEFT, PR - 4, 11, COLOR_DARK)
-					_util_bars.append({"working_rect": wr, "idle_rect": ir, "name": names[i], "util_pct": util, "working_days": w_days, "total_days": t_days})
+	var emp_stats = _get_emp_stats(records)
+	var filter_role = ""
+	if _util_filter and _util_filter.selected > 0: filter_role = _util_filter.get_item_text(_util_filter.selected)
+	var names = []; var utils = []; var working_d = []; var total_d = []
+	for ename in emp_stats:
+		var s = emp_stats[ename]
+		if filter_role != "" and s["job_title"] != filter_role: continue
+		var days = max(s["days"], 1)
+		var util = float(s["assigned_days"]) / float(days) * 100.0
+		names.append(ename); utils.append(util); working_d.append(s["assigned_days"]); total_d.append(days)
+	if names.is_empty():
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
+		return
+	var bar_h = 20.0; var row_h = 30.0
+	var bw = w - PL - PR
+	for i in range(names.size()):
+		var by = PT + float(i) * row_h
+		var util2 = utils[i]; var w_days = working_d[i]; var t_days = total_d[i]
+		var working_w = (util2 / 100.0) * bw
+		var idle_w = bw - working_w
+		var wr = Rect2(PL, by, working_w, bar_h)
+		var ir = Rect2(PL + working_w, by, idle_w, bar_h)
+		ctrl.draw_rect(wr, COLOR_GREEN)
+		ctrl.draw_rect(ir, Color(0.8, 0.8, 0.8, 1))
+		var short = names[i].substr(0, min(names[i].length(), 14))
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, by + bar_h * 0.5 + 4), short, HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 11, COLOR_DARK)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(PL + bw + 4, by + bar_h * 0.5 + 4), "%.0f%%" % util2, HORIZONTAL_ALIGNMENT_LEFT, PR - 4, 11, COLOR_DARK)
+		_util_bars.append({"working_rect": wr, "idle_rect": ir, "name": names[i], "util_pct": util2, "working_days": w_days, "total_days": t_days})
 
 func _on_util_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -1008,7 +1008,7 @@ func _on_util_gui_input(event: InputEvent):
 		if bd["working_rect"].has_point(mp) or bd["idle_rect"].has_point(mp):
 			_show_tooltip_at(tr("REPORTS_PEOPLE_UTIL_TOOLTIP") % [bd["name"], bd["util_pct"], bd["working_days"], bd["total_days"]], _util_graph, mp)
 			return
-			_hide_tooltip()
+	_hide_tooltip()
 
 # =====================================================================
 #  BLOCK 6: PEOPLE TABLE
@@ -1056,18 +1056,18 @@ func _refresh_table():
 		for r in records:
 			for emp in r.get("employees", []):
 				if str(emp.get("name", "")) == ename: grade = int(emp.get("grade", 1))
-				var status_score = 0
-				if avg_mood > 60:    status_score += 1
-				if avg_burnout < 30: status_score += 1
-				if util > 40:        status_score += 1
-				var status_dot = "\U0001F7E2" if status_score == 3 else ("\U0001F7E1" if status_score == 2 else "\U0001F534")
-				rows.append({"name": ename, "role": s["job_title"], "grade": grade, "salary": s["daily_salary"],
-				"avg_hours": avg_h, "util": util, "mood": avg_mood, "burnout": avg_burnout, "status": status_dot})
-				if rows.is_empty(): _table_vbox.add_child(_make_no_data_label()); return
-				rows.sort_custom(func(a, b): return a["util"] > b["util"])
-				_table_vbox.add_child(_build_table_header())
-				for i in range(rows.size()):
-					_table_vbox.add_child(_build_table_row(i + 1, rows[i], i % 2 == 0))
+		var status_score = 0
+		if avg_mood > 60:    status_score += 1
+		if avg_burnout < 30: status_score += 1
+		if util > 40:        status_score += 1
+		var status_dot = "🟢" if status_score == 3 else ("🟡" if status_score == 2 else "🔴")
+		rows.append({"name": ename, "role": s["job_title"], "grade": grade, "salary": s["daily_salary"],
+			"avg_hours": avg_h, "util": util, "mood": avg_mood, "burnout": avg_burnout, "status": status_dot})
+	if rows.is_empty(): _table_vbox.add_child(_make_no_data_label()); return
+	rows.sort_custom(func(a, b): return a["util"] > b["util"])
+	_table_vbox.add_child(_build_table_header())
+	for i in range(rows.size()):
+		_table_vbox.add_child(_build_table_row(i + 1, rows[i], i % 2 == 0))
 
 func _build_table_header() -> PanelContainer:
 	var row = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
