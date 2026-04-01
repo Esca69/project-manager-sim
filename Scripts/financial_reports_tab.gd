@@ -124,8 +124,8 @@ func _build_tooltip():
 func _show_tooltip_at(text: String, chart: Control, chart_local: Vector2):
 	if not _tooltip_panel or not _tooltip_label: return
 	_tooltip_label.text = text
-	var gp = chart.to_global(chart_local)
-	var lp = to_local(gp)
+	var gp = chart.get_global_transform() * chart_local
+	var lp = get_global_transform().affine_inverse() * gp
 	_tooltip_panel.position = lp + Vector2(14, -44)
 	_tooltip_panel.visible = true
 
