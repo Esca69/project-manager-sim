@@ -108,9 +108,7 @@ func _ready():
 	_apply_volume_materials()
 
 	# Подключаем тики времени для кулдаунов
-	GameTime.time_tick.connect(_on_motivate_time_tick)
-	GameTime.time_tick.connect(_on_no_toilet_time_tick)
-	GameTime.time_tick.connect(_on_work_fun_time_tick)
+	GameTime.time_tick.connect(_on_time_tick)
 
 	# Подписываемся на прокачку навыков — чтобы кнопки появлялись сразу
 	PMData.skill_unlocked.connect(_on_pm_skill_unlocked)
@@ -282,6 +280,9 @@ func _physics_process(delta):
 			_hide_interact_hint()
 			if hud and hud.has_method("show_free_camera_hint"):
 				hud.show_free_camera_hint()
+		else:
+			# Если камера возвращалась (после long_action) — останавливаем возврат
+			_free_camera_returning = false
 
 		if _is_ui_blocking():
 			velocity = Vector2.ZERO
@@ -313,6 +314,9 @@ func _physics_process(delta):
 			# Показать индикатор
 			if hud and hud.has_method("show_free_camera_hint"):
 				hud.show_free_camera_hint()
+		else:
+			# Если камера возвращалась (переход из паузы) — останавливаем возврат
+			_free_camera_returning = false
 
 		# Если открыто UI-меню — не двигаем камеру, стоим
 		if _is_ui_blocking():
@@ -586,6 +590,8 @@ func _update_discuss_bar_position():
 # ============================
 
 func _activate_motivate():
+	if _free_camera_mode:
+		return
 	if not PMData.has_skill("motivate"):
 		return
 
@@ -622,7 +628,7 @@ func _activate_motivate():
 	else:
 		print("🔥 Мотивация активирована! Никого рядом не оказалось.")
 
-func _on_motivate_time_tick(_h, _m):
+func _on_time_tick(_h, _m):
 	if _motivate_cooldown_left > 0:
 		_motivate_cooldown_left -= 1.0
 		_update_motivate_btn()
@@ -630,6 +636,20 @@ func _on_motivate_time_tick(_h, _m):
 			_motivate_cooldown_left = 0
 			_update_motivate_btn()
 			print("🔥 Мотивация снова доступна!")
+	if _no_toilet_cooldown_left > 0:
+		_no_toilet_cooldown_left -= 1.0
+		_update_no_toilet_btn()
+		if _no_toilet_cooldown_left <= 0:
+			_no_toilet_cooldown_left = 0
+			_update_no_toilet_btn()
+			print("🚽 Запрет туалета снова доступен!")
+	if _work_fun_cooldown_left > 0:
+		_work_fun_cooldown_left -= 1.0
+		_update_work_fun_btn()
+		if _work_fun_cooldown_left <= 0:
+			_work_fun_cooldown_left = 0
+			_update_work_fun_btn()
+			print("🎉 Работа-кайф снова доступна!")
 
 func _show_motivate_wave():
 	var bubble = Node2D.new()
@@ -682,6 +702,8 @@ func _show_motivate_wave():
 # ====================================
 
 func _activate_no_toilet():
+	if _free_camera_mode:
+		return
 	if not PMData.has_skill("no_toilet"):
 		return
 
@@ -715,15 +737,6 @@ func _activate_no_toilet():
 		print("🚽 Запрет туалета активирован! Затронуто: %d сотрудников" % affected_count)
 	else:
 		print("🚽 Запрет туалета активирован! Никого рядом не оказалось.")
-
-func _on_no_toilet_time_tick(_h, _m):
-	if _no_toilet_cooldown_left > 0:
-		_no_toilet_cooldown_left -= 1.0
-		_update_no_toilet_btn()
-		if _no_toilet_cooldown_left <= 0:
-			_no_toilet_cooldown_left = 0
-			_update_no_toilet_btn()
-			print("🚽 Запрет туалета снова доступен!")
 
 func _show_no_toilet_wave():
 	var bubble = Node2D.new()
@@ -968,6 +981,8 @@ func _update_no_toilet_btn():
 # ====================================
 
 func _activate_work_fun():
+	if _free_camera_mode:
+		return
 	if not PMData.has_skill("work_is_fun"):
 		return
 
@@ -1000,15 +1015,6 @@ func _activate_work_fun():
 		print("🎉 Работа-кайф! Затронуто: %d сотрудников" % affected_count)
 	else:
 		print("🎉 Работа-кайф! Никого рядом.")
-
-func _on_work_fun_time_tick(_h, _m):
-	if _work_fun_cooldown_left > 0:
-		_work_fun_cooldown_left -= 1.0
-		_update_work_fun_btn()
-		if _work_fun_cooldown_left <= 0:
-			_work_fun_cooldown_left = 0
-			_update_work_fun_btn()
-			print("🎉 Работа-кайф снова доступна!")
 
 func _show_work_fun_wave():
 	var bubble = Node2D.new()
