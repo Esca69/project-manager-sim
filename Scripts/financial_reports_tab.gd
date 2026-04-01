@@ -147,12 +147,12 @@ func _build_period_selector() -> Control:
 	row1.add_theme_constant_override("separation", 8)
 	vbox.add_child(row1)
 	var plbl = Label.new()
-	plbl.text = "Period:"
+	plbl.text = tr("REPORTS_PERIOD_LABEL")
 	plbl.add_theme_color_override("font_color", COLOR_GRAY)
 	plbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(plbl, "semibold")
 	row1.add_child(plbl)
-	var periods = [["7D", PERIOD_7D], ["30D", PERIOD_30D], ["90D", PERIOD_90D], ["All", PERIOD_ALL]]
+	var periods = [[tr("REPORTS_PERIOD_7D"), PERIOD_7D], [tr("REPORTS_PERIOD_30D"), PERIOD_30D], [tr("REPORTS_PERIOD_90D"), PERIOD_90D], [tr("REPORTS_PERIOD_ALL_SHORT"), PERIOD_ALL]]
 	_period_buttons.clear()
 	for p in periods:
 		var btn = Button.new()
@@ -246,9 +246,9 @@ func _update_period_range_label():
 	if not _period_range_label: return
 	var b = _get_period_bounds()
 	if _selected_period == PERIOD_ALL:
-		_period_range_label.text = "Day 1 - Day %d" % b[1]
+		_period_range_label.text = tr("REPORTS_PERIOD_RANGE_ALL") % b[1]
 	else:
-		_period_range_label.text = "Day %d - Day %d" % [b[0], b[1]]
+		_period_range_label.text = tr("REPORTS_PERIOD_RANGE") % [b[0], b[1]]
 	if _period_nav_next: _period_nav_next.disabled = (_period_offset == 0)
 	if _period_nav_prev: _period_nav_prev.disabled = (_selected_period == PERIOD_ALL)
 
@@ -387,7 +387,7 @@ func _build_kpi_card() -> PanelContainer:
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 8)
 	margin.add_child(vbox)
-	vbox.add_child(_make_title("📊 KPI"))
+	vbox.add_child(_make_title(tr("REPORTS_KPI_TITLE")))
 	_kpi_row1 = HBoxContainer.new()
 	_kpi_row1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_kpi_row1.add_theme_constant_override("separation", 8)
@@ -497,19 +497,19 @@ func _kpi_delta(vb: VBoxContainer, text: String, color: Color):
 	vb.add_child(l)
 
 func _kpi_pct(cur: int, prev: int, higher_good: bool) -> Array:
-	if prev == 0: return ["vs prev", COLOR_GRAY]
+	if prev == 0: return [tr("REPORTS_VS_PREV"), COLOR_GRAY]
 	var diff = cur - prev
 	var pct  = int(round(float(diff) / float(abs(prev)) * 100.0))
 	var s = "+" if pct >= 0 else ""
 	var good = (pct >= 0) == higher_good
-	return [s + str(pct) + "% vs prev", COLOR_GREEN if good else COLOR_RED]
+	return [s + str(pct) + "% " + tr("REPORTS_VS_PREV"), COLOR_GREEN if good else COLOR_RED]
 
 func _kpi_balance(balance: int, delta: int, prev_delta: int) -> PanelContainer:
 	var p = _kpi_panel(); var vb = _kpi_inner(p)
-	_kpi_head(vb, "💵", "Balance")
+	_kpi_head(vb, "💵", tr("REPORTS_KPI_BALANCE"))
 	_kpi_val(vb, "$" + _format_money(balance), COLOR_DARK)
 	var s = "+" if delta >= 0 else ""
-	_kpi_delta(vb, s + "$" + _format_money(delta) + " period change", COLOR_GREEN if delta >= 0 else COLOR_RED)
+	_kpi_delta(vb, s + "$" + _format_money(delta) + " " + tr("REPORTS_PERIOD_CHANGE"), COLOR_GREEN if delta >= 0 else COLOR_RED)
 	return p
 
 func _kpi_money(icon: String, lbl: String, value: int, prev: int, signed: bool) -> PanelContainer:
@@ -527,32 +527,32 @@ func _kpi_money(icon: String, lbl: String, value: int, prev: int, signed: bool) 
 
 func _kpi_margin(margin: float, prev_margin: float) -> PanelContainer:
 	var p = _kpi_panel(); var vb = _kpi_inner(p)
-	_kpi_head(vb, "📊", "Margin %")
+	_kpi_head(vb, "📊", tr("REPORTS_KPI_MARGIN_PCT"))
 	_kpi_val(vb, "%.1f%%" % margin, COLOR_GREEN if margin >= 0 else COLOR_RED)
 	var pp = margin - prev_margin
 	var s = "+" if pp >= 0 else ""
-	_kpi_delta(vb, s + "%.1fpp vs prev" % pp, COLOR_GREEN if pp >= 0 else COLOR_RED)
+	_kpi_delta(vb, s + "%.1fpp " % pp + tr("REPORTS_VS_PREV"), COLOR_GREEN if pp >= 0 else COLOR_RED)
 	return p
 
 func _kpi_burn_rate(burn: float, prev_burn: float) -> PanelContainer:
 	var p = _kpi_panel(); var vb = _kpi_inner(p)
-	_kpi_head(vb, "📉", "Burn Rate")
-	_kpi_val(vb, "$%s/day" % _format_money(int(burn)), COLOR_DARK)
+	_kpi_head(vb, "📉", tr("REPORTS_KPI_BURN_RATE"))
+	_kpi_val(vb, "$%s/%s" % [_format_money(int(burn)), tr("REPORTS_DAY")], COLOR_DARK)
 	if prev_burn < 0.001:
-		_kpi_delta(vb, "vs prev", COLOR_GRAY)
+		_kpi_delta(vb, tr("REPORTS_VS_PREV"), COLOR_GRAY)
 	else:
 		var diff = burn - prev_burn
 		var pct  = int(round(diff / abs(prev_burn) * 100.0))
 		var s = "+" if pct >= 0 else ""
-		_kpi_delta(vb, s + str(pct) + "% vs prev", COLOR_RED if pct > 0 else COLOR_GREEN)
+		_kpi_delta(vb, s + str(pct) + "% " + tr("REPORTS_VS_PREV"), COLOR_RED if pct > 0 else COLOR_GREEN)
 	return p
 
 func _kpi_runway(runway_days: int) -> PanelContainer:
 	var p = _kpi_panel(); var vb = _kpi_inner(p)
-	_kpi_head(vb, "🏦", "Runway")
+	_kpi_head(vb, "🏦", tr("REPORTS_KPI_RUNWAY"))
 	var rc = COLOR_GREEN if runway_days > 30 else (COLOR_ORANGE if runway_days > 7 else COLOR_RED)
-	_kpi_val(vb, str(runway_days) + " days", rc)
-	_kpi_delta(vb, "days until bankruptcy", COLOR_GRAY)
+	_kpi_val(vb, str(runway_days) + " " + tr("REPORTS_DAYS"), rc)
+	_kpi_delta(vb, tr("REPORTS_DAYS_UNTIL_BANKRUPTCY"), COLOR_GRAY)
 	return p
 
 func _kpi_count(icon: String, lbl: String, value: int, prev: int) -> PanelContainer:
@@ -663,7 +663,7 @@ func _on_cf_gui_input(event: InputEvent):
 func _build_cumulative_profit_card() -> PanelContainer:
 	var card = _make_card(); var margin = _make_card_margin(); card.add_child(margin)
 	var vbox = VBoxContainer.new(); vbox.add_theme_constant_override("separation", 8); margin.add_child(vbox)
-	vbox.add_child(_make_title("📉 Cumulative Profit"))
+	vbox.add_child(_make_title("📉 " + tr("REPORTS_CUMULATIVE_PROFIT")))
 	_cumul_profit_graph = Control.new()
 	_cumul_profit_graph.custom_minimum_size = Vector2(0, 200)
 	_cumul_profit_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -740,7 +740,7 @@ func _on_cp_gui_input(event: InputEvent):
 			cum += int(_cp_agg[j].get("income", 0)) - int(_cp_agg[j].get("expenses", 0))
 		var dn = int(_cp_agg[bi].get("day", 0))
 		var s = "+" if cum >= 0 else "-"
-		_show_tooltip_at("Day %d: Cum. Profit %s$%s" % [dn, s, _format_money(abs(cum))], _cumul_profit_graph, mp)
+		_show_tooltip_at(tr("REPORTS_CUMUL_PROFIT_TOOLTIP") % [dn, s, _format_money(abs(cum))], _cumul_profit_graph, mp)
 	else: _hide_tooltip()
 
 # =====================================================================
@@ -864,7 +864,7 @@ func _on_expense_bar_input(event: InputEvent):
 func _build_expense_trend_card() -> PanelContainer:
 	var card = _make_card(); var margin = _make_card_margin(); card.add_child(margin)
 	var vbox = VBoxContainer.new(); vbox.add_theme_constant_override("separation", 8); margin.add_child(vbox)
-	vbox.add_child(_make_title("📊 Expense Breakdown Trend"))
+	vbox.add_child(_make_title("📊 " + tr("REPORTS_EXPENSE_BREAKDOWN_TREND")))
 	_expense_trend_chart = Control.new()
 	_expense_trend_chart.custom_minimum_size = Vector2(0, 200)
 	_expense_trend_chart.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1120,7 +1120,7 @@ func _refresh_pnl():
 			var d = int(r.get("day", 0)); if d > ld: ld = d
 		for pr in PeopleHistory.daily_records:
 			if int(pr.get("day", 0)) == ld: team_size = max(1, int(pr.get("team_size", 1))); break
-	_pnl_row(["", "Value", "% Income", "vs Prev"], true, [COLOR_GRAY, COLOR_GRAY, COLOR_GRAY, COLOR_GRAY])
+	_pnl_row(["", tr("REPORTS_PNL_VALUE"), tr("REPORTS_PNL_PCT_INCOME"), tr("REPORTS_PNL_VS_PREV")], true, [COLOR_GRAY, COLOR_GRAY, COLOR_GRAY, COLOR_GRAY])
 	_pnl_sep()
 	_pnl_row([tr("REPORTS_PROJECT_INCOME"), "+$"+_format_money(ci), "100%", _pcmp(ci, pi)],
 		false, [COLOR_DARK, COLOR_GREEN, COLOR_GRAY, _pcmp_col(ci, pi, true)])
@@ -1142,9 +1142,9 @@ func _refresh_pnl():
 	_pnl_row([tr("REPORTS_MARGIN"), "%.1f%%" % cmarg, "", dpps+"%.1fpp" % (cmarg-pmarg)],
 		true, [COLOR_DARK, COLOR_GREEN if cmarg >= 0 else COLOR_RED, COLOR_GRAY, COLOR_GREEN if (cmarg-pmarg) >= 0 else COLOR_RED])
 	_pnl_sep()
-	_pnl_row(["Income / Employee", "$"+_format_money(int(float(ci)/float(team_size))), "Team: %d" % team_size, ""],
+	_pnl_row([tr("REPORTS_INCOME_PER_EMPLOYEE"), "$"+_format_money(int(float(ci)/float(team_size))), tr("REPORTS_PNL_TEAM_SIZE") % team_size, ""],
 		false, [COLOR_DARK, COLOR_GREEN, COLOR_GRAY, COLOR_GRAY])
-	_pnl_row(["Expenses / Employee", "$"+_format_money(int(float(ce)/float(team_size))), "", ""],
+	_pnl_row([tr("REPORTS_EXPENSES_PER_EMPLOYEE"), "$"+_format_money(int(float(ce)/float(team_size))), "", ""],
 		false, [COLOR_DARK, COLOR_RED, COLOR_GRAY, COLOR_GRAY])
 
 func _pnl_row(cols: Array, bold: bool, colors: Array):
@@ -1212,7 +1212,7 @@ func _refresh_roi():
 	if not _roi_chart: return
 	var projects = _get_period_projects()
 	var all_count = _get_period_project_count()
-	if _roi_count_label: _roi_count_label.text = "Total completed: %d" % all_count
+	if _roi_count_label: _roi_count_label.text = tr("REPORTS_ROI_TOTAL_COMPLETED") % all_count
 	const ROW_H = 36.0
 	var chart_h = max(60.0, float(projects.size()) * ROW_H + 20.0)
 	var scroll_h = min(chart_h, 5.0 * ROW_H + 20.0)

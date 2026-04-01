@@ -25,9 +25,20 @@ var daily_records: Array = []
 #       progress: float,
 #       days_in_company: int,
 #       grade: int,
+#       is_assigned: bool,   # true if assigned to at least 1 active project stage
 #     }
 #   ]
 # }
+
+func _is_employee_assigned(emp_data) -> bool:
+	for project in ProjectManager.active_projects:
+		if project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
+			continue
+		for stage in project.stages:
+			for worker in stage.workers:
+				if worker == emp_data:
+					return true
+	return false
 
 func record_day():
 	var npcs = get_tree().get_nodes_in_group("npc")
@@ -57,6 +68,7 @@ func record_day():
 			"progress": float(d.get_meta("daily_progress", 0.0)),
 			"days_in_company": int(d.days_in_company),
 			"grade": int(d.employee_level),
+			"is_assigned": _is_employee_assigned(d),
 		}
 		employees_data.append(emp)
 		total_mood    += emp["mood"]
