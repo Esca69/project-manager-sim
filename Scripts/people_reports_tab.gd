@@ -1336,21 +1336,21 @@ func _refresh_employee_card():
 	var avg_hours = 0.0
 	if days > 0: avg_hours = (total_work_min / float(days)) / 60.0
 	var util = 0.0
-	if days > 0: util = float(assigned_days) / float(days) * 100.0
+	if days > 0: util = (total_work_min / (float(days) * 480.0)) * 100.0
 
 	var emp_stats = _get_emp_stats(records)
 	var max_h2 = 0.001; var max_util2 = 0.001; var max_mood2 = 0.001
 	for ename in emp_stats:
 		var s = emp_stats[ename]; var sd = max(s["days"], 1)
 		var ah = (s["total_work_min"] / float(sd)) / 60.0
-		var ut = float(s["assigned_days"]) / float(sd) * 100.0
+		var ut = (s["total_work_min"] / (float(sd) * 480.0)) * 100.0
 		var mo = s["total_mood"] / float(sd)
 		max_h2 = max(max_h2, ah); max_util2 = max(max_util2, ut); max_mood2 = max(max_mood2, mo)
 	var scores: Array = []
 	for en4 in emp_stats:
 		var s2 = emp_stats[en4]; var sd2 = max(s2["days"], 1)
 		var ah2 = (s2["total_work_min"] / float(sd2)) / 60.0
-		var ut2 = float(s2["assigned_days"]) / float(sd2) * 100.0
+		var ut2 = (s2["total_work_min"] / (float(sd2) * 480.0)) * 100.0
 		var mo2 = s2["total_mood"] / float(sd2); var bu2 = s2["total_burnout"] / float(sd2)
 		var sc2 = (ah2 / max_h2) * 30.0 + (ut2 / max_util2) * 30.0 + (mo2 / max_mood2) * 20.0 + clampf(100.0 - bu2, 0, 100) * 0.20
 		scores.append({"name": en4, "score": sc2})
