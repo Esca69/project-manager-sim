@@ -39,7 +39,6 @@ var _util_graph      : Control
 var _health_graph    : Control
 
 var _table_vbox : VBoxContainer
-var _leaderboard_vbox : VBoxContainer
 
 var _card_section : PanelContainer
 var _card_vbox    : VBoxContainer
@@ -60,6 +59,7 @@ var _bars_data      : Array = []
 var _util_bars      : Array = []
 var _health_pts     : Array = []
 var _multiline_data : Array = []
+var _multiline_legend_container : HBoxContainer
 
 # =====================================================================
 #  READY / BUILD
@@ -95,7 +95,6 @@ func _build_ui():
 	_team_sections.add_child(_build_util_card())
 	_team_sections.add_child(_build_table_card())
 	_team_sections.add_child(_build_health_card())
-	_team_sections.add_child(_build_leaderboard_card())
 	_card_section = _build_employee_card()
 	_card_section.visible = false
 	vbox.add_child(_card_section)
@@ -236,8 +235,27 @@ func _style_small_btn(btn: Button):
 	if UITheme: UITheme.apply_font(btn, "semibold")
 
 func _style_option_button(ob: OptionButton):
+	var s = StyleBoxFlat.new()
+	s.bg_color = Color(1, 1, 1, 1)
+	s.border_width_left = 1; s.border_width_top = 1
+	s.border_width_right = 1; s.border_width_bottom = 1
+	s.border_color = COLOR_BLUE
+	s.corner_radius_top_left = 6; s.corner_radius_top_right = 6
+	s.corner_radius_bottom_right = 6; s.corner_radius_bottom_left = 6
+	ob.add_theme_stylebox_override("normal", s)
+	ob.add_theme_stylebox_override("hover", s)
+	ob.add_theme_stylebox_override("pressed", s)
+	ob.add_theme_color_override("font_color", COLOR_DARK)
 	ob.add_theme_font_size_override("font_size", 12)
 	if UITheme: UITheme.apply_font(ob, "regular")
+	var ps = StyleBoxFlat.new()
+	ps.bg_color = Color(1, 1, 1, 1)
+	ps.border_width_left = 1; ps.border_width_top = 1
+	ps.border_width_right = 1; ps.border_width_bottom = 1
+	ps.border_color = COLOR_BLUE
+	ps.corner_radius_top_left = 4; ps.corner_radius_top_right = 4
+	ps.corner_radius_bottom_right = 4; ps.corner_radius_bottom_left = 4
+	ob.get_popup().add_theme_stylebox_override("panel", ps)
 
 func _on_period_selected(code: int):
 	_selected_period = code
@@ -439,6 +457,7 @@ func _get_emp_stats(records: Array) -> Dictionary:
 					"total_mood": 0.0,
 					"total_energy": 0.0,
 					"total_burnout": 0.0,
+					"total_progress": 0.0,
 					"days": 0,
 				}
 			var s = emp_stats[ename]
@@ -448,6 +467,7 @@ func _get_emp_stats(records: Array) -> Dictionary:
 			s["total_mood"]    += float(emp.get("mood", 0.0))
 			s["total_energy"]  += float(emp.get("energy", 0.0))
 			s["total_burnout"] += float(emp.get("burnout", 0.0))
+			s["total_progress"] += float(emp.get("progress", 0.0))
 			s["days"] += 1
 	return emp_stats
 
@@ -561,14 +581,16 @@ func _refresh_kpi():
 	var prev_stats = _get_emp_stats(prev_r)
 	var total_days = 0; var assigned_days = 0; var total_work_min = 0.0
 	var total_mood = 0.0; var total_burnout = 0.0; var total_energy = 0.0; var mood_count = 0
+	var total_progress_sum = 0.0
 	for ename in emp_stats:
 		var s = emp_stats[ename]
 		total_days     += s["days"];        assigned_days  += s["assigned_days"]
 		total_work_min += s["total_work_min"]
 		total_mood     += s["total_mood"];  total_burnout  += s["total_burnout"]
 		total_energy   += s["total_energy"]; mood_count    += s["days"]
+		total_progress_sum += s.get("total_progress", 0.0)
 	var util_pct = 0.0
-	if total_days > 0: util_pct = float(assigned_days) / float(total_days) * 100.0
+	if mood_count > 0: util_pct = (total_work_min / (float(mood_count) * 480.0)) * 100.0
 	var avg_hours = 0.0
 	if mood_count > 0: avg_hours = (total_work_min / float(mood_count)) / 60.0
 	var avg_mood    = total_mood    / max(mood_count, 1)
@@ -580,17 +602,20 @@ func _refresh_kpi():
 	var avg_tenure = float(total_tenure) / max(headcount, 1)
 	var prev_total_days = 0; var prev_assigned = 0; var prev_work_min = 0.0
 	var prev_mood_sum = 0.0; var prev_burnout_sum = 0.0; var prev_mc = 0
+	var prev_progress_sum = 0.0
 	for en5 in prev_stats:
 		var s = prev_stats[en5]
 		prev_total_days += s["days"]; prev_assigned += s["assigned_days"]
 		prev_work_min   += s["total_work_min"]
 		prev_mood_sum += s["total_mood"]; prev_burnout_sum += s["total_burnout"]; prev_mc += s["days"]
+		prev_progress_sum += s.get("total_progress", 0.0)
 	var prev_util = 0.0
-	if prev_total_days > 0: prev_util = float(prev_assigned) / float(prev_total_days) * 100.0
+	if prev_mc > 0: prev_util = (prev_work_min / (float(prev_mc) * 480.0)) * 100.0
 	var prev_avg_hours = 0.0
 	if prev_mc > 0: prev_avg_hours = (prev_work_min / float(prev_mc)) / 60.0
 	var prev_avg_mood    = prev_mood_sum    / max(prev_mc, 1)
 	var prev_avg_burnout = prev_burnout_sum / max(prev_mc, 1)
+	var prev_avg_progress = prev_progress_sum / max(prev_mc, 1)
 	_kpi_row1.add_child(_kpi_simple("👥", tr("REPORTS_PEOPLE_HEADCOUNT"),    str(headcount),             COLOR_DARK))
 	_kpi_row1.add_child(_kpi_simple("💰", tr("REPORTS_PEOPLE_PAYROLL"),       "$" + _format_money(payroll), COLOR_DARK))
 	_kpi_row1.add_child(_kpi_simple("📊", tr("REPORTS_PEOPLE_AVG_SALARY"),    "$%d" % int(avg_salary),    COLOR_DARK))
@@ -599,10 +624,14 @@ func _refresh_kpi():
 	var util_color = COLOR_BLUE if util_pct >= 60 else (COLOR_ORANGE if util_pct >= 30 else COLOR_RED)
 	var mood_color = COLOR_GREEN if avg_mood > 60 else (COLOR_ORANGE if avg_mood >= 40 else COLOR_RED)
 	var burn_color = COLOR_GREEN if avg_burnout < 20 else (COLOR_ORANGE if avg_burnout <= 50 else COLOR_RED)
+	var avg_progress = total_progress_sum / max(mood_count, 1)
+	var total_progress_val = total_progress_sum
+	_kpi_row1.add_child(_kpi_simple("📈", tr("REPORTS_PEOPLE_KPI_TOTAL_PROGRESS"), "%.0f pts" % total_progress_val, COLOR_DARK))
 	_kpi_row2.add_child(_kpi_with_delta("⚡", tr("REPORTS_PEOPLE_UTILIZATION"), "%.0f%%" % util_pct,    int(util_pct * 10), int(prev_util * 10),      true,  util_color))
 	_kpi_row2.add_child(_kpi_with_delta("⏱",  tr("REPORTS_PEOPLE_AVG_HOURS"),  "%.1f h" % avg_hours,   int(avg_hours * 10), int(prev_avg_hours * 10), true,  COLOR_DARK))
 	_kpi_row2.add_child(_kpi_with_delta("😊", tr("REPORTS_PEOPLE_HEALTH_MOOD"), "%.0f" % avg_mood,      int(avg_mood),       int(prev_avg_mood),       true,  mood_color))
 	_kpi_row2.add_child(_kpi_with_delta("🔥", tr("REPORTS_PEOPLE_HEALTH_BURNOUT"), "%.0f" % avg_burnout, int(avg_burnout),   int(prev_avg_burnout),    false, burn_color))
+	_kpi_row2.add_child(_kpi_with_delta("🎯", tr("REPORTS_PEOPLE_KPI_AVG_PROGRESS"), "%.1f pts" % avg_progress, int(avg_progress * 10), int(prev_avg_progress * 10), true, COLOR_BLUE))
 	_kpi_row2.add_child(_kpi_simple("📅", tr("REPORTS_PEOPLE_AVG_TENURE"), "%.0f " % avg_tenure + tr("REPORTS_DAYS"), COLOR_DARK))
 
 # =====================================================================
@@ -657,43 +686,44 @@ func _draw_scatter(ctrl: Control):
 		var s = emp_stats[ename]
 		if filter_role != "" and s["job_title"] != filter_role: continue
 		var days = max(s["days"], 1)
-		var avg_hours = (s["total_work_min"] / float(days)) / 60.0
-		pts_data.append({"name": ename, "daily_sal": s["daily_salary"], "avg_hours": avg_hours, "role": s["job_title"]})
+		var avg_progress = s.get("total_progress", 0.0) / float(days)
+		var efficiency = avg_progress / max(s["daily_salary"], 0.01)
+		pts_data.append({"name": ename, "daily_sal": s["daily_salary"], "avg_progress": avg_progress, "efficiency": efficiency, "role": s["job_title"]})
 	if pts_data.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-	var max_sal = 0.0; var max_hrs = 0.0
+	var max_sal = 0.0; var max_prog = 0.0
 	for p in pts_data:
 		max_sal = max(max_sal, p["daily_sal"])
-		max_hrs = max(max_hrs, p["avg_hours"])
+		max_prog = max(max_prog, p["avg_progress"])
 	if max_sal < 0.01: max_sal = 1.0
-	if max_hrs < 0.01: max_hrs = 1.0
-	max_sal *= 1.1; max_hrs *= 1.1
+	if max_prog < 0.01: max_prog = 1.0
+	max_sal *= 1.1; max_prog *= 1.1
 	var gc = Color(0.88, 0.88, 0.88, 1)
 	for i in range(5):
 		var frac = float(i) / 4.0
 		var gy = PT + frac * gh
 		ctrl.draw_line(Vector2(PL, gy), Vector2(PL + gw, gy), gc, 1)
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_hrs), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_prog), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
 		var gx = PL + frac * gw
 		ctrl.draw_line(Vector2(gx, PT), Vector2(gx, PT + gh), gc, 1)
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(gx - 12, PT + gh + 14), "$%d" % int(frac * max_sal), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
 	# Median lines
-	var all_sal = []; var all_hrs = []
-	for p2 in pts_data: all_sal.append(p2["daily_sal"]); all_hrs.append(p2["avg_hours"])
-	all_sal.sort(); all_hrs.sort()
+	var all_sal = []; var all_prog = []
+	for p2 in pts_data: all_sal.append(p2["daily_sal"]); all_prog.append(p2["avg_progress"])
+	all_sal.sort(); all_prog.sort()
 	var med_sal = all_sal[all_sal.size() / 2] if all_sal.size() > 0 else max_sal / 2.0
-	var med_hrs = all_hrs[all_hrs.size() / 2] if all_hrs.size() > 0 else max_hrs / 2.0
+	var med_prog = all_prog[all_prog.size() / 2] if all_prog.size() > 0 else max_prog / 2.0
 	var mx = PL + (med_sal / max_sal) * gw
-	var my = PT + (1.0 - med_hrs / max_hrs) * gh
+	var my = PT + (1.0 - med_prog / max_prog) * gh
 	ctrl.draw_line(Vector2(mx, PT), Vector2(mx, PT + gh), Color(0.6, 0.6, 0.6, 0.5), 1)
 	ctrl.draw_line(Vector2(PL, my), Vector2(PL + gw, my), Color(0.6, 0.6, 0.6, 0.5), 1)
 	for p3 in pts_data:
 		var px = PL + (p3["daily_sal"] / max_sal) * gw
-		var py = PT + (1.0 - p3["avg_hours"] / max_hrs) * gh
+		var py = PT + (1.0 - p3["avg_progress"] / max_prog) * gh
 		var col = _role_color(p3["role"])
 		ctrl.draw_circle(Vector2(px, py), 6.0, col)
-		_scatter_pts.append({"pos": Vector2(px, py), "name": p3["name"], "daily_sal": p3["daily_sal"], "avg_hours": p3["avg_hours"], "role": p3["role"]})
+		_scatter_pts.append({"pos": Vector2(px, py), "name": p3["name"], "daily_sal": p3["daily_sal"], "avg_progress": p3["avg_progress"], "efficiency": p3["efficiency"], "role": p3["role"]})
 	ctrl.draw_string(ThemeDB.fallback_font, Vector2(PL + gw / 2 - 20, PT + gh + 28), "$/" + tr("REPORTS_DAY"), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, COLOR_GRAY)
 
 func _on_scatter_gui_input(event: InputEvent):
@@ -705,7 +735,7 @@ func _on_scatter_gui_input(event: InputEvent):
 		if d < bd: bd = d; bi = i
 	if bi >= 0:
 		var p = _scatter_pts[bi]
-		_show_tooltip_at(tr("REPORTS_PEOPLE_SCATTER_TOOLTIP") % [p["name"], p["daily_sal"], p["avg_hours"], p["role"]], _scatter_graph, mp)
+		_show_tooltip_at(tr("REPORTS_PEOPLE_SCATTER_TOOLTIP") % [p["name"], p["daily_sal"], p["avg_progress"], p["efficiency"]], _scatter_graph, mp)
 	else: _hide_tooltip()
 
 # =====================================================================
@@ -752,17 +782,17 @@ func _draw_bars(ctrl: Control):
 	var emp_stats = _get_emp_stats(records)
 	var filter_role = ""
 	if _bars_filter and _bars_filter.selected > 0: filter_role = _bars_filter.get_item_text(_bars_filter.selected)
-	var names = []; var hours = []; var salaries = []; var roles = []
+	var names = []; var progresses = []; var salaries = []; var roles = []
 	for ename in emp_stats:
 		var s = emp_stats[ename]
 		if filter_role != "" and s["job_title"] != filter_role: continue
 		var days = max(s["days"], 1)
-		var avg_h = (s["total_work_min"] / float(days)) / 60.0
-		names.append(ename); hours.append(avg_h); salaries.append(s["daily_salary"]); roles.append(s["job_title"])
+		var avg_prog = s.get("total_progress", 0.0) / float(days)
+		names.append(ename); progresses.append(avg_prog); salaries.append(s["daily_salary"]); roles.append(s["job_title"])
 	if names.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
 		return
-	var max_h = 0.0; for hv in hours: max_h = max(max_h, hv)
+	var max_h = 0.0; for hv in progresses: max_h = max(max_h, hv)
 	if max_h < 0.01: max_h = 1.0
 	max_h *= 1.15
 	var gc = Color(0.88, 0.88, 0.88, 1)
@@ -772,11 +802,11 @@ func _draw_bars(ctrl: Control):
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, gy + 4), "%.1f" % ((1.0 - frac) * max_h), HORIZONTAL_ALIGNMENT_LEFT, PL - 4, 10, COLOR_GRAY)
 	var n = names.size(); var slot_w = gw / float(n); var bar_w = max(4.0, slot_w * 0.6)
 	for j in range(n):
-		var bx = PL + (float(j) + 0.5) * slot_w; var bh = (hours[j] / max_h) * gh
+		var bx = PL + (float(j) + 0.5) * slot_w; var bh = (progresses[j] / max_h) * gh
 		var col = _role_color(roles[j])
 		var rect = Rect2(bx - bar_w * 0.5, PT + gh - bh, bar_w, bh)
 		ctrl.draw_rect(rect, col)
-		_bars_data.append({"rect": rect, "name": names[j], "avg_hours": hours[j], "salary": salaries[j], "role": roles[j]})
+		_bars_data.append({"rect": rect, "name": names[j], "avg_progress": progresses[j], "salary": salaries[j], "role": roles[j]})
 		var short_n = names[j].substr(0, min(names[j].length(), 8))
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(bx - slot_w * 0.4, h - 8), short_n, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
 
@@ -785,7 +815,7 @@ func _on_bars_gui_input(event: InputEvent):
 	var mp = (event as InputEventMouseMotion).position
 	for bd in _bars_data:
 		if bd["rect"].has_point(mp):
-			_show_tooltip_at(tr("REPORTS_PEOPLE_DAILY_BARS_TOOLTIP") % [bd["name"], bd["avg_hours"], _format_money(int(bd["salary"])), bd["role"]], _bars_graph, mp)
+			_show_tooltip_at(tr("REPORTS_PEOPLE_DAILY_BARS_TOOLTIP") % [bd["name"], bd["avg_progress"], _format_money(int(bd["salary"])), bd["role"]], _bars_graph, mp)
 			return
 	_hide_tooltip()
 
@@ -809,6 +839,7 @@ func _build_multiline_card() -> PanelContainer:
 	_metric_selector.add_item(tr("REPORTS_PEOPLE_METRIC_BURNOUT"))
 	_metric_selector.add_item(tr("REPORTS_PEOPLE_METRIC_ENERGY"))
 	_metric_selector.add_item(tr("REPORTS_PEOPLE_METRIC_HOURS"))
+	_metric_selector.add_item(tr("REPORTS_PEOPLE_METRIC_PROGRESS"))
 	_metric_selector.item_selected.connect(func(_i): _refresh_multiline())
 	frow.add_child(_metric_selector)
 	var flbl = Label.new(); flbl.text = tr("REPORTS_PEOPLE_FILTER_ROLE")
@@ -829,6 +860,10 @@ func _build_multiline_card() -> PanelContainer:
 	_multiline_graph.gui_input.connect(_on_multiline_gui_input)
 	_multiline_graph.mouse_exited.connect(_hide_tooltip)
 	vbox.add_child(_multiline_graph)
+	_multiline_legend_container = HBoxContainer.new()
+	_multiline_legend_container.add_theme_constant_override("separation", 12)
+	_multiline_legend_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(_multiline_legend_container)
 	return card
 
 func _refresh_multiline():
@@ -845,7 +880,7 @@ func _draw_multiline(ctrl: Control):
 		return
 	var metric_idx = 0
 	if _metric_selector: metric_idx = _metric_selector.selected
-	var metric_key = ["mood", "burnout", "energy", "work_minutes"][metric_idx]
+	var metric_key = ["mood", "burnout", "energy", "work_minutes", "progress"][metric_idx]
 	var filter_role = ""
 	if _multiline_filter and _multiline_filter.selected > 0: filter_role = _multiline_filter.get_item_text(_multiline_filter.selected)
 	var emp_series: Dictionary = {}
@@ -900,6 +935,11 @@ func _draw_multiline(ctrl: Control):
 	for dd in range(min_day, max_day + 1, step):
 		var px = PL + (float(dd - min_day) / float(max_day - min_day)) * gw
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(px - 8, h - 6), "D%d" % dd, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, COLOR_GRAY)
+	# Update legend (deferred to avoid modifying scene tree during draw)
+	var legend_items = []
+	for ei2 in range(emp_names.size()):
+		legend_items.append({"name": emp_names[ei2], "color": palette[ei2 % palette.size()]})
+	call_deferred("_update_multiline_legend", legend_items)
 
 func _on_multiline_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
@@ -916,6 +956,18 @@ func _on_multiline_gui_input(event: InputEvent):
 		var day = md2["series"][best_pt]["day"]
 		_show_tooltip_at("Day %d: %s = %.1f" % [day, md2["name"], val], _multiline_graph, mp)
 	else: _hide_tooltip()
+
+func _update_multiline_legend(items: Array):
+	if not _multiline_legend_container: return
+	for c in _multiline_legend_container.get_children(): c.queue_free()
+	for item in items:
+		var row = HBoxContainer.new(); row.add_theme_constant_override("separation", 4)
+		var rect = ColorRect.new(); rect.custom_minimum_size = Vector2(12, 12); rect.color = item["color"]
+		row.add_child(rect)
+		var lbl = Label.new(); lbl.text = item["name"]
+		lbl.add_theme_color_override("font_color", COLOR_DARK); lbl.add_theme_font_size_override("font_size", 11)
+		if UITheme: UITheme.apply_font(lbl, "regular"); row.add_child(lbl)
+		_multiline_legend_container.add_child(row)
 
 # =====================================================================
 #  BLOCK 5: UTILIZATION BAR CHART (HORIZONTAL)
@@ -980,7 +1032,7 @@ func _draw_util(ctrl: Control):
 		var s = emp_stats[ename]
 		if filter_role != "" and s["job_title"] != filter_role: continue
 		var days = max(s["days"], 1)
-		var util = float(s["assigned_days"]) / float(days) * 100.0
+		var util = (s["total_work_min"] / (float(days) * 480.0)) * 100.0
 		names.append(ename); utils.append(util); working_d.append(s["assigned_days"]); total_d.append(days)
 	if names.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(w * 0.5 - 40, h * 0.5), tr("REPORTS_PEOPLE_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, COLOR_GRAY)
@@ -1049,9 +1101,11 @@ func _refresh_table():
 		if filter_role != "" and s["job_title"] != filter_role: continue
 		var days = max(s["days"], 1)
 		var avg_h = (s["total_work_min"] / float(days)) / 60.0
-		var util  = float(s["assigned_days"]) / float(days) * 100.0
+		var util  = (s["total_work_min"] / (float(days) * 480.0)) * 100.0
 		var avg_mood    = s["total_mood"]    / float(days)
 		var avg_burnout = s["total_burnout"] / float(days)
+		var avg_progress = s.get("total_progress", 0.0) / float(days)
+		var efficiency = avg_progress / max(s["daily_salary"], 0.01)
 		var grade = 1
 		for r in records:
 			for emp in r.get("employees", []):
@@ -1062,7 +1116,8 @@ func _refresh_table():
 		if util > 40:        status_score += 1
 		var status_dot = "🟢" if status_score == 3 else ("🟡" if status_score == 2 else "🔴")
 		rows.append({"name": ename, "role": s["job_title"], "grade": grade, "salary": s["daily_salary"],
-			"avg_hours": avg_h, "util": util, "mood": avg_mood, "burnout": avg_burnout, "status": status_dot})
+			"avg_hours": avg_h, "util": util, "mood": avg_mood, "burnout": avg_burnout, "status": status_dot,
+			"avg_progress": avg_progress, "efficiency": efficiency})
 	if rows.is_empty(): _table_vbox.add_child(_make_no_data_label()); return
 	rows.sort_custom(func(a, b): return a["util"] > b["util"])
 	_table_vbox.add_child(_build_table_header())
@@ -1072,16 +1127,19 @@ func _refresh_table():
 func _build_table_header() -> PanelContainer:
 	var row = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
 	var hbox = row[1] as HBoxContainer
-	var cols = ["#", tr("REPORTS_PEOPLE_COL_NAME"), tr("REPORTS_PEOPLE_COL_ROLE"), tr("REPORTS_PEOPLE_COL_GRADE"),
+	var cols = ["#", tr("REPORTS_PEOPLE_COL_NAME"), tr("REPORTS_PEOPLE_COL_ROLE"), tr("REPORTS_PEOPLE_COL_LVL"),
 	tr("REPORTS_PEOPLE_COL_SALARY_DAY"), tr("REPORTS_PEOPLE_AVG_HOURS"), tr("REPORTS_PEOPLE_COL_UTIL"),
-	tr("REPORTS_PEOPLE_COL_MOOD"), tr("REPORTS_PEOPLE_COL_BURNOUT"), tr("REPORTS_PEOPLE_COL_STATUS")]
-	var widths = [24, 140, 110, 50, 70, 70, 70, 60, 70, 50]
+	tr("REPORTS_PEOPLE_COL_MOOD"), tr("REPORTS_PEOPLE_COL_BURNOUT"), tr("REPORTS_PEOPLE_COL_PTS_DAY"),
+	tr("REPORTS_PEOPLE_COL_EFFICIENCY"), tr("REPORTS_PEOPLE_COL_STATUS")]
+	var tooltips = ["", "", "", tr("REPORTS_PEOPLE_COL_LVL_TOOLTIP"), "", "", "", "", "", "", "", tr("REPORTS_PEOPLE_COL_STATUS_TOOLTIP")]
+	var widths = [24, 120, 100, 40, 65, 65, 65, 55, 65, 60, 70, 45]
 	for ci in range(cols.size()):
 		var lbl = Label.new(); lbl.text = cols[ci]
 		lbl.add_theme_color_override("font_color", COLOR_BLUE)
 		lbl.add_theme_font_size_override("font_size", 11)
 		lbl.custom_minimum_size = Vector2(widths[ci], 0)
 		if UITheme: UITheme.apply_font(lbl, "bold")
+		if tooltips[ci] != "": lbl.tooltip_text = tooltips[ci]
 		hbox.add_child(lbl)
 	return row[0] as PanelContainer       # ✅ return ПОСЛЕ цикла
 
@@ -1094,10 +1152,11 @@ func _build_table_row(rank: int, row: Dictionary, is_even: bool) -> PanelContain
 	var util_c = COLOR_GREEN if row["util"] >= 60 else (COLOR_ORANGE if row["util"] >= 30 else COLOR_RED)
 	var vals = [str(rank), row["name"], row["role"], str(row["grade"]),
 	"$%.0f" % row["salary"], "%.1f h" % row["avg_hours"], "%.0f%%" % row["util"],
-	"%.0f" % row["mood"], "%.0f" % row["burnout"], row["status"]]
+	"%.0f" % row["mood"], "%.0f" % row["burnout"], "%.1f" % row.get("avg_progress", 0.0),
+	"%.2f" % row.get("efficiency", 0.0), row["status"]]
 	var colors = [COLOR_GRAY, COLOR_DARK, COLOR_GRAY, COLOR_DARK,
-	COLOR_DARK, COLOR_DARK, util_c, mood_c, burn_c, COLOR_DARK]
-	var widths = [24, 140, 110, 50, 70, 70, 70, 60, 70, 50]
+	COLOR_DARK, COLOR_DARK, util_c, mood_c, burn_c, COLOR_BLUE, COLOR_DARK, COLOR_DARK]
+	var widths = [24, 120, 100, 40, 65, 65, 65, 55, 65, 60, 70, 45]
 	for ci in range(vals.size()):
 		var lbl = Label.new(); lbl.text = vals[ci]
 		lbl.add_theme_color_override("font_color", colors[ci])
@@ -1182,132 +1241,6 @@ func _on_health_gui_input(event: InputEvent):
 		_show_tooltip_at(tr("REPORTS_PEOPLE_HEALTH_TOOLTIP") % [p["day"], p["mood"], p["burnout"], p["energy"]], _health_graph, mp)
 	else: _hide_tooltip()
 
-# =====================================================================
-#  BLOCK 8: LEADERBOARD WITH COMPOSITE SCORE
-# =====================================================================
-
-func _build_leaderboard_card() -> PanelContainer:
-	var card = _make_card(); var margin = _make_card_margin(); card.add_child(margin)
-	var vbox = VBoxContainer.new(); vbox.add_theme_constant_override("separation", 8); margin.add_child(vbox)
-	vbox.add_child(_make_title(tr("REPORTS_PEOPLE_LEADERBOARD_TITLE")))
-	_leaderboard_vbox = VBoxContainer.new()
-	_leaderboard_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_leaderboard_vbox.add_theme_constant_override("separation", 4)
-	vbox.add_child(_leaderboard_vbox)
-	return card
-
-func _refresh_leaderboard():
-	if not _leaderboard_vbox: return
-	for c in _leaderboard_vbox.get_children(): c.queue_free()
-	var records  = _get_filtered_records()
-	var prev_r   = _get_prev_period_records()
-	if records.is_empty(): _leaderboard_vbox.add_child(_make_no_data_label()); return
-	var emp_stats  = _get_emp_stats(records)
-	var prev_stats = _get_emp_stats(prev_r)
-	if emp_stats.is_empty(): _leaderboard_vbox.add_child(_make_no_data_label()); return
-
-	var raw: Dictionary = {}
-	for ename in emp_stats:
-		var s = emp_stats[ename]; var days = max(s["days"], 1)
-		var avg_h    = (s["total_work_min"] / float(days)) / 60.0
-		var util     = float(s["assigned_days"]) / float(days) * 100.0
-		var avg_mood = s["total_mood"]    / float(days)
-		var avg_burn = s["total_burnout"] / float(days)
-		raw[ename] = {"avg_h": avg_h, "util": util, "mood": avg_mood, "burnout": avg_burn}
-
-	var max_h = 0.001; var max_util = 0.001; var max_mood = 0.001
-	for en2 in raw:
-		max_h    = max(max_h,    raw[en2]["avg_h"])
-		max_util = max(max_util, raw[en2]["util"])
-		max_mood = max(max_mood, raw[en2]["mood"])
-
-	var scored: Array = []
-	for en3 in raw:
-		var r = raw[en3]
-		var n_h    = (r["avg_h"] / max_h)    * 100.0
-		var n_util = (r["util"]  / max_util) * 100.0
-		var n_mood = (r["mood"]  / max_mood) * 100.0
-		var inv_burn = clampf(100.0 - r["burnout"], 0, 100)
-		var score = n_h * 0.30 + n_util * 0.30 + n_mood * 0.20 + inv_burn * 0.20
-		score = clampf(score, 0, 100)
-		var trend = tr("REPORTS_PEOPLE_TREND_FLAT")
-		if prev_stats.has(en3):
-			var ps = prev_stats[en3]; var pdays = max(ps["days"], 1)
-			var p_h    = (ps["total_work_min"] / float(pdays)) / 60.0
-			var p_util = float(ps["assigned_days"]) / float(pdays) * 100.0
-			var p_mood = ps["total_mood"] / float(pdays)
-			var p_burn = ps["total_burnout"] / float(pdays)
-			var p_n_h    = (p_h / max_h) * 100.0
-			var p_n_util = (p_util / max_util) * 100.0
-			var p_n_mood = (p_mood / max_mood) * 100.0
-			var p_inv_b  = clampf(100.0 - p_burn, 0, 100)
-			var prev_score = p_n_h * 0.30 + p_n_util * 0.30 + p_n_mood * 0.20 + p_inv_b * 0.20
-			if score > prev_score + 2:   trend = tr("REPORTS_PEOPLE_TREND_UP")
-			elif score < prev_score - 2: trend = tr("REPORTS_PEOPLE_TREND_DOWN")
-		scored.append({"name": en3, "score": score, "avg_h": r["avg_h"], "util": r["util"],
-		"mood": r["mood"], "burnout": r["burnout"], "trend": trend,
-		"role": emp_stats[en3]["job_title"]})
-
-	scored.sort_custom(func(a, b): return a["score"] > b["score"])
-	var n = scored.size()
-	var top_n = min(3, n) if n > 1 else 0
-	var bot_n = min(3, n) if n > 1 else 0
-
-	if n == 1:
-		_leaderboard_vbox.add_child(_make_title(tr("REPORTS_PEOPLE_ALL_EMPLOYEES")))
-		_leaderboard_vbox.add_child(_build_leaderboard_header())
-		_leaderboard_vbox.add_child(_build_leaderboard_row(1, scored[0], Color(0.9, 0.98, 0.9, 1)))
-		return
-
-	var top_lbl = _make_title(tr("REPORTS_PEOPLE_TOP_PERFORMERS"))
-	top_lbl.add_theme_color_override("font_color", COLOR_GREEN)
-	_leaderboard_vbox.add_child(top_lbl)
-	_leaderboard_vbox.add_child(_build_leaderboard_header())
-	for i in range(top_n):
-		_leaderboard_vbox.add_child(_build_leaderboard_row(i + 1, scored[i], Color(0.9, 1.0, 0.9, 1)))
-
-	var attn_lbl = _make_title(tr("REPORTS_PEOPLE_ATTENTION"))
-	attn_lbl.add_theme_color_override("font_color", COLOR_RED)
-	_leaderboard_vbox.add_child(attn_lbl)
-	_leaderboard_vbox.add_child(_build_leaderboard_header())
-	for j in range(bot_n):
-		var idx = n - bot_n + j
-		_leaderboard_vbox.add_child(_build_leaderboard_row(idx + 1, scored[idx], Color(1.0, 0.92, 0.92, 1)))
-
-func _build_leaderboard_header() -> PanelContainer:
-	var row = _make_table_row(Color(COLOR_BLUE.r, COLOR_BLUE.g, COLOR_BLUE.b, 0.1))
-	var hbox = row[1] as HBoxContainer
-	var cols = [tr("REPORTS_PEOPLE_COL_RANK"), tr("REPORTS_PEOPLE_COL_NAME"), tr("REPORTS_PEOPLE_COL_ROLE"),
-	tr("REPORTS_PEOPLE_SCORE"), tr("REPORTS_PEOPLE_METRIC_HOURS"), tr("REPORTS_PEOPLE_COL_UTIL"),
-	tr("REPORTS_PEOPLE_COL_MOOD"), tr("REPORTS_PEOPLE_COL_BURNOUT"), "Trend"]
-	var widths = [30, 160, 110, 60, 70, 60, 60, 70, 40]
-	for ci in range(cols.size()):
-		var lbl = Label.new(); lbl.text = cols[ci]
-		lbl.add_theme_color_override("font_color", COLOR_BLUE)
-		lbl.add_theme_font_size_override("font_size", 12)
-		lbl.custom_minimum_size = Vector2(widths[ci], 0)
-		if UITheme: UITheme.apply_font(lbl, "bold")
-		hbox.add_child(lbl)
-	return row[0] as PanelContainer
-
-func _build_leaderboard_row(rank: int, s: Dictionary, bg: Color) -> PanelContainer:
-	var row = _make_table_row(bg)
-	var hbox = row[1] as HBoxContainer
-	var score_c = COLOR_GREEN if s["score"] >= 70 else (COLOR_ORANGE if s["score"] >= 40 else COLOR_RED)
-	var vals = [str(rank), s["name"], s.get("role", ""),
-	"%.0f" % s["score"], "%.1f h" % s["avg_h"], "%.0f%%" % s["util"],
-	"%.0f" % s["mood"], "%.0f" % s["burnout"], s["trend"]]
-	var colors = [COLOR_GRAY, COLOR_DARK, COLOR_GRAY, score_c, COLOR_DARK, COLOR_DARK, COLOR_DARK, COLOR_DARK, COLOR_DARK]
-	var widths = [30, 160, 110, 60, 70, 60, 60, 70, 40]
-	for ci in range(vals.size()):
-		var lbl = Label.new(); lbl.text = vals[ci]
-		lbl.add_theme_color_override("font_color", colors[ci])
-		lbl.add_theme_font_size_override("font_size", 12)
-		lbl.custom_minimum_size = Vector2(widths[ci], 0)
-		if UITheme: UITheme.apply_font(lbl, "regular")
-		hbox.add_child(lbl)
-	return row[0] as PanelContainer    # ✅ func вместо dfunc, return ПОСЛЕ цикла
-
 		# =====================================================================
 		#  BLOCK 9: EMPLOYEE CARD
 		# =====================================================================
@@ -1384,7 +1317,8 @@ func _refresh_employee_card():
 	burn_lbl.add_theme_color_override("font_color", burn_c); burn_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(burn_lbl, "semibold"); _card_vbox.add_child(burn_lbl)
 
-	var energy_val = float(d.get("current_energy", 100.0))
+	var _energy_raw = d.get("current_energy")
+	var energy_val = float(_energy_raw) if _energy_raw != null else 100.0
 	var energy_c = COLOR_GREEN if energy_val > 60 else (COLOR_ORANGE if energy_val >= 30 else COLOR_RED)
 	var energy_lbl = Label.new(); energy_lbl.text = "\u26A1 %s: %.0f" % [tr("REPORTS_PEOPLE_METRIC_ENERGY"), energy_val]
 	energy_lbl.add_theme_color_override("font_color", energy_c); energy_lbl.add_theme_font_size_override("font_size", 14)
@@ -1649,17 +1583,31 @@ func _role_color(role: String) -> Color:
 	if "designer" in r or "design" in r: return Color(0.7, 0.3, 0.8, 1)
 	return COLOR_GRAY
 
-func _populate_filters():
+func _populate_role_filters():
 	var all_roles: Array = []
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
 		if not is_instance_valid(npc) or not npc.data: continue
 		var jt = str(npc.data.job_title)
-		if not jt in all_roles: all_roles.append(jt)
-		for btn in [_scatter_filter, _bars_filter, _multiline_filter, _util_filter, _table_filter]:
-			if not btn: continue
-			if btn.item_count <= 1:
-				for role in all_roles: btn.add_item(role)
+		if jt != "" and not jt in all_roles: all_roles.append(jt)
+	for r in PeopleHistory.daily_records:
+		for emp in r.get("employees", []):
+			var jt = str(emp.get("job_title", ""))
+			if jt != "" and not jt in all_roles: all_roles.append(jt)
+	all_roles.sort()
+	var filters = [_scatter_filter, _bars_filter, _multiline_filter, _util_filter, _table_filter]
+	for btn in filters:
+		if not btn: continue
+		var prev_role = ""
+		if btn.selected > 0: prev_role = btn.get_item_text(btn.selected)
+		btn.clear()
+		btn.add_item(tr("REPORTS_PEOPLE_ALL_ROLES"))
+		for role in all_roles: btn.add_item(role)
+		if prev_role != "":
+			for i in range(btn.item_count):
+				if btn.get_item_text(i) == prev_role:
+					btn.select(i)
+					break
 
 # =====================================================================
 # REFRESH
@@ -1671,7 +1619,7 @@ func refresh():
 	_refresh_all()
 
 func _refresh_all():
-	_populate_filters()
+	_populate_role_filters()
 	_refresh_kpi()
 	_refresh_scatter()
 	_refresh_bars()
@@ -1679,5 +1627,4 @@ func _refresh_all():
 	_refresh_util()
 	_refresh_table()
 	if _health_graph: _health_graph.queue_redraw()
-	_refresh_leaderboard()
 	if _selected_employee != "": _refresh_employee_card()
