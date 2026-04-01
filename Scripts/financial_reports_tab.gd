@@ -502,7 +502,8 @@ func _draw_cash_flow(ctrl: Control):
 			ctrl.draw_colored_polygon(red_poly, Color(COLOR_RED.r, COLOR_RED.g, COLOR_RED.b, 0.2))
 
 	# Line
-	ctrl.draw_polyline(pts, COLOR_BLUE, 2.0, true)
+	if pts.size() >= 2:
+		ctrl.draw_polyline(pts, COLOR_BLUE, 2.0, true)
 
 	# Dots
 	for p in pts:
