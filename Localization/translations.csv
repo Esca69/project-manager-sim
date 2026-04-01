@@ -1236,8 +1236,8 @@ REPORTS_PEOPLE_KPI_TITLE,📊 KPI команды,📊 Team KPI
 REPORTS_PEOPLE_HEADCOUNT,Численность,Headcount
 REPORTS_PEOPLE_UTILIZATION,Утилизация,Utilization
 REPORTS_PEOPLE_AVG_HOURS,Ср. раб. время,Avg Work Hours
-REPORTS_PEOPLE_SCATTER_TITLE,💰 Зарплата vs Часы,💰 Salary vs Hours
-REPORTS_PEOPLE_BARS_TITLE,📊 Часы по сотрудникам,📊 Hours by Person
+REPORTS_PEOPLE_SCATTER_TITLE,💰 Зарплата vs Прогресс,💰 Salary vs Progress
+REPORTS_PEOPLE_BARS_TITLE,📊 Прогресс по сотрудникам,📊 Progress by Person
 REPORTS_PEOPLE_MULTILINE_TITLE,📈 Сравнение динамики,📈 Trend Comparison
 REPORTS_PEOPLE_UTILIZATION_TITLE,⚡ Загрузка команды,⚡ Team Utilization
 REPORTS_PEOPLE_TABLE_TITLE,📋 Сводная таблица,📋 Summary Table
@@ -1267,8 +1267,18 @@ REPORTS_PEOPLE_CARD_RANK_OF,%d из %d по рейтингу,%d of %d by score
 REPORTS_PEOPLE_CARD_ENERGY,Энергия:,Energy:
 REPORTS_PEOPLE_CARD_WORK_HOURS_VAL,Ср. часов/день:,Avg hours/day:
 REPORTS_PEOPLE_KPI2_TITLE,📊 KPI (за период),📊 KPI (period)
-REPORTS_PEOPLE_DAILY_BARS_TOOLTIP,"%s: %.1f ч/день, $%s зарплата, %s","%s: %.1fh/day, $%s salary, %s"
-REPORTS_PEOPLE_SCATTER_TOOLTIP,"%s: $%.0f/день, %.1f ч/день, %s","%s: $%.0f/day, %.1fh/day, %s"
+REPORTS_PEOPLE_DAILY_BARS_TOOLTIP,"%s: %.1f pts/день, $%s зарплата, %s","%s: %.1f pts/day, $%s salary, %s"
+REPORTS_PEOPLE_SCATTER_TOOLTIP,"%s: $%.0f/день, %.1f pts/день, eff=%.2f pts/$","%s: $%.0f/day, %.1f pts/day, eff=%.2f pts/$"
 REPORTS_PEOPLE_UTIL_TOOLTIP,%s: %.0f%% (%d из %d дней),%s: %.0f%% (%d of %d days)
 REPORTS_PEOPLE_HEALTH_TOOLTIP,"День %d: Mood %.0f, Burnout %.0f, Energy %.0f","Day %d: Mood %.0f, Burnout %.0f, Energy %.0f"
 REPORTS_PEOPLE_TABLE_TOOLTIP,Зарплата: $%.0f/день\nЧасов/день: %.1f\nУтилизация: %.0f%%\nHastroение: %.0f\nВыгорание: %.0f,Salary: $%.0f/day\nHours/day: %.1f\nUtilization: %.0f%%\nMood: %.0f\nBurnout: %.0f
+REPORTS_PEOPLE_FILTER_ROLE,Фильтр по роли,Filter by role
+REPORTS_PEOPLE_ALL_ROLES,Все роли,All Roles
+REPORTS_PEOPLE_METRIC_LABEL,Метрика:,Metric:
+REPORTS_PEOPLE_KPI_AVG_PROGRESS,Ср. прогресс/день,Avg Progress/day
+REPORTS_PEOPLE_KPI_TOTAL_PROGRESS,Общий прогресс,Total Progress
+REPORTS_PEOPLE_METRIC_PROGRESS,Очки прогресса,Progress Points
+REPORTS_PEOPLE_COL_LVL,Ур.,Lvl
+REPORTS_PEOPLE_COL_LVL_TOOLTIP,Уровень сотрудника,Employee Level
+REPORTS_PEOPLE_COL_STATUS_TOOLTIP,"🟢 mood>60, burnout<30, util>50%; 🟡 промежуточные; 🔴 критические","🟢 mood>60, burnout<30, util>50%; 🟡 intermediate; 🔴 critical"
+REPORTS_PEOPLE_COL_PTS_DAY,Pts/день,Pts/day
