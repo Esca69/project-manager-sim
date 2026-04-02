@@ -797,8 +797,9 @@ func _build_multiline_card() -> PanelContainer:
 	_multiline_graph.gui_input.connect(_on_multiline_gui_input)
 	_multiline_graph.mouse_exited.connect(_hide_tooltip)
 	vbox.add_child(_multiline_graph)
-	_multiline_legend_container = HBoxContainer.new()
-	_multiline_legend_container.add_theme_constant_override("separation", 12)
+	_multiline_legend_container = HFlowContainer.new()
+	_multiline_legend_container.add_theme_constant_override("h_separation", 16)
+	_multiline_legend_container.add_theme_constant_override("v_separation", 8)
 	_multiline_legend_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_child(_multiline_legend_container)
 	return card
@@ -912,7 +913,7 @@ func _update_multiline_legend(items: Array):
 		row.add_child(rect)
 		var lbl = Label.new(); lbl.text = ename
 		lbl.add_theme_color_override("font_color", COLOR_GRAY if is_hidden else COLOR_DARK)
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 12)
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		row.add_child(lbl)
 		btn.add_child(row)
