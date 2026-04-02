@@ -68,12 +68,8 @@ SKILL_HR_SEARCH_SPEED_1_NAME,🔍 Скорость поиска I,🔍 Search Sp
 SKILL_HR_SEARCH_SPEED_1_DESC,Поиск кандидатов занимает 1.5 часа вместо 2,Candidate search takes 1.5 hours instead of 2
 SKILL_HR_SEARCH_SPEED_2_NAME,🔍 Скорость поиска II,🔍 Search Speed II
 SKILL_HR_SEARCH_SPEED_2_DESC,Поиск кандидатов занимает 1 час,Candidate search takes 1 hour
-SKILL_REPORT_EXPENSES_NAME,📋 Учёт расходов,📋 Expense Tracking
-SKILL_REPORT_EXPENSES_DESC,В дневном отчёте видна детализация затрат: кому выплачена зарплата и сколько,Day report shows expense details: who was paid and how much
-SKILL_REPORT_PROJECTS_NAME,📋 Аналитика проектов,📋 Project Analytics
-SKILL_REPORT_PROJECTS_DESC,"В дневном отчёте видны этапы проектов, процент прогресса и дни до дедлайнов","Day report shows project stages, progress % and days until deadlines"
-SKILL_REPORT_PRODUCTIVITY_NAME,📋 Оценка продуктивности,📋 Productivity Report
-SKILL_REPORT_PRODUCTIVITY_DESC,В дневном отчёте видно кто из сотрудников сколько часов работал и сколько очков принёс,Day report shows how many hours each employee worked and points earned
+SKILL_DAILY_REPORT_NAME,📋 Дневной отчёт,📋 Daily Report
+SKILL_DAILY_REPORT_DESC,Открывает полную детализацию дневного отчёта: расходы; аналитика проектов и продуктивность сотрудников,Unlocks full day report details: expenses; project analytics and employee productivity
 SKILL_MOTIVATE_NAME,🔥 Мотивировать,🔥 Motivate
 SKILL_MOTIVATE_DESC,Активный навык (Q): все сотрудники рядом получают +20% скорости работы на 2 часа. Перезарядка: 4 часа,Active skill (Q): nearby employees get +20% work speed for 2 hours. Cooldown: 4 hours
 SKILL_NO_TOILET_NAME,🚽 Не сейчас!,🚽 Not Now!

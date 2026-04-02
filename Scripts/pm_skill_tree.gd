@@ -51,7 +51,7 @@ const CATEGORIES = [
 		"label": "SKILL_CATEGORY_ANALYTICS",
 		"emoji": "📊",
 		"color": COLOR_TEAL,
-		"branches": ["report_expenses", "report_projects", "report_productivity", "report_finance_tab", "report_people_tab"],
+		"branches": ["daily_report", "report_finance_tab", "report_people_tab"],
 	},
 	{
 		"id": "active",

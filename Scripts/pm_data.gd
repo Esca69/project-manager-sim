@@ -228,31 +228,13 @@ const SKILL_TREE = {
 	# =============================
 	# === КАТЕГОРИЯ: АНАЛИТИКА ===
 	# =============================
-	"report_expenses": {
-		"name": "SKILL_REPORT_EXPENSES_NAME",
-		"description": "SKILL_REPORT_EXPENSES_DESC",
+	"daily_report": {
+		"name": "SKILL_DAILY_REPORT_NAME",
+		"description": "SKILL_DAILY_REPORT_DESC",
 		"cost": 1,
 		"prerequisite": "",
 		"category": "analytics",
-		"branch": "report_expenses",
-		"branch_order": 0,
-	},
-	"report_projects": {
-		"name": "SKILL_REPORT_PROJECTS_NAME",
-		"description": "SKILL_REPORT_PROJECTS_DESC",
-		"cost": 1,
-		"prerequisite": "",
-		"category": "analytics",
-		"branch": "report_projects",
-		"branch_order": 0,
-	},
-	"report_productivity": {
-		"name": "SKILL_REPORT_PRODUCTIVITY_NAME",
-		"description": "SKILL_REPORT_PRODUCTIVITY_DESC",
-		"cost": 1,
-		"prerequisite": "",
-		"category": "analytics",
-		"branch": "report_productivity",
+		"branch": "daily_report",
 		"branch_order": 0,
 	},
 
@@ -346,7 +328,7 @@ const SKILL_TREE = {
 		"description": "SKILL_REPORT_FINANCE_TAB_DESC",
 		"cost": 1,
 		"prerequisite": "",
-		"prerequisites": ["report_expenses", "report_projects", "report_productivity"],
+		"prerequisites": ["daily_report"],
 		"category": "analytics",
 		"branch": "report_finance_tab",
 		"branch_order": 0,
@@ -357,7 +339,7 @@ const SKILL_TREE = {
 		"description": "SKILL_REPORT_PEOPLE_TAB_DESC",
 		"cost": 1,
 		"prerequisite": "",
-		"prerequisites": ["report_expenses", "report_projects", "report_productivity"],
+		"prerequisites": ["daily_report"],
 		"category": "analytics",
 		"branch": "report_people_tab",
 		"branch_order": 0,
@@ -505,13 +487,13 @@ func get_hr_cutoff_hour() -> int:
 
 # === АНАЛИТИКА ===
 func can_see_expense_details() -> bool:
-	return has_skill("report_expenses")
+	return has_skill("daily_report")
 
 func can_see_project_analytics() -> bool:
-	return has_skill("report_projects")
+	return has_skill("daily_report")
 
 func can_see_productivity() -> bool:
-	return has_skill("report_productivity")
+	return has_skill("daily_report")
 
 func can_see_finance_report() -> bool:
 	return has_skill("report_finance_tab")
