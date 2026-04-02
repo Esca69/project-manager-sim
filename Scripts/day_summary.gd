@@ -41,16 +41,6 @@ func open():
 		visible = true
 
 func _close():
-	if UITheme:
-		UITheme.fade_out(self, 0.2)
-		# --- ИСПРАВЛЕНИЕ: Ждём окончания анимации. 
-		# Флаги (true, false, true) заставляют таймер работать даже если игра на паузе или time_scale = 0 ---
-		await get_tree().create_timer(0.2, true, false, true).timeout
-	else:
-		visible = false
-	
-	visible = false
-	
 	# === FIX: Zero velocity and reset free camera before starting night skip ===
 	var player = get_tree().get_first_node_in_group("player")
 	if player:
@@ -58,8 +48,17 @@ func _close():
 		if player.has_method("force_reset_camera"):
 			player.force_reset_camera()
 	
-	# Pause state is managed internally by start_night_skip().
+	# Start night skip BEFORE hiding this panel — prevents race condition
+	# where is_game_paused=true + _is_ui_blocking()=false + is_night_skip=false
 	GameTime.start_night_skip()
+	
+	if UITheme:
+		UITheme.fade_out(self, 0.2)
+		# --- ИСПРАВЛЕНИЕ: Ждём окончания анимации. 
+		# Флаги (true, false, true) заставляют таймер работать даже если игра на паузе или time_scale = 0 ---
+		await get_tree().create_timer(0.2, true, false, true).timeout
+	
+	visible = false
 
 # === ПОСТРОЕНИЕ КАРКАСА UI ===
 func _build_ui():

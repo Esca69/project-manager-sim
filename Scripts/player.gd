@@ -52,6 +52,7 @@ func force_reset_camera():
 	_free_camera_returning = false
 	_free_camera_offset = Vector2.ZERO
 	camera.position = Vector2.ZERO
+	camera.reset_smoothing()
 	var hud_ref = get_tree().get_first_node_in_group("ui")
 	if hud_ref and hud_ref.has_method("hide_free_camera_hint"):
 		hud_ref.hide_free_camera_hint()
