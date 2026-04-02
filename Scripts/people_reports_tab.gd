@@ -52,7 +52,7 @@ var _bars_data      : Array = []
 var _util_bars      : Array = []
 var _health_pts     : Array = []
 var _multiline_data : Array = []
-var _multiline_legend_container : HBoxContainer
+var _multiline_legend_container : HFlowContainer
 var _multiline_hidden : Dictionary = {}
 
 # =====================================================================
@@ -903,10 +903,9 @@ func _update_multiline_legend(items: Array):
 	for item in items:
 		var ename = item["name"]
 		var is_hidden = _multiline_hidden.get(ename, false)
-		var btn = Button.new()
-		btn.focus_mode = Control.FOCUS_NONE
-		btn.flat = true
-		var row = HBoxContainer.new(); row.add_theme_constant_override("separation", 4)
+		var row = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 4)
+		row.mouse_filter = Control.MOUSE_FILTER_STOP
 		var rect = ColorRect.new()
 		rect.custom_minimum_size = Vector2(12, 12)
 		rect.color = item["color"] if not is_hidden else COLOR_GRAY
@@ -916,12 +915,13 @@ func _update_multiline_legend(items: Array):
 		lbl.add_theme_font_size_override("font_size", 12)
 		if UITheme: UITheme.apply_font(lbl, "regular")
 		row.add_child(lbl)
-		btn.add_child(row)
-		btn.pressed.connect(func():
-			_multiline_hidden[ename] = not _multiline_hidden.get(ename, false)
-			_refresh_multiline()
+		row.gui_input.connect(func(event: InputEvent):
+			if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+				_multiline_hidden[ename] = not _multiline_hidden.get(ename, false)
+				_refresh_multiline()
+				row.get_viewport().set_input_as_handled()
 		)
-		_multiline_legend_container.add_child(btn)
+		_multiline_legend_container.add_child(row)
 
 # =====================================================================
 #  BLOCK 5: UTILIZATION BAR CHART (HORIZONTAL)
