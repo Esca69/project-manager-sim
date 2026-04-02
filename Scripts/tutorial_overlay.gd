@@ -298,8 +298,7 @@ func _show_card(text_key: String, pause_game: bool = true):
 	_card_overlay.visible = true
 	_card_window.visible = true
 	_card_visible = true
-	if pause_game:
-		GameTime.is_game_paused = true
+	GameTime.set_speed(0)
 	if UITheme:
 		UITheme.fade_in(_card_window, 0.2)
 
@@ -310,7 +309,7 @@ func _hide_card():
 
 func _on_card_btn_pressed():
 	_hide_card()
-	GameTime.is_game_paused = false
+	GameTime.speed_1x()
 	_after_card_closed()
 
 # Called after the "Understood" button is pressed on a card

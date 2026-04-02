@@ -937,6 +937,12 @@ func _on_end_day_pressed():
 		end_day_button.visible = false
 		_dismiss_all_employees()
 		# Don't pay salaries on day 1 (tutorial day — no real work done)
+		# Reset camera before night skip to prevent camera flying off (mirrors day_summary._close)
+		var player = get_tree().get_first_node_in_group("player")
+		if player:
+			player.velocity = Vector2.ZERO
+			if player.has_method("force_reset_camera"):
+				player.force_reset_camera()
 		# Skip day summary, go directly to night skip
 		GameTime.start_night_skip()
 		return
