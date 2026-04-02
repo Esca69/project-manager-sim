@@ -342,7 +342,7 @@ func _build_finance_section():
 				_content_vbox.add_child(det_lbl)
 	else:
 		if GameState.daily_expenses > 0:
-			_add_locked_hint(tr("SKILL_REPORT_EXPENSES_NAME"))
+			_add_locked_hint(tr("SKILL_DAILY_REPORT_NAME"))
 
 	var total_color = COLOR_GREEN if balance_end >= balance_start else COLOR_RED
 	_add_finance_row(grid, tr("DAY_SUMMARY_BALANCE_END"), "$%d" % balance_end, total_color, true)
@@ -476,7 +476,7 @@ func _build_projects_section():
 			_content_vbox.add_child(lbl)
 
 	if not has_analytics and (in_progress.size() > 0 or finished_today.size() > 0):
-		_add_locked_hint(tr("SKILL_REPORT_PROJECTS_NAME"))
+		_add_locked_hint(tr("SKILL_DAILY_REPORT_NAME"))
 
 	if finished_today.size() == 0 and failed_today.size() == 0 and in_progress.size() == 0 and drafting.size() == 0:
 		var lbl = Label.new()
@@ -512,7 +512,7 @@ func _build_employees_section():
 		summary_lbl.add_theme_font_size_override("font_size", 14)
 		if UITheme: UITheme.apply_font(summary_lbl, "semibold")
 		_content_vbox.add_child(summary_lbl)
-		_add_locked_hint(tr("SKILL_REPORT_PRODUCTIVITY_NAME"))
+		_add_locked_hint(tr("SKILL_DAILY_REPORT_NAME"))
 		return
 
 	var worked_list = []

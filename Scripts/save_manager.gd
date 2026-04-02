@@ -1117,6 +1117,16 @@ func _load_pm_data(d: Dictionary):
 	for s in skills:
 		PMData.unlocked_skills.append(str(s))
 
+	# === МИГРАЦИЯ: Объединение 3 навыков аналитики в daily_report ===
+	var old_analytics = ["report_expenses", "report_projects", "report_productivity"]
+	var had_any_old = false
+	for old_id in old_analytics:
+		if old_id in PMData.unlocked_skills:
+			had_any_old = true
+			PMData.unlocked_skills.erase(old_id)
+	if had_any_old and "daily_report" not in PMData.unlocked_skills:
+		PMData.unlocked_skills.append("daily_report")
+
 	PMData.personal_balance = int(d.get("personal_balance", 0))
 	PMData.monthly_salary = int(d.get("monthly_salary", 1000))
 	PMData.partner_tier = int(d.get("partner_tier", 0))
