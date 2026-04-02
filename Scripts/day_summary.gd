@@ -51,10 +51,12 @@ func _close():
 	
 	visible = false
 	
-	# === FIX: Force reset free camera before starting night skip ===
+	# === FIX: Zero velocity and reset free camera before starting night skip ===
 	var player = get_tree().get_first_node_in_group("player")
-	if player and player.has_method("force_reset_camera"):
-		player.force_reset_camera()
+	if player:
+		player.velocity = Vector2.ZERO
+		if player.has_method("force_reset_camera"):
+			player.force_reset_camera()
 	
 	# Pause state is managed internally by start_night_skip().
 	GameTime.start_night_skip()

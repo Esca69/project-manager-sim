@@ -253,17 +253,17 @@ func _is_ui_blocking() -> bool:
 
 func _physics_process(delta):
 	if GameTime.is_night_skip:
-		if _free_camera_mode:
-			_free_camera_mode = false
-			_free_camera_returning = false
-			_free_camera_offset = Vector2.ZERO
-			camera.position = Vector2.ZERO
-			var hud_ref = get_tree().get_first_node_in_group("ui")
-			if hud_ref and hud_ref.has_method("hide_free_camera_hint"):
-				hud_ref.hide_free_camera_hint()
+		# UNCONDITIONALLY reset everything every frame during night skip
+		_free_camera_mode = false
+		_free_camera_returning = false
+		_free_camera_offset = Vector2.ZERO
+		camera.position = Vector2.ZERO
 		velocity = Vector2.ZERO
 		move_and_slide()
 		_hide_interact_hint()
+		var hud_ref = get_tree().get_first_node_in_group("ui")
+		if hud_ref and hud_ref.has_method("hide_free_camera_hint"):
+			hud_ref.hide_free_camera_hint()
 		return
 
 	# === ПРОВЕРКА LONG ACTION ===
@@ -628,7 +628,11 @@ func _activate_motivate():
 		print("🔥 Мотивация активирована! Никого рядом не оказалось.")
 
 func _on_night_skip_finished():
+	velocity = Vector2.ZERO
 	force_reset_camera()
+	# Safety: clamp player position to office bounds
+	global_position.x = clamp(global_position.x, OFFICE_BOUNDS.position.x, OFFICE_BOUNDS.position.x + OFFICE_BOUNDS.size.x)
+	global_position.y = clamp(global_position.y, OFFICE_BOUNDS.position.y, OFFICE_BOUNDS.position.y + OFFICE_BOUNDS.size.y)
 
 func _on_time_tick(h, m):
 	# Страховочный сброс камеры утром
