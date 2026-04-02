@@ -66,7 +66,11 @@ func _process(delta):
 
 	time_accumulator += delta * MINUTES_PER_REAL_SECOND
 	
-	while time_accumulator >= 1.0:
+	# Cap iterations to prevent death spiral: 600 = 10 in-game hours max per frame
+	var max_iters = 600
+	var iter = 0
+	while time_accumulator >= 1.0 and iter < max_iters:
+		iter += 1
 		minute += 1
 		time_accumulator -= 1.0
 		
@@ -84,11 +88,11 @@ func _process(delta):
 						
 						emit_signal("work_started")
 						print("🔔 09:00: СТАРТ РАБОТЫ (", get_weekday_name(), ")")
-						if ScreenJuice:
+						if ScreenJuice and not is_night_skip:
 							ScreenJuice.show_toast("☀️", tr("TOAST_WORK_STARTED") % day)
 					else:
 						print("🔔 09:00: ВЫХОДНОЙ (", get_weekday_name(), ") — никто не работает")
-						if ScreenJuice:
+						if ScreenJuice and not is_night_skip:
 							ScreenJuice.show_toast("🏠", tr("TOAST_WEEKEND"))
 				
 			elif hour == END_HOUR:
@@ -117,6 +121,10 @@ func _process(delta):
 			_increment_days_in_company()
 			if FreelancerManager:
 				FreelancerManager.check_freelancer_departures()
+
+	# Clamp any remaining accumulator to prevent carry-over buildup
+	if time_accumulator > 1.0:
+		time_accumulator = fmod(time_accumulator, 1.0)
 
 # === СБРОС ДНЕВНОЙ СТАТИСТИКИ СОТРУДНИКОВ ===
 func _reset_employee_daily_stats():

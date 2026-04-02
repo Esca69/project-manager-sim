@@ -105,6 +105,7 @@ var _should_go_home: bool = false
 
 # Ссылка на текущий бабл с мыслями
 var current_bubble: Node2D = null
+var current_bubble_tween: Tween = null
 var _volume_shader_material: ShaderMaterial = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
@@ -333,6 +334,9 @@ func _ready():
 			_in_crunch = true
 
 func _exit_tree():
+	if current_bubble_tween and current_bubble_tween.is_valid():
+		current_bubble_tween.kill()
+	current_bubble_tween = null
 	if _is_typing_playing:
 		AudioManager.unregister_typing_sound()
 		_is_typing_playing = false
@@ -668,6 +672,8 @@ func _on_day_started(_day_number: int):
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
+	if GameTime and GameTime.is_night_skip:
+		return
 
 	# === ТАЙМЕРЫ АДАПТАЦИИ ===
 	if _minute == 0:
@@ -683,7 +689,7 @@ func _on_time_tick(_hour, _minute):
 		if data.crunch_efficiency_debuff_hours_left > 0:
 			data.crunch_efficiency_debuff_hours_left -= 1.0
 
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF:
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
 		return
 
 	data.has_active_desk = (my_desk_position != Vector2.ZERO and _is_my_stage_active())
@@ -752,7 +758,9 @@ func _on_time_tick(_hour, _minute):
 			_morning_mood_bubble_pending = false
 			_morning_mood_bubble_emoji = ""
 
-	_update_neighbor_bonus()
+	# Update neighbor bonuses only once per hour instead of every minute
+	if _minute == 0:
+		_update_neighbor_bonus()
 
 	if not data.has_trait("early_bird"): return
 	if _early_bird_start_hour < 0: return
@@ -2183,6 +2191,8 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	if data and data.is_requesting_raise:
 		return
 	if is_instance_valid(current_bubble):
+		if current_bubble_tween and current_bubble_tween.is_valid():
+			current_bubble_tween.kill()
 		current_bubble.queue_free()
 
 	current_bubble = Node2D.new()
@@ -2231,13 +2241,13 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	label.label_settings = label_settings
 
 	current_bubble.scale = Vector2.ZERO
-	var tween = create_tween()
+	current_bubble_tween = create_tween()
 	
-	tween.tween_property(current_bubble, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_interval(duration)
-	tween.tween_property(current_bubble, "modulate:a", 0.0, 0.5)
-	tween.parallel().tween_property(current_bubble, "position:y", current_bubble.position.y - 30, 0.5)
-	tween.tween_callback(current_bubble.queue_free)
+	current_bubble_tween.tween_property(current_bubble, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	current_bubble_tween.tween_interval(duration)
+	current_bubble_tween.tween_property(current_bubble, "modulate:a", 0.0, 0.5)
+	current_bubble_tween.parallel().tween_property(current_bubble, "position:y", current_bubble.position.y - 30, 0.5)
+	current_bubble_tween.tween_callback(current_bubble.queue_free)
 
 func _show_raise_bubble():
 	if is_instance_valid(_raise_bubble):
@@ -2444,6 +2454,7 @@ func _check_vacation_timer():
 
 func _tick_vacation_delay():
 	if not data or not data.vacation_approved: return
+	if current_state == State.ON_VACATION: return
 	if data.vacation_delay_days > 0:
 		data.vacation_delay_days -= 1
 	if data.vacation_delay_days <= 0:
