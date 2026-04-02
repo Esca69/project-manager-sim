@@ -269,10 +269,17 @@ func finish_night_skip():
 	
 	get_tree().paused = false
 	
-	# Safety: reset free camera in case it was activated during skip
+	# Safety: reset free camera and velocity in case it was activated during skip
 	var player = get_tree().get_first_node_in_group("player")
-	if player and player.has_method("force_reset_camera"):
-		player.force_reset_camera()
+	if player:
+		player.velocity = Vector2.ZERO
+		if player.has_method("force_reset_camera"):
+			player.force_reset_camera()
+		# Safety: if player flew outside office bounds, clamp back inside
+		var bounds = player.OFFICE_BOUNDS
+		if not bounds.has_point(player.global_position):
+			player.global_position.x = clamp(player.global_position.x, bounds.position.x, bounds.position.x + bounds.size.x)
+			player.global_position.y = clamp(player.global_position.y, bounds.position.y, bounds.position.y + bounds.size.y)
 	
 	emit_signal("night_skip_finished")
 
