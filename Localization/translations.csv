@@ -1282,3 +1282,4 @@ REPORTS_PEOPLE_COL_LVL,Ур.,Lvl
 REPORTS_PEOPLE_COL_LVL_TOOLTIP,Уровень сотрудника,Employee Level
 REPORTS_PEOPLE_COL_STATUS_TOOLTIP,"🟢 mood>60, burnout<30, util>50%; 🟡 промежуточные; 🔴 критические","🟢 mood>60, burnout<30, util>50%; 🟡 intermediate; 🔴 critical"
 REPORTS_PEOPLE_COL_PTS_DAY,Pts/день,Pts/day
+REPORTS_PEOPLE_TABLE_STATUS_DESC,"Статус: 🟢 — настроение > 60, выгорание < 30, утилизация > 50%. 🟡 — промежуточные значения. 🔴 — критические показатели.","Status: 🟢 — mood > 60, burnout < 30, utilization > 50%. 🟡 — intermediate values. 🔴 — critical metrics."
