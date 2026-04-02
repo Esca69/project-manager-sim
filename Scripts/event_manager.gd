@@ -125,6 +125,8 @@ func _on_day_ended():
 	_remove_intraday_effects()
 
 func _on_work_started():
+	if GameTime.is_night_skip:
+		return
 	# Болезнь проверяем утром (отложенно, чтобы сотрудники успели сменить стейт)
 	call_deferred("_try_trigger_morning_event")
 	# Проектные ивенты проверяем утром

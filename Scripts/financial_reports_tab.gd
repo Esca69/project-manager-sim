@@ -714,6 +714,8 @@ func _draw_cumulative_profit(ctrl: Control):
 		var py = PT + gh * (1.0 - (cum[i] - cmin) / crange)
 		pts.append(Vector2(px, py))
 	_cp_pts = pts
+	if pts.size() < 2:
+		return
 	var base_y = clampf(PT + gh * (1.0 - (0 - cmin) / crange), PT, PT+gh)
 	var fp: PackedVector2Array = []
 	fp.append(Vector2(pts[0].x, base_y)); for p in pts: fp.append(p); fp.append(Vector2(pts[n-1].x, base_y))
