@@ -558,7 +558,8 @@ func _on_continue_pressed():
 		return
 	var success = SaveManager.load_game(last_slot)
 	if success:
-		get_tree().change_scene_to_file("res://Scenes/office.tscn")
+		LoadingScreen.target_scene_path = "res://Scenes/office.tscn"
+		get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
 	else:
 		_btn_continue.text = "▶  " + tr("MENU_CONTINUE")
 		_btn_continue.disabled = false
@@ -1064,7 +1065,8 @@ func _load_from_slot(slot: int):
 	_loading_save = true
 	var success = SaveManager.load_game(slot)
 	if success:
-		get_tree().change_scene_to_file("res://Scenes/office.tscn")
+		LoadingScreen.target_scene_path = "res://Scenes/office.tscn"
+		get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
 	else:
 		_loading_save = false
 
