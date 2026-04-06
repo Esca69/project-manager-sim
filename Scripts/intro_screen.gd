@@ -129,5 +129,4 @@ func _on_start_pressed():
 	_is_loading = true
 	_start_btn.disabled = true
 
-	LoadingScreen.target_scene_path = "res://Scenes/office.tscn"
 	get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
