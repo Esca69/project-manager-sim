@@ -6,6 +6,7 @@ var font_semibold: FontVariation
 var font_bold: FontVariation
 
 const FONT_PATH = "res://Fonts/Inter-VariableFont_opsz,wght.ttf"
+const EMOJI_FONT_PATH = "res://Fonts/NotoColorEmoji-Regular.ttf"
 
 # === АНИМАЦИИ ===
 const FADE_DURATION = 0.2  # Секунд на появление/исчезновение
@@ -18,6 +19,13 @@ func _ready():
 	if not base_font:
 		push_warning("UITheme: Шрифт не найден по пути: " + FONT_PATH)
 		return
+
+	var emoji_font = load(EMOJI_FONT_PATH) as FontFile
+	if emoji_font:
+		base_font.fallbacks = [emoji_font]
+		print("✅ UITheme: Emoji fallback (NotoColorEmoji) подключён")
+	else:
+		push_warning("UITheme: Emoji-шрифт не найден: " + EMOJI_FONT_PATH)
 
 	# Regular (weight 400)
 	font_regular = FontVariation.new()
