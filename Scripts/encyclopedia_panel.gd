@@ -66,9 +66,16 @@ var _categories_data: Array = [
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_force_fullscreen_size()
 	_build_flat_topic_list()
 	_build_ui()
+
+func _force_fullscreen_size():
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
 
 func _build_flat_topic_list():
 	for cat in _categories_data:
@@ -76,14 +83,16 @@ func _build_flat_topic_list():
 			_topic_keys.append(topic_key)
 
 func open():
-	visible = true
+	_force_fullscreen_size()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
+	else:
+		visible = true
 	_select_topic(0)
 
 func close():
 	if UITheme:
-		UITheme.fade_out(self)
+		UITheme.fade_out(self, 0.15)
 	else:
 		visible = false
 	GameTime.set_paused(false)
@@ -149,32 +158,35 @@ func _build_ui():
 	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(overlay)
 
-	var panel = PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.offset_left = 60
-	panel.offset_top = 40
-	panel.offset_right = -60
-	panel.offset_bottom = -40
+	var _window = PanelContainer.new()
+	_window.custom_minimum_size = Vector2(1500, 900)
+	_window.set_anchors_preset(Control.PRESET_CENTER)
+	_window.offset_left = -750
+	_window.offset_top = -450
+	_window.offset_right = 750
+	_window.offset_bottom = 450
+	_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_window.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.96, 0.97, 0.99, 1)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color(0, 0, 0, 0.8)
-	panel_style.corner_radius_top_left = 16
-	panel_style.corner_radius_top_right = 16
-	panel_style.corner_radius_bottom_right = 14
-	panel_style.corner_radius_bottom_left = 14
+	var window_style = StyleBoxFlat.new()
+	window_style.bg_color = Color(1, 1, 1, 1)
+	window_style.border_width_left = 3
+	window_style.border_width_top = 3
+	window_style.border_width_right = 3
+	window_style.border_width_bottom = 3
+	window_style.border_color = Color(0, 0, 0, 1)
+	window_style.corner_radius_top_left = 22
+	window_style.corner_radius_top_right = 22
+	window_style.corner_radius_bottom_right = 20
+	window_style.corner_radius_bottom_left = 20
 	if UITheme:
-		UITheme.apply_shadow(panel_style, false)
-	panel.add_theme_stylebox_override("panel", panel_style)
-	add_child(panel)
+		UITheme.apply_shadow(window_style, false)
+	_window.add_theme_stylebox_override("panel", window_style)
+	add_child(_window)
 
 	var main_vbox = VBoxContainer.new()
 	main_vbox.add_theme_constant_override("separation", 0)
-	panel.add_child(main_vbox)
+	_window.add_child(main_vbox)
 
 	_build_header(main_vbox)
 
@@ -187,67 +199,56 @@ func _build_ui():
 	_build_right_panel(body_hbox)
 
 func _build_header(parent: Control):
-	var header = Panel.new()
-	header.custom_minimum_size = Vector2(0, 52)
-
+	var header_panel = Panel.new()
+	header_panel.custom_minimum_size = Vector2(0, 40)
 	var header_style = StyleBoxFlat.new()
 	header_style.bg_color = COLOR_BLUE
-	header_style.corner_radius_top_left = 14
-	header_style.corner_radius_top_right = 14
-	header.add_theme_stylebox_override("panel", header_style)
-	parent.add_child(header)
+	header_style.border_color = Color(0, 0, 0, 1)
+	header_style.corner_radius_top_left = 20
+	header_style.corner_radius_top_right = 20
+	header_panel.add_theme_stylebox_override("panel", header_style)
+	parent.add_child(header_panel)
 
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 20)
-	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_top", 0)
-	margin.add_theme_constant_override("margin_bottom", 0)
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	header.add_child(margin)
-
-	var header_hbox = HBoxContainer.new()
-	header_hbox.add_theme_constant_override("separation", 12)
-	margin.add_child(header_hbox)
-
-	var title_lbl = Label.new()
-	title_lbl.text = tr("ENCYCLOPEDIA_TITLE")
-	title_lbl.add_theme_color_override("font_color", Color.WHITE)
-	title_lbl.add_theme_font_size_override("font_size", 20)
-	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	if UITheme:
-		UITheme.apply_font(title_lbl, "bold")
-	header_hbox.add_child(title_lbl)
+	var title_label = Label.new()
+	title_label.text = tr("ENCYCLOPEDIA_TITLE")
+	title_label.set_anchors_preset(Control.PRESET_CENTER)
+	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	title_label.offset_left = -88
+	title_label.offset_top = -11.5
+	title_label.offset_right = 88
+	title_label.offset_bottom = 11.5
+	title_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(title_label, "bold")
+	header_panel.add_child(title_label)
 
 	var close_btn = Button.new()
-	close_btn.text = "✕"
-	close_btn.custom_minimum_size = Vector2(36, 36)
+	close_btn.text = "X"
 	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	close_btn.offset_left = -51
+	close_btn.offset_top = -15
+	close_btn.offset_right = -24
+	close_btn.offset_bottom = 16
+	close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+	close_btn.size_flags_vertical = Control.SIZE_SHRINK_END
 
-	var cn_normal = StyleBoxFlat.new()
-	cn_normal.bg_color = Color(1, 1, 1, 0.15)
-	cn_normal.corner_radius_top_left = BUTTON_CORNER_RADIUS
-	cn_normal.corner_radius_top_right = BUTTON_CORNER_RADIUS
-	cn_normal.corner_radius_bottom_right = BUTTON_CORNER_RADIUS
-	cn_normal.corner_radius_bottom_left = BUTTON_CORNER_RADIUS
-
-	var cn_hover = StyleBoxFlat.new()
-	cn_hover.bg_color = Color(1, 1, 1, 0.3)
-	cn_hover.corner_radius_top_left = BUTTON_CORNER_RADIUS
-	cn_hover.corner_radius_top_right = BUTTON_CORNER_RADIUS
-	cn_hover.corner_radius_bottom_right = BUTTON_CORNER_RADIUS
-	cn_hover.corner_radius_bottom_left = BUTTON_CORNER_RADIUS
-
-	close_btn.add_theme_stylebox_override("normal", cn_normal)
-	close_btn.add_theme_stylebox_override("hover", cn_hover)
-	close_btn.add_theme_stylebox_override("pressed", cn_hover)
-	close_btn.add_theme_color_override("font_color", Color.WHITE)
-	close_btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	close_btn.add_theme_font_size_override("font_size", 18)
-	if UITheme:
-		UITheme.apply_font(close_btn, "bold")
+	close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	var close_style = StyleBoxFlat.new()
+	close_style.bg_color = Color(1, 1, 1, 1)
+	close_style.corner_radius_top_left = 10
+	close_style.corner_radius_top_right = 10
+	close_style.corner_radius_bottom_right = 10
+	close_style.corner_radius_bottom_left = 10
+	close_btn.add_theme_stylebox_override("normal", close_style)
+	if UITheme: UITheme.apply_font(close_btn, "semibold")
 	close_btn.pressed.connect(close)
-	header_hbox.add_child(close_btn)
+	header_panel.add_child(close_btn)
 
 func _build_left_panel(parent: Control):
 	var left_container = Control.new()
