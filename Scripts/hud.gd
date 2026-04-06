@@ -268,6 +268,44 @@ func _ready():
 	if GameTime.day >= 91:
 		call_deferred("_show_playtest_end")
 
+	# Прогрев тяжёлых панелей — делаем отложенно, чтобы не тормозить первый кадр
+	call_deferred("_preheat_panels")
+
+# === ПРОГРЕВ ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
+# Строим UI при visible=false, чтобы шрифты и ноды оказались в кеше.
+func _preheat_panels():
+	# pm_skill_tree инициализируется сам через call_deferred в _ready(),
+	# поэтому ждём до его готовности перед вызовом _rebuild_tree
+	if pm_skill_tree and pm_skill_tree.has_method("_rebuild_tree"):
+		var was_visible = pm_skill_tree.visible
+		pm_skill_tree.visible = false
+		pm_skill_tree._rebuild_tree()
+		pm_skill_tree.visible = was_visible
+
+	await get_tree().process_frame
+
+	if client_panel and client_panel.has_method("_populate"):
+		var was_visible = client_panel.visible
+		client_panel.visible = false
+		client_panel._populate()
+		client_panel.visible = was_visible
+
+	await get_tree().process_frame
+
+	if _boss_panel and _boss_panel.has_method("_populate"):
+		var was_visible = _boss_panel.visible
+		_boss_panel.visible = false
+		_boss_panel._populate()
+		_boss_panel.visible = was_visible
+
+	await get_tree().process_frame
+
+	if _reports_panel and _reports_panel.has_method("_refresh_content"):
+		var was_visible = _reports_panel.visible
+		_reports_panel.visible = false
+		_reports_panel._refresh_content()
+		_reports_panel.visible = was_visible
+
 # >>> ДОБАВЛЕНО: Функция для обновления FPS каждый кадр
 func _process(_delta):
 	if _fps_label:
