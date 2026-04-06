@@ -2,14 +2,14 @@
 
 importer="csv_translation"
 type="Translation"
-uid="uid://enc0pedia1ocal"
+uid="uid://chimx7kpky2hj"
 
 [deps]
 
-files=["res://Localization/encyclopedia.ru.translation", "res://Localization/encyclopedia.en.translation"]
+files=["res://Localization/encyclopedia.en.translation", "res://Localization/encyclopedia.ru.translation"]
 
 source_file="res://Localization/encyclopedia.csv"
-dest_files=["res://Localization/encyclopedia.ru.translation", "res://Localization/encyclopedia.en.translation"]
+dest_files=["res://Localization/encyclopedia.en.translation", "res://Localization/encyclopedia.ru.translation"]
 
 [params]
 
