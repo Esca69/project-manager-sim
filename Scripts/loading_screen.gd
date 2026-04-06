@@ -1,4 +1,5 @@
 extends Control
+class_name LoadingScreen
 
 # === ЭКРАН ЗАГРУЗКИ ===
 # Показывается при переходе в office.tscn после старта или загрузки игры.
@@ -12,6 +13,11 @@ const TARGET_SCENE = "res://Scenes/office.tscn"
 # Все emoji из игры для прогрева шрифта
 const WARMUP_EMOJIS = "📋👥📊⚡🛡✅🧠🔍💰🏢💼☕📈🤝⏰📝🍽️🎯⬆️❌⏳▶📂🆕⚙📅💻🖥️📁🕐➕🗑🏎️⭐🔔💬📌🎮🔒🏆🤖👔📉🏗️🔥💎🚀🧩💡📦🎓🔧⚠️🪙🎉🩹🧪🕹️🌍📡🛒👨‍💼👩‍💻🧑‍🔧👷💀🫡😊😃😠😢😴🤔🥳😎🫣😐😤😈🫠😵😡🔴🟢🟡⚪🟣🔵🏠🪑💺🖨️📱🔑🔗📎✏️🗂️📤📥🏆📐🎯🛡⚔️🧲🎁🍀🌿🌸🌧️☀️🌙❄️🌊🌈"
 
+# Слот для загрузки сохранения; -1 = нет сохранения (новая игра)
+static var pending_save_slot: int = -1
+# Путь к целевой сцене; если пустой — используется TARGET_SCENE
+static var target_scene_path: String = ""
+
 var _spinner_label: Label
 var _loading_label: Label
 var _stage_label: Label
@@ -19,6 +25,7 @@ var _progress_bar: ProgressBar
 var _spinner_timer: float = 0.0
 var _spinner_index: int = 0
 var _loading_started: bool = false
+var _scene_to_load: String = ""
 
 
 func _tr_or(key: String, fallback: String) -> String:
@@ -49,13 +56,6 @@ func _build_ui():
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 16)
 	center.add_child(vbox)
-
-	# Emoji иконка
-	var emoji_lbl = Label.new()
-	emoji_lbl.text = "⏳"
-	emoji_lbl.add_theme_font_size_override("font_size", 52)
-	emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(emoji_lbl)
 
 	# Текст "Загрузка..."
 	_loading_label = Label.new()
@@ -113,7 +113,27 @@ func _build_ui():
 
 
 func _start_warmup():
-	# Прогреваем emoji шрифт — используем modulate.a = 0.0 (НЕ visible = false!)
+	# Этап 1: показываем экран, рендерим первый кадр
+	_progress_bar.value = 20.0
+	_stage_label.text = _tr_or("MENU_LOADING", "Загрузка...")
+	await get_tree().process_frame
+
+	# Этап 2: загружаем сохранение (если есть)
+	if pending_save_slot > 0:
+		_stage_label.text = _tr_or("LOADING_STAGE_SAVE", "Загрузка сохранения...")
+		await get_tree().process_frame
+		var ok = SaveManager.load_game(pending_save_slot)
+		pending_save_slot = -1
+		if not ok:
+			# Не удалось загрузить сохранение — возвращаемся в главное меню
+			get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
+			return
+	pending_save_slot = -1
+	_progress_bar.value = 40.0
+	await get_tree().process_frame
+
+	# Этап 3: прогреваем emoji шрифт
+	_stage_label.text = _tr_or("LOADING_STAGE_RESOURCES", "Загрузка ресурсов...")
 	var warmup = Label.new()
 	warmup.modulate.a = 0.0
 	warmup.text = WARMUP_EMOJIS
@@ -122,20 +142,20 @@ func _start_warmup():
 		UITheme.apply_font(warmup, "regular")
 	add_child(warmup)
 
-	_progress_bar.value = 20.0
-
-	# Ждём 2 кадра рендера — первый для layout, второй для кеширования глифов
+	# Ждём 4 кадра — достаточно для кеширования глифов
+	await get_tree().process_frame
+	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
 
 	warmup.queue_free()
-	_progress_bar.value = 40.0
+	_progress_bar.value = 60.0
 
-	# Обновляем этап
+	# Этап 4: асинхронная загрузка сцены
 	_stage_label.text = _tr_or("LOADING_STAGE_PREPARING", "Подготовка интерфейса...")
-
-	# Запускаем асинхронную загрузку сцены
-	ResourceLoader.load_threaded_request(TARGET_SCENE)
+	_scene_to_load = target_scene_path if target_scene_path != "" else TARGET_SCENE
+	target_scene_path = ""
+	ResourceLoader.load_threaded_request(_scene_to_load)
 	_loading_started = true
 
 
@@ -153,21 +173,21 @@ func _process(delta: float):
 		return
 
 	var progress: Array = []
-	var status = ResourceLoader.load_threaded_get_status(TARGET_SCENE, progress)
+	var status = ResourceLoader.load_threaded_get_status(_scene_to_load, progress)
 
 	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		var scene_progress = progress[0] if progress.size() > 0 else 0.0
-		_progress_bar.value = 40.0 + scene_progress * 60.0
+		_progress_bar.value = 60.0 + scene_progress * 40.0
 	elif status == ResourceLoader.THREAD_LOAD_LOADED:
 		_progress_bar.value = 100.0
 		_stage_label.text = _tr_or("LOADING_STAGE_DONE", "Почти готово...")
 		_loading_started = false
-		var packed = ResourceLoader.load_threaded_get(TARGET_SCENE)
+		var packed = ResourceLoader.load_threaded_get(_scene_to_load)
 		if packed:
 			get_tree().change_scene_to_packed(packed)
 		else:
-			get_tree().change_scene_to_file(TARGET_SCENE)
+			get_tree().change_scene_to_file(_scene_to_load)
 	elif status == ResourceLoader.THREAD_LOAD_FAILED:
 		push_error("[LoadingScreen] Threaded load failed, falling back to sync")
 		_loading_started = false
-		get_tree().change_scene_to_file(TARGET_SCENE)
+		get_tree().change_scene_to_file(_scene_to_load)
