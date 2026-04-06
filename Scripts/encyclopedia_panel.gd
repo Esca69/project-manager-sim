@@ -1,0 +1,387 @@
+extends Control
+
+const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
+const COLOR_LIGHT_GRAY = Color(0.95, 0.95, 0.97, 1)
+const COLOR_BTN_HOVER = Color(0.9, 0.93, 1.0, 1)
+const COLOR_BTN_ACTIVE = Color(0.85, 0.9, 1.0, 1)
+
+var _topic_keys: Array = []
+var _topic_buttons: Array = []
+var _active_index: int = -1
+var _content_title: Label
+var _content_label: RichTextLabel
+var _content_scroll: ScrollContainer
+var _topics_vbox: VBoxContainer
+
+var _categories_data: Array = [
+	{"key": "ENCYCLOPEDIA_CAT_BASICS", "topics": [
+		"ENCYCLOPEDIA_TOPIC_CONTROLS",
+		"ENCYCLOPEDIA_TOPIC_TIME",
+		"ENCYCLOPEDIA_TOPIC_UI",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_PROJECTS", "topics": [
+		"ENCYCLOPEDIA_TOPIC_PROJECTS",
+		"ENCYCLOPEDIA_TOPIC_DEADLINES",
+		"ENCYCLOPEDIA_TOPIC_PROJECT_MGMT",
+		"ENCYCLOPEDIA_TOPIC_CRUNCH",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_EMPLOYEES", "topics": [
+		"ENCYCLOPEDIA_TOPIC_EMPLOYEES",
+		"ENCYCLOPEDIA_TOPIC_MOOD",
+		"ENCYCLOPEDIA_TOPIC_EFFICIENCY",
+		"ENCYCLOPEDIA_TOPIC_TRAITS",
+		"ENCYCLOPEDIA_TOPIC_PERSONALITY",
+		"ENCYCLOPEDIA_TOPIC_BURNOUT",
+		"ENCYCLOPEDIA_TOPIC_RELATIONSHIPS",
+		"ENCYCLOPEDIA_TOPIC_HIRING",
+		"ENCYCLOPEDIA_TOPIC_RAISES",
+		"ENCYCLOPEDIA_TOPIC_VACATIONS",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_CLIENTS", "topics": [
+		"ENCYCLOPEDIA_TOPIC_CLIENTS",
+		"ENCYCLOPEDIA_TOPIC_LOYALTY",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_BOSS", "topics": [
+		"ENCYCLOPEDIA_TOPIC_BOSS_TRUST",
+		"ENCYCLOPEDIA_TOPIC_BOSS_QUESTS",
+		"ENCYCLOPEDIA_TOPIC_BOSS_EVENTS",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_FINANCE", "topics": [
+		"ENCYCLOPEDIA_TOPIC_FINANCE",
+		"ENCYCLOPEDIA_TOPIC_PM_LIFE",
+		"ENCYCLOPEDIA_TOPIC_PARTNERSHIP",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_PM_SKILLS", "topics": [
+		"ENCYCLOPEDIA_TOPIC_PM_SKILLS",
+		"ENCYCLOPEDIA_TOPIC_PM_XP",
+	]},
+	{"key": "ENCYCLOPEDIA_CAT_OFFICE", "topics": [
+		"ENCYCLOPEDIA_TOPIC_UPGRADES",
+		"ENCYCLOPEDIA_TOPIC_EVENTS",
+		"ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS",
+	]},
+]
+
+func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	visible = false
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	_build_flat_topic_list()
+	_build_ui()
+
+func _build_flat_topic_list():
+	for cat in _categories_data:
+		for topic_key in cat["topics"]:
+			_topic_keys.append(topic_key)
+
+func open():
+	visible = true
+	if UITheme:
+		UITheme.fade_in(self, 0.2)
+	_select_topic(0)
+
+func close():
+	if UITheme:
+		UITheme.fade_out(self)
+	else:
+		visible = false
+	GameTime.set_paused(false)
+
+func _input(event: InputEvent):
+	if not visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			close()
+			get_viewport().set_input_as_handled()
+
+func _select_topic(index: int):
+	if index < 0 or index >= _topic_keys.size():
+		return
+	_active_index = index
+	for i in _topic_buttons.size():
+		_style_topic_button(_topic_buttons[i], i == index)
+	var topic_key = _topic_keys[index]
+	if _content_title:
+		_content_title.text = tr(topic_key + "_TITLE")
+	if _content_label:
+		_content_label.text = tr(topic_key + "_BODY")
+	if _content_scroll:
+		_content_scroll.scroll_vertical = 0
+
+func _style_topic_button(btn: Button, active: bool):
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left = 8
+	if active:
+		style.bg_color = COLOR_BTN_ACTIVE
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_color = COLOR_BLUE
+	else:
+		style.bg_color = Color.WHITE
+	btn.add_theme_stylebox_override("normal", style)
+
+	var hover_style = StyleBoxFlat.new()
+	hover_style.corner_radius_top_left = 8
+	hover_style.corner_radius_top_right = 8
+	hover_style.corner_radius_bottom_right = 8
+	hover_style.corner_radius_bottom_left = 8
+	hover_style.bg_color = COLOR_BTN_ACTIVE if active else COLOR_BTN_HOVER
+	if active:
+		hover_style.border_width_left = 2
+		hover_style.border_width_top = 2
+		hover_style.border_width_right = 2
+		hover_style.border_width_bottom = 2
+		hover_style.border_color = COLOR_BLUE
+	btn.add_theme_stylebox_override("hover", hover_style)
+	btn.add_theme_stylebox_override("pressed", hover_style)
+
+func _build_ui():
+	var overlay = ColorRect.new()
+	overlay.color = Color(0, 0, 0, 0.45)
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+
+	var panel = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.offset_left = 60
+	panel.offset_top = 40
+	panel.offset_right = -60
+	panel.offset_bottom = -40
+
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.96, 0.97, 0.99, 1)
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(0, 0, 0, 0.8)
+	panel_style.corner_radius_top_left = 16
+	panel_style.corner_radius_top_right = 16
+	panel_style.corner_radius_bottom_right = 14
+	panel_style.corner_radius_bottom_left = 14
+	if UITheme:
+		UITheme.apply_shadow(panel_style, false)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	add_child(panel)
+
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 0)
+	panel.add_child(main_vbox)
+
+	_build_header(main_vbox)
+
+	var body_hbox = HBoxContainer.new()
+	body_hbox.add_theme_constant_override("separation", 0)
+	body_hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	main_vbox.add_child(body_hbox)
+
+	_build_left_panel(body_hbox)
+	_build_right_panel(body_hbox)
+
+func _build_header(parent: Control):
+	var header = Panel.new()
+	header.custom_minimum_size = Vector2(0, 52)
+
+	var header_style = StyleBoxFlat.new()
+	header_style.bg_color = COLOR_BLUE
+	header_style.corner_radius_top_left = 14
+	header_style.corner_radius_top_right = 14
+	header.add_theme_stylebox_override("panel", header_style)
+	parent.add_child(header)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 0)
+	margin.add_theme_constant_override("margin_bottom", 0)
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	header.add_child(margin)
+
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 12)
+	margin.add_child(header_hbox)
+
+	var title_lbl = Label.new()
+	title_lbl.text = tr("ENCYCLOPEDIA_TITLE")
+	title_lbl.add_theme_color_override("font_color", Color.WHITE)
+	title_lbl.add_theme_font_size_override("font_size", 20)
+	title_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if UITheme:
+		UITheme.apply_font(title_lbl, "bold")
+	header_hbox.add_child(title_lbl)
+
+	var close_btn = Button.new()
+	close_btn.text = "✕"
+	close_btn.custom_minimum_size = Vector2(36, 36)
+	close_btn.focus_mode = Control.FOCUS_NONE
+
+	var cn_normal = StyleBoxFlat.new()
+	cn_normal.bg_color = Color(1, 1, 1, 0.15)
+	cn_normal.corner_radius_top_left = 8
+	cn_normal.corner_radius_top_right = 8
+	cn_normal.corner_radius_bottom_right = 8
+	cn_normal.corner_radius_bottom_left = 8
+
+	var cn_hover = StyleBoxFlat.new()
+	cn_hover.bg_color = Color(1, 1, 1, 0.3)
+	cn_hover.corner_radius_top_left = 8
+	cn_hover.corner_radius_top_right = 8
+	cn_hover.corner_radius_bottom_right = 8
+	cn_hover.corner_radius_bottom_left = 8
+
+	close_btn.add_theme_stylebox_override("normal", cn_normal)
+	close_btn.add_theme_stylebox_override("hover", cn_hover)
+	close_btn.add_theme_stylebox_override("pressed", cn_hover)
+	close_btn.add_theme_color_override("font_color", Color.WHITE)
+	close_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	close_btn.add_theme_font_size_override("font_size", 18)
+	if UITheme:
+		UITheme.apply_font(close_btn, "bold")
+	close_btn.pressed.connect(close)
+	header_hbox.add_child(close_btn)
+
+func _build_left_panel(parent: Control):
+	var left_container = Control.new()
+	left_container.custom_minimum_size = Vector2(280, 0)
+	left_container.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	left_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(left_container)
+
+	var left_bg = ColorRect.new()
+	left_bg.color = COLOR_LIGHT_GRAY
+	left_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	left_container.add_child(left_bg)
+
+	var right_border = ColorRect.new()
+	right_border.color = Color(0.8, 0.82, 0.87, 1)
+	right_border.custom_minimum_size = Vector2(1, 0)
+	right_border.anchor_left = 1.0
+	right_border.anchor_right = 1.0
+	right_border.anchor_top = 0.0
+	right_border.anchor_bottom = 1.0
+	right_border.offset_left = -1
+	right_border.offset_right = 0
+	left_container.add_child(right_border)
+
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	left_container.add_child(scroll)
+
+	var outer_margin = MarginContainer.new()
+	outer_margin.add_theme_constant_override("margin_left", 10)
+	outer_margin.add_theme_constant_override("margin_right", 10)
+	outer_margin.add_theme_constant_override("margin_top", 10)
+	outer_margin.add_theme_constant_override("margin_bottom", 10)
+	outer_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(outer_margin)
+
+	_topics_vbox = VBoxContainer.new()
+	_topics_vbox.add_theme_constant_override("separation", 3)
+	_topics_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer_margin.add_child(_topics_vbox)
+
+	_build_topic_buttons()
+
+func _build_topic_buttons():
+	var btn_index = 0
+	for cat_data in _categories_data:
+		var cat_margin = MarginContainer.new()
+		cat_margin.add_theme_constant_override("margin_left", 4)
+		cat_margin.add_theme_constant_override("margin_top", 10)
+		cat_margin.add_theme_constant_override("margin_bottom", 2)
+		cat_margin.add_theme_constant_override("margin_right", 0)
+		_topics_vbox.add_child(cat_margin)
+
+		var cat_lbl = Label.new()
+		cat_lbl.text = tr(cat_data["key"])
+		cat_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		cat_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme:
+			UITheme.apply_font(cat_lbl, "bold")
+		cat_margin.add_child(cat_lbl)
+
+		for topic_key in cat_data["topics"]:
+			var btn = Button.new()
+			btn.text = tr(topic_key + "_TITLE")
+			btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			btn.custom_minimum_size = Vector2(240, 30)
+			btn.focus_mode = Control.FOCUS_NONE
+			btn.add_theme_font_size_override("font_size", 14)
+			btn.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+			btn.add_theme_color_override("font_hover_color", COLOR_BLUE)
+			btn.add_theme_color_override("font_pressed_color", COLOR_BLUE)
+			if UITheme:
+				UITheme.apply_font(btn, "regular")
+			_style_topic_button(btn, false)
+			var idx = btn_index
+			btn.pressed.connect(_select_topic.bind(idx))
+			_topic_buttons.append(btn)
+			_topics_vbox.add_child(btn)
+			btn_index += 1
+
+func _build_right_panel(parent: Control):
+	var right_container = Control.new()
+	right_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(right_container)
+
+	var right_bg = ColorRect.new()
+	right_bg.color = Color.WHITE
+	right_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	right_container.add_child(right_bg)
+
+	var outer_vbox = VBoxContainer.new()
+	outer_vbox.add_theme_constant_override("separation", 0)
+	outer_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	right_container.add_child(outer_vbox)
+
+	var title_margin = MarginContainer.new()
+	title_margin.add_theme_constant_override("margin_left", 30)
+	title_margin.add_theme_constant_override("margin_right", 30)
+	title_margin.add_theme_constant_override("margin_top", 24)
+	title_margin.add_theme_constant_override("margin_bottom", 8)
+	outer_vbox.add_child(title_margin)
+
+	_content_title = Label.new()
+	_content_title.text = ""
+	_content_title.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+	_content_title.add_theme_font_size_override("font_size", 22)
+	if UITheme:
+		UITheme.apply_font(_content_title, "bold")
+	title_margin.add_child(_content_title)
+
+	var sep = ColorRect.new()
+	sep.color = Color(0.85, 0.87, 0.92, 1)
+	sep.custom_minimum_size = Vector2(0, 1)
+	outer_vbox.add_child(sep)
+
+	_content_scroll = ScrollContainer.new()
+	_content_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_content_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	outer_vbox.add_child(_content_scroll)
+
+	var content_margin = MarginContainer.new()
+	content_margin.add_theme_constant_override("margin_left", 30)
+	content_margin.add_theme_constant_override("margin_right", 30)
+	content_margin.add_theme_constant_override("margin_top", 16)
+	content_margin.add_theme_constant_override("margin_bottom", 30)
+	content_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_content_scroll.add_child(content_margin)
+
+	_content_label = RichTextLabel.new()
+	_content_label.bbcode_enabled = true
+	_content_label.fit_content = true
+	_content_label.scroll_active = false
+	_content_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_content_label.add_theme_font_size_override("normal_font_size", 15)
+	_content_label.add_theme_color_override("default_color", Color(0.15, 0.15, 0.15, 1))
+	content_margin.add_child(_content_label)

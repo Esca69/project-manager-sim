@@ -66,6 +66,23 @@ func _ready():
 	if gs and not gs.office_upgrade_purchased.is_connected(_on_office_upgrade_purchased):
 		gs.office_upgrade_purchased.connect(_on_office_upgrade_purchased)
 
+	# Encyclopedia button — always visible, last in the bar
+	var enc_btn = Button.new()
+	enc_btn.text = tr("BOTTOMBAR_ENCYCLOPEDIA")
+	enc_btn.custom_minimum_size = Vector2(180, 36)
+	enc_btn.focus_mode = Control.FOCUS_NONE
+	enc_btn.add_theme_stylebox_override("normal", btn_style_normal)
+	enc_btn.add_theme_stylebox_override("hover", btn_style_hover)
+	enc_btn.add_theme_stylebox_override("pressed", btn_style_hover)
+	enc_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	enc_btn.add_theme_color_override("font_hover_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	enc_btn.add_theme_color_override("font_pressed_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	enc_btn.add_theme_font_size_override("font_size", 15)
+	if UITheme:
+		UITheme.apply_font(enc_btn, "semibold")
+	enc_btn.pressed.connect(_on_tab_pressed.bind("encyclopedia"))
+	hbox.add_child(enc_btn)
+
 func _update_projects_btn_visibility():
 	if _projects_btn == null:
 		return
