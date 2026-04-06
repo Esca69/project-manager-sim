@@ -4,6 +4,7 @@ const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_LIGHT_GRAY = Color(0.95, 0.95, 0.97, 1)
 const COLOR_BTN_HOVER = Color(0.9, 0.93, 1.0, 1)
 const COLOR_BTN_ACTIVE = Color(0.85, 0.9, 1.0, 1)
+const BUTTON_CORNER_RADIUS = 8
 
 var _topic_keys: Array = []
 var _topic_buttons: Array = []
@@ -111,10 +112,10 @@ func _select_topic(index: int):
 
 func _style_topic_button(btn: Button, active: bool):
 	var style = StyleBoxFlat.new()
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left = 8
+	style.corner_radius_top_left = BUTTON_CORNER_RADIUS
+	style.corner_radius_top_right = BUTTON_CORNER_RADIUS
+	style.corner_radius_bottom_right = BUTTON_CORNER_RADIUS
+	style.corner_radius_bottom_left = BUTTON_CORNER_RADIUS
 	if active:
 		style.bg_color = COLOR_BTN_ACTIVE
 		style.border_width_left = 2
@@ -127,10 +128,10 @@ func _style_topic_button(btn: Button, active: bool):
 	btn.add_theme_stylebox_override("normal", style)
 
 	var hover_style = StyleBoxFlat.new()
-	hover_style.corner_radius_top_left = 8
-	hover_style.corner_radius_top_right = 8
-	hover_style.corner_radius_bottom_right = 8
-	hover_style.corner_radius_bottom_left = 8
+	hover_style.corner_radius_top_left = BUTTON_CORNER_RADIUS
+	hover_style.corner_radius_top_right = BUTTON_CORNER_RADIUS
+	hover_style.corner_radius_bottom_right = BUTTON_CORNER_RADIUS
+	hover_style.corner_radius_bottom_left = BUTTON_CORNER_RADIUS
 	hover_style.bg_color = COLOR_BTN_ACTIVE if active else COLOR_BTN_HOVER
 	if active:
 		hover_style.border_width_left = 2
@@ -225,17 +226,17 @@ func _build_header(parent: Control):
 
 	var cn_normal = StyleBoxFlat.new()
 	cn_normal.bg_color = Color(1, 1, 1, 0.15)
-	cn_normal.corner_radius_top_left = 8
-	cn_normal.corner_radius_top_right = 8
-	cn_normal.corner_radius_bottom_right = 8
-	cn_normal.corner_radius_bottom_left = 8
+	cn_normal.corner_radius_top_left = BUTTON_CORNER_RADIUS
+	cn_normal.corner_radius_top_right = BUTTON_CORNER_RADIUS
+	cn_normal.corner_radius_bottom_right = BUTTON_CORNER_RADIUS
+	cn_normal.corner_radius_bottom_left = BUTTON_CORNER_RADIUS
 
 	var cn_hover = StyleBoxFlat.new()
 	cn_hover.bg_color = Color(1, 1, 1, 0.3)
-	cn_hover.corner_radius_top_left = 8
-	cn_hover.corner_radius_top_right = 8
-	cn_hover.corner_radius_bottom_right = 8
-	cn_hover.corner_radius_bottom_left = 8
+	cn_hover.corner_radius_top_left = BUTTON_CORNER_RADIUS
+	cn_hover.corner_radius_top_right = BUTTON_CORNER_RADIUS
+	cn_hover.corner_radius_bottom_right = BUTTON_CORNER_RADIUS
+	cn_hover.corner_radius_bottom_left = BUTTON_CORNER_RADIUS
 
 	close_btn.add_theme_stylebox_override("normal", cn_normal)
 	close_btn.add_theme_stylebox_override("hover", cn_hover)
