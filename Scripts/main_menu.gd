@@ -556,13 +556,8 @@ func _on_continue_pressed():
 		_btn_continue.disabled = false
 		_loading_save = false
 		return
-	var success = SaveManager.load_game(last_slot)
-	if success:
-		get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
-	else:
-		_btn_continue.text = "▶  " + tr("MENU_CONTINUE")
-		_btn_continue.disabled = false
-		_loading_save = false
+	LoadingScreen.pending_save_slot = last_slot
+	get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
 
 func _on_new_game_pressed():
 	_slot_mode = "new_game"
@@ -1062,11 +1057,8 @@ func _load_from_slot(slot: int):
 	if _loading_save:
 		return
 	_loading_save = true
-	var success = SaveManager.load_game(slot)
-	if success:
-		get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
-	else:
-		_loading_save = false
+	LoadingScreen.pending_save_slot = slot
+	get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
 
 func _on_slot_delete_pressed(slot: int):
 	_open_confirm_dialog("delete", slot)
