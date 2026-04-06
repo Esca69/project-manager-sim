@@ -308,7 +308,7 @@ func _build_topic_buttons():
 		cat_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 		cat_lbl.add_theme_font_size_override("font_size", 13)
 		if UITheme:
-			UITheme.apply_font(cat_lbl, "bold")
+			UITheme.apply_font(cat_lbl, "semibold")
 		cat_margin.add_child(cat_lbl)
 
 		for topic_key in cat_data["topics"]:
@@ -355,10 +355,10 @@ func _build_right_panel(parent: Control):
 
 	_content_title = Label.new()
 	_content_title.text = ""
-	_content_title.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
-	_content_title.add_theme_font_size_override("font_size", 22)
+	_content_title.add_theme_color_override("font_color", COLOR_BLUE)
+	_content_title.add_theme_font_size_override("font_size", 20)
 	if UITheme:
-		UITheme.apply_font(_content_title, "bold")
+		UITheme.apply_font(_content_title, "semibold")
 	title_margin.add_child(_content_title)
 
 	var sep = ColorRect.new()
@@ -386,4 +386,9 @@ func _build_right_panel(parent: Control):
 	_content_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_content_label.add_theme_font_size_override("normal_font_size", 15)
 	_content_label.add_theme_color_override("default_color", Color(0.15, 0.15, 0.15, 1))
+	if UITheme:
+		UITheme.apply_font(_content_label, "regular")
+		# Make [b] tags render as semibold instead of full bold
+		if UITheme.font_semibold:
+			_content_label.add_theme_font_override("bold_font", UITheme.font_semibold)
 	content_margin.add_child(_content_label)
