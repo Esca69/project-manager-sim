@@ -66,7 +66,12 @@ func _ready():
 	if gs and not gs.office_upgrade_purchased.is_connected(_on_office_upgrade_purchased):
 		gs.office_upgrade_purchased.connect(_on_office_upgrade_purchased)
 
-	# Encyclopedia button — always visible, last in the bar
+	# Spacer to push encyclopedia button to the far right
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(spacer)
+
+	# Encyclopedia button — always visible, rightmost in the bar
 	var enc_btn = Button.new()
 	enc_btn.text = tr("BOTTOMBAR_ENCYCLOPEDIA")
 	enc_btn.custom_minimum_size = Vector2(180, 36)
