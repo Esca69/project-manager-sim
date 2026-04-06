@@ -129,7 +129,7 @@ work_is_fun={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://Localization/translations.en.translation", "res://Localization/translations.ru.translation")
+locale/translations=PackedStringArray("res://Localization/translations.en.translation", "res://Localization/translations.ru.translation", "res://Localization/encyclopedia.en.translation", "res://Localization/encyclopedia.ru.translation")
 locale/test="ru"
 
 [rendering]

@@ -101,6 +101,9 @@ var _personal_balance_label: Label
 # === REPORTS PANEL ===
 var _reports_panel: Control
 
+# === ENCYCLOPEDIA PANEL ===
+var _encyclopedia_panel: Control
+
 # >>> ДОБАВЛЕНО: Переменная для FPS
 var _fps_label: Label
 
@@ -253,6 +256,9 @@ func _ready():
 
 	# === REPORTS: Создаём панель отчётов ===
 	_build_reports_panel()
+
+	# === ENCYCLOPEDIA: Создаём панель энциклопедии ===
+	_build_encyclopedia_panel()
 
 	# === PLAYTEST CAP: Счётчик дней и экран завершения ===
 	_build_playtest_label()
@@ -685,6 +691,8 @@ func is_any_menu_open() -> bool:
 
 	if _reports_panel and _reports_panel.visible: return true
 
+	if _encyclopedia_panel and _encyclopedia_panel.visible: return true
+
 	return false
 
 func _on_project_finished_xp(proj):
@@ -910,6 +918,23 @@ func _on_bottom_tab_pressed(tab_name: String):
 				if _my_life_panel: _my_life_panel.visible = false
 				if _reports_panel: _reports_panel.visible = false
 				project_list_menu.open_menu()
+		"encyclopedia":
+			if _encyclopedia_panel and _encyclopedia_panel.visible:
+				if UITheme:
+					UITheme.fade_out(_encyclopedia_panel)
+				else:
+					_encyclopedia_panel.visible = false
+				GameTime.set_paused(false)
+			elif _encyclopedia_panel:
+				employee_roster.visible = false
+				pm_skill_tree.visible = false
+				client_panel.visible = false
+				if _boss_panel: _boss_panel.visible = false
+				if _my_life_panel: _my_life_panel.visible = false
+				if _reports_panel: _reports_panel.visible = false
+				project_list_menu.visible = false
+				_encyclopedia_panel.open()
+				GameTime.set_paused(true)
 
 # === ПРИНУДИТЕЛЬНАЯ ОТПРАВКА ВСЕХ СОТРУДНИКОВ ДОМОЙ ===
 func _dismiss_all_employees():
@@ -1138,6 +1163,14 @@ func _build_reports_panel():
 	_reports_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_reports_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_reports_panel)
+
+func _build_encyclopedia_panel():
+	var script = load("res://Scripts/encyclopedia_panel.gd")
+	_encyclopedia_panel = Control.new()
+	_encyclopedia_panel.set_script(script)
+	_encyclopedia_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_encyclopedia_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_encyclopedia_panel)
 
 func open_boss_event(event_data: Dictionary):
 	if _boss_event_popup and _boss_event_popup.has_method("open"):

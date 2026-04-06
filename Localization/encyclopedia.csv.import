@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://enc0pedia1ocal"
+
+[deps]
+
+files=["res://Localization/encyclopedia.ru.translation", "res://Localization/encyclopedia.en.translation"]
+
+source_file="res://Localization/encyclopedia.csv"
+dest_files=["res://Localization/encyclopedia.ru.translation", "res://Localization/encyclopedia.en.translation"]
+
+[params]
+
+compress=true
+delimiter=0
