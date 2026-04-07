@@ -76,6 +76,7 @@ func open_assignment_list(desk_node):
 	GameTime.set_paused(true)
 	target_desk = desk_node
 	_refresh_list()
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
@@ -156,6 +157,7 @@ func _on_close_pressed():
 	if not _was_paused:
 		GameTime.set_paused(false)
 	target_desk = null
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
