@@ -23,8 +23,8 @@ const MIN_TIMELINE_DAYS = 7.0
 const COL_W_ROLE = 60
 const COL_W_ASSIGNEE = 260
 const COL_W_EFFICIENCY = 120
-const COL_W_AVG_PROGRESS = 100
-const COL_W_PROGRESS = 100
+const COL_W_AVG_PROGRESS = 130
+const COL_W_PROGRESS = 130
 
 # === CRUNCH TIME: UI элементы ===
 var _crunch_btn: Button = null
