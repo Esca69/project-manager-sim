@@ -6,6 +6,7 @@ var skill_points: int = 0
 
 signal xp_changed(new_xp: int, new_skill_points: int)
 signal skill_unlocked(skill_id: String)
+signal level_up(new_level: int)
 
 # === META PROGRESSION ===
 var personal_balance: int = 0
@@ -368,6 +369,7 @@ func _ready():
 
 # === XP ===
 func add_xp(amount: int):
+	var old_level = get_level()
 	xp += amount
 	while true:
 		var next_index = _last_threshold_index + 1
@@ -380,6 +382,8 @@ func add_xp(amount: int):
 		else:
 			break
 	emit_signal("xp_changed", xp, skill_points)
+	if get_level() > old_level:
+		emit_signal("level_up", get_level())
 
 # === УРОВЕНЬ ===
 func get_level() -> int:

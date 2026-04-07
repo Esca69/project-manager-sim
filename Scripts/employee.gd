@@ -125,6 +125,12 @@ var _toilet_ban_minutes_left: float = 0.0
 # === RAISES: Иконка ❗ над головой ===
 var _raise_bubble: Node2D = null
 
+# === NO-DESK: Иконка 🪑 над головой (работает но нет стола) ===
+var _no_desk_bubble: Node2D = null
+
+# === NO-WORK: Кулдаун периодической мысли о безделье ===
+var _no_work_bubble_cooldown: float = 0.0
+
 # === АУРА PM: "ПОД ПРИСМОТРОМ" ===
 var _in_pm_aura: bool = false
 var _pm_aura_annoyance_timer: float = 0.0  # Игровые минуты непрерывного нахождения в ауре
@@ -797,6 +803,14 @@ func _on_time_tick(_hour, _minute):
 	if _minute == 0:
 		_update_neighbor_bonus()
 
+	# === NO-WORK: Периодический бабл если не назначен на проект ===
+	var work_states = [State.WORKING, State.WANDERING, State.WANDER_PAUSE, State.IDLE]
+	if current_state in work_states and _is_work_time() and not _is_assigned_to_project() and not data.is_requesting_raise:
+		_no_work_bubble_cooldown -= 1.0
+		if _no_work_bubble_cooldown <= 0:
+			show_thought_bubble("💤", 4.0)
+			_no_work_bubble_cooldown = randf_range(30.0, 60.0)
+
 	if not data.has_trait("early_bird"): return
 	if _early_bird_start_hour < 0: return
 	if _early_bird_arrived: return
@@ -837,14 +851,14 @@ func _process(delta):
 	if cam and debug_label:
 		var z = cam.zoom.x
 		var target_alpha = 0.0
-		
-		if z >= 0.8:
+
+		if z >= 0.70:
 			target_alpha = 1.0
-		elif z > 1.05:
-			target_alpha = inverse_lerp(1.25, 1.45, z)
+		elif z > 0.65:
+			target_alpha = inverse_lerp(0.65, 0.70, z)
 		else:
 			target_alpha = 0.0
-		
+
 		var current_color = debug_label.modulate
 		current_color.a = lerp(current_color.a, target_alpha, 8.0 * delta)
 		debug_label.modulate = current_color
@@ -866,6 +880,14 @@ func _physics_process(delta):
 	else:
 		if is_instance_valid(_raise_bubble):
 			_hide_raise_bubble()
+
+	# === NO-DESK: Постоянная иконка если в WORKING-состоянии но нет стола ===
+	if data and not data.is_requesting_raise and current_state == State.WORKING and my_desk_position == Vector2.ZERO:
+		if not is_instance_valid(_no_desk_bubble):
+			_show_no_desk_bubble()
+	else:
+		if is_instance_valid(_no_desk_bubble):
+			_hide_no_desk_bubble()
 
 	if _should_go_home:
 		_should_go_home = false
@@ -2342,6 +2364,63 @@ func _hide_raise_bubble():
 	if is_instance_valid(_raise_bubble):
 		_raise_bubble.queue_free()
 		_raise_bubble = null
+
+func _show_no_desk_bubble():
+	if is_instance_valid(_no_desk_bubble):
+		return
+
+	_no_desk_bubble = Node2D.new()
+	add_child(_no_desk_bubble)
+	_no_desk_bubble.position = Vector2(0, -210)
+	_no_desk_bubble.z_index = 100
+
+	var panel = Panel.new()
+	_no_desk_bubble.add_child(panel)
+	panel.custom_minimum_size = Vector2(72, 72)
+	panel.size = Vector2(72, 72)
+	panel.position = Vector2(-36, -36)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
+	style.border_width_bottom = 2
+	style.border_width_top = 2
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_color = Color(0.2, 0.2, 0.2, 1.0)
+	style.corner_radius_bottom_left = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.shadow_color = Color(0, 0, 0, 0.1)
+	style.shadow_size = 4
+	panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	panel.add_child(label)
+	label.custom_minimum_size = Vector2(72, 72)
+	label.size = Vector2(72, 72)
+	label.position = Vector2.ZERO
+	label.text = "🪑"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var label_settings = LabelSettings.new()
+	label_settings.font_size = 42
+	label.label_settings = label_settings
+
+func _hide_no_desk_bubble():
+	if is_instance_valid(_no_desk_bubble):
+		_no_desk_bubble.queue_free()
+		_no_desk_bubble = null
+
+func _is_assigned_to_project() -> bool:
+	var pm = get_node_or_null("/root/ProjectManager")
+	if pm == null or not data:
+		return false
+	for project in pm.active_projects:
+		for stage in project.stages:
+			if data in stage.workers:
+				return true
+	return false
 
 func can_discuss_raise() -> bool:
 	if not data: return false
