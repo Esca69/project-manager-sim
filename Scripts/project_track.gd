@@ -322,8 +322,8 @@ func _build_extra_columns():
 			_avg_progress_labels.append(null)
 		else:
 			var avg_lbl = Label.new()
-			var worker_name = worker.get_display_name() if worker.has_method("get_display_name") else str(worker.employee_name)
-			var worker_id = str(worker.employee_name) if ("employee_name" in worker and worker.employee_name != null) else ""
+			var worker_name = worker.get_display_name()
+			var worker_id = str(worker.employee_name)
 			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
 			avg_lbl.text = "%.1f" % avg_val
 			avg_lbl.add_theme_color_override("font_color", color_main_text)
@@ -372,8 +372,8 @@ func update_avg_progress_live():
 		if not lbl or not is_instance_valid(lbl):
 			continue
 		var worker = workers[i]
-		var worker_name = worker.get_display_name() if worker.has_method("get_display_name") else str(worker.employee_name)
-		var worker_id = str(worker.employee_name) if ("employee_name" in worker and worker.employee_name != null) else ""
+		var worker_name = worker.get_display_name()
+		var worker_id = str(worker.employee_name)
 		var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
 		lbl.text = "%.1f" % avg_val
 
