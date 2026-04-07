@@ -173,6 +173,8 @@ func _ready():
 
 	# Колонка Ø Прогр./день
 	var vs_avg = VSeparator.new()
+	vs_avg.custom_minimum_size = Vector2(2, 0)
+	vs_avg.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	var col_avg = Label.new()
 	col_avg.text = tr("TRACK_COL_AVG_PROGRESS")
 	col_avg.custom_minimum_size = Vector2(COL_W_AVG_PROGRESS, 0)
@@ -191,6 +193,8 @@ func _ready():
 		table_header_node.add_child(col_avg)
 		table_header_node.move_child(col_avg, insert_idx + 2)
 		var vs_progress_hdr = VSeparator.new()
+		vs_progress_hdr.custom_minimum_size = Vector2(2, 0)
+		vs_progress_hdr.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		table_header_node.add_child(vs_progress_hdr)
 		table_header_node.move_child(vs_progress_hdr, insert_idx + 3)
 	else:
