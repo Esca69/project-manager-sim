@@ -14,6 +14,7 @@ signal worker_removed(track_index, worker_index)
 const BAR_HEIGHT = 24.0
 const BUTTON_HEIGHT = 30.0
 const BASE_TRACK_HEIGHT = 60.0
+const AVG_PROGRESS_DAYS = 5
 
 var stage_index: int = -1
 var stage_data: Dictionary = {}
@@ -25,6 +26,14 @@ var _buttons_container: VBoxContainer = null
 # Цвета для нового дизайна
 var color_main_text = Color(0.17254902, 0.30980393, 0.5686275, 1) # Тот самый темно-синий
 var color_hover_bg = Color(0.17254902, 0.30980393, 0.5686275, 1)
+
+# === НОВЫЕ КОЛОНКИ ===
+var _efficiency_labels: Array = []      # Label для каждого worker
+var _avg_progress_labels: Array = []    # Label для каждого worker
+var _efficiency_wrapper: CenterContainer = null
+var _avg_progress_wrapper: CenterContainer = null
+var _vs_eff: VSeparator = null          # Разделитель перед колонкой эффективности
+var _vs_avg: VSeparator = null          # Разделитель перед колонкой среднего прогресса
 
 func setup(index: int, data: Dictionary, readonly: bool = false):
 	stage_index = index
@@ -51,6 +60,8 @@ func setup(index: int, data: Dictionary, readonly: bool = false):
 	visual_bar.visible = false
 	progress_bar.visible = false
 
+	call_deferred("_build_extra_columns")
+
 func _ready():
 	# ИСПРАВЛЕНИЕ: Пытаемся найти заголовки столбцов (если они лежат выше в иерархии или в самом треке)
 	# Обычно они находятся в шапке таблицы, но на всякий случай проверяем локальные ноды:
@@ -65,6 +76,310 @@ func _ready():
 	var progress_title = find_child("TitleProgress", true, false)
 	if progress_title and progress_title is Label:
 		progress_title.text = tr("TRACK_COL_PROGRESS")
+
+# === СОЗДАНИЕ КНОПКИ "?" (стиль employee_roster) ===
+func _create_help_button_track() -> Button:
+	var btn = Button.new()
+	btn.text = "?"
+	btn.custom_minimum_size = Vector2(22, 22)
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 11)
+	btn.add_theme_color_override("font_color", color_main_text)
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(1, 1, 1, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = color_main_text
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", bstyle)
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.92, 0.94, 1.0, 1)
+	hover_style.border_width_left = 2
+	hover_style.border_width_top = 2
+	hover_style.border_width_right = 2
+	hover_style.border_width_bottom = 2
+	hover_style.border_color = color_main_text
+	hover_style.corner_radius_top_left = 11
+	hover_style.corner_radius_top_right = 11
+	hover_style.corner_radius_bottom_right = 11
+	hover_style.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("hover", hover_style)
+	return btn
+
+func _apply_locked_style_track(btn: Button) -> void:
+	var gray_bstyle = StyleBoxFlat.new()
+	gray_bstyle.bg_color = Color(0.93, 0.93, 0.93, 1)
+	gray_bstyle.border_width_left = 2
+	gray_bstyle.border_width_top = 2
+	gray_bstyle.border_width_right = 2
+	gray_bstyle.border_width_bottom = 2
+	gray_bstyle.border_color = Color(0.6, 0.6, 0.6, 1)
+	gray_bstyle.corner_radius_top_left = 11
+	gray_bstyle.corner_radius_top_right = 11
+	gray_bstyle.corner_radius_bottom_right = 11
+	gray_bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", gray_bstyle)
+	btn.add_theme_stylebox_override("hover", gray_bstyle)
+	btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+
+func _build_efficiency_breakdown_text(emp) -> String:
+	var bd = emp.get_efficiency_breakdown()
+	var lines: Array[String] = []
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TITLE"))
+	lines.append("")
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOOD") % [bd.mood_zone_name, int(bd.mood_value), _fmt_mult(bd.mood_mult)])
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_ENERGY") % [int(bd.energy_value), _fmt_mult(bd.energy_factor)])
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TRAITS") % _fmt_mod(bd.trait_sum))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _fmt_mod(bd.motivation_mod))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % _fmt_mod(bd.aura_mod))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _fmt_mod(bd.event_mod))
+	if bd.has("onboarding_mod") and bd.onboarding_mod < 0:
+		lines.append(tr("EFF_MOD_ONBOARDING") + (" (%s)" % _fmt_mod(bd.onboarding_mod)))
+	if bd.has("project_adapt_mod") and bd.project_adapt_mod < 0:
+		lines.append(tr("EFF_MOD_PROJECT_ADAPT") + (" (%s)" % _fmt_mod(bd.project_adapt_mod)))
+	if bd.has("crunch_mod") and bd.crunch_mod < 0:
+		lines.append(tr("CRUNCH_DEBUFF_EFFICIENCY") + (" (%s)" % _fmt_mod(bd.crunch_mod)))
+	if bd.has("burnout_mod") and bd.burnout_mod < 0:
+		lines.append(tr("EFFICIENCY_BREAKDOWN_BURNOUT") + (" (%s)" % _fmt_mod(bd.burnout_mod)))
+	if bd.has("neighbor_mod"):
+		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _fmt_mod(bd.neighbor_mod))
+	if bd.has("ergonomic_mod") and bd.ergonomic_mod != 0.0:
+		lines.append(tr("EFF_MOD_ERGONOMIC"))
+	lines.append("")
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _fmt_mult(bd.total))
+	return "\n".join(lines)
+
+func _fmt_mult(val: float) -> String:
+	return "×%.2f" % val
+
+func _fmt_mod(val: float) -> String:
+	if val >= 0:
+		return "+%d%%" % int(val * 100)
+	else:
+		return "%d%%" % int(val * 100)
+
+func _get_avg_progress_for_worker(worker_name: String) -> float:
+	if not PeopleHistory:
+		return 0.0
+	var records = PeopleHistory.daily_records
+	var n = min(records.size(), AVG_PROGRESS_DAYS)
+	if n == 0:
+		return 0.0
+	var total = 0.0
+	var count = 0
+	for i in range(records.size() - n, records.size()):
+		var rec = records[i]
+		for emp in rec.get("employees", []):
+			if emp.get("name", "") == worker_name:
+				total += emp.get("progress", 0.0)
+				count += 1
+				break
+	if count == 0:
+		return 0.0
+	return total / float(count)
+
+# === ПОСТРОЕНИЕ ДОПОЛНИТЕЛЬНЫХ КОЛОНОК ===
+func _build_extra_columns():
+	var layout = $Layout
+	var vs2 = layout.get_node_or_null("VSeparator2")
+	var progress_lbl_node = layout.get_node_or_null("ProgressLabel")
+
+	if not layout or not vs2 or not progress_lbl_node:
+		return
+
+	# Очищаем старые если есть
+	if _vs_eff and is_instance_valid(_vs_eff):
+		_vs_eff.queue_free()
+		_vs_eff = null
+	if _efficiency_wrapper and is_instance_valid(_efficiency_wrapper):
+		_efficiency_wrapper.queue_free()
+		_efficiency_wrapper = null
+	if _vs_avg and is_instance_valid(_vs_avg):
+		_vs_avg.queue_free()
+		_vs_avg = null
+	if _avg_progress_wrapper and is_instance_valid(_avg_progress_wrapper):
+		_avg_progress_wrapper.queue_free()
+		_avg_progress_wrapper = null
+	_efficiency_labels.clear()
+	_avg_progress_labels.clear()
+
+	var insert_idx = vs2.get_index() + 1
+
+	# === КОЛОНКА ЭФФЕКТИВНОСТЬ ===
+	_vs_eff = VSeparator.new()
+	layout.add_child(_vs_eff)
+	layout.move_child(_vs_eff, insert_idx)
+
+	_efficiency_wrapper = CenterContainer.new()
+	_efficiency_wrapper.custom_minimum_size = Vector2(120, 0)
+	layout.add_child(_efficiency_wrapper)
+	layout.move_child(_efficiency_wrapper, insert_idx + 1)
+
+	# === КОЛОНКА Ø ПРОГРЕСС/ДЕНЬ ===
+	_vs_avg = VSeparator.new()
+	layout.add_child(_vs_avg)
+	layout.move_child(_vs_avg, insert_idx + 2)
+
+	_avg_progress_wrapper = CenterContainer.new()
+	_avg_progress_wrapper.custom_minimum_size = Vector2(100, 0)
+	layout.add_child(_avg_progress_wrapper)
+	layout.move_child(_avg_progress_wrapper, insert_idx + 3)
+
+	if is_stage_completed:
+		return
+
+	# Наполняем efficiency_wrapper
+	var eff_vbox = VBoxContainer.new()
+	eff_vbox.add_theme_constant_override("separation", 4)
+	_efficiency_wrapper.add_child(eff_vbox)
+
+	# Наполняем avg_progress_wrapper
+	var avg_vbox = VBoxContainer.new()
+	avg_vbox.add_theme_constant_override("separation", 4)
+	_avg_progress_wrapper.add_child(avg_vbox)
+
+	var workers = stage_data.get("workers", [])
+
+	for worker in workers:
+		# --- Efficiency row ---
+		var eff_row = HBoxContainer.new()
+		eff_row.add_theme_constant_override("separation", 4)
+		eff_vbox.add_child(eff_row)
+
+		var eff_val = worker.get_efficiency_multiplier() if worker.has_method("get_efficiency_multiplier") else 1.0
+		var eff_lbl = Label.new()
+		eff_lbl.text = "x%.2f" % eff_val
+		if worker.has_method("get") and (worker.get("aura_bonus") > 0 or worker.get("motivation_bonus") > 0):
+			eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
+		else:
+			eff_lbl.add_theme_color_override("font_color", color_main_text)
+		eff_lbl.add_theme_font_size_override("font_size", 12)
+		if UITheme: UITheme.apply_font(eff_lbl, "regular")
+		eff_row.add_child(eff_lbl)
+		_efficiency_labels.append(eff_lbl)
+
+		var eff_help = _create_help_button_track()
+		var eff_tooltip_ref: Array = [null]
+
+		if not PMData.has_skill("read_efficiency"):
+			_apply_locked_style_track(eff_help)
+			var worker_ref = worker
+			eff_help.mouse_entered.connect(func():
+				if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+					eff_tooltip_ref[0].queue_free()
+				var tp = TraitUIHelper._create_tooltip(tr("TRACK_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
+				get_tree().current_scene.add_child(tp)
+				tp.add_to_group("project_tooltip")
+				await get_tree().process_frame
+				if not is_instance_valid(tp): return
+				var btn_global = eff_help.global_position
+				tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+				eff_tooltip_ref[0] = tp
+			)
+		else:
+			var worker_ref = worker
+			eff_help.mouse_entered.connect(func():
+				if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+					eff_tooltip_ref[0].queue_free()
+				var bd_text = _build_efficiency_breakdown_text(worker_ref)
+				var tp = TraitUIHelper._create_tooltip(bd_text, color_main_text)
+				get_tree().current_scene.add_child(tp)
+				tp.add_to_group("project_tooltip")
+				await get_tree().process_frame
+				if not is_instance_valid(tp): return
+				var btn_global = eff_help.global_position
+				tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+				eff_tooltip_ref[0] = tp
+			)
+		eff_help.mouse_exited.connect(func():
+			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
+				eff_tooltip_ref[0].queue_free()
+			eff_tooltip_ref[0] = null
+		)
+		eff_row.add_child(eff_help)
+
+		# --- Avg Progress row ---
+		var avg_row = CenterContainer.new()
+		avg_vbox.add_child(avg_row)
+
+		if not PMData.has_skill("report_people_tab"):
+			var lock_row = HBoxContainer.new()
+			lock_row.add_theme_constant_override("separation", 4)
+			avg_row.add_child(lock_row)
+
+			var lock_lbl = Label.new()
+			lock_lbl.text = "🔒"
+			lock_lbl.add_theme_font_size_override("font_size", 14)
+			lock_row.add_child(lock_lbl)
+
+			var lock_tooltip_ref: Array = [null]
+			lock_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+			lock_lbl.mouse_entered.connect(func():
+				if lock_tooltip_ref[0] != null and is_instance_valid(lock_tooltip_ref[0]):
+					lock_tooltip_ref[0].queue_free()
+				var tp = TraitUIHelper._create_tooltip(tr("TRACK_LOCK_REPORT_PEOPLE"), Color(0.5, 0.5, 0.5, 1))
+				get_tree().current_scene.add_child(tp)
+				tp.add_to_group("project_tooltip")
+				await get_tree().process_frame
+				if not is_instance_valid(tp): return
+				var lbl_global = lock_lbl.global_position
+				tp.global_position = Vector2(lbl_global.x + 20, lbl_global.y - 10)
+				lock_tooltip_ref[0] = tp
+			)
+			lock_lbl.mouse_exited.connect(func():
+				if lock_tooltip_ref[0] != null and is_instance_valid(lock_tooltip_ref[0]):
+					lock_tooltip_ref[0].queue_free()
+				lock_tooltip_ref[0] = null
+			)
+			_avg_progress_labels.append(null)
+		else:
+			var avg_lbl = Label.new()
+			var worker_name = worker.get_display_name() if worker.has_method("get_display_name") else str(worker.employee_name)
+			var avg_val = _get_avg_progress_for_worker(worker_name)
+			avg_lbl.text = "%.1f" % avg_val
+			avg_lbl.add_theme_color_override("font_color", color_main_text)
+			avg_lbl.add_theme_font_size_override("font_size", 12)
+			if UITheme: UITheme.apply_font(avg_lbl, "regular")
+			avg_row.add_child(avg_lbl)
+			_avg_progress_labels.append(avg_lbl)
+
+# === ОБНОВЛЕНИЕ ЭФФЕКТИВНОСТИ В РЕАЛЬНОМ ВРЕМЕНИ ===
+func update_efficiency_live():
+	if is_stage_completed:
+		return
+	var workers = stage_data.get("workers", [])
+	for i in range(min(workers.size(), _efficiency_labels.size())):
+		var worker = workers[i]
+		var lbl = _efficiency_labels[i]
+		if not lbl or not is_instance_valid(lbl):
+			continue
+		var eff_val = worker.get_efficiency_multiplier() if worker.has_method("get_efficiency_multiplier") else 1.0
+		lbl.text = "x%.2f" % eff_val
+		if worker.has_method("get") and (worker.get("aura_bonus") > 0 or worker.get("motivation_bonus") > 0):
+			lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
+		else:
+			lbl.add_theme_color_override("font_color", color_main_text)
+
+# === ОБНОВЛЕНИЕ СРЕДНЕГО ПРОГРЕССА В РЕАЛЬНОМ ВРЕМЕНИ ===
+func update_avg_progress_live():
+	if is_stage_completed:
+		return
+	if not PMData.has_skill("report_people_tab"):
+		return
+	var workers = stage_data.get("workers", [])
+	for i in range(min(workers.size(), _avg_progress_labels.size())):
+		var lbl = _avg_progress_labels[i]
+		if not lbl or not is_instance_valid(lbl):
+			continue
+		var worker = workers[i]
+		var worker_name = worker.get_display_name() if worker.has_method("get_display_name") else str(worker.employee_name)
+		var avg_val = _get_avg_progress_for_worker(worker_name)
+		lbl.text = "%.1f" % avg_val
 
 # Кнопка "Назначить" с нужными скруглениями и ховером
 func _create_styled_button(text: String) -> Button:
@@ -251,6 +566,7 @@ func _update_track_height(worker_count: int):
 
 func update_button_visuals():
 	rebuild_worker_buttons()
+	_build_extra_columns()
 
 func update_visuals_dynamic(px_per_day: float, current_project_time: float, color: Color):
 	update_visuals_dynamic_offset(px_per_day, current_project_time, color, 0.0)

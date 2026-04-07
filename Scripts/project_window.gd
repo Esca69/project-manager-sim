@@ -33,6 +33,18 @@ var _bg_overlay: ColorRect
 # Red color for START button
 var color_green_main = Color(0.85, 0.2, 0.2, 1)
 
+# === PULSATING START BUTTON ===
+var _start_tween: Tween = null
+
+# === NEW COLUMNS: Efficiency + Avg Progress ===
+var _col_efficiency_header: Label = null
+var _col_avg_progress_header: Label = null
+var _progress_tooltip_ref: Array = [null]
+var _progress_help_btn: Button = null
+
+# === SCROLL CONTAINER ===
+var _table_scroll: ScrollContainer = null
+
 func _get_origin_time() -> float:
 	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
 
@@ -128,7 +140,94 @@ func _ready():
 	if col_role: col_role.text = tr("TRACK_COL_ROLE")
 	if col_assignee: col_assignee.text = tr("TRACK_COL_ASSIGNEE")
 	if col_progress: col_progress.text = tr("TRACK_COL_PROGRESS")
-	
+
+	# === НОВЫЕ КОЛОНКИ: Эффективность + Ø Прогр./день ===
+	# Вставляем их перед Label3 (Прогресс), после VSeparator2
+	var table_header_node = $MainLayout/ContentWrapper/Body/TableHeader
+	var vs2 = table_header_node.get_node_or_null("VSeparator2")
+	var label3_node = col_progress
+
+	# Колонка Эффективность
+	var vs_eff = VSeparator.new()
+	var col_eff = Label.new()
+	col_eff.text = tr("TRACK_COL_EFFICIENCY")
+	col_eff.custom_minimum_size = Vector2(120, 0)
+	col_eff.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col_eff.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	col_eff.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	_col_efficiency_header = col_eff
+
+	# Колонка Ø Прогр./день
+	var vs_avg = VSeparator.new()
+	var col_avg = Label.new()
+	col_avg.text = tr("TRACK_COL_AVG_PROGRESS")
+	col_avg.custom_minimum_size = Vector2(100, 0)
+	col_avg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	col_avg.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	col_avg.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	_col_avg_progress_header = col_avg
+
+	# Вставляем после VSeparator2
+	if vs2 and label3_node:
+		var insert_idx = vs2.get_index() + 1
+		table_header_node.add_child(vs_eff)
+		table_header_node.move_child(vs_eff, insert_idx)
+		table_header_node.add_child(col_eff)
+		table_header_node.move_child(col_eff, insert_idx + 1)
+		table_header_node.add_child(vs_avg)
+		table_header_node.move_child(vs_avg, insert_idx + 2)
+		table_header_node.add_child(col_avg)
+		table_header_node.move_child(col_avg, insert_idx + 3)
+	else:
+		table_header_node.add_child(vs_eff)
+		table_header_node.add_child(col_eff)
+		table_header_node.add_child(vs_avg)
+		table_header_node.add_child(col_avg)
+
+	# === КНОПКА "?" рядом с заголовком "Прогресс" ===
+	_progress_help_btn = _create_help_button_local()
+	if label3_node:
+		# Найдём родителя label3 (TableHeader) и добавим кнопку рядом с ним в отдельный HBox
+		# Поскольку TableHeader — HBoxContainer, добавляем кнопку после col_progress
+		var progress_idx = label3_node.get_index()
+		table_header_node.add_child(_progress_help_btn)
+		table_header_node.move_child(_progress_help_btn, progress_idx + 1)
+	_progress_help_btn.mouse_entered.connect(_on_progress_help_hover)
+	_progress_help_btn.mouse_exited.connect(_on_progress_help_exit)
+
+	# === ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ: Оборачиваем TableHeader + TracksContainer ===
+	var body_node = $MainLayout/ContentWrapper/Body
+	var table_hdr = $MainLayout/ContentWrapper/Body/TableHeader
+	var tracks_cont = $MainLayout/ContentWrapper/Body/TracksContainer
+
+	_table_scroll = ScrollContainer.new()
+	_table_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_table_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_table_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_table_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var scroll_content = VBoxContainer.new()
+	scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Вынимаем из body, вставляем в scroll_content
+	var hdr_idx = table_hdr.get_index()
+	body_node.remove_child(table_hdr)
+	body_node.remove_child(tracks_cont)
+
+	scroll_content.add_child(table_hdr)
+	scroll_content.add_child(tracks_cont)
+
+	_table_scroll.add_child(scroll_content)
+	body_node.add_child(_table_scroll)
+	body_node.move_child(_table_scroll, hdr_idx)
+
+	table_hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tracks_cont.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	timeline_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Перехватываем скролл колёсиком для горизонтального движения
+	_table_scroll.gui_input.connect(_on_table_scroll_gui_input)
+
 	var cancel_node = $MainLayout/ContentWrapper/Body/Footer/CancelButton
 	if cancel_node:
 		cancel_node.queue_free()
@@ -139,6 +238,11 @@ func _ready():
 
 	start_btn.pressed.connect(_on_start_pressed)
 	start_btn.text = tr("PROJ_WIN_BTN_START")
+
+	# === PIVOT ПО ЦЕНТРУ для пульсации ===
+	start_btn.pivot_offset = start_btn.size / 2.0
+	# После layout вычисляем pivot корректно
+	start_btn.resized.connect(func(): start_btn.pivot_offset = start_btn.size / 2.0)
 	
 	close_window_btn.pressed.connect(close)
 
@@ -205,6 +309,8 @@ func _ready():
 		if col_role: UITheme.apply_font(col_role, "semibold")
 		if col_assignee: UITheme.apply_font(col_assignee, "semibold")
 		if col_progress: UITheme.apply_font(col_progress, "semibold")
+		if _col_efficiency_header: UITheme.apply_font(_col_efficiency_header, "semibold")
+		if _col_avg_progress_header: UITheme.apply_font(_col_avg_progress_header, "semibold")
 
 # === CRUNCH TIME: Создаём ряд с кнопкой кранча в футере ===
 func _build_crunch_row():
@@ -377,6 +483,84 @@ func _on_crunch_help_exit():
 		_crunch_tooltip_ref[0].queue_free()
 		_crunch_tooltip_ref[0] = null
 
+# === КНОПКА "?" (стиль как в employee_roster.gd) ===
+func _create_help_button_local() -> Button:
+	var btn = Button.new()
+	btn.text = "?"
+	btn.custom_minimum_size = Vector2(22, 22)
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 11)
+	btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(1, 1, 1, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", bstyle)
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.92, 0.94, 1.0, 1)
+	hover_style.border_width_left = 2
+	hover_style.border_width_top = 2
+	hover_style.border_width_right = 2
+	hover_style.border_width_bottom = 2
+	hover_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	hover_style.corner_radius_top_left = 11
+	hover_style.corner_radius_top_right = 11
+	hover_style.corner_radius_bottom_right = 11
+	hover_style.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("hover", hover_style)
+	return btn
+
+# === ТУЛТИП "?" для заголовка "Прогресс" ===
+func _on_progress_help_hover():
+	if _progress_tooltip_ref[0] != null and is_instance_valid(_progress_tooltip_ref[0]):
+		_progress_tooltip_ref[0].queue_free()
+	var tp = TraitUIHelper._create_tooltip(tr("TRACK_PROGRESS_TOOLTIP"), Color(0.17254902, 0.30980393, 0.5686275, 1))
+	add_child(tp)
+	tp.add_to_group("project_tooltip")
+	await get_tree().process_frame
+	if not is_instance_valid(tp): return
+	if _progress_help_btn:
+		var btn_global = _progress_help_btn.global_position
+		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+	_progress_tooltip_ref[0] = tp
+
+func _on_progress_help_exit():
+	if _progress_tooltip_ref[0] != null and is_instance_valid(_progress_tooltip_ref[0]):
+		_progress_tooltip_ref[0].queue_free()
+	_progress_tooltip_ref[0] = null
+
+# === ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ: перехват колёсика ===
+func _on_table_scroll_gui_input(event: InputEvent):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+			_table_scroll.scroll_horizontal -= 60
+			_table_scroll.accept_event()
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+			_table_scroll.scroll_horizontal += 60
+			_table_scroll.accept_event()
+
+# === ПУЛЬСАЦИЯ КНОПКИ "Начать проект" ===
+func _start_btn_pulse():
+	if _start_tween and _start_tween.is_running():
+		return
+	_start_tween = create_tween()
+	_start_tween.set_loops()
+	_start_tween.tween_property(start_btn, "scale", Vector2(1.03, 1.03), 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_start_tween.tween_property(start_btn, "scale", Vector2(1.0, 1.0), 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _stop_btn_pulse():
+	if _start_tween:
+		_start_tween.kill()
+		_start_tween = null
+	start_btn.scale = Vector2(1.0, 1.0)
+
 # === Закрытие окна (кнопка X + ESC) ===
 func close():
 	# === CRUNCH TIME: Убираем тултип при закрытии окна ===
@@ -443,8 +627,10 @@ func _migrate_stage(stage: Dictionary):
 func update_buttons_visibility():
 	if project.state == ProjectData.State.IN_PROGRESS or project.state == ProjectData.State.FINISHED or project.state == ProjectData.State.FAILED:
 		start_btn.visible = false
+		_stop_btn_pulse()
 	else:
 		start_btn.visible = true
+		_start_btn_pulse()
 		_update_crunch_btn()
 
 func get_current_global_time() -> float:
@@ -545,6 +731,11 @@ func _process(delta):
 			if stage.amount > 0:
 				percent = float(stage.progress) / float(stage.amount)
 			track_node.update_progress(percent)
+
+			if track_node.has_method("update_efficiency_live"):
+				track_node.update_efficiency_live()
+			if track_node.has_method("update_avg_progress_live"):
+				track_node.update_avg_progress_live()
 
 	if current_time_line:
 		if is_done:
@@ -674,9 +865,9 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 			timeline_header.add_child(wd_lbl)
 
 		var line = ColorRect.new()
-		line.color = Color(0.0, 0.0, 0.0, 0.08)
+		line.color = Color(0.6, 0.6, 0.6, 0.25)
 		line.size = Vector2(1, line_height)
-		line.position = Vector2(x_pos, 35)
+		line.position = Vector2(x_pos, 0)
 		line.z_index = -1
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		timeline_header.add_child(line)
