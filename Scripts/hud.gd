@@ -234,75 +234,58 @@ func _ready():
 				TutorialManager.start_tutorial()
 		)
 
-	# Строим остальные панели асинхронно, чтобы не блокировать первый кадр
-	call_deferred("_build_all_dynamic_ui")
+	# Строим все панели синхронно — к этому моменту loading screen ещё виден
+	_build_all_dynamic_ui()
 
-# === АСИНХРОННАЯ СБОРКА ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
-# Строим по несколько панелей за раз, давая движку кадр между группами.
+# === СБОРКА ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ (синхронно, выполняется пока виден loading screen) ===
 func _build_all_dynamic_ui() -> void:
 	_build_day_summary()
-	await get_tree().process_frame
 
 	_build_boss_ui()
-	await get_tree().process_frame
 
 	_build_hr_role_screen()
-	await get_tree().process_frame
 
 	# === EVENT SYSTEM: Создаём ивент-попап ===
 	_build_event_popup()
 
 	# === EVENT LOG: Создаём журнал событий ===
 	_build_event_log()
-	await get_tree().process_frame
 
 	# === BOSS EVENT SYSTEM: Создаём попап и трекер ===
 	_build_boss_event_ui()
 
 	# === META: Создаём панель "Моя жизнь" ===
 	_build_my_life_panel()
-	await get_tree().process_frame
 
 	_build_personal_balance_label()
 
 	# >>> Создаем лейбл для FPS
 	_build_fps_label()
-	await get_tree().process_frame
 
 	# === REPORTS: Создаём панель отчётов ===
 	_build_reports_panel()
 
 	# === ENCYCLOPEDIA: Создаём панель энциклопедии ===
 	_build_encyclopedia_panel()
-	await get_tree().process_frame
 
 	# === PLAYTEST CAP: Счётчик дней и экран завершения ===
 	_build_playtest_label()
 	_build_playtest_end_screen()
-	await get_tree().process_frame
 
 	# Защита от загрузки сейва за пределами плейтеста
 	if GameTime.day >= 91:
 		call_deferred("_show_playtest_end")
 
-	# Прогрев тяжёлых панелей — теперь запускается здесь, после того как все панели созданы
-	await _preheat_panels()
+	# Прогрев тяжёлых панелей — синхронно, пока виден loading screen
+	_preheat_panels()
 
 # === ПРОГРЕВ ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
-# Строим UI при visible=false, чтобы шрифты и ноды оказались в кеше.
+# Строим UI при visible=false, чтобы ноды оказались в кеше.
 func _preheat_panels() -> void:
 	if pm_skill_tree and pm_skill_tree.has_method("_rebuild_tree"):
 		pm_skill_tree.visible = false
 		pm_skill_tree._rebuild_tree()
 		pm_skill_tree._tree_is_dirty = false
-		# Делаем видимым на 1 кадр (alpha=0), чтобы GPU растеризовал emoji-глифы
-		pm_skill_tree.visible = true
-		pm_skill_tree.modulate.a = 0.0
-		await get_tree().process_frame
-		pm_skill_tree.visible = false
-		pm_skill_tree.modulate.a = 1.0
-
-	await get_tree().process_frame
 
 	if client_panel and client_panel.has_method("_populate"):
 		var was_visible = client_panel.visible
@@ -310,15 +293,11 @@ func _preheat_panels() -> void:
 		client_panel._populate()
 		client_panel.visible = was_visible
 
-	await get_tree().process_frame
-
 	if _boss_panel and _boss_panel.has_method("_populate"):
 		var was_visible = _boss_panel.visible
 		_boss_panel.visible = false
 		_boss_panel._populate()
 		_boss_panel.visible = was_visible
-
-	await get_tree().process_frame
 
 	if _reports_panel and _reports_panel.has_method("_refresh_content"):
 		var was_visible = _reports_panel.visible

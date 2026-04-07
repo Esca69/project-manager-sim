@@ -11,7 +11,11 @@ const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
 const TARGET_SCENE = "res://Scenes/office.tscn"
 
 # Все emoji из игры для прогрева шрифта
-const WARMUP_EMOJIS = "📋👥📊⚡🛡✅🧠🔍💰🏢💼☕📈🤝⏰📝🍽️🎯⬆️❌5
+const WARMUP_EMOJIS = "☀★☎☕♀♂♥⚖⚙⚠⚡⚪✅✈✕❌❓❗❤➕🌙🌴🍔🍕🍽🎉🎩🎯🎲🏆🏎🏖🏗🏠🏢🏥🏦🏹🐞👁👋👍👤👥👦👧👨👩💊💔💚💛💢💨💬💰💵💸💻💼💾📁📂📅📈📉📊📋📖📚📝📞📦📷📺🔀🔄🔍🔒🔔🔥🔴🕐🖥🗑🗣😄😊😕😠😣😤😩😮🙂🙏🚀🚪🚫🚽🛠🛡🟡🟢🤒🤝🤦🤬🧑🧠🧪🪑"
+# Количество кадров ожидания после инстанциирования сцены.
+# За это время выполняются все _ready() (синхронно) и call_deferred-вызовы
+# (нужен минимум 1 кадр), а также синхронный _preheat_panels.
+const WARMUP_FRAMES = 5
 # Слот для загрузки сохранения; -1 = нет сохранения (новая игра)
 static var pending_save_slot: int = -1
 # Путь к целевой сцене; если пустой — используется TARGET_SCENE
@@ -187,10 +191,29 @@ func _process(delta: float):
 		_loading_started = false
 		var packed = ResourceLoader.load_threaded_get(_scene_to_load)
 		if packed:
-			get_tree().change_scene_to_packed(packed)
+			_instantiate_and_switch(packed)
 		else:
 			get_tree().change_scene_to_file(_scene_to_load)
 	elif status == ResourceLoader.THREAD_LOAD_FAILED:
 		push_error("[LoadingScreen] Threaded load failed, falling back to sync")
 		_loading_started = false
 		get_tree().change_scene_to_file(_scene_to_load)
+
+
+# Инстанциируем сцену офиса прямо на loading screen, ждём несколько кадров
+# чтобы все _ready() и call_deferred отработали, затем убираем loading screen.
+func _instantiate_and_switch(packed: PackedScene) -> void:
+	_stage_label.text = _tr_or("LOADING_STAGE_INIT", "Инициализация интерфейса...")
+	var office = packed.instantiate()
+	# Скрываем офис пока loading screen видим; _ready() и call_deferred
+	# выполнятся, но рендеринг не произойдёт — пользователь видит loading screen
+	office.visible = false
+	get_tree().root.add_child(office)
+	# Ждём WARMUP_FRAMES кадров: _ready() синхронны, но call_deferred нужен 1+ кадр,
+	# а синхронный _preheat_panels успевает отработать в первом кадре.
+	for _i in WARMUP_FRAMES:
+		await get_tree().process_frame
+	# Всё готово: показываем офис и убираем loading screen
+	office.visible = true
+	get_tree().current_scene = office
+	queue_free()
