@@ -14,7 +14,7 @@ signal worker_removed(track_index, worker_index)
 const BAR_HEIGHT = 24.0
 const BUTTON_HEIGHT = 30.0
 const BASE_TRACK_HEIGHT = 60.0
-const AVG_PROGRESS_DAYS = 5
+const AVG_PROGRESS_DAYS = 7
 
 var stage_index: int = -1
 var stage_data: Dictionary = {}
@@ -141,7 +141,7 @@ func _apply_locked_style_track(btn: Button) -> void:
 	btn.add_theme_stylebox_override("hover", gray_bstyle)
 	btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 
-func _get_avg_progress_for_worker(worker_name: String) -> float:
+func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "") -> float:
 	if not PeopleHistory:
 		return 0.0
 	var records = PeopleHistory.daily_records
@@ -153,7 +153,8 @@ func _get_avg_progress_for_worker(worker_name: String) -> float:
 	for i in range(records.size() - n, records.size()):
 		var rec = records[i]
 		for emp in rec.get("employees", []):
-			if emp.get("name", "") == worker_name:
+			var emp_name = emp.get("name", "")
+			if emp_name == worker_name or (worker_id != "" and emp_name == worker_id):
 				total += emp.get("progress", 0.0)
 				count += 1
 				break
@@ -322,7 +323,8 @@ func _build_extra_columns():
 		else:
 			var avg_lbl = Label.new()
 			var worker_name = worker.get_display_name() if worker.has_method("get_display_name") else str(worker.employee_name)
-			var avg_val = _get_avg_progress_for_worker(worker_name)
+			var worker_id = str(worker.employee_name) if ("employee_name" in worker and worker.employee_name != null) else ""
+			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
 			avg_lbl.text = "%.1f" % avg_val
 			avg_lbl.add_theme_color_override("font_color", color_main_text)
 			avg_lbl.add_theme_font_size_override("font_size", 12)
@@ -371,7 +373,8 @@ func update_avg_progress_live():
 			continue
 		var worker = workers[i]
 		var worker_name = worker.get_display_name() if worker.has_method("get_display_name") else str(worker.employee_name)
-		var avg_val = _get_avg_progress_for_worker(worker_name)
+		var worker_id = str(worker.employee_name) if ("employee_name" in worker and worker.employee_name != null) else ""
+		var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
 		lbl.text = "%.1f" % avg_val
 
 # Кнопка "Назначить" с нужными скруглениями и ховером
