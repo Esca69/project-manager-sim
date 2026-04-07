@@ -38,10 +38,13 @@ func _ready():
 	add_to_group("boss_desk")
 	add_to_group("desk")
 	add_to_group("boss_npc")
+	y_sort_enabled = true
 
-	# Красим тело в чёрный цвет
+	# Красим тело в чёрный цвет (self_modulate не затрагивает дочерние ноды)
 	if body_sprite:
-		body_sprite.modulate = Color(0.1, 0.1, 0.1, 1.0)
+		body_sprite.self_modulate = Color(0.1, 0.1, 0.1, 1.0)
+	if head_sprite:
+		head_sprite.self_modulate = Color("#fff0e1")
 
 	# Строим exclamation bubble
 	_build_exclamation_mark()
@@ -193,7 +196,7 @@ func _start_coming():
 		global_position = desk_position
 
 	visible = true
-	$CollisionShape2D.disabled = true
+	$CollisionShape2D.disabled = false
 	current_state = BossState.COMING
 
 	if desk_position != Vector2.ZERO:
@@ -211,7 +214,6 @@ func _set_state_in_office(show_toast: bool = true):
 
 func _start_leaving():
 	current_state = BossState.LEAVING
-	$CollisionShape2D.disabled = true
 
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
