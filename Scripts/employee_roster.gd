@@ -22,6 +22,7 @@ var _body_texture: Texture2D
 var _head_texture: Texture2D
 var _hair_textures_male: Array = []
 var _hair_textures_female: Array = []
+var _body_textures: Dictionary = {}
 
 const ROSTER_HAIR_OFFSET_X: float = 0.0
 const ROSTER_HAIR_OFFSET_Y: float = -8.0
@@ -48,6 +49,15 @@ func _ready():
 
 	_body_texture = load("res://Sprites/body2.png")
 	_head_texture = load("res://Sprites/head2.png")
+	_body_textures = {
+		"default": _body_texture,
+		"man_fat": load("res://Sprites/bodies/man_fat.png"),
+		"man_fit": load("res://Sprites/bodies/man_fit.png"),
+		"man_skinny": load("res://Sprites/bodies/man_skinny.png"),
+		"woman_fat": load("res://Sprites/bodies/woman_fat.png"),
+		"woman_fit": load("res://Sprites/bodies/woman_fit.png"),
+		"woman_skinny": load("res://Sprites/bodies/woman_skinny.png"),
+	}
 	_hair_textures_male = [
 		load("res://Sprites/hairs/man_hair1.png"),
 		load("res://Sprites/hairs/man_hair2.png"),
@@ -1355,8 +1365,14 @@ func _create_employee_sprite(npc_node) -> CenterContainer:
 		elif "skin_color" in npc_node:
 			head_color = npc_node.skin_color
 
+	var body_type_val = "default"
+	if npc_node and "body_type" in npc_node:
+		body_type_val = npc_node.body_type
+
+	var actual_body_texture = _body_textures.get(body_type_val, _body_texture)
+
 	var body_tex = TextureRect.new()
-	body_tex.texture = _body_texture
+	body_tex.texture = actual_body_texture
 	body_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE 
 	body_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	body_tex.custom_minimum_size = Vector2(36, 45)

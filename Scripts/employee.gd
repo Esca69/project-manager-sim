@@ -203,6 +203,7 @@ var personal_color: Color = Color.WHITE
 var skin_color: Color = Color.WHITE
 var hair_type: int = 0
 var hair_color: Color = Color.WHITE
+var body_type: String = "default"
 
 const CLOTHING_PALETTE: Array[Color] = [
 	Color("#FFADAD"), Color("#FFD6A5"), Color("#FDFFB6"), Color("#CAFFBF"),
@@ -246,6 +247,20 @@ const FEMALE_HAIR_PATHS: Array[String] = [
 	"res://Sprites/hairs/woman_hair2.png",
 	"res://Sprites/hairs/woman_hair3.png",
 ]
+
+const DEFAULT_BODY_PATH: String = "res://Sprites/body2.png"
+
+const MALE_BODY_PATHS: Dictionary = {
+	"man_fat": "res://Sprites/bodies/man_fat.png",
+	"man_fit": "res://Sprites/bodies/man_fit.png",
+	"man_skinny": "res://Sprites/bodies/man_skinny.png",
+}
+
+const FEMALE_BODY_PATHS: Dictionary = {
+	"woman_fat": "res://Sprites/bodies/woman_fat.png",
+	"woman_fit": "res://Sprites/bodies/woman_fit.png",
+	"woman_skinny": "res://Sprites/bodies/woman_skinny.png",
+}
 
 @export var data: EmployeeData
 
@@ -641,6 +656,26 @@ func _assign_random_color():
 
 	hair_type = randi_range(0, MALE_HAIR_PATHS.size() - 1)
 	hair_color = HAIR_PALETTE.pick_random()
+
+	var body_roll = randf()
+	if body_roll < 0.4:
+		body_type = "default"
+	elif data and data.gender == "male":
+		if body_roll < 0.6:
+			body_type = "man_fat"
+		elif body_roll < 0.8:
+			body_type = "man_fit"
+		else:
+			body_type = "man_skinny"
+	elif data and data.gender == "female":
+		if body_roll < 0.6:
+			body_type = "woman_fat"
+		elif body_roll < 0.8:
+			body_type = "woman_fit"
+		else:
+			body_type = "woman_skinny"
+	else:
+		body_type = "default"
 
 func _setup_early_bird():
 	if not data or not data.has_trait("early_bird"):
@@ -2096,6 +2131,14 @@ func setup_employee(new_data: EmployeeData):
 
 func update_visuals():
 	if body_sprite:
+		if body_type == "default":
+			body_sprite.texture = load(DEFAULT_BODY_PATH)
+		elif body_type in MALE_BODY_PATHS:
+			body_sprite.texture = load(MALE_BODY_PATHS[body_type])
+		elif body_type in FEMALE_BODY_PATHS:
+			body_sprite.texture = load(FEMALE_BODY_PATHS[body_type])
+		else:
+			body_sprite.texture = load(DEFAULT_BODY_PATH)
 		body_sprite.self_modulate = personal_color
 	if head_sprite:
 		head_sprite.self_modulate = skin_color
