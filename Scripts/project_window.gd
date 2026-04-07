@@ -207,11 +207,11 @@ func _ready():
 		table_header_node.remove_child(label3_node)
 		var progress_hbox = HBoxContainer.new()
 		progress_hbox.custom_minimum_size = Vector2(COL_W_PROGRESS, 0)
-		progress_hbox.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		progress_hbox.size_flags_horizontal = Control.SIZE_FILL
 		progress_hbox.add_theme_constant_override("separation", 4)
 		progress_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		label3_node.custom_minimum_size = Vector2(0, 0)
-		label3_node.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		label3_node.size_flags_horizontal = Control.SIZE_FILL
 		progress_hbox.add_child(label3_node)
 		progress_hbox.add_child(_progress_help_btn)
 		table_header_node.add_child(progress_hbox)
@@ -838,6 +838,7 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 
 	var line_height = timeline_header.size.y + tracks_container.size.y + 10
 	var prev_month = -1
+	var day_x_positions: Array = []
 
 	for i in range(0, int(horizon_days) + 1):
 		var abs_day = origin_day + i
@@ -869,7 +870,7 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 				month_line.color = Color(0.17, 0.31, 0.57, 0.4)
 				month_line.size = Vector2(2, line_height)
 				month_line.position = Vector2(x_pos, 0)
-				month_line.z_index = -1
+				month_line.z_index = 0
 				month_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				timeline_header.add_child(month_line)
 			prev_month = month_num
@@ -898,9 +899,19 @@ func draw_dynamic_header(px_per_day, horizon_days, origin_day: int = 0):
 		line.color = Color(0.6, 0.6, 0.6, 0.25)
 		line.size = Vector2(1, line_height)
 		line.position = Vector2(x_pos, 0)
-		line.z_index = -1
+		line.z_index = 0
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		timeline_header.add_child(line)
+
+		day_x_positions.append(x_pos)
+
+	for track in tracks_container.get_children():
+		if track.has_method("update_day_lines"):
+			var gantt_offset = track.get_gantt_offset()
+			var track_positions: Array = []
+			for x in day_x_positions:
+				track_positions.append(x - gantt_offset)
+			track.update_day_lines(track_positions)
 
 func get_employee_node(data):
 	if not data: return null

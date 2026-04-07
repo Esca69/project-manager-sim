@@ -62,6 +62,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
 text = "BA"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="VSeparator" type="VSeparator" parent="Layout"]
 layout_mode = 2
@@ -83,9 +84,12 @@ layout_mode = 2
 [node name="ProgressLabel" type="Label" parent="Layout"]
 custom_minimum_size = Vector2(130, 0)
 layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.8980392, 0.22352941, 0.20784314, 1)
 text = "0 / 1000"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="VSeparator3" type="VSeparator" parent="Layout"]
 layout_mode = 2
