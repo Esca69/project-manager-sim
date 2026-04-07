@@ -215,10 +215,6 @@ func _ready():
 
 	call_deferred("_apply_fonts")
 
-	_build_day_summary()
-	_build_boss_ui()
-	_build_hr_role_screen()
-
 	# Тик времени для обсуждения и поиска
 	GameTime.time_tick.connect(_on_discuss_time_tick)
 	GameTime.time_tick.connect(_on_search_time_tick)
@@ -238,49 +234,73 @@ func _ready():
 				TutorialManager.start_tutorial()
 		)
 
+	# Строим остальные панели асинхронно, чтобы не блокировать первый кадр
+	call_deferred("_build_all_dynamic_ui")
+
+# === АСИНХРОННАЯ СБОРКА ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
+# Строим по несколько панелей за раз, давая движку кадр между группами.
+func _build_all_dynamic_ui() -> void:
+	_build_day_summary()
+	await get_tree().process_frame
+
+	_build_boss_ui()
+	await get_tree().process_frame
+
+	_build_hr_role_screen()
+	await get_tree().process_frame
+
 	# === EVENT SYSTEM: Создаём ивент-попап ===
 	_build_event_popup()
 
 	# === EVENT LOG: Создаём журнал событий ===
 	_build_event_log()
+	await get_tree().process_frame
 
 	# === BOSS EVENT SYSTEM: Создаём попап и трекер ===
 	_build_boss_event_ui()
 
 	# === META: Создаём панель "Моя жизнь" ===
 	_build_my_life_panel()
+	await get_tree().process_frame
+
 	_build_personal_balance_label()
-	
-	# >>> ДОБАВЛЕНО: Создаем лейбл для FPS
+
+	# >>> Создаем лейбл для FPS
 	_build_fps_label()
+	await get_tree().process_frame
 
 	# === REPORTS: Создаём панель отчётов ===
 	_build_reports_panel()
 
 	# === ENCYCLOPEDIA: Создаём панель энциклопедии ===
 	_build_encyclopedia_panel()
+	await get_tree().process_frame
 
 	# === PLAYTEST CAP: Счётчик дней и экран завершения ===
 	_build_playtest_label()
 	_build_playtest_end_screen()
+	await get_tree().process_frame
 
 	# Защита от загрузки сейва за пределами плейтеста
 	if GameTime.day >= 91:
 		call_deferred("_show_playtest_end")
 
-	# Прогрев тяжёлых панелей — делаем отложенно, чтобы не тормозить первый кадр
-	call_deferred("_preheat_panels")
+	# Прогрев тяжёлых панелей — теперь запускается здесь, после того как все панели созданы
+	await _preheat_panels()
 
 # === ПРОГРЕВ ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
 # Строим UI при visible=false, чтобы шрифты и ноды оказались в кеше.
-func _preheat_panels():
-	# pm_skill_tree инициализируется сам через call_deferred в _ready(),
-	# поэтому ждём до его готовности перед вызовом _rebuild_tree
+func _preheat_panels() -> void:
 	if pm_skill_tree and pm_skill_tree.has_method("_rebuild_tree"):
-		var was_visible = pm_skill_tree.visible
 		pm_skill_tree.visible = false
 		pm_skill_tree._rebuild_tree()
-		pm_skill_tree.visible = was_visible
+		pm_skill_tree._tree_is_dirty = false
+		# Делаем видимым на 1 кадр (alpha=0), чтобы GPU растеризовал emoji-глифы
+		pm_skill_tree.visible = true
+		pm_skill_tree.modulate.a = 0.0
+		await get_tree().process_frame
+		pm_skill_tree.visible = false
+		pm_skill_tree.modulate.a = 1.0
 
 	await get_tree().process_frame
 

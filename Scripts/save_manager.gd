@@ -550,6 +550,59 @@ func load_game(slot: int = -1) -> bool:
 			emit_signal("save_incompatible", slot, "Сохранение повреждено или несовместимо. Начните новую игру.")
 			return false
 
+	_apply_loaded_data(data, slot)
+	return true
+
+# Асинхронная версия load_game(): читает файл, парсит JSON и применяет данные
+# с паузами между этапами, чтобы UI (спиннер) мог обновляться.
+# Используется loading_screen.gd для плавной загрузки без заморозки интерфейса.
+func load_game_async(slot: int = -1) -> bool:
+	if slot == -1:
+		slot = current_slot
+	if not has_save_in_slot(slot):
+		print("⚠️ Нет сохранения в слоте %d" % slot)
+		return false
+
+	# Шаг 1: читаем файл
+	var save_path = _get_slot_path(slot)
+	var file = FileAccess.open(save_path, FileAccess.READ)
+	if not file:
+		push_error("Не удалось открыть файл сохранения: " + save_path)
+		return false
+	var json_string = file.get_as_text()
+	file.close()
+	await get_tree().process_frame
+
+	# Шаг 2: парсим JSON, проверяем версию, запускаем миграции
+	var json = JSON.new()
+	if json.parse(json_string) != OK:
+		push_error("Ошибка парсинга JSON: " + json.get_error_message())
+		return false
+	var data = json.data
+	if not data is Dictionary:
+		push_error("Некорректный формат сохранения")
+		return false
+	var version = data.get("save_version", 0)
+	if version > SAVE_VERSION:
+		push_warning("Сохранение слота %d создано в более новой версии игры (%d > %d)" % [slot, version, SAVE_VERSION])
+		emit_signal("save_incompatible", slot, "Сохранение создано в более новой версии игры. Обновите игру.")
+		return false
+	if version < SAVE_VERSION:
+		var migrated = _run_migrations(data, version, slot)
+		if not migrated:
+			push_error("Миграция сохранения слота %d не удалась" % slot)
+			emit_signal("save_incompatible", slot, "Сохранение повреждено или несовместимо. Начните новую игру.")
+			return false
+	await get_tree().process_frame
+
+	# Шаг 3: применяем данные к синглтонам
+	_apply_loaded_data(data, slot)
+	await get_tree().process_frame
+
+	return true
+
+# Применяет данные из словаря сохранения ко всем синглтонам.
+func _apply_loaded_data(data: Dictionary, slot: int) -> void:
 	current_slot = slot
 
 	_load_game_time(data.get("game_time", {}))
@@ -580,7 +633,6 @@ func load_game(slot: int = -1) -> bool:
 	print("📂 Данные синглтонов восстановлены (слот %d)" % slot)
 	pending_restore = true
 	emit_signal("game_loaded")
-	return true
 
 # ============================================================
 #                   СИСТЕМА МИГРАЦИЙ

@@ -28,6 +28,7 @@ var _sp_label: Label
 var _tooltip_panel: PanelContainer = null
 var _skill_nodes: Dictionary = {}
 var _initialized: bool = false
+var _tree_is_dirty: bool = true
 var _bg_overlay: ColorRect
 
 # === ОПРЕДЕЛЕНИЕ КАТЕГОРИЙ И ИХ ПОРЯДКА ===
@@ -116,7 +117,7 @@ func _deferred_init():
 	_initialized = true
 
 func _on_skill_unlocked_rebuild(_id):
-	_rebuild_tree()
+	_tree_is_dirty = true
 
 func open():
 	if not _initialized:
@@ -125,7 +126,11 @@ func open():
 	# Снова растягиваем при открытии (на случай ресайза окна игры)
 	_force_fullscreen_size()
 	
-	_rebuild_tree()
+	if _tree_is_dirty:
+		_rebuild_tree()
+		_tree_is_dirty = false
+	else:
+		_update_header()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
