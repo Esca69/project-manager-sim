@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=54 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
@@ -38,6 +38,11 @@ polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2), PackedInt32Array(
 outlines = Array[PackedVector2Array]([PackedVector2Array(-327, -139, 1767, -143, 1761, 886, -331, 895), PackedVector2Array(1765, -136, 3329, -142, 3301, -19, 1760, -19), PackedVector2Array(2722, -83, 2686, -349, 2665, -593, 2842, -588, 2849, -464, 2780, -466, 2785, -76), PackedVector2Array(506, -139, 509, -501, -357, -499, -361, -937, 1019, -937, 1011, -507, 596, -502, 597, -138)])
 source_geometry_mode = 1
 source_geometry_group_name = &"desk"
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_boss"]
+vertices = PackedVector2Array(1100, -900, 1900, -900, 1900, 900, 1100, 900)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(1100, -900, 1900, -900, 1900, 900, 1100, 900)])
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_o84nh"]
 size = Vector2(903, 288)
@@ -113,6 +118,10 @@ script = ExtResource("1_2vylc")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavigationPolygon_o84nh")
+
+[node name="BossNavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_layers = 2
+navigation_polygon = SubResource("NavigationPolygon_boss")
 
 [node name="FullOffice" type="Sprite2D" parent="."]
 z_index = -10
