@@ -32,6 +32,8 @@ var _efficiency_labels: Array = []      # Label для каждого worker
 var _avg_progress_labels: Array = []    # Label для каждого worker
 var _efficiency_wrapper: VBoxContainer = null
 var _avg_progress_wrapper: VBoxContainer = null
+var _vs_avg: VSeparator = null          # Разделитель перед колонкой среднего прогресса
+var _vs_progress: VSeparator = null     # Разделитель перед колонкой прогресса
 
 # === ССЫЛКА НА project_window И ШИРИНЫ КОЛОНОК ===
 var project_window_ref: Control = null
@@ -161,29 +163,36 @@ func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "") -
 		return -1.0
 	return total / float(count)
 
+# === ПОСТРОЕНИЕ ДОПОЛНИТЕЛЬНЫХ КОЛОНОК ===
 func _build_extra_columns():
 	var layout = $Layout
-	var assign_node = layout.get_node_or_null("AssignWrapper")
+	var vs2 = layout.get_node_or_null("VSeparator2")
 	var progress_lbl_node = layout.get_node_or_null("ProgressLabel")
 
-	if not layout or not assign_node or not progress_lbl_node:
+	if not layout or not vs2 or not progress_lbl_node:
 		return
 
 	# Очищаем старые если есть
 	if _efficiency_wrapper and is_instance_valid(_efficiency_wrapper):
 		_efficiency_wrapper.queue_free()
 		_efficiency_wrapper = null
+	if _vs_avg and is_instance_valid(_vs_avg):
+		_vs_avg.queue_free()
+		_vs_avg = null
 	if _avg_progress_wrapper and is_instance_valid(_avg_progress_wrapper):
 		_avg_progress_wrapper.queue_free()
 		_avg_progress_wrapper = null
+	if _vs_progress and is_instance_valid(_vs_progress):
+		_vs_progress.queue_free()
+		_vs_progress = null
 	_efficiency_labels.clear()
 	_avg_progress_labels.clear()
 
-	var insert_idx = assign_node.get_index() + 1
+	var insert_idx = vs2.get_index() + 1
 	var eff_w = col_widths.get("efficiency", 120)
 	var avg_w = col_widths.get("avg_progress", 130)
 
-	# === КОЛОНКА ЭФФЕКТИВНОСТЬ ===
+	# === КОЛОНКА ЭФФЕКТИВНОСТЬ === (VSeparator2 уже есть — не добавляем _vs_eff, Bug 6)
 	_efficiency_wrapper = VBoxContainer.new()
 	_efficiency_wrapper.alignment = BoxContainer.ALIGNMENT_CENTER
 	_efficiency_wrapper.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -193,13 +202,26 @@ func _build_extra_columns():
 	layout.move_child(_efficiency_wrapper, insert_idx)
 
 	# === КОЛОНКА Ø ПРОГРЕСС/ДЕНЬ ===
+	_vs_avg = VSeparator.new()
+	_vs_avg.custom_minimum_size = Vector2(2, 0)
+	_vs_avg.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	layout.add_child(_vs_avg)
+	layout.move_child(_vs_avg, insert_idx + 1)
+
 	_avg_progress_wrapper = VBoxContainer.new()
 	_avg_progress_wrapper.alignment = BoxContainer.ALIGNMENT_CENTER
 	_avg_progress_wrapper.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_avg_progress_wrapper.add_theme_constant_override("separation", 8)
 	_avg_progress_wrapper.custom_minimum_size = Vector2(avg_w, 0)
 	layout.add_child(_avg_progress_wrapper)
-	layout.move_child(_avg_progress_wrapper, insert_idx + 1)
+	layout.move_child(_avg_progress_wrapper, insert_idx + 2)
+
+	# === РАЗДЕЛИТЕЛЬ ПЕРЕД ПРОГРЕССОМ (Bug 2) ===
+	_vs_progress = VSeparator.new()
+	_vs_progress.custom_minimum_size = Vector2(2, 0)
+	_vs_progress.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	layout.add_child(_vs_progress)
+	layout.move_child(_vs_progress, insert_idx + 3)
 
 	if is_stage_completed:
 		return
