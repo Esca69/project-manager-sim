@@ -203,6 +203,8 @@ func _build_extra_columns():
 
 	# === КОЛОНКА Ø ПРОГРЕСС/ДЕНЬ ===
 	_vs_avg = VSeparator.new()
+	_vs_avg.custom_minimum_size = Vector2(2, 0)
+	_vs_avg.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	layout.add_child(_vs_avg)
 	layout.move_child(_vs_avg, insert_idx + 1)
 
@@ -216,6 +218,8 @@ func _build_extra_columns():
 
 	# === РАЗДЕЛИТЕЛЬ ПЕРЕД ПРОГРЕССОМ (Bug 2) ===
 	_vs_progress = VSeparator.new()
+	_vs_progress.custom_minimum_size = Vector2(2, 0)
+	_vs_progress.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	layout.add_child(_vs_progress)
 	layout.move_child(_vs_progress, insert_idx + 3)
 
