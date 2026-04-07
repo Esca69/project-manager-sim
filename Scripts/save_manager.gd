@@ -301,6 +301,7 @@ func _serialize_employees() -> Array:
 			"skin_color": npc.skin_color.to_html(),
 			"hair_type": npc.hair_type,
 			"hair_color": npc.hair_color.to_html(),
+			"body_type": npc.body_type,
 			# Позиция стола (для восстановления привязки)
 			"desk_position_x": npc.my_desk_position.x,
 			"desk_position_y": npc.my_desk_position.y,
@@ -823,6 +824,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.skin_color = Color.from_string(emp_dict.get("skin_color", "#FFE0BD"), Color("#FFE0BD"))
 			npc.hair_type = int(emp_dict.get("hair_type", 0))
 			npc.hair_color = Color.from_string(emp_dict.get("hair_color", "#C8A882"), Color("#C8A882"))
+			npc.body_type = emp_dict.get("body_type", "default")
 			npc.update_visuals()
 
 			npc.data.current_energy = float(emp_dict.get("current_energy", 100.0))
