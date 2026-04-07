@@ -207,7 +207,6 @@ func _ready():
 		table_header_node.remove_child(label3_node)
 		var progress_hbox = HBoxContainer.new()
 		progress_hbox.custom_minimum_size = Vector2(COL_W_PROGRESS, 0)
-		progress_hbox.custom_maximum_size = Vector2(COL_W_PROGRESS, 0)
 		progress_hbox.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		progress_hbox.add_theme_constant_override("separation", 4)
 		progress_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -517,7 +516,6 @@ func _create_help_button_local() -> Button:
 	var btn = Button.new()
 	btn.text = "?"
 	btn.custom_minimum_size = Vector2(22, 22)
-	btn.custom_maximum_size = Vector2(22, 22)
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE

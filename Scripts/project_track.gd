@@ -94,7 +94,6 @@ func _create_help_button_track() -> Button:
 	var btn = Button.new()
 	btn.text = "?"
 	btn.custom_minimum_size = Vector2(22, 22)
-	btn.custom_maximum_size = Vector2(22, 22)
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
