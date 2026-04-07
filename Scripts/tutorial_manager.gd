@@ -90,25 +90,26 @@ func notify_player_near_boss():
 	if current_step == Step.STEP_1_MOVE_TO_BOSS:
 		advance_to_step(Step.STEP_2_TAKE_PROJECT)
 
-# Step 2 → 3: player selected/took a project from boss menu
+# Step 2 → 4: player selected/took a project from boss menu (skipping STEP_3)
 func notify_project_taken():
 	if not is_active():
 		return
 	if current_step == Step.STEP_2_TAKE_PROJECT:
-		advance_to_step(Step.STEP_3_WAIT_MEETING)
+		advance_to_step(Step.STEP_4_GO_TO_HR)
 
 # General notification when any project is taken (called unconditionally)
 func notify_any_project_taken():
 	if is_active() and current_step == Step.STEP_2_TAKE_PROJECT:
-		advance_to_step(Step.STEP_3_WAIT_MEETING)
+		advance_to_step(Step.STEP_4_GO_TO_HR)
 	_total_projects_taken += 1
 	if _total_projects_taken >= 2:
 		show_hint("hint_second_project")
 
-# Step 3 → 4: boss meeting/discussion finished
+# Step 3 → 4: boss meeting/discussion finished (deprecated — no longer needed)
 func notify_discussion_finished():
 	if not is_active():
 		return
+	# STEP_3_WAIT_MEETING is now skipped; still advance to STEP_4 if somehow on STEP_3
 	if current_step == Step.STEP_3_WAIT_MEETING:
 		advance_to_step(Step.STEP_4_GO_TO_HR)
 

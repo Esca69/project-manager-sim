@@ -414,9 +414,6 @@ func generate_new_projects():
 func _is_project_limit_reached() -> bool:
 	return not ProjectManager.can_take_more()
 
-func _is_too_late_for_boss() -> bool:
-	return GameTime.hour >= PMData.get_boss_cutoff_hour()
-
 # === ПЕРЕСТРОЙКА КАРТОЧЕК ===
 func _rebuild_cards():
 	if _cards_container == null:
@@ -435,16 +432,6 @@ func _rebuild_cards():
 			Color(0.9, 0.5, 0.1, 1)
 		)
 		_cards_container.add_child(limit_bar)
-
-	# --- Плашка "босс ушёл" ---
-	if _is_too_late_for_boss():
-		var cutoff = PMData.get_boss_cutoff_hour()
-		var time_bar = _create_warning_bar(
-			tr("PROJ_SEL_TIME_TITLE") % cutoff,
-			tr("PROJ_SEL_TIME_HINT"),
-			Color(0.7, 0.2, 0.2, 1)
-		)
-		_cards_container.add_child(time_bar)
 
 	var has_any = false
 	for i in range(current_options.size()):
@@ -564,15 +551,6 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
 
-	# Метка "Обсуждение занимает N часов"
-	var boss_hours = PMData.get_boss_meeting_hours()
-	var time_lbl = Label.new()
-	time_lbl.text = tr("PROJ_SEL_BOSS_MEETING") % boss_hours
-	time_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55, 1))
-	time_lbl.add_theme_font_size_override("font_size", 13)
-	if UITheme: UITheme.apply_font(time_lbl, "regular")
-	left_info.add_child(time_lbl)
-
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
@@ -594,14 +572,11 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	right_info.add_child(budget_lbl)
 
 	var is_limit = _is_project_limit_reached()
-	var is_late = _is_too_late_for_boss()
-	var btn_blocked = is_limit or is_late
+	var btn_blocked = is_limit
 
 	var select_btn = Button.new()
 	if is_limit:
 		select_btn.text = tr("PROJ_SEL_BTN_LIMIT")
-	elif is_late:
-		select_btn.text = tr("PROJ_SEL_BTN_LATE")
 	else:
 		select_btn.text = tr("PROJ_SEL_BTN_SELECT")
 		
@@ -654,11 +629,9 @@ func _on_select_pressed(index: int):
 	if not TutorialManager.is_active():
 		if _is_project_limit_reached():
 			return
-		if _is_too_late_for_boss():
-			return
 
 	# ИСПРАВЛЕНИЕ: Берем локализованное имя для логов
-	print("⏱ Начинаем обсуждение проекта: ", selected.get_display_title())
+	print("✅ Берём проект: ", selected.get_display_title())
 
 	current_options[index] = null
 

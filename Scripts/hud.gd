@@ -42,12 +42,6 @@ var _boss_panel: Control
 var _boss_quest_screen: Control
 var _boss_report_screen: Control
 
-# === ОБСУЖДЕНИЕ С БОССОМ ===
-var _is_discussing: bool = false
-var _discuss_project: ProjectData = null
-var _discuss_minutes_remaining: float = 0.0
-var _discuss_total_minutes: float = 0.0
-
 # === ПОИСК КАНДИДАТОВ (HR) ===
 var _is_searching: bool = false
 var _search_role: String = ""
@@ -225,8 +219,7 @@ func _ready():
 
 	call_deferred("_apply_fonts")
 
-	# Тик времени для обсуждения и поиска
-	GameTime.time_tick.connect(_on_discuss_time_tick)
+	# Тик времени для поиска кандидатов
 	GameTime.time_tick.connect(_on_search_time_tick)
 
 	# >>> ДОБАВЛЕНО: Создаём пауз-меню (Escape)
@@ -402,9 +395,6 @@ func _build_hr_role_screen():
 
 # === ОТКРЫТЬ HR (вызывается из hr_desk.gd) ===
 func open_hr_search():
-	if _is_discussing:
-		print("HR: PM занят обсуждением с боссом.")
-		return
 	if _is_searching:
 		print("HR: PM уже ищет кандидатов.")
 		return
@@ -672,42 +662,9 @@ func _on_pm_level_up(new_level: int):
 func _get_player():
 	return get_tree().get_first_node_in_group("player")
 
-# ===============================================
-# === ЛОГИКА ОБСУЖДЕНИЯ С БОССОМ (ОБНОВЛЕННАЯ) ==
-# ===============================================
-func _start_discussion(proj_data: ProjectData):
-	_is_discussing = true
-	_discuss_project = proj_data
-	_discuss_total_minutes = PMData.get_boss_meeting_hours() * 60.0
-	_discuss_minutes_remaining = _discuss_total_minutes
-
-	var player = _get_player()
-	if player and player.has_method("show_discuss_bar"):
-		player.show_discuss_bar(_discuss_total_minutes)
-
-	# ПРОИГРЫВАЕМ ЗВУК МИТИНГА С БОССОМ 1 РАЗ ПРИ СТАРТЕ
-	AudioManager.play_sfx("bossmeeting")
-
-	print("🤝 Обсуждение начато: %s (%d мин.)" % [proj_data.title, int(_discuss_total_minutes)])
-	EventLog.add(tr("LOG_DISCUSSION_STARTED") % tr(proj_data.title), EventLog.LogType.ROUTINE)
-
-	# === ТУТОРИАЛ: автоускорение до 10x на время обсуждения ===
-	if TutorialManager.is_active():
-		GameTime.speed_10x()
-
-func _on_discuss_time_tick(_h, _m):
-	if not _is_discussing:
-		return
-
-	_discuss_minutes_remaining -= 1.0
-	var elapsed = _discuss_total_minutes - _discuss_minutes_remaining
-
-	var player = _get_player()
-	if player and player.has_method("update_discuss_bar"):
-		player.update_discuss_bar(elapsed, _discuss_minutes_remaining)
-
-	if _discuss_minutes_remaining <= 0:
-		_finish_discussion()
+# =========================================================
+# === ВЗЯТИЕ ПРОЕКТА (МГНОВЕННОЕ) =========================
+# =========================================================
 
 # === ХЕЛПЕР: прибавить N рабочих дней (пропуская выходные) ===
 func _add_working_days(from_day: int, work_days: int) -> int:
@@ -719,47 +676,13 @@ func _add_working_days(from_day: int, work_days: int) -> int:
 			added += 1
 	return result
 
-# === ЗАВЕРШЕНИЕ ОБСУЖДЕНИЯ ===
-func _finish_discussion():
-	_is_discussing = false
-
-	var player = _get_player()
-	if player and player.has_method("hide_discuss_bar"):
-		player.hide_discuss_bar()
-
-	if _discuss_project == null:
-		return
-
-	print("✅ Обсуждение завершено: ", _discuss_project.title)
-	EventLog.add(tr("LOG_DISCUSSION_FINISHED") % tr(_discuss_project.title), EventLog.LogType.PROGRESS)
-
-	# === Вычисляем абсолютные дедлайны от ТЕКУЩЕГО дня, пропуская выходные ===
-	var today = GameTime.day
-	_discuss_project.created_at_day = today
-	_discuss_project.soft_deadline_day = _add_working_days(today, _discuss_project.soft_days_budget)
-	_discuss_project.deadline_day = _add_working_days(today, _discuss_project.hard_days_budget)
-
-	print("📅 Дедлайны: софт = день %d, хард = день %d" % [_discuss_project.soft_deadline_day, _discuss_project.deadline_day])
-
-	ProjectManager.add_project(_discuss_project)
-
-	PMData.add_xp(5)
-	print("🎯 PM +5 XP за взятие проекта")
-
-	_discuss_project = null
-
-	# === ТУТОРИАЛ: восстанавливаем 1x и переходим к шагу 4 ===
-	if TutorialManager.is_active():
-		GameTime.speed_1x()
-		TutorialManager.notify_discussion_finished()
-
 # === ПРОВЕРКА: PM ЗАНЯТ ===
 func is_pm_busy() -> bool:
-	return _is_discussing or _is_searching
+	return _is_searching
 
 # === ПРОВЕРКА: АКТИВЕН ЛИ ДЛИТЕЛЬНЫЙ ПРОЦЕСС (для свободной камеры) ===
 func is_long_action_active() -> bool:
-	return _is_discussing or _is_searching
+	return _is_searching
 
 # --- ПРОВЕРКА: ОТКРЫТО ЛИ КАКОЕ-ТО МЕНЮ ---
 func is_any_menu_open() -> bool:
@@ -891,9 +814,6 @@ func _on_close_button_pressed():
 		info_panel.visible = false
 
 func open_boss_menu():
-	if _is_discussing:
-		print("Босс: PM ещё обсуждает предыдущий проект!")
-		return
 	if _is_searching:
 		print("Босс: PM занят поиском кандидатов.")
 		return
@@ -902,9 +822,6 @@ func open_boss_menu():
 	selection_ui.open_selection()
 
 func open_work_menu():
-	if _is_discussing:
-		print("Компьютер: PM занят обсуждением с боссом.")
-		return
 	if _is_searching:
 		print("Компьютер: PM занят поиском кандидатов.")
 		return
@@ -912,8 +829,26 @@ func open_work_menu():
 	# Меню откроется, но покажет EmptyLabel (как в EmployeeRoster)
 	project_list_menu.open_menu()
 
-func _on_project_taken(proj_data):
-	_start_discussion(proj_data)
+func _on_project_taken(proj_data: ProjectData):
+	# Мгновенное взятие проекта (meeting больше не нужен)
+	var today = GameTime.day
+	proj_data.created_at_day = today
+	proj_data.soft_deadline_day = _add_working_days(today, proj_data.soft_days_budget)
+	proj_data.deadline_day = _add_working_days(today, proj_data.hard_days_budget)
+
+	print("📅 Дедлайны: софт = день %d, хард = день %d" % [proj_data.soft_deadline_day, proj_data.deadline_day])
+
+	ProjectManager.add_project(proj_data)
+
+	PMData.add_xp(5)
+	print("🎯 PM +5 XP за взятие проекта")
+
+	EventLog.add(tr("LOG_PROJECT_TAKEN") % tr(proj_data.title), EventLog.LogType.PROGRESS)
+	AudioManager.play_sfx("bossmeeting")
+
+	# === ТУТОРИАЛ ===
+	if TutorialManager.is_active():
+		TutorialManager.notify_discussion_finished()
 
 func _on_project_list_opened(proj_data: ProjectData):
 	project_window.setup(proj_data, employee_selector)
@@ -1053,9 +988,6 @@ func _dismiss_all_employees():
 
 func _on_end_day_pressed():
 	if GameTime.is_night_skip: return
-	if _is_discussing:
-		print("Нельзя закончить день: PM обсуждает проект!")
-		return
 	if _is_searching:
 		print("Нельзя закончить день: PM ищет кандидатов!")
 		return
