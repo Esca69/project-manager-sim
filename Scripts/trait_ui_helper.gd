@@ -79,7 +79,7 @@ static func _create_single_trait(trait_id: String, emp: EmployeeData, parent_con
 		# Убираем старый, если есть
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = _create_tooltip(description, color)
+		var tp = create_tooltip(description, color)
 		parent_control.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
@@ -96,7 +96,7 @@ static func _create_single_trait(trait_id: String, emp: EmployeeData, parent_con
 	
 	return hbox
 
-static func _create_tooltip(text: String, border_color: Color) -> PanelContainer:
+static func create_tooltip(text: String, border_color: Color) -> PanelContainer:
 	var panel = PanelContainer.new()
 	panel.z_index = 300
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE

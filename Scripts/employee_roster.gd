@@ -508,7 +508,7 @@ func _create_card(npc_node) -> PanelContainer:
 		mood_help_btn.mouse_entered.connect(func():
 			if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
 				mood_tooltip_ref[0].queue_free()
-			var tp = TraitUIHelper._create_tooltip(tr("ROSTER_LOCK_READ_MOOD"), Color(0.5, 0.5, 0.5, 1))
+			var tp = TraitUIHelper.create_tooltip(tr("ROSTER_LOCK_READ_MOOD"), Color(0.5, 0.5, 0.5, 1))
 			parent_ref.add_child(tp)
 			tp.add_to_group("roster_tooltip")
 			await parent_ref.get_tree().process_frame
@@ -531,7 +531,7 @@ func _create_card(npc_node) -> PanelContainer:
 			if mood_tooltip_ref[0] != null and is_instance_valid(mood_tooltip_ref[0]):
 				mood_tooltip_ref[0].queue_free()
 			var breakdown_text = _build_mood_breakdown_text(emp_ref)
-			var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+			var tp = TraitUIHelper.create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 			parent_ref.add_child(tp)
 			tp.add_to_group("roster_tooltip")
 			
@@ -626,7 +626,7 @@ func _create_card(npc_node) -> PanelContainer:
 	burnout_help_btn.mouse_entered.connect(func():
 		if burnout_tooltip_ref[0] != null and is_instance_valid(burnout_tooltip_ref[0]):
 			burnout_tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(tr("BURNOUT_TOOLTIP_DESC"), Color(0.17254902, 0.30980393, 0.5686275, 1))
+		var tp = TraitUIHelper.create_tooltip(tr("BURNOUT_TOOLTIP_DESC"), Color(0.17254902, 0.30980393, 0.5686275, 1))
 		parent_ref.add_child(tp)
 		tp.add_to_group("roster_tooltip")
 
@@ -677,7 +677,7 @@ func _create_card(npc_node) -> PanelContainer:
 		eff_help_btn.mouse_entered.connect(func():
 			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
 				eff_tooltip_ref[0].queue_free()
-			var tp = TraitUIHelper._create_tooltip(tr("ROSTER_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
+			var tp = TraitUIHelper.create_tooltip(tr("ROSTER_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
 			parent_ref.add_child(tp)
 			tp.add_to_group("roster_tooltip")
 			await parent_ref.get_tree().process_frame
@@ -700,7 +700,7 @@ func _create_card(npc_node) -> PanelContainer:
 			if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
 				eff_tooltip_ref[0].queue_free()
 			var breakdown_text = _build_efficiency_breakdown_text(emp_ref)
-			var tp = TraitUIHelper._create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+			var tp = TraitUIHelper.create_tooltip(breakdown_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 			parent_ref.add_child(tp)
 			tp.add_to_group("roster_tooltip")
 			
@@ -863,7 +863,7 @@ func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 	panel.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
+		var tp = TraitUIHelper.create_tooltip(tooltip_description, tooltip_color)
 		parent_ref.add_child(tp)
 		tp.add_to_group("roster_tooltip")
 		
@@ -946,7 +946,7 @@ func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContaine
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(description, color)
+		var tp = TraitUIHelper.create_tooltip(description, color)
 		parent_ref.add_child(tp)
 		tp.add_to_group("roster_tooltip")
 		
@@ -999,7 +999,7 @@ func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
 		var tooltip_text = _build_relationships_tooltip_text(emp_ref)
-		var tp = TraitUIHelper._create_tooltip(tooltip_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
+		var tp = TraitUIHelper.create_tooltip(tooltip_text, Color(0.17254902, 0.30980393, 0.5686275, 1))
 		
 		# РАСШИРЯЕМ ТУЛТИП НА ~30%
 		tp.custom_minimum_size = Vector2(350, 0)
@@ -1252,7 +1252,7 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(description, color)
+		var tp = TraitUIHelper.create_tooltip(description, color)
 		parent_ref.add_child(tp)
 		tp.add_to_group("roster_tooltip")
 		
@@ -1318,7 +1318,7 @@ func _create_hidden_trait() -> HBoxContainer:
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
+		var tp = TraitUIHelper.create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
 		parent_ref.add_child(tp)
 		tp.add_to_group("roster_tooltip")
 		
