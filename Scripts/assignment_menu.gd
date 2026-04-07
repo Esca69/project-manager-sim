@@ -1,16 +1,31 @@
-extends Panel
+extends Control
 
 # Ссылка на стол, который сейчас ждёт назначения
 var target_desk = null
 
-@onready var item_list = $MainVBox/ContentMargin/VBoxContainer/ItemList
+@onready var item_list = $PanelWindow/MainVBox/ContentMargin/VBoxContainer/ItemList
 @onready var close_btn = find_child("CloseButton", true, false)
 
 var color_main = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
+var _overlay: ColorRect
+var _was_paused: bool = false
+
 func _ready():
 	visible = false
-	
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	# === ЗАТЕМНЕНИЕ ФОНА ===
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
+	move_child(_overlay, 0)
+
 	# === УМНОЕ УДАЛЕНИЕ КНОПОК ===
 	var all_buttons = find_children("*", "Button", true, false)
 	for btn in all_buttons:
@@ -57,9 +72,14 @@ func _ready():
 
 # --- Вызывает Стол, когда хочет посадить/заменить сотрудника ---
 func open_assignment_list(desk_node):
+	_was_paused = GameTime.is_game_paused
+	GameTime.set_paused(true)
 	target_desk = desk_node
 	_refresh_list()
-	visible = true
+	if UITheme:
+		UITheme.fade_in(self, 0.2)
+	else:
+		visible = true
 
 # --- Заполняем ItemList сотрудниками ---
 func _refresh_list():
@@ -106,8 +126,7 @@ func _on_item_list_item_activated(index):
 	if target_desk:
 		if target_desk.assigned_npc_node == npc_node:
 			print(tr("LOG_WARN_ALREADY_AT_DESK"))
-			visible = false
-			target_desk = null
+			_on_close_pressed()
 			return
 		
 		if target_desk.assigned_employee:
@@ -131,9 +150,18 @@ func _on_item_list_item_activated(index):
 		# === ТУТОРИАЛ: уведомляем о назначении за стол ===
 		TutorialManager.notify_worker_assigned()
 	
-	visible = false
-	target_desk = null
+	_on_close_pressed()
 
 func _on_close_pressed():
-	visible = false
+	if not _was_paused:
+		GameTime.set_paused(false)
 	target_desk = null
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and visible:
+		_on_close_pressed()
+		get_viewport().set_input_as_handled()

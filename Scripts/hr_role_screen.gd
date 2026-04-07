@@ -21,6 +21,8 @@ var _role_buttons: Array = []
 var _time_warning_lbl: Label
 var _time_info_lbl: Label
 
+var _was_paused: bool = false
+
 # Стили для кнопок ролей
 var _role_style_normal: StyleBoxFlat
 var _role_style_hover: StyleBoxFlat
@@ -47,6 +49,8 @@ func _force_fullscreen_size():
 	set_deferred("size", vp_size)
 
 func open():
+	_was_paused = GameTime.is_game_paused
+	GameTime.set_paused(true)
 	_force_fullscreen_size()
 	_selected_role = ""
 	_update_role_buttons_visual()
@@ -106,12 +110,16 @@ func _remove_tutorial_restrictions():
 func close():
 	if TutorialManager.is_active():
 		return  # Can't close HR screen during tutorial
+	if not _was_paused:
+		GameTime.set_paused(false)
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
 		visible = false
 
 func _close_forced():
+	if not _was_paused:
+		GameTime.set_paused(false)
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:

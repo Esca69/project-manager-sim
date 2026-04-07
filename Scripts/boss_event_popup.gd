@@ -22,6 +22,8 @@ var _header_label: Label
 var _content_vbox: VBoxContainer
 var _buttons_hbox: HBoxContainer
 
+var _was_paused: bool = false
+
 func _ready():
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -124,6 +126,8 @@ func _build_ui():
 # ============================================================
 
 func open(event_data: Dictionary):
+	_was_paused = GameTime.is_game_paused
+	GameTime.set_paused(true)
 	_clear_dynamic_content()
 	_header_label.text = tr("BOSS_EVENT_POPUP_TITLE")
 	_populate_content(event_data, false)
@@ -140,6 +144,8 @@ func open(event_data: Dictionary):
 # ============================================================
 
 func open_info(event_data: Dictionary):
+	_was_paused = GameTime.is_game_paused
+	GameTime.set_paused(true)
 	_clear_dynamic_content()
 	_header_label.text = tr("BOSS_EVENT_POPUP_ACTIVE_TITLE")
 	_populate_content(event_data, true)
@@ -314,6 +320,8 @@ func _on_reject_pressed():
 	_fade_out()
 
 func _fade_out():
+	if not _was_paused:
+		GameTime.set_paused(false)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if UITheme:
 		UITheme.fade_out(self, 0.2)

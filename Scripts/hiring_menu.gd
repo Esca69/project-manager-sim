@@ -32,6 +32,8 @@ const COLOR_WHITE = Color(1, 1, 1, 1)
 # === ДОБАВЛЕНО ДЛЯ ФОНА ===
 var _overlay: ColorRect
 
+var _was_paused: bool = false
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
@@ -133,6 +135,8 @@ func _set_children_pass_filter(node: Node):
 
 # === ОТКРЫТИЕ С КОНКРЕТНОЙ РОЛЬЮ ===
 func open_hiring_menu_for_role(role: String):
+	_was_paused = GameTime.is_game_paused
+	GameTime.set_paused(true)
 	_force_fullscreen_size()
 	generate_candidates_for_role(role)
 	update_ui()
@@ -150,6 +154,8 @@ func _on_close_pressed():
 	# === ТУТОРИАЛ: нельзя закрыть меню найма ===
 	if TutorialManager.is_active():
 		return
+	if not _was_paused:
+		GameTime.set_paused(false)
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -960,6 +966,8 @@ func _on_hire_pressed(index):
 	# === ТУТОРИАЛ: уведомляем о найме ===
 	TutorialManager.notify_any_worker_hired()
 	if TutorialManager.is_active():
+		if not _was_paused:
+			GameTime.set_paused(false)
 		if UITheme:
 			UITheme.fade_out(self, 0.15)
 		else:

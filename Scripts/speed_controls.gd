@@ -46,6 +46,9 @@ func _ready():
 		btn.add_theme_color_override("font_hover_color", COLOR_BLUE)
 		btn.add_theme_color_override("font_pressed_color", Color(0.2, 0.2, 0.2, 1))
 	
+	$PauseBtn.text = "❚❚"
+	$Speed1Btn.text = "▶"
+
 	$PauseBtn.pressed.connect(_on_pause_pressed)
 	$Speed1Btn.pressed.connect(_on_1x_pressed)
 	$Speed2Btn.pressed.connect(_on_2x_pressed)
@@ -53,7 +56,10 @@ func _ready():
 	$Speed10Btn.pressed.connect(_on_10x_pressed)
 
 func _on_pause_pressed():
-	GameTime.set_speed(0)
+	if GameTime.is_game_paused:
+		GameTime.set_speed(1)
+	else:
+		GameTime.set_speed(0)
 
 func _on_1x_pressed():
 	GameTime.speed_1x()
