@@ -219,8 +219,11 @@ func _spawn_boss():
 	else:
 		add_child(boss_instance)
 
-	# Позиция рабочего места босса (бывший Boss2)
-	boss_instance.desk_position = Vector2(1390, -777)
+	# Безопасная установка desk_position
+	if "desk_position" in boss_instance:
+		boss_instance.desk_position = Vector2(1390, -777)
+	else:
+		push_error("🔴 [OFFICE] Boss instance does not have boss_npc.gd script attached!")
 
 	# Начальная позиция = entrance, состояние управляется скриптом
 	var entrance = get_tree().get_first_node_in_group("entrance")
