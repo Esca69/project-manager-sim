@@ -94,6 +94,9 @@ func _create_help_button_track() -> Button:
 	var btn = Button.new()
 	btn.text = "?"
 	btn.custom_minimum_size = Vector2(22, 22)
+	btn.custom_maximum_size = Vector2(22, 22)
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.add_theme_font_size_override("font_size", 11)
 	btn.add_theme_color_override("font_color", color_main_text)
@@ -226,6 +229,7 @@ func _build_extra_columns():
 		var eff_row = HBoxContainer.new()
 		eff_row.add_theme_constant_override("separation", 4)
 		eff_row.custom_minimum_size = Vector2(0, 30)
+		eff_row.alignment = BoxContainer.ALIGNMENT_CENTER
 		_efficiency_wrapper.add_child(eff_row)
 
 		var eff_val = worker.get_efficiency_multiplier() if worker.has_method("get_efficiency_multiplier") else 1.0
@@ -249,7 +253,7 @@ func _build_extra_columns():
 			eff_help.mouse_entered.connect(func():
 				if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
 					eff_tooltip_ref[0].queue_free()
-				var tp = TraitUIHelper._create_tooltip(tr("TRACK_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
+				var tp = TraitUIHelper.create_tooltip(tr("TRACK_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
 				_get_tooltip_parent().add_child(tp)
 				tp.add_to_group("project_tooltip")
 				await get_tree().process_frame
@@ -265,7 +269,7 @@ func _build_extra_columns():
 				if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
 					eff_tooltip_ref[0].queue_free()
 				var bd_text = TraitUIHelper.build_efficiency_breakdown_text(worker_ref)
-				var tp = TraitUIHelper._create_tooltip(bd_text, color_main_text)
+				var tp = TraitUIHelper.create_tooltip(bd_text, color_main_text)
 				_get_tooltip_parent().add_child(tp)
 				tp.add_to_group("project_tooltip")
 				await get_tree().process_frame
@@ -286,6 +290,7 @@ func _build_extra_columns():
 		var avg_row = HBoxContainer.new()
 		avg_row.add_theme_constant_override("separation", 4)
 		avg_row.custom_minimum_size = Vector2(0, 30)
+		avg_row.alignment = BoxContainer.ALIGNMENT_CENTER
 		_avg_progress_wrapper.add_child(avg_row)
 
 		if not PMData.has_skill("report_people_tab"):
@@ -299,7 +304,7 @@ func _build_extra_columns():
 			lock_lbl.mouse_entered.connect(func():
 				if lock_tooltip_ref[0] != null and is_instance_valid(lock_tooltip_ref[0]):
 					lock_tooltip_ref[0].queue_free()
-				var tp = TraitUIHelper._create_tooltip(tr("TRACK_LOCK_REPORT_PEOPLE"), Color(0.5, 0.5, 0.5, 1))
+				var tp = TraitUIHelper.create_tooltip(tr("TRACK_LOCK_REPORT_PEOPLE"), Color(0.5, 0.5, 0.5, 1))
 				_get_tooltip_parent().add_child(tp)
 				tp.add_to_group("project_tooltip")
 				await get_tree().process_frame

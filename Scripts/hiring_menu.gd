@@ -430,7 +430,7 @@ func _create_personality_item(tag_id: String, data: EmployeeData, parent: Contro
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(description, color)
+		var tp = TraitUIHelper.create_tooltip(description, color)
 		parent.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
@@ -679,7 +679,7 @@ func _create_employment_type_badge(data: EmployeeData) -> PanelContainer:
 	panel.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
+		var tp = TraitUIHelper.create_tooltip(tooltip_description, tooltip_color)
 		self.add_child(tp)
 		var panel_global = panel.global_position
 		tp.global_position = Vector2(panel_global.x + panel.size.x + 10, panel_global.y - 5)
@@ -735,7 +735,7 @@ func _create_boss_preferred_badge() -> PanelContainer:
 	panel.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(tooltip_description, tooltip_color)
+		var tp = TraitUIHelper.create_tooltip(tooltip_description, tooltip_color)
 		self.add_child(tp)
 		var panel_global = panel.global_position
 		tp.global_position = Vector2(panel_global.x + panel.size.x + 10, panel_global.y - 5)
@@ -798,7 +798,7 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData, parent: Control)
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(description, color)
+		var tp = TraitUIHelper.create_tooltip(description, color)
 		parent.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
@@ -851,7 +851,7 @@ func _create_hidden_trait(parent: Control) -> HBoxContainer:
 	help_btn.mouse_entered.connect(func():
 		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
 			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper._create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
+		var tp = TraitUIHelper.create_tooltip(tr("ROSTER_HIDDEN_TRAIT_TOOLTIP"), gray_color)
 		parent.add_child(tp)
 		var btn_global = help_btn.global_position
 		tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)

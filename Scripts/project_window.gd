@@ -207,8 +207,12 @@ func _ready():
 		table_header_node.remove_child(label3_node)
 		var progress_hbox = HBoxContainer.new()
 		progress_hbox.custom_minimum_size = Vector2(COL_W_PROGRESS, 0)
+		progress_hbox.custom_maximum_size = Vector2(COL_W_PROGRESS, 0)
+		progress_hbox.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		progress_hbox.add_theme_constant_override("separation", 4)
+		progress_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		label3_node.custom_minimum_size = Vector2(0, 0)
+		label3_node.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		progress_hbox.add_child(label3_node)
 		progress_hbox.add_child(_progress_help_btn)
 		table_header_node.add_child(progress_hbox)
@@ -494,7 +498,7 @@ func _on_crunch_help_hover():
 	if _crunch_tooltip_ref[0] != null and is_instance_valid(_crunch_tooltip_ref[0]):
 		_crunch_tooltip_ref[0].queue_free()
 	var tooltip_text = tr("CRUNCH_TIME_TOOLTIP")
-	var tp = TraitUIHelper._create_tooltip(tooltip_text, COLOR_CRUNCH)
+	var tp = TraitUIHelper.create_tooltip(tooltip_text, COLOR_CRUNCH)
 	add_child(tp)
 	await get_tree().process_frame
 	if not is_instance_valid(tp): return
@@ -513,6 +517,9 @@ func _create_help_button_local() -> Button:
 	var btn = Button.new()
 	btn.text = "?"
 	btn.custom_minimum_size = Vector2(22, 22)
+	btn.custom_maximum_size = Vector2(22, 22)
+	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.add_theme_font_size_override("font_size", 11)
 	btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
@@ -546,7 +553,7 @@ func _create_help_button_local() -> Button:
 func _on_progress_help_hover():
 	if _progress_tooltip_ref[0] != null and is_instance_valid(_progress_tooltip_ref[0]):
 		_progress_tooltip_ref[0].queue_free()
-	var tp = TraitUIHelper._create_tooltip(tr("TRACK_PROGRESS_TOOLTIP"), Color(0.17254902, 0.30980393, 0.5686275, 1))
+	var tp = TraitUIHelper.create_tooltip(tr("TRACK_PROGRESS_TOOLTIP"), Color(0.17254902, 0.30980393, 0.5686275, 1))
 	add_child(tp)
 	tp.add_to_group("project_tooltip")
 	await get_tree().process_frame
