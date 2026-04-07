@@ -124,6 +124,8 @@ func _start_warmup():
 	# Этап 2: загружаем сохранение (если есть)
 	if pending_save_slot > 0:
 		_stage_label.text = _tr_or("LOADING_STAGE_SAVE", "Загрузка сохранения...")
+		# Даём несколько кадров чтобы спиннер точно начал крутиться и текст обновился
+		await get_tree().process_frame
 		await get_tree().process_frame
 
 		var slot = pending_save_slot
@@ -131,6 +133,8 @@ func _start_warmup():
 
 		# load_game_async() выполняет работу пошагово с await, позволяя спиннеру крутиться
 		var ok = await SaveManager.load_game_async(slot)
+		# После загрузки даём кадр для обновления спиннера
+		await get_tree().process_frame
 		if not ok:
 			# Не удалось загрузить сохранение — возвращаемся в главное меню
 			get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
