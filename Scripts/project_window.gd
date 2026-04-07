@@ -19,6 +19,13 @@ var current_selecting_track_index: int = -1
 const GANTT_VIEW_WIDTH = 900.0
 const MIN_TIMELINE_DAYS = 7.0
 
+# === ШИРИНЫ КОЛОНОК (общие константы, используются в project_track.gd) ===
+const COL_W_ROLE = 60
+const COL_W_ASSIGNEE = 260
+const COL_W_EFFICIENCY = 120
+const COL_W_AVG_PROGRESS = 100
+const COL_W_PROGRESS = 100
+
 # === CRUNCH TIME: UI элементы ===
 var _crunch_btn: Button = null
 var _crunch_help_btn: Button = null
@@ -44,6 +51,7 @@ var _progress_help_btn: Button = null
 
 # === SCROLL CONTAINER ===
 var _table_scroll: ScrollContainer = null
+var _scroll_content: VBoxContainer = null
 
 func _get_origin_time() -> float:
 	return float(project.created_at_day) + float(GameTime.START_HOUR) / 24.0
@@ -98,6 +106,14 @@ func setup(data: ProjectData, selector_node):
 
 		var new_track = track_scene.instantiate()
 		tracks_container.add_child(new_track)
+		new_track.project_window_ref = self
+		new_track.col_widths = {
+			"role": COL_W_ROLE,
+			"assignee": COL_W_ASSIGNEE,
+			"efficiency": COL_W_EFFICIENCY,
+			"avg_progress": COL_W_AVG_PROGRESS,
+			"progress": COL_W_PROGRESS
+		}
 		new_track.setup(i, stage, stage_readonly)
 
 		new_track.assignment_requested.connect(_on_track_assignment_requested)
@@ -122,7 +138,6 @@ func _ready():
 	z_index = 90
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_force_fullscreen_size()
-	timeline_header.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
 
 	# === Overlay: дочерний элемент, позади MainLayout ===
 	_bg_overlay = ColorRect.new()
@@ -151,7 +166,7 @@ func _ready():
 	var vs_eff = VSeparator.new()
 	var col_eff = Label.new()
 	col_eff.text = tr("TRACK_COL_EFFICIENCY")
-	col_eff.custom_minimum_size = Vector2(120, 0)
+	col_eff.custom_minimum_size = Vector2(COL_W_EFFICIENCY, 0)
 	col_eff.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col_eff.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	col_eff.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
@@ -161,7 +176,7 @@ func _ready():
 	var vs_avg = VSeparator.new()
 	var col_avg = Label.new()
 	col_avg.text = tr("TRACK_COL_AVG_PROGRESS")
-	col_avg.custom_minimum_size = Vector2(100, 0)
+	col_avg.custom_minimum_size = Vector2(COL_W_AVG_PROGRESS, 0)
 	col_avg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	col_avg.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	col_avg.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
@@ -184,14 +199,20 @@ func _ready():
 		table_header_node.add_child(vs_avg)
 		table_header_node.add_child(col_avg)
 
-	# === КНОПКА "?" рядом с заголовком "Прогресс" ===
+	# === КНОПКА "?" рядом с заголовком "Прогресс" — завёрнуто в HBox 100px (Bug 2 + Bug 4) ===
 	_progress_help_btn = _create_help_button_local()
+	_progress_help_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if label3_node:
-		# Найдём родителя label3 (TableHeader) и добавим кнопку рядом с ним в отдельный HBox
-		# Поскольку TableHeader — HBoxContainer, добавляем кнопку после col_progress
 		var progress_idx = label3_node.get_index()
-		table_header_node.add_child(_progress_help_btn)
-		table_header_node.move_child(_progress_help_btn, progress_idx + 1)
+		table_header_node.remove_child(label3_node)
+		var progress_hbox = HBoxContainer.new()
+		progress_hbox.custom_minimum_size = Vector2(COL_W_PROGRESS, 0)
+		progress_hbox.add_theme_constant_override("separation", 4)
+		label3_node.custom_minimum_size = Vector2(0, 0)
+		progress_hbox.add_child(label3_node)
+		progress_hbox.add_child(_progress_help_btn)
+		table_header_node.add_child(progress_hbox)
+		table_header_node.move_child(progress_hbox, progress_idx)
 	_progress_help_btn.mouse_entered.connect(_on_progress_help_hover)
 	_progress_help_btn.mouse_exited.connect(_on_progress_help_exit)
 
@@ -206,24 +227,28 @@ func _ready():
 	_table_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_table_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var scroll_content = VBoxContainer.new()
-	scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll_content = VBoxContainer.new()
+	# Без SIZE_EXPAND_FILL: scroll_content может быть шире ScrollContainer → появляется скроллбар (Bug 5)
 
 	# Вынимаем из body, вставляем в scroll_content
 	var hdr_idx = table_hdr.get_index()
 	body_node.remove_child(table_hdr)
 	body_node.remove_child(tracks_cont)
 
-	scroll_content.add_child(table_hdr)
-	scroll_content.add_child(tracks_cont)
+	_scroll_content.add_child(table_hdr)
+	_scroll_content.add_child(tracks_cont)
 
-	_table_scroll.add_child(scroll_content)
+	_table_scroll.add_child(_scroll_content)
 	body_node.add_child(_table_scroll)
 	body_node.move_child(_table_scroll, hdr_idx)
 
 	table_hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tracks_cont.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	timeline_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Устанавливаем минимальную ширину для горизонтального скролла (Bug 5)
+	var fixed_cols_w = COL_W_ROLE + COL_W_ASSIGNEE + COL_W_EFFICIENCY + COL_W_AVG_PROGRESS + COL_W_PROGRESS + 30
+	_scroll_content.custom_minimum_size.x = fixed_cols_w + GANTT_VIEW_WIDTH
 
 	# Перехватываем скролл колёсиком для горизонтального движения
 	_table_scroll.gui_input.connect(_on_table_scroll_gui_input)

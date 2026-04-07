@@ -30,10 +30,14 @@ var color_hover_bg = Color(0.17254902, 0.30980393, 0.5686275, 1)
 # === НОВЫЕ КОЛОНКИ ===
 var _efficiency_labels: Array = []      # Label для каждого worker
 var _avg_progress_labels: Array = []    # Label для каждого worker
-var _efficiency_wrapper: CenterContainer = null
-var _avg_progress_wrapper: CenterContainer = null
+var _efficiency_wrapper: VBoxContainer = null
+var _avg_progress_wrapper: VBoxContainer = null
 var _vs_eff: VSeparator = null          # Разделитель перед колонкой эффективности
 var _vs_avg: VSeparator = null          # Разделитель перед колонкой среднего прогресса
+
+# === ССЫЛКА НА project_window И ШИРИНЫ КОЛОНОК ===
+var project_window_ref: Control = null
+var col_widths: Dictionary = {}
 
 func setup(index: int, data: Dictionary, readonly: bool = false):
 	stage_index = index
@@ -78,6 +82,14 @@ func _ready():
 		progress_title.text = tr("TRACK_COL_PROGRESS")
 
 # === СОЗДАНИЕ КНОПКИ "?" (стиль employee_roster) ===
+func _get_tooltip_parent() -> Node:
+	return project_window_ref if project_window_ref != null else get_tree().current_scene
+
+func _clamp_tooltip_to_viewport(tp: PanelContainer) -> void:
+	var vp_size = get_viewport().get_visible_rect().size
+	tp.global_position.x = min(tp.global_position.x, vp_size.x - tp.size.x - 10)
+	tp.global_position.y = max(tp.global_position.y, 10)
+
 func _create_help_button_track() -> Button:
 	var btn = Button.new()
 	btn.text = "?"
@@ -127,42 +139,6 @@ func _apply_locked_style_track(btn: Button) -> void:
 	btn.add_theme_stylebox_override("hover", gray_bstyle)
 	btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 
-func _build_efficiency_breakdown_text(emp) -> String:
-	var bd = emp.get_efficiency_breakdown()
-	var lines: Array[String] = []
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_TITLE"))
-	lines.append("")
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOOD") % [bd.mood_zone_name, int(bd.mood_value), _fmt_mult(bd.mood_mult)])
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_ENERGY") % [int(bd.energy_value), _fmt_mult(bd.energy_factor)])
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_TRAITS") % _fmt_mod(bd.trait_sum))
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _fmt_mod(bd.motivation_mod))
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % _fmt_mod(bd.aura_mod))
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _fmt_mod(bd.event_mod))
-	if bd.has("onboarding_mod") and bd.onboarding_mod < 0:
-		lines.append(tr("EFF_MOD_ONBOARDING") + (" (%s)" % _fmt_mod(bd.onboarding_mod)))
-	if bd.has("project_adapt_mod") and bd.project_adapt_mod < 0:
-		lines.append(tr("EFF_MOD_PROJECT_ADAPT") + (" (%s)" % _fmt_mod(bd.project_adapt_mod)))
-	if bd.has("crunch_mod") and bd.crunch_mod < 0:
-		lines.append(tr("CRUNCH_DEBUFF_EFFICIENCY") + (" (%s)" % _fmt_mod(bd.crunch_mod)))
-	if bd.has("burnout_mod") and bd.burnout_mod < 0:
-		lines.append(tr("EFFICIENCY_BREAKDOWN_BURNOUT") + (" (%s)" % _fmt_mod(bd.burnout_mod)))
-	if bd.has("neighbor_mod"):
-		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % _fmt_mod(bd.neighbor_mod))
-	if bd.has("ergonomic_mod") and bd.ergonomic_mod != 0.0:
-		lines.append(tr("EFF_MOD_ERGONOMIC"))
-	lines.append("")
-	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _fmt_mult(bd.total))
-	return "\n".join(lines)
-
-func _fmt_mult(val: float) -> String:
-	return "×%.2f" % val
-
-func _fmt_mod(val: float) -> String:
-	if val >= 0:
-		return "+%d%%" % int(val * 100)
-	else:
-		return "%d%%" % int(val * 100)
-
 func _get_avg_progress_for_worker(worker_name: String) -> float:
 	if not PeopleHistory:
 		return 0.0
@@ -209,14 +185,19 @@ func _build_extra_columns():
 	_avg_progress_labels.clear()
 
 	var insert_idx = vs2.get_index() + 1
+	var eff_w = col_widths.get("efficiency", 120)
+	var avg_w = col_widths.get("avg_progress", 100)
 
 	# === КОЛОНКА ЭФФЕКТИВНОСТЬ ===
 	_vs_eff = VSeparator.new()
 	layout.add_child(_vs_eff)
 	layout.move_child(_vs_eff, insert_idx)
 
-	_efficiency_wrapper = CenterContainer.new()
-	_efficiency_wrapper.custom_minimum_size = Vector2(120, 0)
+	# VBoxContainer вместо CenterContainer — для выравнивания строк (Bug 1)
+	_efficiency_wrapper = VBoxContainer.new()
+	_efficiency_wrapper.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_efficiency_wrapper.add_theme_constant_override("separation", 8)
+	_efficiency_wrapper.custom_minimum_size = Vector2(eff_w, 0)
 	layout.add_child(_efficiency_wrapper)
 	layout.move_child(_efficiency_wrapper, insert_idx + 1)
 
@@ -225,31 +206,26 @@ func _build_extra_columns():
 	layout.add_child(_vs_avg)
 	layout.move_child(_vs_avg, insert_idx + 2)
 
-	_avg_progress_wrapper = CenterContainer.new()
-	_avg_progress_wrapper.custom_minimum_size = Vector2(100, 0)
+	# VBoxContainer вместо CenterContainer — для выравнивания строк (Bug 1)
+	_avg_progress_wrapper = VBoxContainer.new()
+	_avg_progress_wrapper.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_avg_progress_wrapper.add_theme_constant_override("separation", 8)
+	_avg_progress_wrapper.custom_minimum_size = Vector2(avg_w, 0)
 	layout.add_child(_avg_progress_wrapper)
 	layout.move_child(_avg_progress_wrapper, insert_idx + 3)
 
 	if is_stage_completed:
 		return
 
-	# Наполняем efficiency_wrapper
-	var eff_vbox = VBoxContainer.new()
-	eff_vbox.add_theme_constant_override("separation", 4)
-	_efficiency_wrapper.add_child(eff_vbox)
-
-	# Наполняем avg_progress_wrapper
-	var avg_vbox = VBoxContainer.new()
-	avg_vbox.add_theme_constant_override("separation", 4)
-	_avg_progress_wrapper.add_child(avg_vbox)
-
 	var workers = stage_data.get("workers", [])
+	var add_spacer = not is_readonly and not is_stage_completed
 
 	for worker in workers:
 		# --- Efficiency row ---
 		var eff_row = HBoxContainer.new()
 		eff_row.add_theme_constant_override("separation", 4)
-		eff_vbox.add_child(eff_row)
+		eff_row.custom_minimum_size = Vector2(0, 30)
+		_efficiency_wrapper.add_child(eff_row)
 
 		var eff_val = worker.get_efficiency_multiplier() if worker.has_method("get_efficiency_multiplier") else 1.0
 		var eff_lbl = Label.new()
@@ -268,17 +244,17 @@ func _build_extra_columns():
 
 		if not PMData.has_skill("read_efficiency"):
 			_apply_locked_style_track(eff_help)
-			var worker_ref = worker
 			eff_help.mouse_entered.connect(func():
 				if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
 					eff_tooltip_ref[0].queue_free()
 				var tp = TraitUIHelper._create_tooltip(tr("TRACK_LOCK_READ_EFFICIENCY"), Color(0.5, 0.5, 0.5, 1))
-				get_tree().current_scene.add_child(tp)
+				_get_tooltip_parent().add_child(tp)
 				tp.add_to_group("project_tooltip")
 				await get_tree().process_frame
 				if not is_instance_valid(tp): return
 				var btn_global = eff_help.global_position
 				tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+				_clamp_tooltip_to_viewport(tp)
 				eff_tooltip_ref[0] = tp
 			)
 		else:
@@ -286,14 +262,15 @@ func _build_extra_columns():
 			eff_help.mouse_entered.connect(func():
 				if eff_tooltip_ref[0] != null and is_instance_valid(eff_tooltip_ref[0]):
 					eff_tooltip_ref[0].queue_free()
-				var bd_text = _build_efficiency_breakdown_text(worker_ref)
+				var bd_text = TraitUIHelper.build_efficiency_breakdown_text(worker_ref)
 				var tp = TraitUIHelper._create_tooltip(bd_text, color_main_text)
-				get_tree().current_scene.add_child(tp)
+				_get_tooltip_parent().add_child(tp)
 				tp.add_to_group("project_tooltip")
 				await get_tree().process_frame
 				if not is_instance_valid(tp): return
 				var btn_global = eff_help.global_position
 				tp.global_position = Vector2(btn_global.x + 28, btn_global.y - 10)
+				_clamp_tooltip_to_viewport(tp)
 				eff_tooltip_ref[0] = tp
 			)
 		eff_help.mouse_exited.connect(func():
@@ -304,18 +281,16 @@ func _build_extra_columns():
 		eff_row.add_child(eff_help)
 
 		# --- Avg Progress row ---
-		var avg_row = CenterContainer.new()
-		avg_vbox.add_child(avg_row)
+		var avg_row = HBoxContainer.new()
+		avg_row.add_theme_constant_override("separation", 4)
+		avg_row.custom_minimum_size = Vector2(0, 30)
+		_avg_progress_wrapper.add_child(avg_row)
 
 		if not PMData.has_skill("report_people_tab"):
-			var lock_row = HBoxContainer.new()
-			lock_row.add_theme_constant_override("separation", 4)
-			avg_row.add_child(lock_row)
-
 			var lock_lbl = Label.new()
 			lock_lbl.text = "🔒"
 			lock_lbl.add_theme_font_size_override("font_size", 14)
-			lock_row.add_child(lock_lbl)
+			avg_row.add_child(lock_lbl)
 
 			var lock_tooltip_ref: Array = [null]
 			lock_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -323,12 +298,13 @@ func _build_extra_columns():
 				if lock_tooltip_ref[0] != null and is_instance_valid(lock_tooltip_ref[0]):
 					lock_tooltip_ref[0].queue_free()
 				var tp = TraitUIHelper._create_tooltip(tr("TRACK_LOCK_REPORT_PEOPLE"), Color(0.5, 0.5, 0.5, 1))
-				get_tree().current_scene.add_child(tp)
+				_get_tooltip_parent().add_child(tp)
 				tp.add_to_group("project_tooltip")
 				await get_tree().process_frame
 				if not is_instance_valid(tp): return
 				var lbl_global = lock_lbl.global_position
 				tp.global_position = Vector2(lbl_global.x + 20, lbl_global.y - 10)
+				_clamp_tooltip_to_viewport(tp)
 				lock_tooltip_ref[0] = tp
 			)
 			lock_lbl.mouse_exited.connect(func():
@@ -347,6 +323,16 @@ func _build_extra_columns():
 			if UITheme: UITheme.apply_font(avg_lbl, "regular")
 			avg_row.add_child(avg_lbl)
 			_avg_progress_labels.append(avg_lbl)
+
+	# Добавляем spacer под строки, чтобы выровнять с кнопкой "Назначить" (Bug 1)
+	if add_spacer:
+		var eff_spacer = Control.new()
+		eff_spacer.custom_minimum_size = Vector2(0, 40)
+		_efficiency_wrapper.add_child(eff_spacer)
+
+		var avg_spacer = Control.new()
+		avg_spacer.custom_minimum_size = Vector2(0, 40)
+		_avg_progress_wrapper.add_child(avg_spacer)
 
 # === ОБНОВЛЕНИЕ ЭФФЕКТИВНОСТИ В РЕАЛЬНОМ ВРЕМЕНИ ===
 func update_efficiency_live():

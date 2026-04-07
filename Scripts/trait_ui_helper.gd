@@ -132,3 +132,41 @@ static func _create_tooltip(text: String, border_color: Color) -> PanelContainer
 	margin.add_child(lbl)
 	
 	return panel
+
+# === Общие вспомогательные методы для эффективности (используются в project_track.gd и employee_roster.gd) ===
+
+static func build_efficiency_breakdown_text(emp) -> String:
+	var bd = emp.get_efficiency_breakdown()
+	var lines: Array[String] = []
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TITLE"))
+	lines.append("")
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOOD") % [bd.mood_zone_name, int(bd.mood_value), fmt_mult(bd.mood_mult)])
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_ENERGY") % [int(bd.energy_value), fmt_mult(bd.energy_factor)])
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TRAITS") % fmt_mod(bd.trait_sum))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % fmt_mod(bd.motivation_mod))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % fmt_mod(bd.aura_mod))
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % fmt_mod(bd.event_mod))
+	if bd.has("onboarding_mod") and bd.onboarding_mod < 0:
+		lines.append(tr("EFF_MOD_ONBOARDING") + (" (%s)" % fmt_mod(bd.onboarding_mod)))
+	if bd.has("project_adapt_mod") and bd.project_adapt_mod < 0:
+		lines.append(tr("EFF_MOD_PROJECT_ADAPT") + (" (%s)" % fmt_mod(bd.project_adapt_mod)))
+	if bd.has("crunch_mod") and bd.crunch_mod < 0:
+		lines.append(tr("CRUNCH_DEBUFF_EFFICIENCY") + (" (%s)" % fmt_mod(bd.crunch_mod)))
+	if bd.has("burnout_mod") and bd.burnout_mod < 0:
+		lines.append(tr("EFFICIENCY_BREAKDOWN_BURNOUT") + (" (%s)" % fmt_mod(bd.burnout_mod)))
+	if bd.has("neighbor_mod"):
+		lines.append(tr("ROSTER_EFF_BREAKDOWN_NEIGHBORS") % fmt_mod(bd.neighbor_mod))
+	if bd.has("ergonomic_mod") and bd.ergonomic_mod != 0.0:
+		lines.append(tr("EFF_MOD_ERGONOMIC"))
+	lines.append("")
+	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % fmt_mult(bd.total))
+	return "\n".join(lines)
+
+static func fmt_mult(val: float) -> String:
+	return "×%.2f" % val
+
+static func fmt_mod(val: float) -> String:
+	if val >= 0:
+		return "+%d%%" % int(val * 100)
+	else:
+		return "%d%%" % int(val * 100)
