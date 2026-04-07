@@ -641,10 +641,11 @@ func update_day_lines(day_x_positions: Array) -> void:
 	for child in gantt_area.get_children():
 		if child.is_in_group("day_separator_line"):
 			child.queue_free()
+	var track_h = size.y if size.y > 0 else custom_minimum_size.y if custom_minimum_size.y > 0 else BASE_TRACK_HEIGHT
 	for x_pos in day_x_positions:
 		var line = ColorRect.new()
 		line.color = Color(0.6, 0.6, 0.6, 0.25)
-		line.size = Vector2(1, custom_minimum_size.y if custom_minimum_size.y > 0 else BASE_TRACK_HEIGHT)
+		line.size = Vector2(1, track_h)
 		line.position = Vector2(x_pos, 0)
 		line.z_index = -1
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
