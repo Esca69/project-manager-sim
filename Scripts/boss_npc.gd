@@ -205,6 +205,8 @@ func _start_coming():
 func _set_state_in_office(show_toast: bool = true):
 	global_position = desk_position
 	velocity = Vector2.ZERO
+	if body_sprite:
+		body_sprite.rotation = 0.0
 	current_state = BossState.IN_OFFICE
 	visible = true
 	$CollisionShape2D.disabled = false
@@ -225,6 +227,8 @@ func _start_leaving():
 func _set_state_away(show_toast: bool = true):
 	visible = false
 	velocity = Vector2.ZERO
+	if body_sprite:
+		body_sprite.rotation = 0.0
 	$CollisionShape2D.disabled = true
 	current_state = BossState.AWAY
 
