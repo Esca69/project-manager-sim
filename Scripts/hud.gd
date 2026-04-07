@@ -843,7 +843,7 @@ func _on_project_taken(proj_data: ProjectData):
 	PMData.add_xp(5)
 	print("🎯 PM +5 XP за взятие проекта")
 
-	EventLog.add(tr("LOG_DISCUSSION_FINISHED") % tr(proj_data.title), EventLog.LogType.PROGRESS)
+	EventLog.add(tr("LOG_PROJECT_TAKEN") % tr(proj_data.title), EventLog.LogType.PROGRESS)
 	AudioManager.play_sfx("bossmeeting")
 
 	# === ТУТОРИАЛ ===

@@ -109,6 +109,13 @@ func _generate_schedule(day_num: int):
 	_departure_hour = randi_range(14, 17)
 	_departure_minute = randi_range(0, 59)
 
+	# Гарантируем, что уход не раньше или одновременно с приходом
+	var arrival_min = _arrival_hour * 60 + _arrival_minute
+	var departure_min = _departure_hour * 60 + _departure_minute
+	if departure_min <= arrival_min + 60:
+		_departure_hour = min(_arrival_hour + 2, 17)
+		_departure_minute = _arrival_minute
+
 # =========================================================
 # === СИНХРОНИЗАЦИЯ СОСТОЯНИЯ С ТЕКУЩИМ ВРЕМЕНЕМ ===========
 # =========================================================
@@ -259,7 +266,7 @@ func _move_along_path(delta):
 	if body_sprite and direction.length() > 0.1:
 		var target_lean = direction.x * 0.12
 		var current_lean = body_sprite.rotation
-		body_sprite.rotation = lerp(current_lean, target_lean, 10.0 * delta)
+		body_sprite.rotation = lerp(current_lean, target_lean, 1.0 - exp(-10.0 * delta))
 
 # =========================================================
 # === ПРОЦЕСС (EXCLAMATION + SOUND) ========================

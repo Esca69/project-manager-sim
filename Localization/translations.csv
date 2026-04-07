@@ -1296,3 +1296,4 @@ TOOLTIP_PLAYTEST_DAYS,Оставшиеся дни плейтеста,Remaining p
 BOSS_ARRIVED,🏢 Босс пришёл в офис,🏢 Boss arrived at the office
 BOSS_LEFT,🚪 Босс ушёл из офиса,🚪 Boss left the office
 BOSS_NOT_HERE,Босса нет в офисе,Boss is not in the office
+LOG_PROJECT_TAKEN,✅ Проект взят: %s,✅ Project taken: %s
