@@ -57,6 +57,7 @@ func record_day():
 		var d = npc.data
 		var emp = {
 			"name": d.get_display_name() if d.has_method("get_display_name") else str(d.employee_name),
+			"employee_id": d.employee_name,
 			"job_title": str(d.job_title),
 			"employment_type": str(d.employment_type),
 			"monthly_salary": int(d.monthly_salary),

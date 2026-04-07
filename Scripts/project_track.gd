@@ -143,23 +143,24 @@ func _apply_locked_style_track(btn: Button) -> void:
 
 func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "") -> float:
 	if not PeopleHistory:
-		return 0.0
+		return -1.0
 	var records = PeopleHistory.daily_records
 	var n = min(records.size(), AVG_PROGRESS_DAYS)
 	if n == 0:
-		return 0.0
+		return -1.0
 	var total = 0.0
 	var count = 0
 	for i in range(records.size() - n, records.size()):
 		var rec = records[i]
 		for emp in rec.get("employees", []):
 			var emp_name = emp.get("name", "")
-			if emp_name == worker_name or (worker_id != "" and emp_name == worker_id):
+			var emp_id = emp.get("employee_id", "")
+			if emp_name == worker_name or (worker_id != "" and (emp_id == worker_id or emp_name == worker_id)):
 				total += emp.get("progress", 0.0)
 				count += 1
 				break
 	if count == 0:
-		return 0.0
+		return -1.0
 	return total / float(count)
 
 # === ПОСТРОЕНИЕ ДОПОЛНИТЕЛЬНЫХ КОЛОНОК ===
@@ -189,7 +190,7 @@ func _build_extra_columns():
 
 	var insert_idx = vs2.get_index() + 1
 	var eff_w = col_widths.get("efficiency", 120)
-	var avg_w = col_widths.get("avg_progress", 100)
+	var avg_w = col_widths.get("avg_progress", 130)
 
 	# === КОЛОНКА ЭФФЕКТИВНОСТЬ === (VSeparator2 уже есть — не добавляем _vs_eff, Bug 6)
 	_efficiency_wrapper = VBoxContainer.new()
@@ -325,7 +326,7 @@ func _build_extra_columns():
 			var worker_name = worker.get_display_name()
 			var worker_id = str(worker.employee_name)
 			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
-			avg_lbl.text = "%.1f" % avg_val
+			avg_lbl.text = "—" if avg_val < 0.0 else "%.1f" % avg_val
 			avg_lbl.add_theme_color_override("font_color", color_main_text)
 			avg_lbl.add_theme_font_size_override("font_size", 12)
 			if UITheme: UITheme.apply_font(avg_lbl, "regular")
@@ -375,7 +376,7 @@ func update_avg_progress_live():
 		var worker_name = worker.get_display_name()
 		var worker_id = str(worker.employee_name)
 		var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
-		lbl.text = "%.1f" % avg_val
+		lbl.text = "—" if avg_val < 0.0 else "%.1f" % avg_val
 
 # Кнопка "Назначить" с нужными скруглениями и ховером
 func _create_styled_button(text: String) -> Button:
@@ -635,3 +636,17 @@ func update_progress(percent: float):
 
 func get_gantt_offset() -> float:
 	return gantt_area.position.x
+
+func update_day_lines(day_x_positions: Array) -> void:
+	for child in gantt_area.get_children():
+		if child.is_in_group("day_separator_line"):
+			child.queue_free()
+	for x_pos in day_x_positions:
+		var line = ColorRect.new()
+		line.color = Color(0.6, 0.6, 0.6, 0.25)
+		line.size = Vector2(1, custom_minimum_size.y if custom_minimum_size.y > 0 else BASE_TRACK_HEIGHT)
+		line.position = Vector2(x_pos, 0)
+		line.z_index = -1
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		line.add_to_group("day_separator_line")
+		gantt_area.add_child(line)
