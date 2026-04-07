@@ -20,6 +20,8 @@ var _scroll_ready: bool = false
 
 var _overlay: ColorRect
 
+var _was_paused: bool = false
+
 # === TABS ===
 var _active_tab: String = "projects"  # "projects" | "negotiations" | "office_dev"
 var _tab_projects_btn: Button
@@ -320,6 +322,9 @@ func _set_children_pass_filter(node: Node):
 		_set_children_pass_filter(child)
 
 func open_selection():
+	_was_paused = GameTime.is_game_paused
+	GameTime.set_paused(true)
+
 	if get_parent():
 		get_parent().move_child(self, -1)
 
@@ -380,6 +385,8 @@ func _setup_tutorial_mode():
 		close_btn.visible = false
 
 func _close_ui():
+	if not _was_paused:
+		GameTime.set_paused(false)
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
