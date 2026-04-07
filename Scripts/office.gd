@@ -1,6 +1,6 @@
 extends Node2D
 
-# Ссылка на сцену сотрудника — load вместо preload!
+# Ссылка на сцену сотрудника
 var employee_scene: PackedScene = null
 
 # Точка спавна
@@ -26,15 +26,8 @@ func _ready():
 	# === КРИТИЧНО: добавляем в группу "office" для поиска из SaveManager ===
 	add_to_group("office")
 	
-	# === ЗАГРУЗКА СЦЕНЫ СОТРУДНИКА (load вместо preload!) ===
-	employee_scene = load("res://Scenes/Employee.tscn")
-	if employee_scene == null:
-		# Пробуем альтернативные пути (на случай переименования)
-		employee_scene = load("res://Scenes/employee.tscn")
-	if employee_scene == null:
-		push_error("🔴 [OFFICE] Employee.tscn НЕ НАЙДЕН! Проверь что файл существует в Scenes/")
-	else:
-		print("🟢 [OFFICE] Employee.tscn загружен успешно")
+	# === ЗАГРУЗКА СЦЕНЫ СОТРУДНИКА ===
+	employee_scene = preload("res://Scenes/Employee.tscn")
 	
 	# === WorldEnvironment — настраиваем кодом (deferred чтобы дерево было готово) ===
 	call_deferred("_setup_environment")
