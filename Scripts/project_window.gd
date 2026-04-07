@@ -162,8 +162,7 @@ func _ready():
 	var vs2 = table_header_node.get_node_or_null("VSeparator2")
 	var label3_node = col_progress
 
-	# Колонка Эффективность
-	var vs_eff = VSeparator.new()
+	# Колонка Эффективность (VSeparator2 уже есть — не добавляем vs_eff, Bug 6)
 	var col_eff = Label.new()
 	col_eff.text = tr("TRACK_COL_EFFICIENCY")
 	col_eff.custom_minimum_size = Vector2(COL_W_EFFICIENCY, 0)
@@ -182,22 +181,23 @@ func _ready():
 	col_avg.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	_col_avg_progress_header = col_avg
 
-	# Вставляем после VSeparator2
+	# Вставляем после VSeparator2 (Bug 6: убран лишний vs_eff; Bug 2: добавлен vs_progress перед Прогресс)
 	if vs2 and label3_node:
 		var insert_idx = vs2.get_index() + 1
-		table_header_node.add_child(vs_eff)
-		table_header_node.move_child(vs_eff, insert_idx)
 		table_header_node.add_child(col_eff)
-		table_header_node.move_child(col_eff, insert_idx + 1)
+		table_header_node.move_child(col_eff, insert_idx)
 		table_header_node.add_child(vs_avg)
-		table_header_node.move_child(vs_avg, insert_idx + 2)
+		table_header_node.move_child(vs_avg, insert_idx + 1)
 		table_header_node.add_child(col_avg)
-		table_header_node.move_child(col_avg, insert_idx + 3)
+		table_header_node.move_child(col_avg, insert_idx + 2)
+		var vs_progress_hdr = VSeparator.new()
+		table_header_node.add_child(vs_progress_hdr)
+		table_header_node.move_child(vs_progress_hdr, insert_idx + 3)
 	else:
-		table_header_node.add_child(vs_eff)
 		table_header_node.add_child(col_eff)
 		table_header_node.add_child(vs_avg)
 		table_header_node.add_child(col_avg)
+		table_header_node.add_child(VSeparator.new())
 
 	# === КНОПКА "?" рядом с заголовком "Прогресс" — завёрнуто в HBox 100px (Bug 2 + Bug 4) ===
 	_progress_help_btn = _create_help_button_local()

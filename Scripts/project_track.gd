@@ -32,8 +32,8 @@ var _efficiency_labels: Array = []      # Label для каждого worker
 var _avg_progress_labels: Array = []    # Label для каждого worker
 var _efficiency_wrapper: VBoxContainer = null
 var _avg_progress_wrapper: VBoxContainer = null
-var _vs_eff: VSeparator = null          # Разделитель перед колонкой эффективности
 var _vs_avg: VSeparator = null          # Разделитель перед колонкой среднего прогресса
+var _vs_progress: VSeparator = null     # Разделитель перед колонкой прогресса
 
 # === ССЫЛКА НА project_window И ШИРИНЫ КОЛОНОК ===
 var project_window_ref: Control = null
@@ -169,9 +169,6 @@ func _build_extra_columns():
 		return
 
 	# Очищаем старые если есть
-	if _vs_eff and is_instance_valid(_vs_eff):
-		_vs_eff.queue_free()
-		_vs_eff = null
 	if _efficiency_wrapper and is_instance_valid(_efficiency_wrapper):
 		_efficiency_wrapper.queue_free()
 		_efficiency_wrapper = null
@@ -181,6 +178,9 @@ func _build_extra_columns():
 	if _avg_progress_wrapper and is_instance_valid(_avg_progress_wrapper):
 		_avg_progress_wrapper.queue_free()
 		_avg_progress_wrapper = null
+	if _vs_progress and is_instance_valid(_vs_progress):
+		_vs_progress.queue_free()
+		_vs_progress = null
 	_efficiency_labels.clear()
 	_avg_progress_labels.clear()
 
@@ -188,31 +188,32 @@ func _build_extra_columns():
 	var eff_w = col_widths.get("efficiency", 120)
 	var avg_w = col_widths.get("avg_progress", 100)
 
-	# === КОЛОНКА ЭФФЕКТИВНОСТЬ ===
-	_vs_eff = VSeparator.new()
-	layout.add_child(_vs_eff)
-	layout.move_child(_vs_eff, insert_idx)
-
-	# VBoxContainer вместо CenterContainer — для выравнивания строк (Bug 1)
+	# === КОЛОНКА ЭФФЕКТИВНОСТЬ === (VSeparator2 уже есть — не добавляем _vs_eff, Bug 6)
 	_efficiency_wrapper = VBoxContainer.new()
-	_efficiency_wrapper.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_efficiency_wrapper.alignment = BoxContainer.ALIGNMENT_CENTER
+	_efficiency_wrapper.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_efficiency_wrapper.add_theme_constant_override("separation", 8)
 	_efficiency_wrapper.custom_minimum_size = Vector2(eff_w, 0)
 	layout.add_child(_efficiency_wrapper)
-	layout.move_child(_efficiency_wrapper, insert_idx + 1)
+	layout.move_child(_efficiency_wrapper, insert_idx)
 
 	# === КОЛОНКА Ø ПРОГРЕСС/ДЕНЬ ===
 	_vs_avg = VSeparator.new()
 	layout.add_child(_vs_avg)
-	layout.move_child(_vs_avg, insert_idx + 2)
+	layout.move_child(_vs_avg, insert_idx + 1)
 
-	# VBoxContainer вместо CenterContainer — для выравнивания строк (Bug 1)
 	_avg_progress_wrapper = VBoxContainer.new()
-	_avg_progress_wrapper.alignment = BoxContainer.ALIGNMENT_BEGIN
+	_avg_progress_wrapper.alignment = BoxContainer.ALIGNMENT_CENTER
+	_avg_progress_wrapper.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_avg_progress_wrapper.add_theme_constant_override("separation", 8)
 	_avg_progress_wrapper.custom_minimum_size = Vector2(avg_w, 0)
 	layout.add_child(_avg_progress_wrapper)
-	layout.move_child(_avg_progress_wrapper, insert_idx + 3)
+	layout.move_child(_avg_progress_wrapper, insert_idx + 2)
+
+	# === РАЗДЕЛИТЕЛЬ ПЕРЕД ПРОГРЕССОМ (Bug 2) ===
+	_vs_progress = VSeparator.new()
+	layout.add_child(_vs_progress)
+	layout.move_child(_vs_progress, insert_idx + 3)
 
 	if is_stage_completed:
 		return
@@ -229,10 +230,11 @@ func _build_extra_columns():
 
 		var eff_val = worker.get_efficiency_multiplier() if worker.has_method("get_efficiency_multiplier") else 1.0
 		var eff_lbl = Label.new()
-		eff_lbl.text = "x%.2f" % eff_val
 		if worker.has_method("get") and (worker.get("aura_bonus") > 0 or worker.get("motivation_bonus") > 0):
+			eff_lbl.text = "x%.1f 🔥" % eff_val
 			eff_lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
 		else:
+			eff_lbl.text = "x%.1f" % eff_val
 			eff_lbl.add_theme_color_override("font_color", color_main_text)
 		eff_lbl.add_theme_font_size_override("font_size", 12)
 		if UITheme: UITheme.apply_font(eff_lbl, "regular")
@@ -345,10 +347,11 @@ func update_efficiency_live():
 		if not lbl or not is_instance_valid(lbl):
 			continue
 		var eff_val = worker.get_efficiency_multiplier() if worker.has_method("get_efficiency_multiplier") else 1.0
-		lbl.text = "x%.2f" % eff_val
 		if worker.has_method("get") and (worker.get("aura_bonus") > 0 or worker.get("motivation_bonus") > 0):
+			lbl.text = "x%.1f 🔥" % eff_val
 			lbl.add_theme_color_override("font_color", Color(0.9, 0.4, 0.1, 1))
 		else:
+			lbl.text = "x%.1f" % eff_val
 			lbl.add_theme_color_override("font_color", color_main_text)
 
 # === ОБНОВЛЕНИЕ СРЕДНЕГО ПРОГРЕССА В РЕАЛЬНОМ ВРЕМЕНИ ===
