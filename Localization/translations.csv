@@ -1293,3 +1293,6 @@ TOOLTIP_PM_LEVEL,Ваш уровень PM. Повышается за опыт о
 TOOLTIP_BOSS_TRUST,Доверие босса. Влияет на лояльность клиентов. За очки доверия можно купить улучшения офиса и повысить зарплату,Boss trust. Affects client loyalty. Trust points can buy office upgrades and salary raises
 TOOLTIP_PERSONAL_BALANCE,"Ваш личный счёт. Зарплата + дивиденды. Копите на цель!","Your personal balance. Salary + dividends. Save towards your goal!"
 TOOLTIP_PLAYTEST_DAYS,Оставшиеся дни плейтеста,Remaining playtest days
+BOSS_ARRIVED,🏢 Босс пришёл в офис,🏢 Boss arrived at the office
+BOSS_LEFT,🚪 Босс ушёл из офиса,🚪 Boss left the office
+BOSS_NOT_HERE,Босса нет в офисе,Boss is not in the office

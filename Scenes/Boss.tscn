@@ -1,18 +1,35 @@
-[gd_scene load_steps=4 format=3 uid="uid://g6438sydtkj"]
+[gd_scene load_steps=5 format=3 uid="uid://g6438sydtkj"]
 
-[ext_resource type="Script" uid="uid://bsj6qpam2th61" path="res://Scripts/boss_desk.gd" id="1_rgqsi"]
-[ext_resource type="Texture2D" uid="uid://cphov4wpd03ef" path="res://Sprites/Office/boss.png" id="2_smvyy"]
+[ext_resource type="Script" uid="uid://bsj6qpam2th61" path="res://Scripts/boss_npc.gd" id="1_rgqsi"]
+[ext_resource type="Texture2D" uid="uid://dworkhqpkmqd3" path="res://Sprites/body2.png" id="2_lgou1"]
+[ext_resource type="Texture2D" uid="uid://cm3qoxjdm5pmr" path="res://Sprites/head2.png" id="3_fbqp8"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_me6e5"]
-size = Vector2(82, 164)
+[sub_resource type="CircleShape2D" id="CircleShape2D_boss"]
 
-[node name="Boss" type="StaticBody2D"]
+[node name="Boss" type="CharacterBody2D"]
+y_sort_enabled = true
 script = ExtResource("1_rgqsi")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("2_smvyy")
-offset = Vector2(0, -90)
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="Body" type="Sprite2D" parent="Visuals"]
+position = Vector2(-39, -45)
+texture = ExtResource("2_lgou1")
+centered = false
+offset = Vector2(0, -84)
+
+[node name="Head" type="Sprite2D" parent="Visuals/Body"]
+position = Vector2(40, -96)
+texture = ExtResource("3_fbqp8")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(1, -78)
-shape = SubResource("RectangleShape2D_me6e5")
+position = Vector2(-1, -10)
+shape = SubResource("CircleShape2D_boss")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 40.0
+target_desired_distance = 40.0
+path_max_distance = 10.0
+simplify_path = true
+avoidance_enabled = true
+radius = 20.0

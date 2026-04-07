@@ -38,7 +38,7 @@ const CATEGORIES = [
 		"label": "SKILL_CATEGORY_PROJECTS",
 		"emoji": "📋",
 		"color": COLOR_BLUE,
-		"branches": ["estimate_work", "estimate_budget", "project_limit", "boss_meeting_speed", "crisis_management"],
+		"branches": ["estimate_work", "estimate_budget", "project_limit", "crisis_management"],
 	},
 	{
 		"id": "people",

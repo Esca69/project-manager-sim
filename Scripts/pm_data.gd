@@ -109,25 +109,6 @@ const SKILL_TREE = {
 		"branch_order": 1,
 	},
 
-	"boss_meeting_speed_1": {
-		"name": "SKILL_BOSS_MEETING_SPEED_1_NAME",
-		"description": "SKILL_BOSS_MEETING_SPEED_1_DESC",
-		"cost": 1,
-		"prerequisite": "",
-		"category": "projects",
-		"branch": "boss_meeting_speed",
-		"branch_order": 0,
-	},
-	"boss_meeting_speed_2": {
-		"name": "SKILL_BOSS_MEETING_SPEED_2_NAME",
-		"description": "SKILL_BOSS_MEETING_SPEED_2_DESC",
-		"cost": 2,
-		"prerequisite": "boss_meeting_speed_1",
-		"category": "projects",
-		"branch": "boss_meeting_speed",
-		"branch_order": 1,
-	},
-
 	# ========================
 	# === КАТЕГОРИЯ: ЛЮДИ ===
 	# ========================
@@ -473,18 +454,10 @@ func get_candidate_count() -> int:
 	if has_skill("candidate_count_1"): return 3
 	return 2
 
-func get_boss_meeting_hours() -> int:
-	if has_skill("boss_meeting_speed_2"): return 2
-	if has_skill("boss_meeting_speed_1"): return 3
-	return 4
-
 func get_hr_search_minutes() -> int:
 	if has_skill("hr_search_speed_2"): return 60
 	if has_skill("hr_search_speed_1"): return 90
 	return 120
-
-func get_boss_cutoff_hour() -> int:
-	return 18 - get_boss_meeting_hours()
 
 func get_hr_cutoff_hour() -> int:
 	return 18 - ceili(float(get_hr_search_minutes()) / 60.0)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=54 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=53 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://v5croxss1l2s" path="res://Sprites/Office/full_office6.png" id="2_oqaoe"]
@@ -20,7 +20,6 @@
 [ext_resource type="PackedScene" uid="uid://ss2qipw67vmd" path="res://Scenes/Mebel/sofa.tscn" id="17_oqaoe"]
 [ext_resource type="Texture2D" uid="uid://dpvwemp6qprgh" path="res://Sprites/Office/panel.png" id="18_ari0y"]
 [ext_resource type="PackedScene" uid="uid://cpot20or6loas" path="res://Scenes/Mebel/fridge.tscn" id="19_2btma"]
-[ext_resource type="PackedScene" uid="uid://g6438sydtkj" path="res://Scenes/Boss.tscn" id="19_2uc8b"]
 [ext_resource type="PackedScene" uid="uid://37g45wjt4sq4" path="res://Scenes/Mebel/kitchen.tscn" id="20_2btma"]
 [ext_resource type="PackedScene" uid="uid://dguf0rohhwl1p" path="res://Scenes/Mebel/lamp.tscn" id="21_2uc8b"]
 [ext_resource type="PackedScene" uid="uid://bmmnhia48sjd" path="res://Scenes/Mebel/foodtable.tscn" id="21_8yipd"]
@@ -380,9 +379,6 @@ position = Vector2(1659, 350)
 
 [node name="Lampa" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_2uc8b")]
 position = Vector2(1774, 297)
-
-[node name="Boss2" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2uc8b")]
-position = Vector2(1390, -777)
 
 [node name="Fridge" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2btma")]
 position = Vector2(956, -910)

@@ -3,6 +3,10 @@ extends Node2D
 # Ссылка на сцену сотрудника
 var employee_scene: PackedScene = null
 
+# Ссылка на сцену и экземпляр босса
+var boss_scene: PackedScene = preload("res://Scenes/Boss.tscn")
+var boss_instance = null
+
 # Точка спавна
 @onready var spawn_point = $SpawnPoint
 
@@ -54,6 +58,9 @@ func _ready():
 	# Используем call_deferred, чтобы вся сцена была готова,
 	# а затем запускаем restore как отдельную корутину
 	call_deferred("_try_restore_save")
+
+	# === СПАВН БОССА ===
+	call_deferred("_spawn_boss")
 
 func _apply_and_connect_upgrades():
 	apply_office_upgrades()
@@ -198,3 +205,28 @@ func spawn_new_employee(data: EmployeeData):
 	new_npc.setup_employee(data)
 
 	print("Заспавнен сотрудник: ", data.employee_name)
+
+func _spawn_boss():
+	if boss_scene == null:
+		push_error("🔴 [OFFICE] Boss.tscn не загружен!")
+		return
+
+	boss_instance = boss_scene.instantiate()
+
+	var world_layer = get_tree().get_first_node_in_group("world_layer")
+	if world_layer:
+		world_layer.add_child(boss_instance)
+	else:
+		add_child(boss_instance)
+
+	# Позиция рабочего места босса (бывший Boss2)
+	boss_instance.desk_position = Vector2(1390, -777)
+
+	# Начальная позиция = entrance, состояние управляется скриптом
+	var entrance = get_tree().get_first_node_in_group("entrance")
+	if entrance:
+		boss_instance.global_position = entrance.global_position
+	else:
+		boss_instance.global_position = Vector2(1636, 834)
+
+	print("👔 Босс заспавнен")
