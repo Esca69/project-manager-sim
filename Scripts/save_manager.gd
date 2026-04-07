@@ -551,7 +551,7 @@ func load_game(slot: int = -1) -> bool:
 			emit_signal("save_incompatible", slot, "Сохранение повреждено или несовместимо. Начните новую игру.")
 			return false
 
-	_apply_loaded_data(data, slot)
+	await _apply_loaded_data(data, slot)
 	return true
 
 # Асинхронная версия load_game(): читает файл, парсит JSON и применяет данные
@@ -597,7 +597,7 @@ func load_game_async(slot: int = -1) -> bool:
 	await get_tree().process_frame
 
 	# Шаг 3: применяем данные к синглтонам
-	_apply_loaded_data(data, slot)
+	await _apply_loaded_data(data, slot)
 	await get_tree().process_frame
 
 	return true
@@ -609,8 +609,11 @@ func _apply_loaded_data(data: Dictionary, slot: int) -> void:
 	_load_game_time(data.get("game_time", {}))
 	_load_game_state(data.get("game_state", {}))
 	_load_pm_data(data.get("pm_data", {}))
+	await get_tree().process_frame
+
 	_load_boss_manager(data.get("boss_manager", {}))
 	_load_clients(data.get("clients", []))
+	await get_tree().process_frame
 
 	# === EVENT SYSTEM: Восстанавливаем EventManager ===
 	_load_event_manager(data.get("event_manager", {}))
@@ -620,12 +623,14 @@ func _apply_loaded_data(data: Dictionary, slot: int) -> void:
 
 	# === FREELANCER SYSTEM: Восстанавливаем FreelancerManager ===
 	_load_freelancer_manager(data.get("freelancer_manager", {}))
+	await get_tree().process_frame
 
 	# === BOSS EVENT SYSTEM ===
 	_load_boss_event_system(data.get("boss_event_system", {}))
 
 	# === ФИНАНСОВАЯ ИСТОРИЯ ===
 	_deserialize_financial_history(data.get("financial_history", {}))
+	await get_tree().process_frame
 
 	# === ИСТОРИЯ СОТРУДНИКОВ ===
 	if data.has("people_history"):

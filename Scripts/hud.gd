@@ -114,6 +114,9 @@ var _prev_personal_balance: int = 0
 # === ИНДИКАТОР СВОБОДНОЙ КАМЕРЫ ===
 var _free_camera_hint: PanelContainer = null
 
+# === END DAY BUTTON: Пульсирующий tween ===
+var _end_day_pulse_tween: Tween = null
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -160,6 +163,10 @@ func _ready():
 	end_day_button.add_theme_color_override("font_color", color_green)
 	end_day_button.add_theme_color_override("font_hover_color", Color.WHITE)
 	end_day_button.add_theme_color_override("font_pressed_color", Color.WHITE)
+
+	end_day_button.custom_minimum_size = Vector2(280, 56)
+	end_day_button.add_theme_font_size_override("font_size", 22)
+	end_day_button.pivot_offset = end_day_button.custom_minimum_size / 2.0
 
 	end_day_button.offset_bottom -= 70
 	end_day_button.offset_top -= 70
@@ -211,7 +218,10 @@ func _ready():
 	ProjectManager.employee_leveled_up.connect(_on_employee_leveled_up_toast)
 
 	PMData.xp_changed.connect(_on_pm_xp_changed)
+	PMData.level_up.connect(_on_pm_level_up)
 	BossManager.trust_changed.connect(_on_boss_trust_changed)
+
+	balance_label.tooltip_text = tr("TOOLTIP_COMPANY_BUDGET")
 
 	call_deferred("_apply_fonts")
 
@@ -581,6 +591,9 @@ func _build_pm_level_ui():
 		hbox_container.add_child(level_vbox)
 		hbox_container.add_child(_boss_trust_label)
 
+	level_vbox.tooltip_text = tr("TOOLTIP_PM_LEVEL")
+	_boss_trust_label.tooltip_text = tr("TOOLTIP_BOSS_TRUST")
+
 func _update_pm_level_ui():
 	if PMData == null:
 		return
@@ -602,6 +615,58 @@ func _update_pm_level_ui():
 
 func _on_pm_xp_changed(_new_xp, _new_sp):
 	_update_pm_level_ui()
+
+func _on_pm_level_up(new_level: int):
+	if ScreenJuice:
+		ScreenJuice.show_toast("⬆️", tr("TOAST_PM_LEVEL_UP") % new_level)
+	var player = _get_player()
+	if player and is_instance_valid(player):
+		var bubble = Node2D.new()
+		player.add_child(bubble)
+		bubble.position = Vector2(0, -210)
+		bubble.z_index = 100
+
+		var panel = Panel.new()
+		bubble.add_child(panel)
+		panel.custom_minimum_size = Vector2(72, 72)
+		panel.size = Vector2(72, 72)
+		panel.position = Vector2(-36, -36)
+
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(1.0, 1.0, 1.0, 1.0)
+		style.border_width_bottom = 2
+		style.border_width_top = 2
+		style.border_width_left = 2
+		style.border_width_right = 2
+		style.border_color = Color(0.2, 0.2, 0.2, 1.0)
+		style.corner_radius_bottom_left = 20
+		style.corner_radius_bottom_right = 20
+		style.corner_radius_top_left = 20
+		style.corner_radius_top_right = 20
+		style.shadow_color = Color(0, 0, 0, 0.1)
+		style.shadow_size = 4
+		panel.add_theme_stylebox_override("panel", style)
+
+		var label = Label.new()
+		panel.add_child(label)
+		label.custom_minimum_size = Vector2(72, 72)
+		label.size = Vector2(72, 72)
+		label.position = Vector2.ZERO
+		label.text = "⬆️"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		var label_settings = LabelSettings.new()
+		label_settings.font_size = 42
+		label.label_settings = label_settings
+
+		bubble.scale = Vector2.ZERO
+		var tween = create_tween()
+		tween.tween_property(bubble, "scale", Vector2(1.3, 1.3), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(bubble, "scale", Vector2.ONE, 0.2)
+		tween.tween_interval(2.0)
+		tween.tween_property(bubble, "modulate:a", 0.0, 0.5)
+		tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
+		tween.tween_callback(bubble.queue_free)
 
 # === ПОЛУЧИТЬ PLAYER ===
 func _get_player():
@@ -788,12 +853,12 @@ func update_time_label(_hour, _minute):
 	# === CRUNCH TIME: Показываем кнопку «Завершить день» в 20:00 ===
 	if GameTime.hour == 20 and GameTime.minute == 0 and not GameTime.is_weekend() and not GameTime.is_night_skip:
 		if not end_day_button.visible:
-			end_day_button.visible = true
+			_start_end_day_pulse()
 
 	# === ТУТОРИАЛ: показываем кнопку «Завершить день» когда дошли до шага 10 и время >= 18:00 ===
 	if TutorialManager.is_active() and TutorialManager.current_step == TutorialManager.Step.STEP_10_END_DAY:
 		if GameTime.hour >= 18 and not end_day_button.visible:
-			end_day_button.visible = true
+			_start_end_day_pulse()
 
 	# === PLAYTEST CAP: Обновляем счётчик оставшихся дней ===
 	_update_playtest_label()
@@ -1013,7 +1078,7 @@ func _on_end_day_pressed():
 		GameTime.start_night_skip()
 		return
 
-	end_day_button.visible = false
+	_stop_end_day_pulse()
 
 	# === ПРИНУДИТЕЛЬНО УБИРАЕМ ВСЕХ СОТРУДНИКОВ ИЗ ОФИСА ===
 	_dismiss_all_employees()
@@ -1043,23 +1108,40 @@ func _on_work_ended_show_end_day():
 	# === CRUNCH TIME: Если активен кранч — кнопка появляется только в 20:00 ===
 	if ProjectManager.has_any_crunch_active():
 		return
+	_start_end_day_pulse()
+
+func _start_end_day_pulse():
 	end_day_button.visible = true
+	end_day_button.pivot_offset = end_day_button.custom_minimum_size / 2.0
+	if _end_day_pulse_tween and _end_day_pulse_tween.is_valid():
+		_end_day_pulse_tween.kill()
+	_end_day_pulse_tween = create_tween()
+	_end_day_pulse_tween.set_loops()
+	_end_day_pulse_tween.tween_property(end_day_button, "scale", Vector2(1.08, 1.08), 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_end_day_pulse_tween.tween_property(end_day_button, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _stop_end_day_pulse():
+	if _end_day_pulse_tween and _end_day_pulse_tween.is_valid():
+		_end_day_pulse_tween.kill()
+		_end_day_pulse_tween = null
+	end_day_button.scale = Vector2.ONE
+	end_day_button.visible = false
 
 func _on_work_started_hide_end_day():
-	end_day_button.visible = false
+	_stop_end_day_pulse()
 
 func _on_new_day(_day_number):
 	# === PLAYTEST CAP: Завершаем на день 91 (Месяц 4, День 1) ===
 	if _day_number >= 91:
 		_show_playtest_end()
 		return
-	end_day_button.visible = false
+	_stop_end_day_pulse()
 
 func _on_night_skip_started():
-	end_day_button.visible = false
+	_stop_end_day_pulse()
 
 func _on_night_skip_finished():
-	end_day_button.visible = false
+	_stop_end_day_pulse()
 	# === АВТОСОХРАНЕНИЕ: начало нового рабочего дня ===
 	SaveManager.save_game()
 	if ScreenJuice:
@@ -1167,6 +1249,7 @@ func _build_personal_balance_label():
 	_prev_personal_balance = PMData.personal_balance
 	if ScreenJuice:
 		ScreenJuice.register_personal_balance_label(_personal_balance_label)
+	_personal_balance_label.tooltip_text = tr("TOOLTIP_PERSONAL_BALANCE")
 
 func _on_personal_balance_changed(new_amount: int):
 	if _personal_balance_label:
@@ -1293,6 +1376,7 @@ func _build_playtest_label():
 		hbox_container.move_child(_playtest_label, idx)
 	else:
 		hbox_container.add_child(_playtest_label)
+	_playtest_label.tooltip_text = tr("TOOLTIP_PLAYTEST_DAYS")
 
 func _update_playtest_label():
 	if _playtest_label == null:

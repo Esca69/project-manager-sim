@@ -1287,3 +1287,9 @@ TRACK_COL_AVG_PROGRESS,Ø Прогр./день,Ø Prog./day
 TRACK_PROGRESS_TOOLTIP,"Количество очков прогресса, которое нужно накопить для завершения этапа. Очки зарабатываются сотрудниками пропорционально их навыку и эффективности. Чем выше навык и эффективность — тем быстрее набираются очки.","Progress points needed to complete the stage. Points are earned by employees proportionally to their skill and efficiency. Higher skill and efficiency = faster point accumulation."
 TRACK_LOCK_READ_EFFICIENCY,"🔒 Изучите навык «Чтение эффективности» в дереве навыков PM, чтобы видеть детализацию","🔒 Unlock ""Read Efficiency"" in PM skill tree to see breakdown"
 TRACK_LOCK_REPORT_PEOPLE,"🔒 Изучите навык «Отчёт: команда» в дереве навыков PM, чтобы видеть среднее кол-во очков","🔒 Unlock ""Report: Team"" in PM skill tree to see average points"
+TOAST_PM_LEVEL_UP,⬆️ PM достиг уровня %d!,⬆️ PM reached level %d!
+TOOLTIP_COMPANY_BUDGET,Общий бюджет компании. Из него оплачиваются зарплаты и расходы,Company budget. Salaries and expenses are paid from it
+TOOLTIP_PM_LEVEL,Ваш уровень PM. Повышается за опыт от проектов. Даёт очки навыков,Your PM level. Increases from project XP. Grants skill points
+TOOLTIP_BOSS_TRUST,Доверие босса. Влияет на лояльность клиентов. За очки доверия можно купить улучшения офиса и повысить зарплату,Boss trust. Affects client loyalty. Trust points can buy office upgrades and salary raises
+TOOLTIP_PERSONAL_BALANCE,"Ваш личный счёт. Зарплата + дивиденды. Копите на цель!","Your personal balance. Salary + dividends. Save towards your goal!"
+TOOLTIP_PLAYTEST_DAYS,Оставшиеся дни плейтеста,Remaining playtest days
