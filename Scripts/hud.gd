@@ -239,7 +239,7 @@ func _ready():
 
 # === АСИНХРОННАЯ СБОРКА ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
 # Строим по несколько панелей за раз, давая движку кадр между группами.
-func _build_all_dynamic_ui():
+func _build_all_dynamic_ui() -> void:
 	_build_day_summary()
 	await get_tree().process_frame
 
@@ -290,7 +290,7 @@ func _build_all_dynamic_ui():
 
 # === ПРОГРЕВ ТЯЖЁЛЫХ UI-ПАНЕЛЕЙ ===
 # Строим UI при visible=false, чтобы шрифты и ноды оказались в кеше.
-func _preheat_panels():
+func _preheat_panels() -> void:
 	if pm_skill_tree and pm_skill_tree.has_method("_rebuild_tree"):
 		pm_skill_tree.visible = false
 		pm_skill_tree._rebuild_tree()
