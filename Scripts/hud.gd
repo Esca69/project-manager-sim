@@ -284,8 +284,12 @@ func _build_all_dynamic_ui() -> void:
 func _preheat_panels() -> void:
 	if pm_skill_tree and pm_skill_tree.has_method("_rebuild_tree"):
 		pm_skill_tree.visible = false
-		pm_skill_tree._rebuild_tree()
-		pm_skill_tree._tree_is_dirty = false
+		# Только если дерево уже инициализировано (_deferred_init успел отработать)
+		if pm_skill_tree._initialized and pm_skill_tree._canvas:
+			pm_skill_tree._rebuild_tree()
+			pm_skill_tree._tree_is_dirty = false
+		# Если не инициализировано — оставляем _tree_is_dirty = true,
+		# чтобы при первом open() дерево нормально построилось
 
 	if client_panel and client_panel.has_method("_populate"):
 		var was_visible = client_panel.visible
