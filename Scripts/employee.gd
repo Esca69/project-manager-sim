@@ -255,6 +255,7 @@ const FEMALE_HAIR_PATHS: Array[String] = [
 ]
 
 const DEFAULT_BODY_PATH: String = "res://Sprites/body2.png"
+const DEFAULT_BODY_WIDTH: int = 79  # Width of body2.png, used for skinny body centering
 
 const MALE_BODY_PATHS: Dictionary = {
 	"man_fat": "res://Sprites/bodies/man_fat.png",
@@ -2162,6 +2163,13 @@ func update_visuals():
 		else:
 			body_sprite.texture = load(DEFAULT_BODY_PATH)
 		body_sprite.self_modulate = personal_color
+		# Fix skinny body horizontal offset: since centered=false, narrower textures
+		# appear shifted. Compensate by offsetting to align with body2.png center.
+		if body_type == "man_skinny" or body_type == "woman_skinny":
+			var skinny_width = body_sprite.texture.get_width() if body_sprite.texture else 0
+			body_sprite.offset.x = (DEFAULT_BODY_WIDTH - skinny_width) / 2.0
+		else:
+			body_sprite.offset.x = 0.0
 	if head_sprite:
 		head_sprite.self_modulate = skin_color
 	_create_hair_sprite()
