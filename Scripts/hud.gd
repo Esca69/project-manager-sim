@@ -113,6 +113,7 @@ var _free_camera_hint: PanelContainer = null
 
 # === END DAY BUTTON: Пульсирующий tween ===
 var _end_day_pulse_tween: Tween = null
+var _last_time_scale: float = 1.0  # Tracks previous Engine.time_scale for tween speed sync
 
 # === TOPBAR TOOLTIP COLOR ===
 const TOPBAR_TOOLTIP_COLOR = Color(0.17254902, 0.30980393, 0.5686275, 1)
@@ -323,6 +324,10 @@ func _preheat_panels() -> void:
 func _process(_delta):
 	if _fps_label:
 		_fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
+	if _end_day_pulse_tween and _end_day_pulse_tween.is_valid():
+		if Engine.time_scale != _last_time_scale:
+			_last_time_scale = Engine.time_scale
+			_end_day_pulse_tween.set_speed_scale(1.0 / Engine.time_scale)
 
 func _apply_fonts():
 	if UITheme == null:
@@ -1098,6 +1103,8 @@ func _start_end_day_pulse():
 	if _end_day_pulse_tween and _end_day_pulse_tween.is_valid():
 		_end_day_pulse_tween.kill()
 	_end_day_pulse_tween = create_tween()
+	_end_day_pulse_tween.set_speed_scale(1.0 / Engine.time_scale)
+	_last_time_scale = Engine.time_scale
 	_end_day_pulse_tween.set_loops()
 	_end_day_pulse_tween.tween_property(end_day_button, "scale", Vector2(1.08, 1.08), 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_end_day_pulse_tween.tween_property(end_day_button, "scale", Vector2.ONE, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

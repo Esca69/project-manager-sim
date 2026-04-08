@@ -108,8 +108,8 @@ func _deferred_init():
 		get_tree().create_timer(0.1).timeout.connect(_deferred_init)
 		return
 
-	if not PMData.xp_changed.is_connected(_update_header):
-		PMData.xp_changed.connect(_update_header)
+	if not PMData.xp_changed.is_connected(_on_xp_changed_rebuild):
+		PMData.xp_changed.connect(_on_xp_changed_rebuild)
 	if not PMData.skill_unlocked.is_connected(_on_skill_unlocked_rebuild):
 		PMData.skill_unlocked.connect(_on_skill_unlocked_rebuild)
 
@@ -117,7 +117,16 @@ func _deferred_init():
 	_initialized = true
 
 func _on_skill_unlocked_rebuild(_id):
-	_tree_is_dirty = true
+	if visible:
+		_rebuild_tree()
+	else:
+		_tree_is_dirty = true
+
+func _on_xp_changed_rebuild(_new_xp = 0, _new_sp = 0):
+	if visible:
+		_rebuild_tree()
+	else:
+		_tree_is_dirty = true
 
 func open():
 	if not _initialized:
@@ -126,11 +135,8 @@ func open():
 	# Снова растягиваем при открытии (на случай ресайза окна игры)
 	_force_fullscreen_size()
 	
-	if _tree_is_dirty:
-		_rebuild_tree()
-		_tree_is_dirty = false
-	else:
-		_update_header()
+	_rebuild_tree()
+	_tree_is_dirty = false
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
@@ -501,6 +507,7 @@ func _on_skill_pressed(skill_id: String):
 	if PMData == null:
 		return
 	PMData.unlock_skill(skill_id)
+	_rebuild_tree()
 
 # === ТУЛТИП ===
 func _show_tooltip(skill_id: String, anchor: Control):
