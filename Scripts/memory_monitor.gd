@@ -263,7 +263,7 @@ func _check_trends():
 	if _trend_history.size() < 3:
 		return
 
-	var last3 = _trend_history.slice(_trend_history.size() - 3)
+	var last3 = _trend_history.slice(_trend_history.size() - 3, _trend_history.size())
 
 	# Проверяем рост коллекций 3+ снапшота подряд
 	var col_keys = last3[0]["collections"].keys() if last3[0].has("collections") else []
@@ -332,10 +332,14 @@ func _check_crash_guards():
 		return
 
 	# COLLECTION OVERFLOW
-	if "active_projects" in ProjectManager:
-		var total_proj = ProjectManager.active_projects.size()
-		if total_proj > COLLECTION_OVERFLOW_THRESHOLD:
-			print("⚠️ COLLECTION OVERFLOW: active_projects=%d (> %d)" % [total_proj, COLLECTION_OVERFLOW_THRESHOLD])
+	if "active_projects" in ProjectManager and "completed_projects" in ProjectManager:
+		var active_proj = ProjectManager.active_projects.size()
+		var completed_proj = ProjectManager.completed_projects.size()
+		if active_proj > COLLECTION_OVERFLOW_THRESHOLD:
+			print("⚠️ COLLECTION OVERFLOW: active_projects=%d (> %d)" % [active_proj, COLLECTION_OVERFLOW_THRESHOLD])
+			_log_snapshot("COLLECTION OVERFLOW")
+		elif completed_proj > COLLECTION_OVERFLOW_THRESHOLD:
+			print("⚠️ COLLECTION OVERFLOW: completed_projects=%d (> %d)" % [completed_proj, COLLECTION_OVERFLOW_THRESHOLD])
 			_log_snapshot("COLLECTION OVERFLOW")
 
 func _check_previous_crash():
