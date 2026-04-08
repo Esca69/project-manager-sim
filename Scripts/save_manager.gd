@@ -357,7 +357,8 @@ func _serialize_desk_assignments() -> Array:
 # --- Проекты ---
 func _serialize_projects() -> Array:
 	var result = []
-	for proj in ProjectManager.active_projects:
+	var all_projects = ProjectManager.active_projects + ProjectManager.completed_projects
+	for proj in all_projects:
 		var proj_dict = {
 			"title": proj.title,
 			"category": proj.category,
@@ -911,6 +912,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 	# === Восстанавливаем проекты ===
 	ProjectManager.active_projects.clear()
+	ProjectManager.completed_projects.clear()
 
 	for proj_dict in project_dicts:
 		var proj = ProjectData.new()
@@ -961,7 +963,11 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 			proj.stages.append(stage)
 
-		ProjectManager.active_projects.append(proj)
+		var finished_state = proj.state == ProjectData.State.FINISHED or proj.state == ProjectData.State.FAILED
+		if finished_state:
+			ProjectManager.completed_projects.append(proj)
+		else:
+			ProjectManager.active_projects.append(proj)
 
 	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
 	_rebind_employees_to_desks()

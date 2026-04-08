@@ -212,18 +212,17 @@ func _rebuild_cards():
 		cards_container.remove_child(child)
 		child.queue_free()
 
-	# Фильтрация
-	var filtered_indices = []
-	for i in range(ProjectManager.active_projects.size()):
-		var proj = ProjectManager.active_projects[i]
-		var is_done = (proj.state == ProjectData.State.FINISHED or proj.state == ProjectData.State.FAILED)
-		
-		if _current_tab == "active" and not is_done:
-			filtered_indices.append(i)
-		elif _current_tab == "completed" and is_done:
-			filtered_indices.append(i)
+	# Фильтрация: "active" — из active_projects, "completed" — из completed_projects
+	var filtered_projects: Array = []
+	if _current_tab == "active":
+		for proj in ProjectManager.active_projects:
+			var is_done = (proj.state == ProjectData.State.FINISHED or proj.state == ProjectData.State.FAILED)
+			if not is_done:
+				filtered_projects.append(proj)
+	else:
+		filtered_projects = ProjectManager.completed_projects.duplicate()
 
-	if filtered_indices.is_empty():
+	if filtered_projects.is_empty():
 		empty_label.text = tr("PROJ_LIST_EMPTY")
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
@@ -235,21 +234,17 @@ func _rebuild_cards():
 	empty_label.visible = false
 
 	# Сортировка
-	filtered_indices.sort_custom(func(a, b):
-		var proj_a = ProjectManager.active_projects[a]
-		var proj_b = ProjectManager.active_projects[b]
-		
+	filtered_projects.sort_custom(func(proj_a, proj_b):
 		if _current_tab == "completed":
 			var time_a = _get_project_finish_time(proj_a)
 			var time_b = _get_project_finish_time(proj_b)
 			return time_a > time_b
 		else:
-			return a < b
+			return proj_a.created_at_day < proj_b.created_at_day
 	)
 
-	for idx in filtered_indices:
-		var proj = ProjectManager.active_projects[idx]
-		var card = _create_card(proj, idx)
+	for proj in filtered_projects:
+		var card = _create_card(proj)
 		cards_container.add_child(card)
 
 func _make_card_style(proj: ProjectData) -> StyleBoxFlat:
@@ -299,7 +294,7 @@ func _set_children_pass_filter(node: Node):
 			child.mouse_filter = Control.MOUSE_FILTER_PASS
 		_set_children_pass_filter(child)
 
-func _create_card(proj: ProjectData, index: int) -> PanelContainer:
+func _create_card(proj: ProjectData) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -438,7 +433,7 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 	open_btn.add_theme_stylebox_override("hover", btn_style_hover)
 	open_btn.add_theme_stylebox_override("pressed", btn_style_hover)
 	if UITheme: UITheme.apply_font(open_btn, "semibold")
-	open_btn.pressed.connect(_on_open_pressed.bind(index))
+	open_btn.pressed.connect(_on_open_pressed.bind(proj))
 	right_info.add_child(open_btn)
 
 	var deadlines_hbox = HBoxContainer.new()
@@ -466,10 +461,9 @@ func _create_card(proj: ProjectData, index: int) -> PanelContainer:
 
 	return card
 
-func _on_open_pressed(index: int):
-	if index < 0 or index >= ProjectManager.active_projects.size():
+func _on_open_pressed(proj: ProjectData):
+	if proj == null:
 		return
-	var proj = ProjectManager.active_projects[index]
 	emit_signal("project_opened", proj)
 	_on_close_pressed()
 

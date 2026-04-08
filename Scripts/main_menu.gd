@@ -681,6 +681,7 @@ func _reset_all_singletons():
 
 	# ProjectManager
 	ProjectManager.active_projects.clear()
+	ProjectManager.completed_projects.clear()
 	
 	# Tutorial
 	GameState.tutorial_completed = false

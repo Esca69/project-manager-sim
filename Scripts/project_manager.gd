@@ -1,6 +1,7 @@
 extends Node
 
 var active_projects: Array = []
+var completed_projects: Array = []
 
 signal project_finished(proj: ProjectData)
 signal project_failed(proj: ProjectData)
@@ -48,7 +49,7 @@ func _physics_process(delta):
 	if GameTime.is_game_paused:
 		return
 		
-	for project in active_projects:
+	for project in active_projects.duplicate():
 		if project.state != ProjectData.State.IN_PROGRESS:
 			continue
 
@@ -221,6 +222,9 @@ func _fail_project(project: ProjectData):
 		client.record_project_failed()
 		print("💔 %s: лояльность %d (провал проекта)" % [client.get_display_name(), client.loyalty])
 
+	active_projects.erase(project)
+	completed_projects.append(project)
+
 	emit_signal("project_failed", project)
 
 func _finish_project(project: ProjectData):
@@ -275,6 +279,10 @@ func _finish_project(project: ProjectData):
 	var em = get_node_or_null("/root/EventManager")
 	if em:
 		em.register_finished_project(project)
+
+	active_projects.erase(project)
+	completed_projects.append(project)
+
 	emit_signal("project_finished", project)
 
 func _get_employee_node(data):
