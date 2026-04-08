@@ -147,7 +147,7 @@ func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "", w
 	var records = PeopleHistory.daily_records
 	var n = min(records.size(), AVG_PROGRESS_DAYS)
 	var current_progress = 0.0
-	if worker_ref != null and worker_ref.has_meta("daily_progress"):
+	if worker_ref != null:
 		current_progress = float(worker_ref.get_meta("daily_progress", 0.0))
 	if n == 0:
 		# No history yet — fall back to today's live progress
@@ -170,9 +170,10 @@ func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "", w
 		if current_progress > 0.0:
 			return current_progress
 		return -1.0
-	# Include today's not-yet-recorded progress as an additional data point
-	total += current_progress
-	count += 1
+	# Include today's not-yet-recorded progress as an additional data point (only if non-zero)
+	if current_progress > 0.0:
+		total += current_progress
+		count += 1
 	return total / float(count)
 
 # === ПОСТРОЕНИЕ ДОПОЛНИТЕЛЬНЫХ КОЛОНОК ===
