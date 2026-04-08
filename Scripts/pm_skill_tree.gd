@@ -424,7 +424,7 @@ func _create_skill_node(skill_id: String, accent_color: Color = COLOR_BLUE) -> P
 		btn.text = tr("UI_SKILL_UNLOCK_BTN")
 		btn.custom_minimum_size = Vector2(120, 28)
 		btn.focus_mode = Control.FOCUS_NONE
-		btn.mouse_filter = Control.MOUSE_FILTER_PASS
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP
 
 		var btn_style = StyleBoxFlat.new()
 		btn_style.bg_color = accent_color

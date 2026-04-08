@@ -179,9 +179,27 @@ var _is_night_skip: bool = false
 
 func _on_night_skip_started():
 	_is_night_skip = true
+	match current_state:
+		BossState.IN_OFFICE:
+			_start_leaving()
+		BossState.COMING:
+			# Перенаправляем к выходу
+			current_state = BossState.LEAVING
+			var entrance = get_tree().get_first_node_in_group("entrance")
+			if entrance:
+				nav_agent.target_position = entrance.global_position
+			else:
+				_set_state_away(false)
+		BossState.LEAVING:
+			pass  # уже идёт к выходу, пусть дойдёт
+		BossState.AWAY:
+			pass  # уже ушёл
 
 func _on_night_skip_finished():
 	_is_night_skip = false
+	# Страховка: если босс не дошёл до выхода за время промотки — принудительно убираем
+	if current_state != BossState.AWAY:
+		_set_state_away(false)
 	_sync_state_to_current_time()
 
 # =========================================================

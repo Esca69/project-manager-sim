@@ -10,23 +10,10 @@ signal employee_selected(data: EmployeeData)
 var _filter_stage_type: String = ""
 var color_main = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
-var _overlay: ColorRect = null
-
 func _ready():
 	visible = false
 	z_index = 100  # ИСПРАВЛЕНО: было 10, теперь 100 — поверх project_window (z_index=90)
 
-	# === Затемнённый фон ===
-	set_anchors_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	_overlay = ColorRect.new()
-	_overlay.color = Color(0, 0, 0, 0.45)
-	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(_overlay)
-	move_child(_overlay, 0)
-	
 	# === УМНОЕ УДАЛЕНИЕ КНОПОК ===
 	var all_buttons = find_children("*", "Button", true, false)
 	for btn in all_buttons:
