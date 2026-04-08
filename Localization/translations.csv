@@ -1288,11 +1288,14 @@ TRACK_PROGRESS_TOOLTIP,"Количество очков прогресса, ко
 TRACK_LOCK_READ_EFFICIENCY,"🔒 Изучите навык «Чтение эффективности» в дереве навыков PM, чтобы видеть детализацию","🔒 Unlock ""Read Efficiency"" in PM skill tree to see breakdown"
 TRACK_LOCK_REPORT_PEOPLE,"🔒 Изучите навык «Отчёт: команда» в дереве навыков PM, чтобы видеть среднее кол-во очков","🔒 Unlock ""Report: Team"" in PM skill tree to see average points"
 TOAST_PM_LEVEL_UP,⬆️ PM достиг уровня %d!,⬆️ PM reached level %d!
-TOOLTIP_COMPANY_BUDGET,Общий бюджет компании. Из него оплачиваются зарплаты и расходы,Company budget. Salaries and expenses are paid from it
-TOOLTIP_PM_LEVEL,Ваш уровень PM. Повышается за опыт от проектов. Даёт очки навыков,Your PM level. Increases from project XP. Grants skill points
-TOOLTIP_BOSS_TRUST,Доверие босса. Влияет на лояльность клиентов. За очки доверия можно купить улучшения офиса и повысить зарплату,Boss trust. Affects client loyalty. Trust points can buy office upgrades and salary raises
-TOOLTIP_PERSONAL_BALANCE,"Ваш личный счёт. Зарплата + дивиденды. Копите на цель!","Your personal balance. Salary + dividends. Save towards your goal!"
+TOOLTIP_COMPANY_BUDGET,"Бюджет компании. Из него оплачиваются зарплаты и расходы. Если уйдёт в минус — вас уволят!","Company budget. Salaries and expenses are paid from it. If it goes negative — you're fired!"
+TOOLTIP_PM_LEVEL,"Ваш уровень PM. Растёт за XP от проектов. Каждый уровень даёт очки навыков","Your PM level. Grows from project XP. Each level grants skill points"
+TOOLTIP_BOSS_TRUST,"Доверие босса. Растёт за успешные проекты и задания. Тратится на улучшения офиса и повышение ЗП. При -30 — увольнение!","Boss trust. Grows from successful projects and quests. Spent on office upgrades and salary raises. At -30 — you're fired!"
+TOOLTIP_PERSONAL_BALANCE,"Ваш личный счёт. Зарплата + дивиденды. Копите на мечту!","Your personal balance. Salary + dividends. Save for your dream!"
 TOOLTIP_PLAYTEST_DAYS,Оставшиеся дни плейтеста,Remaining playtest days
+TOOLTIP_TIME,Текущая дата и время в игре,Current in-game date and time
+UI_SKILL_POINTS_SHORT,🧠 %d,🧠 %d
+TOOLTIP_SKILL_POINTS,"Очки навыков PM. Получаете при повышении уровня, тратите в дереве навыков","PM skill points. Earned on level up, spent in skill tree"
 BOSS_ARRIVED,🏢 Босс пришёл в офис,🏢 Boss arrived at the office
 BOSS_LEFT,🚪 Босс ушёл из офиса,🚪 Boss left the office
 BOSS_NOT_HERE,Босса нет в офисе,Boss is not in the office

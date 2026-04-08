@@ -34,6 +34,9 @@ var _xp_tween: Tween = null
 # --- Boss Trust UI ---
 var _boss_trust_label: Label
 
+# --- Skill Points UI ---
+var _skill_points_label: Label
+
 # --- Day Summary ---
 var _day_summary: Control
 
@@ -110,6 +113,9 @@ var _free_camera_hint: PanelContainer = null
 
 # === END DAY BUTTON: Пульсирующий tween ===
 var _end_day_pulse_tween: Tween = null
+
+# === TOPBAR TOOLTIP COLOR ===
+const TOPBAR_TOOLTIP_COLOR = Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -215,7 +221,8 @@ func _ready():
 	PMData.level_up.connect(_on_pm_level_up)
 	BossManager.trust_changed.connect(_on_boss_trust_changed)
 
-	balance_label.tooltip_text = tr("TOOLTIP_COMPANY_BUDGET")
+	_attach_topbar_tooltip(time_label, "TOOLTIP_TIME")
+	_attach_topbar_tooltip(balance_label, "TOOLTIP_COMPANY_BUDGET")
 
 	call_deferred("_apply_fonts")
 
@@ -331,10 +338,37 @@ func _apply_fonts():
 		UITheme.apply_font(_pm_level_label, "semibold")
 	if _pm_xp_label:
 		UITheme.apply_font(_pm_xp_label, "regular")
+	if _skill_points_label:
+		UITheme.apply_font(_skill_points_label, "bold")
 	UITheme.apply_font(name_label, "semibold")
 	UITheme.apply_font(role_label, "regular")
 	UITheme.apply_font(salary_label, "regular")
 	UITheme.apply_font(end_day_button, "semibold")
+
+func _attach_topbar_tooltip(element: Control, tooltip_key: String) -> void:
+	element.mouse_filter = Control.MOUSE_FILTER_STOP
+	var tooltip_ref: Array = [null]
+	var parent_ref = self
+	element.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper.create_tooltip(tr(tooltip_key), TOPBAR_TOOLTIP_COLOR)
+		parent_ref.add_child(tp)
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+		var el_global = element.global_position
+		var el_size = element.size
+		tp.global_position = Vector2(el_global.x, el_global.y + el_size.y + 8)
+		var viewport_width = parent_ref.get_viewport().get_visible_rect().size.x
+		if tp.global_position.x + tp.size.x > viewport_width:
+			tp.global_position.x = viewport_width - tp.size.x - 10
+		tooltip_ref[0] = tp
+	)
+	element.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
 
 # --- DAY SUMMARY ---
 func _build_day_summary():
@@ -572,17 +606,28 @@ func _build_pm_level_ui():
 	_boss_trust_label.add_theme_color_override("font_color", BossManager.get_trust_color())
 	_boss_trust_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
+	_skill_points_label = Label.new()
+	_skill_points_label.text = tr("UI_SKILL_POINTS_SHORT") % PMData.skill_points
+	_skill_points_label.add_theme_font_size_override("font_size", 13)
+	_skill_points_label.add_theme_color_override("font_color", Color(0.2, 0.7, 0.3, 1))
+	_skill_points_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_skill_points_label, "bold")
+
 	if spacer_index >= 0:
 		hbox_container.add_child(level_vbox)
 		hbox_container.move_child(level_vbox, spacer_index)
+		hbox_container.add_child(_skill_points_label)
+		hbox_container.move_child(_skill_points_label, spacer_index + 1)
 		hbox_container.add_child(_boss_trust_label)
-		hbox_container.move_child(_boss_trust_label, spacer_index + 1)
+		hbox_container.move_child(_boss_trust_label, spacer_index + 2)
 	else:
 		hbox_container.add_child(level_vbox)
+		hbox_container.add_child(_skill_points_label)
 		hbox_container.add_child(_boss_trust_label)
 
-	level_vbox.tooltip_text = tr("TOOLTIP_PM_LEVEL")
-	_boss_trust_label.tooltip_text = tr("TOOLTIP_BOSS_TRUST")
+	_attach_topbar_tooltip(level_vbox, "TOOLTIP_PM_LEVEL")
+	_attach_topbar_tooltip(_skill_points_label, "TOOLTIP_SKILL_POINTS")
+	_attach_topbar_tooltip(_boss_trust_label, "TOOLTIP_BOSS_TRUST")
 
 func _update_pm_level_ui():
 	if PMData == null:
@@ -605,6 +650,8 @@ func _update_pm_level_ui():
 
 func _on_pm_xp_changed(_new_xp, _new_sp):
 	_update_pm_level_ui()
+	if _skill_points_label:
+		_skill_points_label.text = tr("UI_SKILL_POINTS_SHORT") % PMData.skill_points
 
 func _on_pm_level_up(new_level: int):
 	if ScreenJuice:
@@ -657,6 +704,9 @@ func _on_pm_level_up(new_level: int):
 		tween.tween_property(bubble, "modulate:a", 0.0, 0.5)
 		tween.parallel().tween_property(bubble, "position:y", bubble.position.y - 30, 0.5)
 		tween.tween_callback(bubble.queue_free)
+
+	if _skill_points_label:
+		_skill_points_label.text = tr("UI_SKILL_POINTS_SHORT") % PMData.skill_points
 
 # === ПОЛУЧИТЬ PLAYER ===
 func _get_player():
@@ -1181,7 +1231,7 @@ func _build_personal_balance_label():
 	_prev_personal_balance = PMData.personal_balance
 	if ScreenJuice:
 		ScreenJuice.register_personal_balance_label(_personal_balance_label)
-	_personal_balance_label.tooltip_text = tr("TOOLTIP_PERSONAL_BALANCE")
+	_attach_topbar_tooltip(_personal_balance_label, "TOOLTIP_PERSONAL_BALANCE")
 
 func _on_personal_balance_changed(new_amount: int):
 	if _personal_balance_label:
@@ -1308,7 +1358,7 @@ func _build_playtest_label():
 		hbox_container.move_child(_playtest_label, idx)
 	else:
 		hbox_container.add_child(_playtest_label)
-	_playtest_label.tooltip_text = tr("TOOLTIP_PLAYTEST_DAYS")
+	_attach_topbar_tooltip(_playtest_label, "TOOLTIP_PLAYTEST_DAYS")
 
 func _update_playtest_label():
 	if _playtest_label == null:
