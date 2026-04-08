@@ -141,12 +141,18 @@ func _apply_locked_style_track(btn: Button) -> void:
 	btn.add_theme_stylebox_override("hover", gray_bstyle)
 	btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
 
-func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "") -> float:
+func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "", worker_ref = null) -> float:
 	if not PeopleHistory:
 		return -1.0
 	var records = PeopleHistory.daily_records
 	var n = min(records.size(), AVG_PROGRESS_DAYS)
+	var current_progress = 0.0
+	if worker_ref != null:
+		current_progress = float(worker_ref.get_meta("daily_progress", 0.0))
 	if n == 0:
+		# No history yet — fall back to today's live progress
+		if current_progress > 0.0:
+			return current_progress
 		return -1.0
 	var total = 0.0
 	var count = 0
@@ -160,7 +166,14 @@ func _get_avg_progress_for_worker(worker_name: String, worker_id: String = "") -
 				count += 1
 				break
 	if count == 0:
+		# Worker not found in history — fall back to today's live progress
+		if current_progress > 0.0:
+			return current_progress
 		return -1.0
+	# Include today's not-yet-recorded progress as an additional data point (only if non-zero)
+	if current_progress > 0.0:
+		total += current_progress
+		count += 1
 	return total / float(count)
 
 # === ПОСТРОЕНИЕ ДОПОЛНИТЕЛЬНЫХ КОЛОНОК ===
@@ -329,7 +342,7 @@ func _build_extra_columns():
 			var avg_lbl = Label.new()
 			var worker_name = worker.get_display_name()
 			var worker_id = str(worker.employee_name)
-			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
+			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id, worker)
 			avg_lbl.text = "—" if avg_val < 0.0 else "%.1f" % avg_val
 			avg_lbl.add_theme_color_override("font_color", color_main_text)
 			avg_lbl.add_theme_font_size_override("font_size", 12)
@@ -379,7 +392,7 @@ func update_avg_progress_live():
 		var worker = workers[i]
 		var worker_name = worker.get_display_name()
 		var worker_id = str(worker.employee_name)
-		var avg_val = _get_avg_progress_for_worker(worker_name, worker_id)
+		var avg_val = _get_avg_progress_for_worker(worker_name, worker_id, worker)
 		lbl.text = "—" if avg_val < 0.0 else "%.1f" % avg_val
 
 # Кнопка "Назначить" с нужными скруглениями и ховером
