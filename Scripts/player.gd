@@ -508,6 +508,10 @@ func _get_nearest_interactable():
 
 		# 2. Оставляем взаимодействие ТОЛЬКО для столов (hr_desk, boss_desk и тд)
 		if body.is_in_group("desk") and body.has_method("interact"):
+			# Босс — показываем E только когда он IN_OFFICE
+			if body.is_in_group("boss_npc"):
+				if body.current_state != body.BossState.IN_OFFICE:
+					continue
 			return body
 
 	return null
@@ -537,6 +541,10 @@ func interact():
 
 		# 2. Вызываем функцию стола
 		if body.is_in_group("desk") and body.has_method("interact"):
+			# Босс — вызываем interact только когда он IN_OFFICE
+			if body.is_in_group("boss_npc"):
+				if body.current_state != body.BossState.IN_OFFICE:
+					continue
 			AudioManager.play_sfx("interact")
 			body.interact()
 			return
