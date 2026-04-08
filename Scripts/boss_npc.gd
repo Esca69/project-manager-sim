@@ -107,9 +107,9 @@ func _generate_schedule(day_num: int):
 		return
 
 	# Обычный день: рандомное расписание
-	_arrival_hour = randi_range(9, 12)
+	_arrival_hour = randi_range(10, 12)
 	_arrival_minute = randi_range(0, 59)
-	_departure_hour = randi_range(14, 17)
+	_departure_hour = randi_range(14, 16)
 	_departure_minute = randi_range(0, 59)
 
 	# Гарантируем, что уход не раньше или одновременно с приходом
