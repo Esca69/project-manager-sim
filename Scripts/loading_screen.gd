@@ -80,7 +80,7 @@ func _build_ui():
 	_spinner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_spinner_label.add_theme_font_size_override("font_size", 40)
 	_spinner_label.add_theme_color_override("font_color", COLOR_PRIMARY)
-	vbox.add_child(_spinner_label)
+vbox.add_child(_spinner_label)
 
 	# Прогресс-бар
 	_progress_bar = ProgressBar.new()
@@ -116,7 +116,7 @@ func _build_ui():
 	_stage_label.add_theme_color_override("font_color", COLOR_TEXT_MUTED)
 	if UITheme:
 		UITheme.apply_font(_stage_label, "regular")
-	vbox.add_child(_stage_label)
+vbox.add_child(_stage_label)
 
 
 func _start_warmup():
