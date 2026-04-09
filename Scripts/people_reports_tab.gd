@@ -389,8 +389,8 @@ func _get_emp_stats(records: Array) -> Dictionary:
 	var current_team: Array = []
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if is_instance_valid(npc) and npc.data:
-			var n = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
-			current_team.append(n)
+			var npc_name = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
+			current_team.append(npc_name)
 	var emp_stats = {}
 	for r in records:
 		for emp in r.get("employees", []):
