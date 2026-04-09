@@ -12,6 +12,10 @@ const TARGET_SCENE = "res://Scenes/office.tscn"
 
 # Все emoji из игры для прогрева шрифта
 const WARMUP_EMOJIS = "☀★☎☕♀♂♥⚖⚙⚠⚡⚪✅✈✕❌❓❗❤➕🌙🌴🍔🍕🍽🎉🎩🎯🎲🏆🏎🏖🏗🏠🏢🏥🏦🏹🐞👁👋👍👤👥👦👧👨👩💊💔💚💛💢💨💬💰💵💸💻💼💾📁📂📅📈📉📊📋📖📚📝📞📦📷📺🔀🔄🔍🔒🔔🔥🔴🕐🖥🗑🗣😄😊😕😠😣😤😩😮🙂🙏🚀🚪🚫🚽🛠🛡🟡🟢🤒🤝🤦🤬🧑🧠🧪🪑💤⬆️"
+# Все размеры шрифтов, используемые в 6 основных панелях
+const WARMUP_FONT_SIZES = [11, 12, 13, 14, 15, 16, 17, 18, 20, 28, 40, 56]
+# Текст прогрева — покрывает латиницу, кириллицу, цифры и знаки препинания
+const WARMUP_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя .,!?:;()[]$%+-=/«»—"
 # Количество кадров ожидания после инстанциирования сцены.
 # За это время выполняются все _ready() (синхронно) и call_deferred-вызовы
 # (нужен минимум 1 кадр), а также синхронный _preheat_panels.
@@ -143,24 +147,34 @@ func _start_warmup():
 	_progress_bar.value = 40.0
 	await get_tree().process_frame
 
-	# Этап 3: прогреваем emoji шрифт
-	_stage_label.text = _tr_or("LOADING_STAGE_RESOURCES", "Загрузка ресурсов...")
-	var warmup = Label.new()
-	warmup.modulate.a = 0.0
-	warmup.text = WARMUP_EMOJIS
-	warmup.add_theme_font_size_override("font_size", 16)
-	if UITheme:
-		UITheme.apply_font(warmup, "regular")
-	add_child(warmup)
+	# Этап 3: прогреваем шрифты для всех размеров и начертаний, используемых в панелях
+	_stage_label.text = _tr_or("LOADING_STAGE_RESOURCES", "Прогрев шрифтов...")
+	var warmup_container = Control.new()
+	warmup_container.modulate.a = 0.0
+	warmup_container.visible = true
+	add_child(warmup_container)
 
-	# Ждём 4 кадра — достаточно для кеширования глифов
+	var warmup_text = WARMUP_TEXT + WARMUP_EMOJIS
+	for size in WARMUP_FONT_SIZES:
+		for weight in ["regular", "semibold", "bold"]:
+			var lbl = Label.new()
+			lbl.visible = true
+			lbl.modulate.a = 0.0
+			lbl.text = warmup_text
+			lbl.add_theme_font_size_override("font_size", size)
+			if UITheme:
+				UITheme.apply_font(lbl, weight)
+			warmup_container.add_child(lbl)
+
+	# Ждём 5 кадров — достаточно для растеризации всех глифов в TextServer
+	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	warmup.queue_free()
-	_progress_bar.value = 60.0
+	warmup_container.queue_free()
+	_progress_bar.value = 65.0
 
 	# Этап 4: асинхронная загрузка сцены
 	_stage_label.text = _tr_or("LOADING_STAGE_PREPARING", "Подготовка интерфейса...")
@@ -188,7 +202,7 @@ func _process(delta: float):
 
 	if status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		var scene_progress = progress[0] if progress.size() > 0 else 0.0
-		_progress_bar.value = 60.0 + scene_progress * 40.0
+		_progress_bar.value = 65.0 + scene_progress * 35.0
 	elif status == ResourceLoader.THREAD_LOAD_LOADED:
 		_progress_bar.value = 100.0
 		_stage_label.text = _tr_or("LOADING_STAGE_DONE", "Почти готово...")
