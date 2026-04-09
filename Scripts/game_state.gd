@@ -38,7 +38,7 @@ func buy_upgrade(upgrade_id: String, cost_money: int, cost_trust: int) -> bool:
 	if bm:
 		bm.change_trust(-cost_trust)
 	office_upgrades[upgrade_id] = true
-	daily_event_expenses.append({"reason": tr("SUMMARY_OFFICE_UPGRADES"), "amount": cost_money})
+	daily_event_expenses.append({"reason": "SUMMARY_OFFICE_UPGRADES", "amount": cost_money})
 	emit_signal("office_upgrade_purchased", upgrade_id)
 	return true
 
@@ -64,7 +64,7 @@ func buy_desk() -> bool:
 	if bm:
 		bm.change_trust(-2)
 	office_upgrades["desk_count"] += 1
-	daily_event_expenses.append({"reason": tr("SUMMARY_OFFICE_UPGRADES"), "amount": 500})
+	daily_event_expenses.append({"reason": "SUMMARY_OFFICE_UPGRADES", "amount": 500})
 	emit_signal("office_upgrade_purchased", "desk")
 	return true
 

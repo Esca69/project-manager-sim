@@ -321,7 +321,7 @@ func _build_finance_section():
 			_content_vbox.add_child(event_header)
 			for entry in GameState.daily_event_expenses:
 				var det_lbl = Label.new()
-				det_lbl.text = "      -$%d — %s" % [entry["amount"], entry["reason"]]
+				det_lbl.text = "      -$%d — %s" % [entry["amount"], tr(entry["reason"])]
 				det_lbl.add_theme_color_override("font_color", COLOR_RED)
 				det_lbl.add_theme_font_size_override("font_size", 12)
 				if UITheme: UITheme.apply_font(det_lbl, "regular")

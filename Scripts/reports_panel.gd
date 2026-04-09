@@ -305,6 +305,8 @@ func _refresh_content():
 			_lock_label.visible = true
 			return
 		_lock_label.visible = false
+		_people_content.visible = true
+		_finance_content.visible = false
 		_refresh_people()
 	else:
 		if not PMData.has_skill("report_finance_tab"):
@@ -313,6 +315,8 @@ func _refresh_content():
 			_lock_label.visible = true
 			return
 		_lock_label.visible = false
+		_finance_content.visible = true
+		_people_content.visible = false
 		_refresh_finance()
 
 func _refresh_finance():

@@ -214,6 +214,7 @@ func _fail_project(project: ProjectData):
 
 	for stage in project.stages:
 		_freeze_stage_workers(stage)
+	GameState.daily_event_expenses.append({"reason": "PENALTY_HARD_DEADLINE", "amount": project.budget})
 	GameState.projects_failed_today.append(project)
 
 	# === ЛОЯЛЬНОСТЬ: ПРОВАЛ ===
@@ -252,6 +253,9 @@ func _finish_project(project: ProjectData):
 			_freeze_stage_workers(stage)
 	GameState.add_income(payout)
 	GameState.daily_income_details.append({"reason": tr("INCOME_PROJECT") % tr(project.title), "amount": payout})
+	if payout < project.budget and payout > 0:
+		var penalty_amount = project.budget - payout
+		GameState.daily_event_expenses.append({"reason": "PENALTY_SOFT_DEADLINE", "amount": penalty_amount})
 	GameState.projects_finished_today.append({"project": project, "payout": payout})
 
 	# === MOOD SYSTEM v2: Проект завершён → +8 на 24 часа всем участникам ===

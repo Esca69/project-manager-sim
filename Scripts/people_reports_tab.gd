@@ -386,11 +386,17 @@ func _aggregate_health_records(records: Array) -> Array:
 	return res
 
 func _get_emp_stats(records: Array) -> Dictionary:
+	var current_team: Array = []
+	for npc in get_tree().get_nodes_in_group("npc"):
+		if is_instance_valid(npc) and npc.data:
+			var n = npc.data.get_display_name() if npc.data.has_method("get_display_name") else str(npc.data.employee_name)
+			current_team.append(n)
 	var emp_stats = {}
 	for r in records:
 		for emp in r.get("employees", []):
 			var ename = str(emp.get("name", ""))
 			if ename.is_empty(): continue
+			if ename not in current_team: continue
 			if not emp_stats.has(ename):
 				emp_stats[ename] = {
 					"job_title": str(emp.get("job_title", "")),
@@ -744,8 +750,11 @@ func _draw_bars(ctrl: Control):
 		var rect = Rect2(bx - bar_w * 0.5, PT + gh - bh, bar_w, bh)
 		ctrl.draw_rect(rect, col)
 		_bars_data.append({"rect": rect, "name": names[j], "avg_progress": progresses[j], "salary": salaries[j], "role": roles[j]})
-		var short_n = names[j].substr(0, min(names[j].length(), 8))
-		ctrl.draw_string(ThemeDB.fallback_font, Vector2(bx - slot_w * 0.4, h - 8), short_n, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, COLOR_GRAY)
+		var max_chars = max(3, int(slot_w / 7))
+		var short_n = names[j].substr(0, min(names[j].length(), max_chars))
+		if names[j].length() > max_chars:
+			short_n += "…"
+		ctrl.draw_string(ThemeDB.fallback_font, Vector2(bx - slot_w * 0.45, h - 8), short_n, HORIZONTAL_ALIGNMENT_LEFT, int(slot_w * 0.9), 9, COLOR_GRAY)
 
 func _on_bars_gui_input(event: InputEvent):
 	if not event is InputEventMouseMotion: return
