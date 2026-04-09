@@ -39,6 +39,9 @@ var _vs_progress: VSeparator = null     # Разделитель перед ко
 var project_window_ref: Control = null
 var col_widths: Dictionary = {}
 
+var _avg_progress_cache: Dictionary = {}   # worker_name -> cached avg value
+var _avg_progress_cache_day: int = -1       # day when cache was last computed
+
 func setup(index: int, data: Dictionary, readonly: bool = false):
 	stage_index = index
 	stage_data = data
@@ -342,7 +345,7 @@ func _build_extra_columns():
 			var avg_lbl = Label.new()
 			var worker_name = worker.get_display_name()
 			var worker_id = str(worker.employee_name)
-			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id, worker)
+			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id, null)
 			avg_lbl.text = "—" if avg_val < 0.0 else "%.1f" % avg_val
 			avg_lbl.add_theme_color_override("font_color", color_main_text)
 			avg_lbl.add_theme_font_size_override("font_size", 12)
@@ -384,6 +387,18 @@ func update_avg_progress_live():
 		return
 	if not PMData.has_skill("report_people_tab"):
 		return
+	# Recalculate cache once per day (when day changes)
+	var current_day = GameTime.day
+	if current_day != _avg_progress_cache_day:
+		_avg_progress_cache.clear()
+		_avg_progress_cache_day = current_day
+		var workers_for_cache = stage_data.get("workers", [])
+		for worker in workers_for_cache:
+			var worker_name = worker.get_display_name()
+			var worker_id = str(worker.employee_name)
+			var avg_val = _get_avg_progress_for_worker(worker_name, worker_id, null)
+			_avg_progress_cache[worker_name] = avg_val
+	# Update labels from cache
 	var workers = stage_data.get("workers", [])
 	for i in range(min(workers.size(), _avg_progress_labels.size())):
 		var lbl = _avg_progress_labels[i]
@@ -391,8 +406,7 @@ func update_avg_progress_live():
 			continue
 		var worker = workers[i]
 		var worker_name = worker.get_display_name()
-		var worker_id = str(worker.employee_name)
-		var avg_val = _get_avg_progress_for_worker(worker_name, worker_id, worker)
+		var avg_val = _avg_progress_cache.get(worker_name, -1.0)
 		lbl.text = "—" if avg_val < 0.0 else "%.1f" % avg_val
 
 # Кнопка "Назначить" с нужными скруглениями и ховером

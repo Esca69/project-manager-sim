@@ -251,6 +251,7 @@ func _ready():
 
 	table_hdr.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tracks_cont.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tracks_cont.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	timeline_header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	# Устанавливаем минимальную ширину для горизонтального скролла (Bug 5)
