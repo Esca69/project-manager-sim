@@ -20,6 +20,9 @@ var current_slot: int = 1
 
 # >>> Флаг — синглтоны загружены, нужно восстановить сотрудников после загрузки сцены
 var pending_restore: bool = false
+# Кэш спарсенных данных сейва — используется в restore_employees_and_projects
+# чтобы не читать и не парсить файл второй раз после load_game_async
+var _cached_save_data: Dictionary = {}
 
 signal game_saved
 signal game_loaded
@@ -638,6 +641,7 @@ func _apply_loaded_data(data: Dictionary, slot: int) -> void:
 		_deserialize_people_history(data["people_history"])
 
 	print("📂 Данные синглтонов восстановлены (слот %d)" % slot)
+	_cached_save_data = data
 	pending_restore = true
 	emit_signal("game_loaded")
 
@@ -744,6 +748,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
 	if not data_override.is_empty():
 		data = data_override
+	elif not _cached_save_data.is_empty():
+		data = _cached_save_data
+		_cached_save_data = {}
 	else:
 		if not has_save_in_slot(current_slot):
 			return
