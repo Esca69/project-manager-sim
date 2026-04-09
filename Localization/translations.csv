@@ -968,6 +968,8 @@ TXT_NOT_ENOUGH_MONEY,Недостаточно средств,Not enough funds
 TXT_NOT_ENOUGH_TRUST,Недостаточно лояльности,Not enough trust
 LOG_UPGRADE_PURCHASED,🏗️ Куплено улучшение: %s,🏗️ Upgrade purchased: %s
 SUMMARY_OFFICE_UPGRADES,Улучшения офиса,Office Upgrades
+PENALTY_SOFT_DEADLINE,Штраф за просрочку дедлайна,Soft deadline penalty
+PENALTY_HARD_DEADLINE,Штраф за провал проекта,Hard deadline penalty
 DEBUFF_NO_COFFEE,Нет кофемашины ☕,No coffee machine ☕
 MOOD_MOD_NO_COFFEE,Нет кофемашины (coffee_lover),No coffee machine (coffee_lover)
 TUT_TITLE,Обучение,Tutorial
