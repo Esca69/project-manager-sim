@@ -10,12 +10,12 @@ const COLOR_TEXT_MUTED = Color(0.45, 0.45, 0.55, 1)
 const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
 const TARGET_SCENE = "res://Scenes/office.tscn"
 
-# Все emoji из игры для прогрева шрифта
-const WARMUP_EMOJIS = "☀★☎☕♀♂♥⚖⚙⚠⚡⚪✅✈✕❌❓❗❤➕🌙🌴🍔🍕🍽🎉🎩🎯🎲🏆🏎🏖🏗🏠🏢🏥🏦🏹🐞👁👋👍👤👥👦👧👨👩💊💔💚💛💢💨💬💰💵💸💻💼💾📁📂📅📈📉📊📋📖📚📝📞📦📷📺🔀🔄🔍🔒🔔🔥🔴🕐🖥🗑🗣😄😊😕😠😣😤😩😮🙂🙏🚀🚪🚫🚽🛠🛡🟡🟢🤒🤝🤦🤬🧑🧠🧪🪑💤⬆️"
+# Все emoji из игры для прогрева шрифта (не используются — слишком тяжёлые для растеризации)
+const WARMUP_EMOJIS = "☀★☎☕♀♂♥⚖⚙⚠⚡⚪✅✈✕❌❓❗❤➕🌙🌴🍔🍕🍽🎉🎩🎯🎲🏆🏎🏖🏗🏠🏢🏥🏦🏹🐞👁👋👍👤👥👦👧👨👩👱👷💀💊💋💡💢💤💥💰💼📋📌📍📎📊📈📉🔑🔒🔓🔔🔕🔥🔧🔨🔩🔫🔬🔭🕐🕑🕒🗓😀😁😂😃😄😅😆😇😈😉😊😋😌😍😎😏😐😑😒😓😔😕😖😗😘😙😚😛😜😝😞😟😠😡😢😣😤😥😦😧😨😩😪😫😬😭😮😯😰😱😲😳😴😵😶😷🙁🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏🚀🚁🚂🚃🚄🚅🚆🚇🚈🚉🚊🚋🚌🚍🚎🚏🚐🚑🚒🚓🚔🚕🚖🚗🚘🚙🚚🛑"
 # Все размеры шрифтов, используемые в 6 основных панелях
 const WARMUP_FONT_SIZES = [11, 12, 13, 14, 15, 16, 17, 18, 20, 28, 40, 56]
 # Текст прогрева — покрывает латиницу, кириллицу, цифры и знаки препинания
-const WARMUP_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя .,!?:;()[]$%+-=/«»—"
+const WARMUP_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 # Количество кадров ожидания после инстанциирования сцены.
 # За это время выполняются все _ready() (синхронно) и call_deferred-вызовы
 # (нужен минимум 1 кадр), а также синхронный _preheat_panels.
@@ -80,7 +80,7 @@ func _build_ui():
 	_spinner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_spinner_label.add_theme_font_size_override("font_size", 40)
 	_spinner_label.add_theme_color_override("font_color", COLOR_PRIMARY)
-	vbox.add_child(_spinner_label)
+vbox.add_child(_spinner_label)
 
 	# Прогресс-бар
 	_progress_bar = ProgressBar.new()
@@ -116,7 +116,7 @@ func _build_ui():
 	_stage_label.add_theme_color_override("font_color", COLOR_TEXT_MUTED)
 	if UITheme:
 		UITheme.apply_font(_stage_label, "regular")
-	vbox.add_child(_stage_label)
+vbox.add_child(_stage_label)
 
 
 func _start_warmup():
@@ -147,14 +147,14 @@ func _start_warmup():
 	_progress_bar.value = 40.0
 	await get_tree().process_frame
 
-	# Этап 3: прогреваем шрифты для всех размеров и начертаний, используемых в панелях
+	# Этап 3: прогреваем только латиницу/кириллицу — без emoji (NotoColorEmoji слишком тяжёлый)
 	_stage_label.text = _tr_or("LOADING_STAGE_RESOURCES", "Прогрев шрифтов...")
 	var warmup_container = Control.new()
 	warmup_container.modulate.a = 0.0
 	warmup_container.visible = true
 	add_child(warmup_container)
 
-	var warmup_text = WARMUP_TEXT + WARMUP_EMOJIS
+	var warmup_text = WARMUP_TEXT
 	for size in WARMUP_FONT_SIZES:
 		for weight in ["regular", "semibold", "bold"]:
 			var lbl = Label.new()
