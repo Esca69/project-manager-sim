@@ -205,6 +205,7 @@ func _ready():
 	_prev_balance = GameState.company_balance
 	update_balance_ui(GameState.company_balance)
 	update_time_label(GameTime.hour, GameTime.minute)
+	time_label.custom_minimum_size = Vector2(320, 0)
 
 	if ScreenJuice:
 		ScreenJuice.register_balance_label(balance_label)
@@ -694,7 +695,7 @@ func _on_pm_level_up(new_level: int):
 		label.custom_minimum_size = Vector2(72, 72)
 		label.size = Vector2(72, 72)
 		label.position = Vector2.ZERO
-		label.text = "⬆️"
+		label.text = "🆙"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		var label_settings = LabelSettings.new()
