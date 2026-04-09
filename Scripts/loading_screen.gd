@@ -165,6 +165,7 @@ func _start_warmup():
 			if UITheme:
 				UITheme.apply_font(lbl, weight)
 			warmup_container.add_child(lbl)
+		await get_tree().process_frame
 
 	# Ждём 5 кадров — достаточно для растеризации всех глифов в TextServer
 	await get_tree().process_frame

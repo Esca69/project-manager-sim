@@ -917,6 +917,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			employee_map[emp_data.employee_name] = emp_data
 			npc_map[emp_data.employee_name] = npc
 
+		await get_tree().process_frame
+
 	# === Восстанавливаем проекты ===
 	ProjectManager.active_projects.clear()
 	ProjectManager.completed_projects.clear()
