@@ -3,19 +3,17 @@ class_name LoadingScreen
 
 # === ЭКРАН ЗАГРУЗКИ ===
 # Показывается при переходе в office.tscn после старта или загрузки игры.
-# Прогревает шрифт NotoColorEmoji и асинхронно загружает целевую сцену.
+# Прогревает шрифты (латиница/кириллица) и асинхронно загружает целевую сцену.
 
 const COLOR_PRIMARY = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_TEXT_MUTED = Color(0.45, 0.45, 0.55, 1)
 const SPINNER_FRAMES = ["◐", "◓", "◑", "◒"]
 const TARGET_SCENE = "res://Scenes/office.tscn"
 
-# Все emoji из игры для прогрева шрифта (не используются — слишком тяжёлые для растеризации)
-const WARMUP_EMOJIS = "☀★☎☕♀♂♥⚖⚙⚠⚡⚪✅✈✕❌❓❗❤➕🌙🌴🍔🍕🍽🎉🎩🎯🎲🏆🏎🏖🏗🏠🏢🏥🏦🏹🐞👁👋👍👤👥👦👧👨👩👱👷💀💊💋💡💢💤💥💰💼📋📌📍📎📊📈📉🔑🔒🔓🔔🔕🔥🔧🔨🔩🔫🔬🔭🕐🕑🕒🗓😀😁😂😃😄😅😆😇😈😉😊😋😌😍😎😏😐😑😒😓😔😕😖😗😘😙😚😛😜😝😞😟😠😡😢😣😤😥😦😧😨😩😪😫😬😭😮😯😰😱😲😳😴😵😶😷🙁🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏🚀🚁🚂🚃🚄🚅🚆🚇🚈🚉🚊🚋🚌🚍🚎🚏🚐🚑🚒🚓🚔🚕🚖🚗🚘🚙🚚🛑"
-# Все размеры шрифтов, используемые в 6 основных панелях
+# Все размеры шрифтов, использ��емые в 6 основных панелях
 const WARMUP_FONT_SIZES = [11, 12, 13, 14, 15, 16, 17, 18, 20, 28, 40, 56]
 # Текст прогрева — покрывает латиницу, кириллицу, цифры и знаки препинания
-const WARMUP_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+const WARMUP_TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя.,!?:;-—()[]{}\"'/\\@#$%^&*+=<>~`| "
 # Количество кадров ожидания после инстанциирования сцены.
 # За это время выполняются все _ready() (синхронно) и call_deferred-вызовы
 # (нужен минимум 1 кадр), а также синхронный _preheat_panels.
@@ -80,7 +78,7 @@ func _build_ui():
 	_spinner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_spinner_label.add_theme_font_size_override("font_size", 40)
 	_spinner_label.add_theme_color_override("font_color", COLOR_PRIMARY)
-vbox.add_child(_spinner_label)
+	vbox.add_child(_spinner_label)
 
 	# Прогресс-бар
 	_progress_bar = ProgressBar.new()
@@ -116,7 +114,7 @@ vbox.add_child(_spinner_label)
 	_stage_label.add_theme_color_override("font_color", COLOR_TEXT_MUTED)
 	if UITheme:
 		UITheme.apply_font(_stage_label, "regular")
-vbox.add_child(_stage_label)
+	vbox.add_child(_stage_label)
 
 
 func _start_warmup():
@@ -147,7 +145,7 @@ func _start_warmup():
 	_progress_bar.value = 40.0
 	await get_tree().process_frame
 
-	# Этап 3: прогреваем только латиницу/кириллицу — без emoji (NotoColorEmoji слишком тяжёлый)
+	# Этап 3: прогреваем только латиницу/кириллицу — без emoji
 	_stage_label.text = _tr_or("LOADING_STAGE_RESOURCES", "Прогрев шрифтов...")
 	var warmup_container = Control.new()
 	warmup_container.modulate.a = 0.0
@@ -219,20 +217,27 @@ func _process(delta: float):
 		get_tree().change_scene_to_file(_scene_to_load)
 
 
-# Инстанциируем сцену офиса прямо на loading screen, ждём несколько кадров
+# Инстанциируем сцену офиса, убираем текущую сцену из дерева,
+# добавляем офис как текущую сцену, ждём несколько кадров
 # чтобы все _ready() и call_deferred отработали, затем убираем loading screen.
 func _instantiate_and_switch(packed: PackedScene) -> void:
 	_stage_label.text = _tr_or("LOADING_STAGE_INIT", "Инициализация интерфейса...")
 	var office = packed.instantiate()
-	# Скрываем офис пока loading screen видим; _ready() и call_deferred
-	# выполнятся, но рендеринг не произойдёт — пользователь видит loading screen
+	# Скрываем офис пока loading screen видим
 	office.visible = false
+
+	# Убираем текущую сцену (loading screen) из current_scene,
+	# чтобы офис стал частью активного дерева сцен и get_node() с абсолютными путями работал
+	var old_scene = get_tree().current_scene
 	get_tree().root.add_child(office)
+	get_tree().current_scene = office
+
 	# Ждём WARMUP_FRAMES кадров: _ready() синхронны, но call_deferred нужен 1+ кадр,
 	# а синхронный _preheat_panels успевает отработать в первом кадре.
 	for _i in WARMUP_FRAMES:
 		await get_tree().process_frame
+
 	# Всё готово: показываем офис и убираем loading screen
 	office.visible = true
-	get_tree().current_scene = office
-	queue_free()
+	if old_scene and old_scene != office:
+		old_scene.queue_free()
