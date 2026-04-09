@@ -165,7 +165,7 @@ func _setup_environment():
 	env.adjustment_saturation = 1.12
 
 	# === Glow (Bloom) — мягкое свечение ===
-	env.glow_enabled = true
+	env.glow_enabled = false
 	env.glow_intensity = 0.3
 	env.glow_strength = 0.8
 	env.glow_bloom = 0.05
