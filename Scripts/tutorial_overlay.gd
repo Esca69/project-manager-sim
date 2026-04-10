@@ -39,6 +39,7 @@ func _ready():
 	TutorialManager.tutorial_step_changed.connect(_on_step_changed)
 	TutorialManager.tutorial_completed.connect(_on_tutorial_completed)
 	TutorialManager.hint_triggered.connect(_on_hint_triggered)
+	TutorialManager.tutorial_failed.connect(_on_tutorial_failed)
 
 func _process(_delta):
 	if not _task_panel:
@@ -309,6 +310,7 @@ func _hide_card():
 
 func _on_card_btn_pressed():
 	_hide_card()
+	_card_btn.text = tr("TUT_BTN_UNDERSTOOD")
 	GameTime.speed_1x()
 	_after_card_closed()
 
@@ -320,6 +322,15 @@ func _after_card_closed():
 	if _pending_after_card.is_valid():
 		_pending_after_card.call()
 		_pending_after_card = Callable()
+
+func _on_tutorial_failed():
+	visible = true
+	_show_card("TUT_FIRED_CARD", true)
+	_card_btn.text = tr("TUT_FIRED_BTN_MENU")
+	_pending_after_card = func():
+		Engine.time_scale = 1.0
+		GameTime.set_paused(false)
+		get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
 
 # ─── Step handling ─────────────────────────────────
 
