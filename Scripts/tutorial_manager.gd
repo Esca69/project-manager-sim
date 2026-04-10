@@ -9,6 +9,7 @@ extends Node
 signal tutorial_step_changed(step: int)
 signal tutorial_completed
 signal hint_triggered(hint_id: String)
+signal tutorial_failed
 
 enum Step {
 	NONE = 0,
@@ -36,6 +37,9 @@ var _searching_for_ba: bool = false
 
 # Step 9: track that project was started before screen closed
 var _project_started_in_step9: bool = false
+
+# Firing at 16:00: prevent double-trigger
+var _tutorial_fire_triggered: bool = false
 
 # Track total projects taken (for hint_second_project)
 var _total_projects_taken: int = 0
@@ -208,6 +212,12 @@ func _on_time_tick_hint(h: int, _m: int):
 		var hint_id = _pending_morning_hint
 		_pending_morning_hint = ""
 		show_hint(hint_id)
+	# Fire the player if tutorial is still active at 16:00 and project wasn't launched
+	if h >= 16 and is_active() and not _tutorial_fire_triggered \
+			and current_step != Step.STEP_9B_PROJECT_LAUNCHED \
+			and current_step != Step.STEP_10_END_DAY:
+		_tutorial_fire_triggered = true
+		emit_signal("tutorial_failed")
 
 func _on_boss_trust_changed_hint(new_trust: int):
 	if new_trust > 0:
