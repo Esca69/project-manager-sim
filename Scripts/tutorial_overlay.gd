@@ -296,6 +296,7 @@ func _build_card_ui():
 
 func _show_card(text_key: String, pause_game: bool = true):
 	_card_text.text = tr(text_key)
+	_card_btn.text = tr("TUT_BTN_UNDERSTOOD")
 	_card_overlay.visible = true
 	_card_window.visible = true
 	_card_visible = true
@@ -310,7 +311,6 @@ func _hide_card():
 
 func _on_card_btn_pressed():
 	_hide_card()
-	_card_btn.text = tr("TUT_BTN_UNDERSTOOD")
 	GameTime.speed_1x()
 	_after_card_closed()
 
