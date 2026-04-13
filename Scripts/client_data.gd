@@ -6,95 +6,48 @@ class_name ClientData
 @export var emoji: String = ""
 @export var description: String = ""
 
-# === ЛОЯЛЬНОСТЬ ===
-@export var loyalty: int = 0
+# === УЛУЧШЕНИЯ КЛИЕНТА ===
+@export var budget_level: int = 0   # 0–6, каждый уровень = +5% к бюджету
+@export var has_simple: bool = false
+@export var has_easy: bool = false
+
+# === СТОИМОСТЬ УЛУЧШЕНИЙ ===
+const BUDGET_UPGRADE_COST: int = 5
+const MAX_BUDGET_LEVEL: int = 6
+const SIMPLE_UNLOCK_COST: int = 10
+const EASY_UNLOCK_COST: int = 20
 
 # === СТАТИСТИКА ===
 @export var projects_completed_on_time: int = 0   # Завершены до софт-дедлайна
 @export var projects_completed_late: int = 0       # Завершены после софт, до хард
 @export var projects_failed: int = 0               # Провалены (хард истёк)
 
-# === ОЧКИ ЛОЯЛЬНОСТИ ЗА СОБЫТИЯ ===
-const LOYALTY_ON_TIME: int = 3        # Завершён до софт-дедлайна
-const LOYALTY_LATE: int = 1          # Завершён после софт, до хард
-const LOYALTY_FAILED: int = -5       # Провален
-
-# === УРОВНИ ЛОЯЛЬНОСТИ ===
-# [порог_очков, тип_награды, значение_награды]
-# тип: "budget" = бонус к бюджету (%), "unlock" = разблокировка типа проектов
-const LOYALTY_LEVELS = [
-	{"threshold": 0,  "type": "unlock",  "value": "micro",  "label": "LOYALTY_MICRO_PROJECTS"},
-	{"threshold": 5,  "type": "budget",  "value": 5,        "label": "LOYALTY_BUDGET_5"},
-	{"threshold": 12, "type": "unlock",  "value": "simple", "label": "LOYALTY_SIMPLE_PROJECTS"},
-	{"threshold": 22, "type": "budget",  "value": 10,       "label": "LOYALTY_BUDGET_10"},
-	{"threshold": 35, "type": "unlock",  "value": "easy",   "label": "LOYALTY_EASY_PROJECTS"},
-	{"threshold": 50, "type": "budget",  "value": 15,       "label": "LOYALTY_BUDGET_15"},
-	{"threshold": 70, "type": "budget",  "value": 20,       "label": "LOYALTY_BUDGET_20"},
-]
-
-const MAX_LOYALTY: int = 70  # Максимальный порог
-
-# ИСПРАВЛЕНИЕ: убрана типизация client: ClientData — циклическая ссылка при парсинге
-signal loyalty_changed(client, old_value: int, new_value: int)
-
-# === ТЕКУЩИЙ УРОВЕНЬ ЛОЯЛЬНОСТИ (0-6) ===
-func get_loyalty_level() -> int:
-	var level = 0
-	for i in range(LOYALTY_LEVELS.size()):
-		if loyalty >= LOYALTY_LEVELS[i]["threshold"]:
-			level = i
-	return level
-
-# === БОНУС К БЮДЖЕТУ (НЕ суммируется — берём последний достигнутый) ===
+# === БОНУС К БЮДЖЕТУ ===
 func get_budget_bonus_percent() -> int:
-	var bonus = 0
-	for i in range(LOYALTY_LEVELS.size()):
-		if loyalty >= LOYALTY_LEVELS[i]["threshold"]:
-			if LOYALTY_LEVELS[i]["type"] == "budget":
-				bonus = LOYALTY_LEVELS[i]["value"]
-	return bonus
+	return budget_level * 5
 
 # === РАЗБЛОКИРОВАННЫЕ ТИПЫ ПРОЕКТОВ ===
 func get_unlocked_project_types() -> Array[String]:
-	var types: Array[String] = []
-	for i in range(LOYALTY_LEVELS.size()):
-		if loyalty >= LOYALTY_LEVELS[i]["threshold"]:
-			if LOYALTY_LEVELS[i]["type"] == "unlock":
-				types.append(LOYALTY_LEVELS[i]["value"])
+	var types: Array[String] = ["micro"]
+	if has_simple:
+		types.append("simple")
+	if has_easy:
+		types.append("easy")
 	return types
-
-# === ИНФОРМАЦИЯ О СЛЕДУЮЩЕМ УРОВНЕ ===
-func get_next_level_info() -> Dictionary:
-	# Возвращает {"threshold": int, "label": String} или {} если максимум
-	var current_level = get_loyalty_level()
-	if current_level >= LOYALTY_LEVELS.size() - 1:
-		return {}  # Уже максимум
-	var next = LOYALTY_LEVELS[current_level + 1]
-	
-	# Оборачиваем label в tr() для локализации
-	return {"threshold": next["threshold"], "label": tr(next["label"])}
 
 func get_total_projects() -> int:
 	return projects_completed_on_time + projects_completed_late + projects_failed
 
-func add_loyalty(amount: int):
-	var old = loyalty
-	loyalty += amount
-	emit_signal("loyalty_changed", self, old, loyalty)
-
 func record_project_on_time():
 	projects_completed_on_time += 1
-	add_loyalty(LOYALTY_ON_TIME)
 
 func record_project_late():
 	projects_completed_late += 1
-	add_loyalty(LOYALTY_LATE)
 
 func record_project_failed():
 	projects_failed += 1
-	add_loyalty(LOYALTY_FAILED)
 
-# ИСПРАВЛЕНИЕ: Добавлены геттеры для динамического перевода имени и описания
+# Геттеры для динамического перевода имени и описания
 func get_display_name() -> String:
 	return emoji + " " + tr(client_name)
 

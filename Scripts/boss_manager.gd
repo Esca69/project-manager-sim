@@ -191,7 +191,7 @@ func _get_random_objectives_pool(month: int) -> Array:
 		"trust_reward": 2,
 	})
 
-	# Лояльность клиентов (без изменений)
+	# Глобальная репутация
 	var loyalty_target: int
 	if month == 1:
 		loyalty_target = 20
@@ -200,8 +200,8 @@ func _get_random_objectives_pool(month: int) -> Array:
 	else:
 		loyalty_target = 50 + (month - 3) * 10
 	pool.append({
-		"id": "loyalty",
-		"type": "total_loyalty",
+		"id": "global_reputation",
+		"type": "global_reputation",
 		"label": tr("QUEST_LOYALTY") % loyalty_target,
 		"target": loyalty_target,
 		"trust_reward": 2,
@@ -279,6 +279,8 @@ func _rebuild_label(obj: Dictionary) -> String:
 			return tr("QUEST_HIRES") % obj["target"]
 		"total_loyalty":
 			return tr("QUEST_LOYALTY") % obj["target"]
+		"global_reputation":
+			return tr("QUEST_LOYALTY") % obj["target"]
 		"no_fails":
 			return tr("QUEST_NO_FAILS")
 		"max_expenses":
@@ -349,7 +351,9 @@ func _check_objective(obj: Dictionary) -> bool:
 		"hires":
 			return monthly_hires >= obj["target"]
 		"total_loyalty":
-			return ClientManager.get_total_loyalty() >= obj["target"]
+			return ClientManager.global_reputation >= obj["target"]
+		"global_reputation":
+			return ClientManager.global_reputation >= obj["target"]
 		"no_fails":
 			return monthly_projects_failed == 0
 		"max_expenses":
@@ -374,7 +378,9 @@ func get_objective_progress(obj: Dictionary) -> Dictionary:
 		"hires":
 			current = monthly_hires
 		"total_loyalty":
-			current = ClientManager.get_total_loyalty()
+			current = ClientManager.global_reputation
+		"global_reputation":
+			current = ClientManager.global_reputation
 		"no_fails":
 			current = monthly_projects_failed
 			is_inverse = true

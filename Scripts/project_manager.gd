@@ -217,11 +217,10 @@ func _fail_project(project: ProjectData):
 	GameState.daily_event_expenses.append({"reason": "PENALTY_HARD_DEADLINE", "amount": project.budget})
 	GameState.projects_failed_today.append(project)
 
-	# === ЛОЯЛЬНОСТЬ: ПРОВАЛ ===
+	# === РЕПУТАЦИЯ: ПРОВАЛ (только статистика, НЕ начисляем ни ОР, ни ГР) ===
 	var client = project.get_client()
 	if client:
 		client.record_project_failed()
-		print("💔 %s: лояльность %d (провал проекта)" % [client.get_display_name(), client.loyalty])
 
 	active_projects.erase(project)
 	completed_projects.append(project)
@@ -267,15 +266,19 @@ func _finish_project(project: ProjectData):
 				npc.data.add_mood_modifier("project_success", "MOOD_MOD_PROJECT_SUCCESS", 8.0, 2880.0)
 				npc.data.project_adapt_hours_left = 0.0 # Сброс штрафа за адаптацию
 
-	# === ЛОЯЛЬНОСТЬ: УСПЕХ ===
+	# === РЕПУТАЦИЯ: УСПЕХ ===
 	var client = project.get_client()
 	if client:
 		if project.is_finished_on_time(GameTime.day):
-			client.record_project_on_time()
-			print("💚 %s: лояльность %d (вовремя, +%d)" % [client.get_display_name(), client.loyalty, ClientData.LOYALTY_ON_TIME])
+			client.record_project_on_time()  # Только статистика
+			ClientManager.add_reputation_points(3)
+			ClientManager.add_global_reputation(3)
+			print("💚 %s: +3 ОР, +3 ГР (вовремя)" % client.get_display_name())
 		else:
-			client.record_project_late()
-			print("💛 %s: лояльность %d (просрочка софт, +%d)" % [client.get_display_name(), client.loyalty, ClientData.LOYALTY_LATE])
+			client.record_project_late()  # Только статистика
+			ClientManager.add_reputation_points(1)
+			ClientManager.add_global_reputation(3)
+			print("💛 %s: +1 ОР, +3 ГР (просрочка софт)" % client.get_display_name())
 
 		# Бонус XP за вовремя
 	_award_on_time_bonus(project)

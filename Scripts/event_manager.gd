@@ -866,11 +866,10 @@ func _apply_scope_expansion(event_data: Dictionary, choice_id: String):
 			EventLog.add(tr("LOG_SCOPE_EXPANDED") % [extra_percent, project.get_display_title()], EventLog.LogType.PROGRESS)
 
 		"decline":
-			# -1 лояльность клиента
+			# Скоуп отклонён — без изменений репутации
 			var client = project.get_client()
 			if client:
-				client.add_loyalty(-1)
-				print("📦 Скоуп отклонён, лояльность %s: %d (-1)" % [client.get_display_name(), client.loyalty])
+				print("📦 Скоуп отклонён клиентом %s" % client.get_display_name())
 
 # === ПРИМЕНЕНИЕ: ОТЗЫВ КЛИЕНТА ===
 func _apply_client_review(event_data: Dictionary, choice_id: String):
@@ -878,11 +877,11 @@ func _apply_client_review(event_data: Dictionary, choice_id: String):
 
 	match choice_id:
 		"ask_review":
-			# +2 лояльности
+			# +2 очка репутации за отзыв клиента
 			var client = ClientManager.get_client_by_id(review["client_id"])
 			if client:
-				client.add_loyalty(2)
-				print("⭐ Отзыв от %s: лояльность %d (+2)" % [client.get_display_name(), client.loyalty])
+				ClientManager.add_reputation_points(2)
+				print("⭐ Отзыв от %s: +2 очка репутации" % client.get_display_name())
 
 		"ask_bonus":
 			# +10% бюджета как доход
