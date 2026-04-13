@@ -27,341 +27,341 @@ var _btn_style: StyleBoxFlat
 var _btn_style_hover: StyleBoxFlat
 
 func _ready():
-process_mode = Node.PROCESS_MODE_ALWAYS
-visible = false
-z_index = 90
-mouse_filter = Control.MOUSE_FILTER_IGNORE
-_force_fullscreen_size()
-_init_button_styles()
-_build_ui()
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	visible = false
+	z_index = 90
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_force_fullscreen_size()
+	_init_button_styles()
+	_build_ui()
 
 func _init_button_styles():
-_btn_style = StyleBoxFlat.new()
-_btn_style.bg_color = COLOR_WHITE
-_btn_style.border_width_left = 2
-_btn_style.border_width_top = 2
-_btn_style.border_width_right = 2
-_btn_style.border_width_bottom = 2
-_btn_style.border_color = COLOR_BLUE
-_btn_style.corner_radius_top_left = 20
-_btn_style.corner_radius_top_right = 20
-_btn_style.corner_radius_bottom_right = 20
-_btn_style.corner_radius_bottom_left = 20
+	_btn_style = StyleBoxFlat.new()
+	_btn_style.bg_color = COLOR_WHITE
+	_btn_style.border_width_left = 2
+	_btn_style.border_width_top = 2
+	_btn_style.border_width_right = 2
+	_btn_style.border_width_bottom = 2
+	_btn_style.border_color = COLOR_BLUE
+	_btn_style.corner_radius_top_left = 20
+	_btn_style.corner_radius_top_right = 20
+	_btn_style.corner_radius_bottom_right = 20
+	_btn_style.corner_radius_bottom_left = 20
 
-_btn_style_hover = StyleBoxFlat.new()
-_btn_style_hover.bg_color = COLOR_BLUE
-_btn_style_hover.border_width_left = 2
-_btn_style_hover.border_width_top = 2
-_btn_style_hover.border_width_right = 2
-_btn_style_hover.border_width_bottom = 2
-_btn_style_hover.border_color = COLOR_BLUE
-_btn_style_hover.corner_radius_top_left = 20
-_btn_style_hover.corner_radius_top_right = 20
-_btn_style_hover.corner_radius_bottom_right = 20
-_btn_style_hover.corner_radius_bottom_left = 20
+	_btn_style_hover = StyleBoxFlat.new()
+	_btn_style_hover.bg_color = COLOR_BLUE
+	_btn_style_hover.border_width_left = 2
+	_btn_style_hover.border_width_top = 2
+	_btn_style_hover.border_width_right = 2
+	_btn_style_hover.border_width_bottom = 2
+	_btn_style_hover.border_color = COLOR_BLUE
+	_btn_style_hover.corner_radius_top_left = 20
+	_btn_style_hover.corner_radius_top_right = 20
+	_btn_style_hover.corner_radius_bottom_right = 20
+	_btn_style_hover.corner_radius_bottom_left = 20
 
 func _force_fullscreen_size():
-var vp_size = get_viewport().get_visible_rect().size
-position = Vector2.ZERO
-size = vp_size
+	var vp_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = vp_size
 
 func open():
-_force_fullscreen_size()
-_populate()
-if UITheme:
-UITheme.fade_in(self, 0.2)
-else:
-visible = true
+	_force_fullscreen_size()
+	_populate()
+	if UITheme:
+		UITheme.fade_in(self, 0.2)
+	else:
+		visible = true
 
 func close():
-if UITheme:
-UITheme.fade_out(self, 0.15)
-else:
-visible = false
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
 
 # === ПОСТРОЕНИЕ КАРКАСА ===
 func _build_ui():
-# Затемнение фона
-_overlay = ColorRect.new()
-_overlay.color = Color(0, 0, 0, 0.45)
-_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-add_child(_overlay)
+	# Затемнение фона
+	_overlay = ColorRect.new()
+	_overlay.color = Color(0, 0, 0, 0.45)
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_overlay)
 
-# Окно 1500×900
-_window = PanelContainer.new()
-_window.custom_minimum_size = Vector2(1500, 900)
-_window.set_anchors_preset(Control.PRESET_CENTER)
-_window.offset_left = -750
-_window.offset_top = -450
-_window.offset_right = 750
-_window.offset_bottom = 450
-_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
-_window.grow_vertical = Control.GROW_DIRECTION_BOTH
+	# Окно 1500×900
+	_window = PanelContainer.new()
+	_window.custom_minimum_size = Vector2(1500, 900)
+	_window.set_anchors_preset(Control.PRESET_CENTER)
+	_window.offset_left = -750
+	_window.offset_top = -450
+	_window.offset_right = 750
+	_window.offset_bottom = 450
+	_window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_window.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-var window_style = StyleBoxFlat.new()
-window_style.bg_color = COLOR_WHITE
-window_style.border_width_left = 3
-window_style.border_width_top = 3
-window_style.border_width_right = 3
-window_style.border_width_bottom = 3
-window_style.border_color = COLOR_WINDOW_BORDER
-window_style.corner_radius_top_left = 22
-window_style.corner_radius_top_right = 22
-window_style.corner_radius_bottom_right = 20
-window_style.corner_radius_bottom_left = 20
-if UITheme:
-UITheme.apply_shadow(window_style, false)
-_window.add_theme_stylebox_override("panel", window_style)
-add_child(_window)
+	var window_style = StyleBoxFlat.new()
+	window_style.bg_color = COLOR_WHITE
+	window_style.border_width_left = 3
+	window_style.border_width_top = 3
+	window_style.border_width_right = 3
+	window_style.border_width_bottom = 3
+	window_style.border_color = COLOR_WINDOW_BORDER
+	window_style.corner_radius_top_left = 22
+	window_style.corner_radius_top_right = 22
+	window_style.corner_radius_bottom_right = 20
+	window_style.corner_radius_bottom_left = 20
+	if UITheme:
+		UITheme.apply_shadow(window_style, false)
+	_window.add_theme_stylebox_override("panel", window_style)
+	add_child(_window)
 
-var main_vbox = VBoxContainer.new()
-main_vbox.add_theme_constant_override("separation", 0)
-_window.add_child(main_vbox)
+	var main_vbox = VBoxContainer.new()
+	main_vbox.add_theme_constant_override("separation", 0)
+	_window.add_child(main_vbox)
 
-# === ЗАГОЛОВОК ===
-var header_panel = Panel.new()
-header_panel.custom_minimum_size = Vector2(0, 40)
-var header_style = StyleBoxFlat.new()
-header_style.bg_color = COLOR_BLUE
-header_style.border_color = COLOR_WINDOW_BORDER
-header_style.corner_radius_top_left = 20
-header_style.corner_radius_top_right = 20
-header_panel.add_theme_stylebox_override("panel", header_style)
-main_vbox.add_child(header_panel)
+	# === ЗАГОЛОВОК ===
+	var header_panel = Panel.new()
+	header_panel.custom_minimum_size = Vector2(0, 40)
+	var header_style = StyleBoxFlat.new()
+	header_style.bg_color = COLOR_BLUE
+	header_style.border_color = COLOR_WINDOW_BORDER
+	header_style.corner_radius_top_left = 20
+	header_style.corner_radius_top_right = 20
+	header_panel.add_theme_stylebox_override("panel", header_style)
+	main_vbox.add_child(header_panel)
 
-var title_label = Label.new()
-title_label.text = tr("TAB_CLIENTS")
-title_label.set_anchors_preset(Control.PRESET_CENTER)
-title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-title_label.offset_left = -88
-title_label.offset_top = -11.5
-title_label.offset_right = 88
-title_label.offset_bottom = 11.5
-title_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-title_label.add_theme_color_override("font_color", COLOR_WHITE)
-title_label.add_theme_font_size_override("font_size", 16)
-if UITheme: UITheme.apply_font(title_label, "bold")
-header_panel.add_child(title_label)
+	var title_label = Label.new()
+	title_label.text = tr("TAB_CLIENTS")
+	title_label.set_anchors_preset(Control.PRESET_CENTER)
+	title_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	title_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	title_label.offset_left = -88
+	title_label.offset_top = -11.5
+	title_label.offset_right = 88
+	title_label.offset_bottom = 11.5
+	title_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_color_override("font_color", COLOR_WHITE)
+	title_label.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(title_label, "bold")
+	header_panel.add_child(title_label)
 
-_close_btn = Button.new()
-_close_btn.text = "X"
-_close_btn.focus_mode = Control.FOCUS_NONE
-_close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-_close_btn.offset_left = -51
-_close_btn.offset_top = -15
-_close_btn.offset_right = -24
-_close_btn.offset_bottom = 16
-_close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-_close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
-_close_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
-_close_btn.size_flags_vertical = Control.SIZE_SHRINK_END
-_close_btn.add_theme_color_override("font_color", COLOR_BLUE)
-var close_style = StyleBoxFlat.new()
-close_style.bg_color = COLOR_WHITE
-close_style.corner_radius_top_left = 10
-close_style.corner_radius_top_right = 10
-close_style.corner_radius_bottom_right = 10
-close_style.corner_radius_bottom_left = 10
-_close_btn.add_theme_stylebox_override("normal", close_style)
-if UITheme: UITheme.apply_font(_close_btn, "semibold")
-_close_btn.pressed.connect(close)
-header_panel.add_child(_close_btn)
+	_close_btn = Button.new()
+	_close_btn.text = "X"
+	_close_btn.focus_mode = Control.FOCUS_NONE
+	_close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_close_btn.offset_left = -51
+	_close_btn.offset_top = -15
+	_close_btn.offset_right = -24
+	_close_btn.offset_bottom = 16
+	_close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_close_btn.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_close_btn.size_flags_vertical = Control.SIZE_SHRINK_END
+	_close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	var close_style = StyleBoxFlat.new()
+	close_style.bg_color = COLOR_WHITE
+	close_style.corner_radius_top_left = 10
+	close_style.corner_radius_top_right = 10
+	close_style.corner_radius_bottom_right = 10
+	close_style.corner_radius_bottom_left = 10
+	_close_btn.add_theme_stylebox_override("normal", close_style)
+	if UITheme: UITheme.apply_font(_close_btn, "semibold")
+	_close_btn.pressed.connect(close)
+	header_panel.add_child(_close_btn)
 
-# === ПАНЕЛЬ СВОДКИ ===
-var summary_panel = PanelContainer.new()
-summary_panel.custom_minimum_size = Vector2(0, 50)
-summary_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-var summary_style = StyleBoxFlat.new()
-summary_style.bg_color = COLOR_SUMMARY_BG
-summary_style.border_width_bottom = 2
-summary_style.border_color = COLOR_BORDER
-summary_panel.add_theme_stylebox_override("panel", summary_style)
-main_vbox.add_child(summary_panel)
+	# === ПАНЕЛЬ СВОДКИ ===
+	var summary_panel = PanelContainer.new()
+	summary_panel.custom_minimum_size = Vector2(0, 50)
+	summary_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var summary_style = StyleBoxFlat.new()
+	summary_style.bg_color = COLOR_SUMMARY_BG
+	summary_style.border_width_bottom = 2
+	summary_style.border_color = COLOR_BORDER
+	summary_panel.add_theme_stylebox_override("panel", summary_style)
+	main_vbox.add_child(summary_panel)
 
-var summary_hbox = HBoxContainer.new()
-summary_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-summary_hbox.add_theme_constant_override("separation", 60)
-summary_panel.add_child(summary_hbox)
+	var summary_hbox = HBoxContainer.new()
+	summary_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	summary_hbox.add_theme_constant_override("separation", 60)
+	summary_panel.add_child(summary_hbox)
 
-_summary_rp_lbl = Label.new()
-_summary_rp_lbl.text = "..."
-_summary_rp_lbl.add_theme_color_override("font_color", COLOR_GOLD)
-_summary_rp_lbl.add_theme_font_size_override("font_size", 18)
-if UITheme: UITheme.apply_font(_summary_rp_lbl, "bold")
-summary_hbox.add_child(_summary_rp_lbl)
+	_summary_rp_lbl = Label.new()
+	_summary_rp_lbl.text = "..."
+	_summary_rp_lbl.add_theme_color_override("font_color", COLOR_GOLD)
+	_summary_rp_lbl.add_theme_font_size_override("font_size", 18)
+	if UITheme: UITheme.apply_font(_summary_rp_lbl, "bold")
+	summary_hbox.add_child(_summary_rp_lbl)
 
-var sep = VSeparator.new()
-summary_hbox.add_child(sep)
+	var sep = VSeparator.new()
+	summary_hbox.add_child(sep)
 
-_summary_gr_lbl = Label.new()
-_summary_gr_lbl.text = "..."
-_summary_gr_lbl.add_theme_color_override("font_color", COLOR_BLUE)
-_summary_gr_lbl.add_theme_font_size_override("font_size", 18)
-if UITheme: UITheme.apply_font(_summary_gr_lbl, "bold")
-summary_hbox.add_child(_summary_gr_lbl)
+	_summary_gr_lbl = Label.new()
+	_summary_gr_lbl.text = "..."
+	_summary_gr_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	_summary_gr_lbl.add_theme_font_size_override("font_size", 18)
+	if UITheme: UITheme.apply_font(_summary_gr_lbl, "bold")
+	summary_hbox.add_child(_summary_gr_lbl)
 
-# === КОНТЕНТ ===
-var content_margin = MarginContainer.new()
-content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
-content_margin.add_theme_constant_override("margin_left", 20)
-content_margin.add_theme_constant_override("margin_top", 20)
-content_margin.add_theme_constant_override("margin_right", 20)
-content_margin.add_theme_constant_override("margin_bottom", 20)
-main_vbox.add_child(content_margin)
+	# === КОНТЕНТ ===
+	var content_margin = MarginContainer.new()
+	content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_margin.add_theme_constant_override("margin_left", 20)
+	content_margin.add_theme_constant_override("margin_top", 20)
+	content_margin.add_theme_constant_override("margin_right", 20)
+	content_margin.add_theme_constant_override("margin_bottom", 20)
+	main_vbox.add_child(content_margin)
 
-_scroll = ScrollContainer.new()
-_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-content_margin.add_child(_scroll)
+	_scroll = ScrollContainer.new()
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	content_margin.add_child(_scroll)
 
-_cards_vbox = VBoxContainer.new()
-_cards_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-_cards_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-_cards_vbox.add_theme_constant_override("separation", 15)
-_scroll.add_child(_cards_vbox)
+	_cards_vbox = VBoxContainer.new()
+	_cards_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_cards_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_cards_vbox.add_theme_constant_override("separation", 15)
+	_scroll.add_child(_cards_vbox)
 
 # === НАПОЛНЕНИЕ ДАННЫМИ ===
 func _populate():
-if _summary_rp_lbl:
-_summary_rp_lbl.text = tr("CLIENT_REPUTATION_POINTS") % ClientManager.reputation_points
-if _summary_gr_lbl:
-_summary_gr_lbl.text = tr("CLIENT_GLOBAL_REPUTATION") % ClientManager.global_reputation
+	if _summary_rp_lbl:
+		_summary_rp_lbl.text = tr("CLIENT_REPUTATION_POINTS") % ClientManager.reputation_points
+	if _summary_gr_lbl:
+		_summary_gr_lbl.text = tr("CLIENT_GLOBAL_REPUTATION") % ClientManager.global_reputation
 
-for child in _cards_vbox.get_children():
-child.queue_free()
+	for child in _cards_vbox.get_children():
+		child.queue_free()
 
-# 3 карточки в первом ряду, 2 во втором по центру
-var clients = ClientManager.clients
-var row1 = HBoxContainer.new()
-row1.add_theme_constant_override("separation", 14)
-row1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-_cards_vbox.add_child(row1)
+	# 3 карточки в первом ряду, 2 во втором по центру
+	var clients = ClientManager.clients
+	var row1 = HBoxContainer.new()
+	row1.add_theme_constant_override("separation", 14)
+	row1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_cards_vbox.add_child(row1)
 
-var row2 = HBoxContainer.new()
-row2.add_theme_constant_override("separation", 14)
-row2.alignment = BoxContainer.ALIGNMENT_CENTER
-row2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-_cards_vbox.add_child(row2)
+	var row2 = HBoxContainer.new()
+	row2.add_theme_constant_override("separation", 14)
+	row2.alignment = BoxContainer.ALIGNMENT_CENTER
+	row2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_cards_vbox.add_child(row2)
 
-for i in range(clients.size()):
-var client = clients[i]
-var card = _create_client_card(client)
-if i < 3:
-row1.add_child(card)
-else:
-card.custom_minimum_size = Vector2(460, 0)
-row2.add_child(card)
+	for i in range(clients.size()):
+		var client = clients[i]
+		var card = _create_client_card(client)
+		if i < 3:
+			row1.add_child(card)
+		else:
+			card.custom_minimum_size = Vector2(460, 0)
+			row2.add_child(card)
 
 func _create_client_card(client: ClientData) -> PanelContainer:
-var card = PanelContainer.new()
-card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-var style = StyleBoxFlat.new()
-style.bg_color = COLOR_WHITE
-style.border_width_left = 2
-style.border_width_top = 2
-style.border_width_right = 2
-style.border_width_bottom = 2
-style.border_color = COLOR_BORDER
-style.corner_radius_top_left = 16
-style.corner_radius_top_right = 16
-style.corner_radius_bottom_right = 16
-style.corner_radius_bottom_left = 16
-if UITheme: UITheme.apply_shadow(style)
-card.add_theme_stylebox_override("panel", style)
+	var style = StyleBoxFlat.new()
+	style.bg_color = COLOR_WHITE
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = COLOR_BORDER
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
+	if UITheme: UITheme.apply_shadow(style)
+	card.add_theme_stylebox_override("panel", style)
 
-var margin = MarginContainer.new()
-margin.add_theme_constant_override("margin_left", 16)
-margin.add_theme_constant_override("margin_top", 14)
-margin.add_theme_constant_override("margin_right", 16)
-margin.add_theme_constant_override("margin_bottom", 14)
-card.add_child(margin)
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	card.add_child(margin)
 
-var card_vbox = VBoxContainer.new()
-card_vbox.add_theme_constant_override("separation", 8)
-margin.add_child(card_vbox)
+	var card_vbox = VBoxContainer.new()
+	card_vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(card_vbox)
 
-# Emoji крупно
-var emoji_lbl = Label.new()
-emoji_lbl.text = client.emoji
-emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-emoji_lbl.add_theme_font_size_override("font_size", 36)
-card_vbox.add_child(emoji_lbl)
+	# Emoji крупно
+	var emoji_lbl = Label.new()
+	emoji_lbl.text = client.emoji
+	emoji_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	emoji_lbl.add_theme_font_size_override("font_size", 36)
+	card_vbox.add_child(emoji_lbl)
 
-# Имя клиента
-var name_lbl = Label.new()
-name_lbl.text = tr(client.client_name)
-name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
-name_lbl.add_theme_font_size_override("font_size", 16)
-if UITheme: UITheme.apply_font(name_lbl, "bold")
-card_vbox.add_child(name_lbl)
+	# Имя клиента
+	var name_lbl = Label.new()
+	name_lbl.text = tr(client.client_name)
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	name_lbl.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(name_lbl, "bold")
+	card_vbox.add_child(name_lbl)
 
-# Проектов сдано
-var done_lbl = Label.new()
-done_lbl.text = tr("CLIENT_PROJECTS_DONE") % client.get_total_projects()
-done_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-done_lbl.add_theme_color_override("font_color", COLOR_GRAY)
-done_lbl.add_theme_font_size_override("font_size", 13)
-if UITheme: UITheme.apply_font(done_lbl, "regular")
-card_vbox.add_child(done_lbl)
+	# Проектов сдано
+	var done_lbl = Label.new()
+	done_lbl.text = tr("CLIENT_PROJECTS_DONE") % client.get_total_projects()
+	done_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	done_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	done_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(done_lbl, "regular")
+	card_vbox.add_child(done_lbl)
 
-# Купленные бонусы
-var bonus_parts = []
-var budget_pct = client.get_budget_bonus_percent()
-if budget_pct > 0:
-bonus_parts.append(tr("CLIENT_CURRENT_BONUS") % budget_pct)
-var type_parts = []
-if client.has_simple: type_parts.append("Simple")
-if client.has_easy: type_parts.append("Easy")
-if type_parts.size() > 0:
-bonus_parts.append(" · ".join(type_parts))
+	# Купленные бонусы
+	var bonus_parts = []
+	var budget_pct = client.get_budget_bonus_percent()
+	if budget_pct > 0:
+		bonus_parts.append(tr("CLIENT_CURRENT_BONUS") % budget_pct)
+	var type_parts = []
+	if client.has_simple: type_parts.append("Simple")
+	if client.has_easy: type_parts.append("Easy")
+	if type_parts.size() > 0:
+		bonus_parts.append(" · ".join(type_parts))
 
-var bonus_lbl = Label.new()
-if bonus_parts.size() > 0:
-bonus_lbl.text = " | ".join(bonus_parts)
-bonus_lbl.add_theme_color_override("font_color", COLOR_GREEN)
-else:
-bonus_lbl.text = tr("CLIENT_MICRO_ONLY")
-bonus_lbl.add_theme_color_override("font_color", COLOR_GRAY)
-bonus_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-bonus_lbl.add_theme_font_size_override("font_size", 13)
-if UITheme: UITheme.apply_font(bonus_lbl, "semibold")
-card_vbox.add_child(bonus_lbl)
+	var bonus_lbl = Label.new()
+	if bonus_parts.size() > 0:
+		bonus_lbl.text = " | ".join(bonus_parts)
+		bonus_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+	else:
+		bonus_lbl.text = tr("CLIENT_MICRO_ONLY")
+		bonus_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	bonus_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	bonus_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(bonus_lbl, "semibold")
+	card_vbox.add_child(bonus_lbl)
 
-# Кнопка "Развить"
-var dev_btn = Button.new()
-dev_btn.text = tr("CLIENT_BTN_DEVELOP")
-dev_btn.custom_minimum_size = Vector2(0, 36)
-dev_btn.focus_mode = Control.FOCUS_NONE
-dev_btn.add_theme_stylebox_override("normal", _btn_style)
-dev_btn.add_theme_stylebox_override("hover", _btn_style_hover)
-dev_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
-dev_btn.add_theme_color_override("font_color", COLOR_BLUE)
-dev_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-dev_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
-dev_btn.add_theme_font_size_override("font_size", 14)
-if UITheme: UITheme.apply_font(dev_btn, "semibold")
-var cid = client.client_id
-dev_btn.pressed.connect(_open_shop.bind(cid))
-card_vbox.add_child(dev_btn)
+	# Кнопка "Развить"
+	var dev_btn = Button.new()
+	dev_btn.text = tr("CLIENT_BTN_DEVELOP")
+	dev_btn.custom_minimum_size = Vector2(0, 36)
+	dev_btn.focus_mode = Control.FOCUS_NONE
+	dev_btn.add_theme_stylebox_override("normal", _btn_style)
+	dev_btn.add_theme_stylebox_override("hover", _btn_style_hover)
+	dev_btn.add_theme_stylebox_override("pressed", _btn_style_hover)
+	dev_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	dev_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	dev_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+	dev_btn.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(dev_btn, "semibold")
+	var cid = client.client_id
+	dev_btn.pressed.connect(_open_shop.bind(cid))
+	card_vbox.add_child(dev_btn)
 
-return card
+	return card
 
 func _open_shop(client_id: String):
-var shop_script = load("res://Scripts/client_shop.gd")
-if shop_script == null:
-return
-var shop = shop_script.new()
-shop.client_id = client_id
-shop.panel_ref = self
-add_child(shop)
+	var shop_script = load("res://Scripts/client_shop.gd")
+	if shop_script == null:
+		return
+	var shop = shop_script.new()
+	shop.client_id = client_id
+	shop.panel_ref = self
+	add_child(shop)
 
 func _input(event: InputEvent) -> void:
-if event.is_action_pressed("ui_cancel") and visible:
-close()
-get_viewport().set_input_as_handled()
+	if event.is_action_pressed("ui_cancel") and visible:
+		close()
+		get_viewport().set_input_as_handled()
