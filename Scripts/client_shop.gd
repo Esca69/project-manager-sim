@@ -294,6 +294,14 @@ func _make_section_header(text: String) -> Label:
 	if UITheme: UITheme.apply_font(lbl, "bold")
 	return lbl
 
+func _create_emoji_label(emoji: String) -> Label:
+	var icon_lbl = Label.new()
+	icon_lbl.text = emoji
+	icon_lbl.add_theme_font_size_override("font_size", 36)
+	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon_lbl.custom_minimum_size = Vector2(52, 0)
+	return icon_lbl
+
 func _make_card_purchased(title: String, desc: String, emoji: String = "") -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -322,12 +330,7 @@ func _make_card_purchased(title: String, desc: String, emoji: String = "") -> Pa
 	m.add_child(hbox)
 
 	if emoji != "":
-		var icon_lbl = Label.new()
-		icon_lbl.text = emoji
-		icon_lbl.add_theme_font_size_override("font_size", 36)
-		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		icon_lbl.custom_minimum_size = Vector2(52, 0)
-		hbox.add_child(icon_lbl)
+		hbox.add_child(_create_emoji_label(emoji))
 
 	var vbox = VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -385,12 +388,7 @@ func _make_card_locked(title: String, desc: String, lock_reason: String, emoji: 
 	m.add_child(hbox)
 
 	if emoji != "":
-		var icon_lbl = Label.new()
-		icon_lbl.text = emoji
-		icon_lbl.add_theme_font_size_override("font_size", 36)
-		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		icon_lbl.custom_minimum_size = Vector2(52, 0)
-		hbox.add_child(icon_lbl)
+		hbox.add_child(_create_emoji_label(emoji))
 
 	var vbox = VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -450,12 +448,7 @@ func _make_card_buyable(title: String, desc: String, cost: int, can_afford: bool
 	m.add_child(hbox)
 
 	if emoji != "":
-		var icon_lbl = Label.new()
-		icon_lbl.text = emoji
-		icon_lbl.add_theme_font_size_override("font_size", 36)
-		icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		icon_lbl.custom_minimum_size = Vector2(52, 0)
-		hbox.add_child(icon_lbl)
+		hbox.add_child(_create_emoji_label(emoji))
 
 	var left_vbox = VBoxContainer.new()
 	left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
