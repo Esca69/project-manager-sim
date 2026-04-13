@@ -144,6 +144,7 @@ func save_game():
 
 		# --- ClientManager ---
 		"clients": _serialize_clients(),
+		"client_manager": _serialize_client_manager(),
 
 		# --- Сотрудники ---
 		"employees": _serialize_employees(),
@@ -242,12 +243,20 @@ func _serialize_clients() -> Array:
 	for c in ClientManager.clients:
 		result.append({
 			"client_id": c.client_id,
-			"loyalty": c.loyalty,
+			"budget_level": c.budget_level,
+			"has_simple": c.has_simple,
+			"has_easy": c.has_easy,
 			"projects_completed_on_time": c.projects_completed_on_time,
 			"projects_completed_late": c.projects_completed_late,
 			"projects_failed": c.projects_failed,
 		})
 	return result
+
+func _serialize_client_manager() -> Dictionary:
+	return {
+		"reputation_points": ClientManager.reputation_points,
+		"global_reputation": ClientManager.global_reputation,
+	}
 
 # --- Сотрудники ---
 func _serialize_employees() -> Array:
@@ -617,6 +626,7 @@ func _apply_loaded_data(data: Dictionary, slot: int) -> void:
 
 	_load_boss_manager(data.get("boss_manager", {}))
 	_load_clients(data.get("clients", []))
+	_load_client_manager(data.get("client_manager", {}))
 	await get_tree().process_frame
 
 	# === EVENT SYSTEM: Восстанавливаем EventManager ===
@@ -1168,7 +1178,7 @@ func _load_game_state(d: Dictionary):
 	GameState.projects_finished_today.clear()
 	GameState.projects_failed_today.clear()
 	GameState.levelups_today.clear()
-	GameState.loyalty_changes_today.clear()
+	GameState.reputation_changes_today.clear()
 	GameState.tutorial_completed = d.get("tutorial_completed", false)
 	if d.has("office_upgrades"):
 		GameState.office_upgrades = d["office_upgrades"].duplicate()
@@ -1230,10 +1240,18 @@ func _load_clients(arr: Array):
 		var cid = cd.get("client_id", "")
 		var client = ClientManager.get_client_by_id(cid)
 		if client:
-			client.loyalty = int(cd.get("loyalty", 0))
+			client.budget_level = int(cd.get("budget_level", 0))
+			client.has_simple = cd.get("has_simple", false)
+			client.has_easy = cd.get("has_easy", false)
 			client.projects_completed_on_time = int(cd.get("projects_completed_on_time", 0))
 			client.projects_completed_late = int(cd.get("projects_completed_late", 0))
 			client.projects_failed = int(cd.get("projects_failed", 0))
+
+func _load_client_manager(d: Dictionary):
+	if d.is_empty():
+		return
+	ClientManager.reputation_points = int(d.get("reputation_points", 0))
+	ClientManager.global_reputation = int(d.get("global_reputation", 0))
 
 func _load_event_manager(d: Dictionary):
 	var em = get_node_or_null("/root/EventManager")

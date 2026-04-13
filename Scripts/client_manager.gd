@@ -2,7 +2,12 @@ extends Node
 
 var clients: Array[ClientData] = []
 
-signal client_loyalty_changed(client: ClientData, old_value: int, new_value: int)
+# === РЕПУТАЦИЯ ===
+var reputation_points: int = 0   # Тратимая валюта (общий пул)
+var global_reputation: int = 0   # Нетратимая метрика
+
+signal reputation_points_changed(new_rp: int)
+signal global_reputation_changed(new_gr: int)
 
 func _ready():
 	_init_clients()
@@ -10,7 +15,6 @@ func _ready():
 func _init_clients():
 	clients.clear()
 
-	# ИСПРАВЛЕНИЕ: Убраны вызовы tr(), чтобы сохранялись ключи локализации
 	var defs = [
 		{"id": "novotech",     "name": "CLIENT_NOVOTECH",      "emoji": "🚀", "desc": "CLIENT_NOVOTECH_DESC"},
 		{"id": "edaplus",      "name": "CLIENT_EDAPLUS",       "emoji": "🍕", "desc": "CLIENT_EDAPLUS_DESC"},
@@ -25,12 +29,7 @@ func _init_clients():
 		client.client_name = d["name"]
 		client.emoji = d["emoji"]
 		client.description = d["desc"]
-		client.loyalty = 0
-		client.loyalty_changed.connect(_on_client_loyalty_changed)
 		clients.append(client)
-
-func _on_client_loyalty_changed(client: ClientData, old_value: int, new_value: int):
-	emit_signal("client_loyalty_changed", client, old_value, new_value)
 
 func get_client_by_id(client_id: String) -> ClientData:
 	for c in clients:
@@ -49,23 +48,57 @@ func get_budget_bonus_for_client(client_id: String) -> float:
 		return 0.0
 	return float(client.get_budget_bonus_percent()) / 100.0
 
-# === СУММАРНАЯ ЛОЯЛЬНОСТЬ ВСЕХ КЛИЕНТОВ ===
-func get_total_loyalty() -> int:
-	var total = 0
-	for c in clients:
-		total += c.loyalty
-	return total
+# === НАЧИСЛЕНИЕ ОЧКОВ РЕПУТАЦИИ ===
+func add_reputation_points(amount: int):
+	reputation_points += amount
+	emit_signal("reputation_points_changed", reputation_points)
 
-# === ДИНАМИЧЕСКОЕ КОЛИЧЕСТВО ПРОЕКТОВ НА НЕДЕЛЮ ===
+func spend_reputation_points(amount: int) -> bool:
+	if reputation_points < amount:
+		return false
+	reputation_points -= amount
+	emit_signal("reputation_points_changed", reputation_points)
+	return true
+
+func add_global_reputation(amount: int):
+	global_reputation += amount
+	emit_signal("global_reputation_changed", global_reputation)
+
+# === ПОКУПКА УЛУЧШЕНИЙ КЛИЕНТА ===
+func buy_budget_upgrade(client_id: String) -> bool:
+	var client = get_client_by_id(client_id)
+	if client == null: return false
+	if client.budget_level >= ClientData.MAX_BUDGET_LEVEL: return false
+	if not spend_reputation_points(ClientData.BUDGET_UPGRADE_COST): return false
+	client.budget_level += 1
+	return true
+
+func buy_simple_unlock(client_id: String) -> bool:
+	var client = get_client_by_id(client_id)
+	if client == null: return false
+	if client.has_simple: return false
+	if not spend_reputation_points(ClientData.SIMPLE_UNLOCK_COST): return false
+	client.has_simple = true
+	return true
+
+func buy_easy_unlock(client_id: String) -> bool:
+	var client = get_client_by_id(client_id)
+	if client == null: return false
+	if not client.has_simple: return false
+	if client.has_easy: return false
+	if not spend_reputation_points(ClientData.EASY_UNLOCK_COST): return false
+	client.has_easy = true
+	return true
+
+# === ДИНАМИЧЕСКОЕ КОЛИЧЕСТВО ПРОЕКТОВ НА НЕДЕЛЮ (зависит от ГР) ===
 func get_weekly_project_count() -> int:
-	var total = get_total_loyalty()
-	if total >= 50:
+	if global_reputation >= 50:
 		return 13
-	elif total >= 30:
+	elif global_reputation >= 30:
 		return 11
-	elif total >= 15:
+	elif global_reputation >= 15:
 		return 9
-	elif total >= 5:
+	elif global_reputation >= 5:
 		return 7
 	else:
 		return 5

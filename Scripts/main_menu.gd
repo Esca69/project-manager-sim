@@ -650,7 +650,7 @@ func _reset_all_singletons():
 	GameState.projects_finished_today.clear()
 	GameState.projects_failed_today.clear()
 	GameState.levelups_today.clear()
-	GameState.loyalty_changes_today.clear()
+	GameState.reputation_changes_today.clear()
 
 	# PMData
 	PMData.xp = 0
@@ -678,6 +678,8 @@ func _reset_all_singletons():
 
 	# ClientManager — переинициализация клиентов
 	ClientManager._init_clients()
+	ClientManager.reputation_points = 0
+	ClientManager.global_reputation = 0
 
 	# ProjectManager
 	ProjectManager.active_projects.clear()

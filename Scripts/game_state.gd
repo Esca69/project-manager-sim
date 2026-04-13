@@ -86,8 +86,8 @@ var _last_reset_day: int = 0
 # === ЛЕВЕЛ-АПЫ ЗА ДЕНЬ ===
 var levelups_today: Array = []  # [{name, role, new_level, grade, skill_gain, new_trait}]
 
-# === ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ЗА ДЕНЬ ===
-var loyalty_changes_today: Array = []  # [{client_name, emoji, change, new_loyalty, reason}]
+# === ИЗМЕНЕНИЯ РЕПУТАЦИИ ЗА ДЕНЬ ===
+var reputation_changes_today: Array = []  # [{change, reason, new_total}]
 
 func reset_daily_stats():
 	_last_reset_day = GameTime.day if GameTime else 0
@@ -99,7 +99,7 @@ func reset_daily_stats():
 	projects_finished_today.clear()
 	projects_failed_today.clear()
 	levelups_today.clear()
-	loyalty_changes_today.clear()
+	reputation_changes_today.clear()
 	daily_income_details.clear()
 	daily_event_expenses.clear()
 
@@ -204,15 +204,13 @@ func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trai
 	})
 	BossManager.track_employee_levelup()
 
-# === ЗАПИСЬ ИЗМЕНЕНИЯ ЛОЯЛЬНОСТИ ===
-func record_loyalty_change(client, change: int, reason: String):
-	# ИСПРАВЛЕНИЕ: Используем get_display_name (оно уже с эмодзи)
-	loyalty_changes_today.append({
-		"client_name": client.get_display_name(),
-		"emoji": client.emoji,
+# === ЗАПИСЬ ИЗМЕНЕНИЯ РЕПУТАЦИИ ===
+func record_reputation_change(change: int, reason: String):
+	var cm = get_node_or_null("/root/ClientManager")
+	reputation_changes_today.append({
 		"change": change,
-		"new_loyalty": client.loyalty,
 		"reason": reason,
+		"new_total": cm.reputation_points if cm else 0,
 	})
 
 func _ready():
@@ -223,11 +221,9 @@ func _connect_signals():
 		GameTime.day_started.connect(_check_stale_data)
 	if ProjectManager and not ProjectManager.employee_leveled_up.is_connected(record_levelup):
 		ProjectManager.employee_leveled_up.connect(record_levelup)
-	# ClientManager загружается ПОСЛЕ GameState в autoload,
-	# поэтому обращаемся через get_node, а не напрямую по имени
 	var cm = get_node_or_null("/root/ClientManager")
-	if cm and not cm.client_loyalty_changed.is_connected(_on_loyalty_changed):
-		cm.client_loyalty_changed.connect(_on_loyalty_changed)
+	if cm and not cm.reputation_points_changed.is_connected(_on_reputation_changed):
+		cm.reputation_points_changed.connect(_on_reputation_changed)
 
 # Аварийный сброс дневных данных, если reset_daily_stats не вызывался более 2 дней
 func _check_stale_data(_day_number = 0):
@@ -235,14 +231,5 @@ func _check_stale_data(_day_number = 0):
 		print("⚠️ GameState: Аварийный сброс дневных данных (пропущен reset)")
 		reset_daily_stats()
 
-func _on_loyalty_changed(client, old_value: int, new_value: int):
-	var change = new_value - old_value
-	var reason = ""
-	if change > 0:
-		if change >= 3:  # ClientData.LOYALTY_ON_TIME
-			reason = tr("REASON_PROJECT_ON_TIME")
-		else:
-			reason = tr("REASON_PROJECT_LATE")
-	elif change < 0:
-		reason = tr("REASON_PROJECT_FAILED")
-	record_loyalty_change(client, change, reason)
+func _on_reputation_changed(new_rp: int):
+	pass  # Изменения репутации записываются напрямую через record_reputation_change
