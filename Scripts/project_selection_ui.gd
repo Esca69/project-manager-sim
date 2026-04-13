@@ -563,7 +563,7 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if data.client_id != "":
 		var client = data.get_client()
 		if client and client.get_budget_bonus_percent() > 0:
-			budget_text += "  (❤+%d%%)" % client.get_budget_bonus_percent()
+			budget_text += "  (⭐+%d%%)" % client.get_budget_bonus_percent()
 	budget_lbl.text = budget_text
 	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	budget_lbl.add_theme_font_size_override("font_size", 20)
