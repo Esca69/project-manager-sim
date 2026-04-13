@@ -314,7 +314,7 @@ card_vbox.add_child(done_lbl)
 var bonus_parts = []
 var budget_pct = client.get_budget_bonus_percent()
 if budget_pct > 0:
-bonus_parts.append("+%d%% бюджет" % budget_pct)
+bonus_parts.append(tr("CLIENT_CURRENT_BONUS") % budget_pct)
 var type_parts = []
 if client.has_simple: type_parts.append("Simple")
 if client.has_easy: type_parts.append("Easy")
