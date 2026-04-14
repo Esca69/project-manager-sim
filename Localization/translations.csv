@@ -1355,6 +1355,8 @@ DESK_UPG_PER_DAY,/день,/day
 DESK_UPG_TOGGLE_ON,Вкл,On
 DESK_UPG_TOGGLE_OFF,Выкл,Off
 DESK_UPG_PAUSED,Приостановлено,Paused
+DESK_UPG_SECTION_ONETIME,Разовые покупки,One-time purchases
+DESK_UPG_SECTION_SUBS,Подписки,Subscriptions
 MOOD_MOD_DESK_PLANT,Настольное растение,Desk plant
 ROSTER_EFF_BREAKDOWN_DESK,Улучшения стола: %s,Desk upgrades: %s
 ROSTER_DESK_AI_XP_PENALTY,🤖 ИИ: −50% XP,🤖 AI: −50% XP

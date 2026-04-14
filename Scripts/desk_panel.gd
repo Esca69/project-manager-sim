@@ -284,10 +284,31 @@ func _refresh_upgrades():
 	if not _current_desk:
 		return
 
-	for upgrade_id in _current_desk.DESK_UPGRADE_CONFIG:
-		var config = _current_desk.DESK_UPGRADE_CONFIG[upgrade_id]
-		var card = _build_upgrade_card(upgrade_id, config)
-		_upgrades_vbox.add_child(card)
+	# Section: One-time purchases
+	_upgrades_vbox.add_child(_make_section_header("🛒 " + tr("DESK_UPG_SECTION_ONETIME")))
+	for upgrade_id in ["second_monitor", "desk_plant"]:
+		var config = _current_desk.DESK_UPGRADE_CONFIG.get(upgrade_id)
+		if config:
+			_upgrades_vbox.add_child(_build_upgrade_card(upgrade_id, config))
+
+	var sep = HSeparator.new()
+	_upgrades_vbox.add_child(sep)
+
+	# Section: Subscriptions
+	_upgrades_vbox.add_child(_make_section_header("📅 " + tr("DESK_UPG_SECTION_SUBS")))
+	for upgrade_id in ["software_ba", "software_dev", "software_qa", "ai_subscription"]:
+		var config = _current_desk.DESK_UPGRADE_CONFIG.get(upgrade_id)
+		if config:
+			_upgrades_vbox.add_child(_build_upgrade_card(upgrade_id, config))
+
+func _make_section_header(text: String) -> Label:
+	var lbl = Label.new()
+	lbl.text = text
+	lbl.add_theme_color_override("font_color", COLOR_DARK)
+	lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme:
+		UITheme.apply_font(lbl, "semibold")
+	return lbl
 
 func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 	var card = PanelContainer.new()
@@ -346,11 +367,7 @@ func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 		UITheme.apply_font(desc_lbl, "regular")
 	left_vbox.add_child(desc_lbl)
 
-	# Action (right side)
-	var action_box = HBoxContainer.new()
-	action_box.add_theme_constant_override("separation", 6)
-	row.add_child(action_box)
-
+	# Price label (left side, under description)
 	var is_bought = _current_desk.desk_upgrades.get(upgrade_id, false)
 
 	if config.type == "one_time":
@@ -361,10 +378,34 @@ func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 			bought_lbl.add_theme_font_size_override("font_size", 12)
 			if UITheme:
 				UITheme.apply_font(bought_lbl, "semibold")
-			action_box.add_child(bought_lbl)
+			left_vbox.add_child(bought_lbl)
 		else:
+			var price_lbl = Label.new()
+			price_lbl.text = "💰 $%d" % config.cost
+			price_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+			price_lbl.add_theme_font_size_override("font_size", 12)
+			if UITheme:
+				UITheme.apply_font(price_lbl, "semibold")
+			left_vbox.add_child(price_lbl)
+	elif config.type == "subscription":
+		var price_lbl = Label.new()
+		price_lbl.text = "💰 $%d%s" % [config.daily_cost, tr("DESK_UPG_PER_DAY")]
+		price_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+		price_lbl.add_theme_font_size_override("font_size", 12)
+		if UITheme:
+			UITheme.apply_font(price_lbl, "semibold")
+		left_vbox.add_child(price_lbl)
+
+	# Action (right side)
+	var action_box = HBoxContainer.new()
+	action_box.add_theme_constant_override("separation", 6)
+	action_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_child(action_box)
+
+	if config.type == "one_time":
+		if not is_bought:
 			var buy_btn = Button.new()
-			buy_btn.text = tr("DESK_UPG_BUY") + " — $%d" % config.cost
+			buy_btn.text = tr("DESK_UPG_BUY")
 			buy_btn.add_theme_font_size_override("font_size", 12)
 			buy_btn.focus_mode = Control.FOCUS_NONE
 			if UITheme:
@@ -373,40 +414,27 @@ func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 			buy_btn.pressed.connect(_on_buy_pressed.bind(upgrade_id))
 			action_box.add_child(buy_btn)
 	elif config.type == "subscription":
-		if is_bought:
-			var is_active = _current_desk.desk_upgrades.get(upgrade_id + "_active", false)
-			var price_lbl = Label.new()
-			price_lbl.text = "$%d%s" % [config.daily_cost, tr("DESK_UPG_PER_DAY")]
-			price_lbl.add_theme_color_override("font_color", COLOR_GRAY)
-			price_lbl.add_theme_font_size_override("font_size", 11)
-			if UITheme:
-				UITheme.apply_font(price_lbl, "regular")
-			action_box.add_child(price_lbl)
+		var is_active = _current_desk.desk_upgrades.get(upgrade_id + "_active", false)
 
-			var toggle_btn = Button.new()
-			if is_active:
-				toggle_btn.text = "🔘 " + tr("DESK_UPG_TOGGLE_ON")
-				toggle_btn.add_theme_color_override("font_color", COLOR_GREEN)
-			else:
-				toggle_btn.text = "⬚ " + tr("DESK_UPG_TOGGLE_OFF")
-				toggle_btn.add_theme_color_override("font_color", COLOR_GRAY)
-			toggle_btn.add_theme_font_size_override("font_size", 12)
-			toggle_btn.focus_mode = Control.FOCUS_NONE
-			if UITheme:
-				UITheme.apply_font(toggle_btn, "semibold")
-			_style_toggle_button(toggle_btn, is_active)
-			toggle_btn.pressed.connect(_on_toggle_pressed.bind(upgrade_id))
-			action_box.add_child(toggle_btn)
-		else:
-			var buy_btn = Button.new()
-			buy_btn.text = tr("DESK_UPG_BUY") + " — $%d%s" % [config.daily_cost, tr("DESK_UPG_PER_DAY")]
-			buy_btn.add_theme_font_size_override("font_size", 12)
-			buy_btn.focus_mode = Control.FOCUS_NONE
-			if UITheme:
-				UITheme.apply_font(buy_btn, "semibold")
-			_style_buy_button(buy_btn)
-			buy_btn.pressed.connect(_on_buy_pressed.bind(upgrade_id))
-			action_box.add_child(buy_btn)
+		var off_btn = Button.new()
+		off_btn.text = tr("DESK_UPG_TOGGLE_OFF")
+		off_btn.add_theme_font_size_override("font_size", 12)
+		off_btn.focus_mode = Control.FOCUS_NONE
+		if UITheme:
+			UITheme.apply_font(off_btn, "semibold")
+		_style_sub_off_button(off_btn, not is_active)
+		off_btn.pressed.connect(_on_sub_off_pressed.bind(upgrade_id))
+		action_box.add_child(off_btn)
+
+		var on_btn = Button.new()
+		on_btn.text = tr("DESK_UPG_TOGGLE_ON")
+		on_btn.add_theme_font_size_override("font_size", 12)
+		on_btn.focus_mode = Control.FOCUS_NONE
+		if UITheme:
+			UITheme.apply_font(on_btn, "semibold")
+		_style_sub_on_button(on_btn, is_active)
+		on_btn.pressed.connect(_on_sub_on_pressed.bind(upgrade_id))
+		action_box.add_child(on_btn)
 
 	return card
 
@@ -440,30 +468,70 @@ func _style_buy_button(btn: Button):
 	btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
 	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
 
-func _style_toggle_button(btn: Button, is_active: bool):
-	var color = COLOR_GREEN if is_active else COLOR_GRAY
+func _style_sub_off_button(btn: Button, is_selected: bool):
 	var n = StyleBoxFlat.new()
-	n.bg_color = COLOR_WHITE
-	n.border_width_left = 2
-	n.border_width_top = 2
-	n.border_width_right = 2
-	n.border_width_bottom = 2
-	n.border_color = color
 	n.corner_radius_top_left = 12
 	n.corner_radius_top_right = 12
 	n.corner_radius_bottom_right = 12
 	n.corner_radius_bottom_left = 12
+	n.border_width_left = 2
+	n.border_width_top = 2
+	n.border_width_right = 2
+	n.border_width_bottom = 2
+	if is_selected:
+		n.bg_color = COLOR_GRAY
+		n.border_color = COLOR_GRAY
+		btn.add_theme_color_override("font_color", COLOR_WHITE)
+	else:
+		n.bg_color = COLOR_WHITE
+		n.border_color = COLOR_GRAY
+		btn.add_theme_color_override("font_color", COLOR_GRAY)
 	var h = StyleBoxFlat.new()
-	h.bg_color = color
-	h.border_width_left = 2
-	h.border_width_top = 2
-	h.border_width_right = 2
-	h.border_width_bottom = 2
-	h.border_color = color
 	h.corner_radius_top_left = 12
 	h.corner_radius_top_right = 12
 	h.corner_radius_bottom_right = 12
 	h.corner_radius_bottom_left = 12
+	h.border_width_left = 2
+	h.border_width_top = 2
+	h.border_width_right = 2
+	h.border_width_bottom = 2
+	h.bg_color = COLOR_GRAY
+	h.border_color = COLOR_GRAY
+	btn.add_theme_stylebox_override("normal", n)
+	btn.add_theme_stylebox_override("hover", h)
+	btn.add_theme_stylebox_override("pressed", h)
+	btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+
+func _style_sub_on_button(btn: Button, is_selected: bool):
+	var n = StyleBoxFlat.new()
+	n.corner_radius_top_left = 12
+	n.corner_radius_top_right = 12
+	n.corner_radius_bottom_right = 12
+	n.corner_radius_bottom_left = 12
+	n.border_width_left = 2
+	n.border_width_top = 2
+	n.border_width_right = 2
+	n.border_width_bottom = 2
+	if is_selected:
+		n.bg_color = COLOR_GREEN
+		n.border_color = COLOR_GREEN
+		btn.add_theme_color_override("font_color", COLOR_WHITE)
+	else:
+		n.bg_color = COLOR_WHITE
+		n.border_color = COLOR_GREEN
+		btn.add_theme_color_override("font_color", COLOR_GREEN)
+	var h = StyleBoxFlat.new()
+	h.corner_radius_top_left = 12
+	h.corner_radius_top_right = 12
+	h.corner_radius_bottom_right = 12
+	h.corner_radius_bottom_left = 12
+	h.border_width_left = 2
+	h.border_width_top = 2
+	h.border_width_right = 2
+	h.border_width_bottom = 2
+	h.bg_color = COLOR_GREEN
+	h.border_color = COLOR_GREEN
 	btn.add_theme_stylebox_override("normal", n)
 	btn.add_theme_stylebox_override("hover", h)
 	btn.add_theme_stylebox_override("pressed", h)
@@ -502,10 +570,16 @@ func _on_buy_pressed(upgrade_id: String):
 	_current_desk.buy_upgrade(upgrade_id)
 	_refresh_upgrades()
 
-func _on_toggle_pressed(upgrade_id: String):
+func _on_sub_on_pressed(upgrade_id: String):
 	if not _current_desk:
 		return
-	_current_desk.toggle_subscription(upgrade_id)
+	_current_desk.activate_subscription(upgrade_id)
+	_refresh_upgrades()
+
+func _on_sub_off_pressed(upgrade_id: String):
+	if not _current_desk:
+		return
+	_current_desk.deactivate_subscription(upgrade_id)
 	_refresh_upgrades()
 
 func _on_close_pressed():
