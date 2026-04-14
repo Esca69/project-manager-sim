@@ -1,5 +1,7 @@
 extends Control
 
+signal employee_assigned
+
 # Ссылка на стол, который сейчас ждёт назначения
 var target_desk = null
 
@@ -151,6 +153,7 @@ func _on_item_list_item_activated(index):
 		# === ТУТОРИАЛ: уведомляем о назначении за стол ===
 		TutorialManager.notify_worker_assigned()
 	
+	emit_signal("employee_assigned")
 	_on_close_pressed()
 
 func _on_close_pressed():

@@ -358,13 +358,24 @@ func _serialize_desk_assignments() -> Array:
 	for desk in desks:
 		if not ("assigned_employee" in desk):
 			continue
-		if desk.assigned_employee == null:
-			continue
-		result.append({
+		var entry = {
 			"desk_position_x": desk.global_position.x,
 			"desk_position_y": desk.global_position.y,
-			"employee_name": desk.assigned_employee.employee_name,
-		})
+			"employee_name": desk.assigned_employee.employee_name if desk.assigned_employee else "",
+		}
+		if "desk_upgrades" in desk:
+			entry["desk_upgrades"] = desk.desk_upgrades.duplicate()
+		# For empty desks with no upgrades, skip to keep save file slim
+		if desk.assigned_employee == null:
+			var has_any = false
+			if "desk_upgrades" in desk:
+				for key in desk.desk_upgrades:
+					if desk.desk_upgrades[key]:
+						has_any = true
+						break
+			if not has_any:
+				continue
+		result.append(entry)
 	return result
 
 # --- Проекты ---
@@ -1085,13 +1096,6 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 		var desk_x = float(assignment.get("desk_position_x", 0.0))
 		var desk_y = float(assignment.get("desk_position_y", 0.0))
 		var emp_name = str(assignment.get("employee_name", ""))
-		
-		if emp_name.is_empty():
-			continue
-		if not employee_map.has(emp_name):
-			continue
-		
-		var emp_data = employee_map[emp_name]
 		var saved_desk_pos = Vector2(desk_x, desk_y)
 		
 		var best_desk = null
@@ -1103,7 +1107,21 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 				best_dist = dist
 				best_desk = desk
 		
-		if best_desk and best_desk.has_method("assign_employee"):
+		if best_desk == null:
+			continue
+
+		# Restore desk upgrades regardless of employee assignment
+		if assignment.has("desk_upgrades") and "desk_upgrades" in best_desk:
+			best_desk.desk_upgrades = assignment["desk_upgrades"].duplicate()
+
+		if emp_name.is_empty():
+			continue
+		if not employee_map.has(emp_name):
+			continue
+		
+		var emp_data = employee_map[emp_name]
+		
+		if best_desk.has_method("assign_employee"):
 			if "assigned_employee" in best_desk and best_desk.assigned_employee == null:
 				
 				var npc_node = null
