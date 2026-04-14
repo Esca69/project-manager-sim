@@ -74,6 +74,7 @@ func _ready():
 
 # --- Вызывает Стол, когда хочет посадить/заменить сотрудника ---
 func open_assignment_list(desk_node):
+	z_index = 95
 	_was_paused = GameTime.is_game_paused
 	GameTime.set_paused(true)
 	target_desk = desk_node
@@ -157,6 +158,7 @@ func _on_item_list_item_activated(index):
 	_on_close_pressed()
 
 func _on_close_pressed():
+	z_index = 90
 	if not _was_paused:
 		GameTime.set_paused(false)
 	target_desk = null

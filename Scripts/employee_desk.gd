@@ -149,7 +149,35 @@ func toggle_subscription(upgrade_id: String):
 		el.add(tr("LOG_DESK_SUB_ACTIVATED") % tr(config.get("name_key", upgrade_id)), el.LogType.PROGRESS)
 	elif el:
 		var config = DESK_UPGRADE_CONFIG.get(upgrade_id, {})
-		el.add(tr("LOG_DESK_SUB_PAUSED") % tr(config.get("name_key", upgrade_id)), el.LogType.INFO)
+		el.add(tr("LOG_DESK_SUB_PAUSED") % tr(config.get("name_key", upgrade_id)), el.LogType.ROUTINE)
+
+func activate_subscription(upgrade_id: String) -> bool:
+	var config = DESK_UPGRADE_CONFIG.get(upgrade_id)
+	if config == null or config.type != "subscription":
+		return false
+	if not desk_upgrades.get(upgrade_id, false):
+		# Первая активация = покупка
+		desk_upgrades[upgrade_id] = true
+		desk_upgrades[upgrade_id + "_active"] = true
+		var el = get_node_or_null("/root/EventLog")
+		if el:
+			el.add(tr("LOG_DESK_UPGRADE_BOUGHT") % tr(config.name_key), el.LogType.PROGRESS)
+	else:
+		# Уже куплена — просто включаем
+		desk_upgrades[upgrade_id + "_active"] = true
+		var el = get_node_or_null("/root/EventLog")
+		if el:
+			el.add(tr("LOG_DESK_SUB_ACTIVATED") % tr(config.name_key), el.LogType.PROGRESS)
+	return true
+
+func deactivate_subscription(upgrade_id: String):
+	if not desk_upgrades.get(upgrade_id, false):
+		return
+	desk_upgrades[upgrade_id + "_active"] = false
+	var el = get_node_or_null("/root/EventLog")
+	if el:
+		var config = DESK_UPGRADE_CONFIG.get(upgrade_id, {})
+		el.add(tr("LOG_DESK_SUB_PAUSED") % tr(config.get("name_key", upgrade_id)), el.LogType.ROUTINE)
 
 func _ready():
 	add_to_group("desk")
