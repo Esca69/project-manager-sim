@@ -226,7 +226,7 @@ func _rebuild():
 
 	# Контракт на Simple
 	if client.has_simple:
-		items_vbox.add_child(_make_card_purchased(tr("CLIENT_SIMPLE_TITLE"), tr("CLIENT_SIMPLE_DESC")))
+		items_vbox.add_child(_make_card_purchased(tr("CLIENT_SIMPLE_TITLE"), tr("CLIENT_SIMPLE_DESC"), "📄"))
 	else:
 		var can_afford = ClientManager.reputation_points >= ClientData.SIMPLE_UNLOCK_COST
 		items_vbox.add_child(_make_card_buyable(
@@ -234,14 +234,15 @@ func _rebuild():
 			tr("CLIENT_SIMPLE_DESC"),
 			ClientData.SIMPLE_UNLOCK_COST,
 			can_afford,
-			func(): _buy_simple()
+			func(): _buy_simple(),
+			"📄"
 		))
 
 	# Контракт на Easy
 	if not client.has_simple:
-		items_vbox.add_child(_make_card_locked(tr("CLIENT_EASY_TITLE"), tr("CLIENT_EASY_DESC"), tr("CLIENT_EASY_LOCKED")))
+		items_vbox.add_child(_make_card_locked(tr("CLIENT_EASY_TITLE"), tr("CLIENT_EASY_DESC"), tr("CLIENT_EASY_LOCKED"), "📋"))
 	elif client.has_easy:
-		items_vbox.add_child(_make_card_purchased(tr("CLIENT_EASY_TITLE"), tr("CLIENT_EASY_DESC")))
+		items_vbox.add_child(_make_card_purchased(tr("CLIENT_EASY_TITLE"), tr("CLIENT_EASY_DESC"), "📋"))
 	else:
 		var can_afford = ClientManager.reputation_points >= ClientData.EASY_UNLOCK_COST
 		items_vbox.add_child(_make_card_buyable(
@@ -249,7 +250,8 @@ func _rebuild():
 			tr("CLIENT_EASY_DESC"),
 			ClientData.EASY_UNLOCK_COST,
 			can_afford,
-			func(): _buy_easy()
+			func(): _buy_easy(),
+			"📋"
 		))
 
 	# === СЕКЦИЯ: БЮДЖЕТ ПРОЕКТОВ ===
@@ -263,17 +265,18 @@ func _rebuild():
 
 		if i < client.budget_level:
 			# Уже куплено
-			items_vbox.add_child(_make_card_purchased(title, desc))
+			items_vbox.add_child(_make_card_purchased(title, desc, "💰"))
 		elif i == client.budget_level:
 			# Доступно для покупки
 			var can_afford = ClientManager.reputation_points >= ClientData.BUDGET_UPGRADE_COST
 			items_vbox.add_child(_make_card_buyable(
 				title, desc, ClientData.BUDGET_UPGRADE_COST, can_afford,
-				func(): _buy_budget()
+				func(): _buy_budget(),
+				"💰"
 			))
 		else:
 			# Заблокировано
-			items_vbox.add_child(_make_card_locked(title, desc, tr("CLIENT_BUDGET_LOCKED")))
+			items_vbox.add_child(_make_card_locked(title, desc, tr("CLIENT_BUDGET_LOCKED"), "💰"))
 
 func _add_summary_label(parent: HBoxContainer, text: String, color: Color):
 	var lbl = Label.new()
@@ -291,7 +294,15 @@ func _make_section_header(text: String) -> Label:
 	if UITheme: UITheme.apply_font(lbl, "bold")
 	return lbl
 
-func _make_card_purchased(title: String, desc: String) -> PanelContainer:
+func _create_emoji_label(emoji: String) -> Label:
+	var icon_lbl = Label.new()
+	icon_lbl.text = emoji
+	icon_lbl.add_theme_font_size_override("font_size", 36)
+	icon_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icon_lbl.custom_minimum_size = Vector2(52, 0)
+	return icon_lbl
+
+func _make_card_purchased(title: String, desc: String, emoji: String = "") -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -317,6 +328,9 @@ func _make_card_purchased(title: String, desc: String) -> PanelContainer:
 
 	var hbox = HBoxContainer.new()
 	m.add_child(hbox)
+
+	if emoji != "":
+		hbox.add_child(_create_emoji_label(emoji))
 
 	var vbox = VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -346,7 +360,7 @@ func _make_card_purchased(title: String, desc: String) -> PanelContainer:
 
 	return card
 
-func _make_card_locked(title: String, desc: String, lock_reason: String) -> PanelContainer:
+func _make_card_locked(title: String, desc: String, lock_reason: String, emoji: String = "") -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -372,6 +386,9 @@ func _make_card_locked(title: String, desc: String, lock_reason: String) -> Pane
 
 	var hbox = HBoxContainer.new()
 	m.add_child(hbox)
+
+	if emoji != "":
+		hbox.add_child(_create_emoji_label(emoji))
 
 	var vbox = VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -401,7 +418,7 @@ func _make_card_locked(title: String, desc: String, lock_reason: String) -> Pane
 
 	return card
 
-func _make_card_buyable(title: String, desc: String, cost: int, can_afford: bool, on_buy: Callable) -> PanelContainer:
+func _make_card_buyable(title: String, desc: String, cost: int, can_afford: bool, on_buy: Callable, emoji: String = "") -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -429,6 +446,9 @@ func _make_card_buyable(title: String, desc: String, cost: int, can_afford: bool
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 12)
 	m.add_child(hbox)
+
+	if emoji != "":
+		hbox.add_child(_create_emoji_label(emoji))
 
 	var left_vbox = VBoxContainer.new()
 	left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL

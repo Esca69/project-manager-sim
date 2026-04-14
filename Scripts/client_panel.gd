@@ -238,6 +238,7 @@ func _populate():
 	var clients = ClientManager.clients
 	var row1 = HBoxContainer.new()
 	row1.add_theme_constant_override("separation", 14)
+	row1.alignment = BoxContainer.ALIGNMENT_CENTER
 	row1.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_cards_vbox.add_child(row1)
 
@@ -253,12 +254,12 @@ func _populate():
 		if i < 3:
 			row1.add_child(card)
 		else:
-			card.custom_minimum_size = Vector2(460, 0)
 			row2.add_child(card)
 
 func _create_client_card(client: ClientData) -> PanelContainer:
 	var card = PanelContainer.new()
-	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.custom_minimum_size = Vector2(440, 0)
+	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = COLOR_WHITE
@@ -336,7 +337,8 @@ func _create_client_card(client: ClientData) -> PanelContainer:
 	# Кнопка "Развить"
 	var dev_btn = Button.new()
 	dev_btn.text = tr("CLIENT_BTN_DEVELOP")
-	dev_btn.custom_minimum_size = Vector2(0, 36)
+	dev_btn.custom_minimum_size = Vector2(180, 40)
+	dev_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	dev_btn.focus_mode = Control.FOCUS_NONE
 	dev_btn.add_theme_stylebox_override("normal", _btn_style)
 	dev_btn.add_theme_stylebox_override("hover", _btn_style_hover)
