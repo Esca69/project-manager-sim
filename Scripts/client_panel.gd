@@ -187,30 +187,40 @@ func _build_ui():
 	summary_hbox.add_theme_constant_override("separation", 60)
 	summary_panel.add_child(summary_hbox)
 
+	# --- RP group ---
+	var rp_group = HBoxContainer.new()
+	rp_group.add_theme_constant_override("separation", 8)
+	summary_hbox.add_child(rp_group)
+
 	_summary_rp_lbl = Label.new()
 	_summary_rp_lbl.text = "..."
 	_summary_rp_lbl.add_theme_color_override("font_color", COLOR_GOLD)
 	_summary_rp_lbl.add_theme_font_size_override("font_size", 18)
 	if UITheme: UITheme.apply_font(_summary_rp_lbl, "bold")
-	summary_hbox.add_child(_summary_rp_lbl)
+	rp_group.add_child(_summary_rp_lbl)
 
 	var rp_help_btn = _create_help_button()
 	_attach_help_tooltip(rp_help_btn, func(): return tr("TOOLTIP_REPUTATION_POINTS"))
-	summary_hbox.add_child(rp_help_btn)
+	rp_group.add_child(rp_help_btn)
 
 	var sep = VSeparator.new()
 	summary_hbox.add_child(sep)
+
+	# --- GR group ---
+	var gr_group = HBoxContainer.new()
+	gr_group.add_theme_constant_override("separation", 8)
+	summary_hbox.add_child(gr_group)
 
 	_summary_gr_lbl = Label.new()
 	_summary_gr_lbl.text = "..."
 	_summary_gr_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	_summary_gr_lbl.add_theme_font_size_override("font_size", 18)
 	if UITheme: UITheme.apply_font(_summary_gr_lbl, "bold")
-	summary_hbox.add_child(_summary_gr_lbl)
+	gr_group.add_child(_summary_gr_lbl)
 
 	var gr_help_btn = _create_help_button()
 	_attach_help_tooltip(gr_help_btn, func(): return tr("TOOLTIP_GLOBAL_REPUTATION") % ClientManager.get_weekly_project_count())
-	summary_hbox.add_child(gr_help_btn)
+	gr_group.add_child(gr_help_btn)
 
 	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
@@ -381,6 +391,7 @@ func _create_help_button() -> Button:
 	var btn = Button.new()
 	btn.text = "?"
 	btn.custom_minimum_size = Vector2(22, 22)
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.add_theme_font_size_override("font_size", 11)
 	btn.add_theme_color_override("font_color", COLOR_BLUE)
