@@ -123,16 +123,12 @@ func buy_upgrade(upgrade_id: String) -> bool:
 	var gs = get_node_or_null("/root/GameState")
 	if gs == null:
 		return false
-	var cost: int
 	if config.type == "one_time":
-		cost = config.get("cost", 0)
-	else:
-		cost = config.get("daily_cost", 0)
-	if gs.company_balance < cost:
-		return false
-	gs.add_expense(cost)
-	gs.daily_event_expenses.append({"reason": "SUMMARY_DESK_UPGRADE", "amount": cost})
-	if config.type == "one_time":
+		var cost: int = config.get("cost", 0)
+		if gs.company_balance < cost:
+			return false
+		gs.add_expense(cost)
+		gs.daily_event_expenses.append({"reason": "SUMMARY_OFFICE_UPGRADES", "amount": cost})
 		desk_upgrades[upgrade_id] = true
 	elif config.type == "subscription":
 		desk_upgrades[upgrade_id] = true

@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 7
+const SAVE_VERSION = 8
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -14,6 +14,7 @@ const MIGRATIONS = {
 	4: "_migrate_v4_to_v5",
 	5: "_migrate_v5_to_v6",
 	6: "_migrate_v6_to_v7",
+	7: "_migrate_v7_to_v8",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -797,6 +798,10 @@ func _migrate_v6_to_v7(data: Dictionary) -> bool:
 		cm["reputation_points"] = total_loyalty
 
 	print("🔄 Миграция v6→v7: loyalty → reputation. Total loyalty: %d → RP: %d, GR: %d" % [total_loyalty, cm["reputation_points"], cm["global_reputation"]])
+	return true
+
+func _migrate_v7_to_v8(_data: Dictionary) -> bool:
+	print("🔄 Миграция v7→v8: desk upgrades system (no data changes required)")
 	return true
 
 
