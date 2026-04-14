@@ -1328,3 +1328,7 @@ BOSS_NOT_HERE,Босса нет в офисе,Boss is not in the office
 LOG_PROJECT_TAKEN,✅ Проект взят: %s,✅ Project taken: %s
 TUT_FIRED_CARD,"Ну что ж… Ещё один бестолковый кандидат. Ума не приложу, как можно было не уложиться в такие простые сроки.\n\nХорошо, что ты ещё не успел разложить свои вещи. Собирайся и уходи — тебе тут больше делать нечего.\n\nТы уволен.",Well… Another hopeless candidate. I can't fathom how you couldn't meet such simple deadlines.\n\nGood thing you haven't unpacked yet. Pack up and get out — there's nothing left for you here.\n\nYou're fired.
 TUT_FIRED_BTN_MENU,В главное меню,Main Menu
+TOOLTIP_REPUTATION_POINTS,Очки репутации можно получить за успешное выполнение проектов. Тратятся на развитие отношений с клиентами в окне клиента.,Reputation points are earned by completing projects successfully. Spend them to develop client relationships in the client window.
+TOOLTIP_GLOBAL_REPUTATION,"Глобальная репутация растёт за успешное выполнение проектов. От неё зависит количество проектов которое босс предлагает в начале недели. Текущее количество проектов: %d.","Global reputation grows from completing projects successfully. It determines how many projects the boss offers each week. Current project count: %d."
+UI_REPUTATION_POINTS_SHORT,⭐ %d,⭐ %d
+TOOLTIP_REPUTATION_POINTS_TOP,Очки репутации можно получить за успешное выполнение проектов. Тратятся на развитие отношений с клиентами в окне клиента.,Reputation points are earned by completing projects successfully. Spend them to develop client relationships in the client window.
