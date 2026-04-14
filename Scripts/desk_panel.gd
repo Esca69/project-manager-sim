@@ -477,9 +477,10 @@ func _on_assign_pressed():
 	var menu = hud.get_node_or_null("AssignmentMenu")
 	if not menu:
 		return
-	# Подключаем сигнал, чтобы обновить панель после выбора
-	if not menu.employee_assigned.is_connected(_on_employee_assigned_from_menu):
-		menu.employee_assigned.connect(_on_employee_assigned_from_menu)
+	# Disconnect first to avoid duplicate connections
+	if menu.employee_assigned.is_connected(_on_employee_assigned_from_menu):
+		menu.employee_assigned.disconnect(_on_employee_assigned_from_menu)
+	menu.employee_assigned.connect(_on_employee_assigned_from_menu)
 	menu.open_assignment_list(_current_desk)
 
 func _on_employee_assigned_from_menu():

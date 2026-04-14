@@ -123,7 +123,11 @@ func buy_upgrade(upgrade_id: String) -> bool:
 	var gs = get_node_or_null("/root/GameState")
 	if gs == null:
 		return false
-	var cost = config.get("cost", config.get("daily_cost", 0))
+	var cost: int
+	if config.type == "one_time":
+		cost = config.get("cost", 0)
+	else:
+		cost = config.get("daily_cost", 0)
 	if gs.company_balance < cost:
 		return false
 	gs.add_expense(cost)
