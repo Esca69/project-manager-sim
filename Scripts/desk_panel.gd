@@ -410,7 +410,7 @@ func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 		if not is_bought:
 			var buy_btn = Button.new()
 			buy_btn.text = tr("DESK_UPG_BUY")
-			buy_btn.custom_minimum_size = Vector2(120, 36)
+			buy_btn.custom_minimum_size = Vector2(120, 34)
 			buy_btn.add_theme_font_size_override("font_size", 12)
 			buy_btn.focus_mode = Control.FOCUS_NONE
 			if UITheme:
@@ -421,47 +421,57 @@ func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 	elif config.type == "subscription":
 		var is_active = _current_desk.desk_upgrades.get(upgrade_id + "_active", false)
 
+		# Off radio pair
+		var off_pair = HBoxContainer.new()
+		off_pair.add_theme_constant_override("separation", 4)
+		off_pair.alignment = BoxContainer.ALIGNMENT_CENTER
+		action_box.add_child(off_pair)
+
 		var off_btn = Button.new()
 		off_btn.text = SYMBOL_RADIO_ON if not is_active else SYMBOL_RADIO_OFF
-		off_btn.custom_minimum_size = Vector2(36, 36)
-		off_btn.add_theme_font_size_override("font_size", 14)
+		off_btn.custom_minimum_size = Vector2(28, 28)
+		off_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		off_btn.add_theme_font_size_override("font_size", 10)
 		off_btn.focus_mode = Control.FOCUS_NONE
-		if UITheme:
-			UITheme.apply_font(off_btn, "semibold")
 		_style_sub_off_button(off_btn, not is_active)
 		off_btn.pressed.connect(_on_sub_off_pressed.bind(upgrade_id))
-		action_box.add_child(off_btn)
+		off_pair.add_child(off_btn)
 
 		var off_lbl = Label.new()
 		off_lbl.text = tr("DESK_UPG_TOGGLE_OFF")
 		off_lbl.add_theme_font_size_override("font_size", 11)
-		off_lbl.add_theme_color_override("font_color", COLOR_GRAY if is_active else COLOR_DARK)
+		off_lbl.add_theme_color_override("font_color", COLOR_DARK)
 		if UITheme:
 			UITheme.apply_font(off_lbl, "regular")
-		action_box.add_child(off_lbl)
+		off_pair.add_child(off_lbl)
 
 		var spacer = Control.new()
 		spacer.custom_minimum_size = Vector2(8, 0)
 		action_box.add_child(spacer)
 
+		# On radio pair
+		var on_pair = HBoxContainer.new()
+		on_pair.add_theme_constant_override("separation", 4)
+		on_pair.alignment = BoxContainer.ALIGNMENT_CENTER
+		action_box.add_child(on_pair)
+
 		var on_btn = Button.new()
 		on_btn.text = SYMBOL_RADIO_ON if is_active else SYMBOL_RADIO_OFF
-		on_btn.custom_minimum_size = Vector2(36, 36)
-		on_btn.add_theme_font_size_override("font_size", 14)
+		on_btn.custom_minimum_size = Vector2(28, 28)
+		on_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		on_btn.add_theme_font_size_override("font_size", 10)
 		on_btn.focus_mode = Control.FOCUS_NONE
-		if UITheme:
-			UITheme.apply_font(on_btn, "semibold")
 		_style_sub_on_button(on_btn, is_active)
 		on_btn.pressed.connect(_on_sub_on_pressed.bind(upgrade_id))
-		action_box.add_child(on_btn)
+		on_pair.add_child(on_btn)
 
 		var on_lbl = Label.new()
 		on_lbl.text = tr("DESK_UPG_TOGGLE_ON")
 		on_lbl.add_theme_font_size_override("font_size", 11)
-		on_lbl.add_theme_color_override("font_color", COLOR_GREEN if is_active else COLOR_GRAY)
+		on_lbl.add_theme_color_override("font_color", COLOR_DARK)
 		if UITheme:
 			UITheme.apply_font(on_lbl, "regular")
-		action_box.add_child(on_lbl)
+		on_pair.add_child(on_lbl)
 
 	return card
 
@@ -473,10 +483,10 @@ func _style_buy_button(btn: Button):
 	n.border_width_right = 2
 	n.border_width_bottom = 2
 	n.border_color = COLOR_BLUE
-	n.corner_radius_top_left = 12
-	n.corner_radius_top_right = 12
-	n.corner_radius_bottom_right = 12
-	n.corner_radius_bottom_left = 12
+	n.corner_radius_top_left = 16
+	n.corner_radius_top_right = 16
+	n.corner_radius_bottom_right = 16
+	n.corner_radius_bottom_left = 16
 	var h = StyleBoxFlat.new()
 	h.bg_color = COLOR_BLUE
 	h.border_width_left = 2
@@ -484,10 +494,10 @@ func _style_buy_button(btn: Button):
 	h.border_width_right = 2
 	h.border_width_bottom = 2
 	h.border_color = COLOR_BLUE
-	h.corner_radius_top_left = 12
-	h.corner_radius_top_right = 12
-	h.corner_radius_bottom_right = 12
-	h.corner_radius_bottom_left = 12
+	h.corner_radius_top_left = 16
+	h.corner_radius_top_right = 16
+	h.corner_radius_bottom_right = 16
+	h.corner_radius_bottom_left = 16
 	btn.add_theme_stylebox_override("normal", n)
 	btn.add_theme_stylebox_override("hover", h)
 	btn.add_theme_stylebox_override("pressed", h)
@@ -497,33 +507,33 @@ func _style_buy_button(btn: Button):
 
 func _style_sub_off_button(btn: Button, is_selected: bool):
 	var n = StyleBoxFlat.new()
-	n.corner_radius_top_left = 18
-	n.corner_radius_top_right = 18
-	n.corner_radius_bottom_right = 18
-	n.corner_radius_bottom_left = 18
+	n.corner_radius_top_left = 14
+	n.corner_radius_top_right = 14
+	n.corner_radius_bottom_right = 14
+	n.corner_radius_bottom_left = 14
 	n.border_width_left = 2
 	n.border_width_top = 2
 	n.border_width_right = 2
 	n.border_width_bottom = 2
 	if is_selected:
-		n.bg_color = COLOR_GRAY
-		n.border_color = COLOR_GRAY
+		n.bg_color = COLOR_RED
+		n.border_color = COLOR_RED
 		btn.add_theme_color_override("font_color", COLOR_WHITE)
 	else:
 		n.bg_color = COLOR_WHITE
-		n.border_color = COLOR_GRAY
-		btn.add_theme_color_override("font_color", COLOR_GRAY)
+		n.border_color = COLOR_RED
+		btn.add_theme_color_override("font_color", COLOR_RED)
 	var h = StyleBoxFlat.new()
-	h.corner_radius_top_left = 18
-	h.corner_radius_top_right = 18
-	h.corner_radius_bottom_right = 18
-	h.corner_radius_bottom_left = 18
+	h.corner_radius_top_left = 14
+	h.corner_radius_top_right = 14
+	h.corner_radius_bottom_right = 14
+	h.corner_radius_bottom_left = 14
 	h.border_width_left = 2
 	h.border_width_top = 2
 	h.border_width_right = 2
 	h.border_width_bottom = 2
-	h.bg_color = COLOR_GRAY
-	h.border_color = COLOR_GRAY
+	h.bg_color = COLOR_RED
+	h.border_color = COLOR_RED
 	btn.add_theme_stylebox_override("normal", n)
 	btn.add_theme_stylebox_override("hover", h)
 	btn.add_theme_stylebox_override("pressed", h)
@@ -532,10 +542,10 @@ func _style_sub_off_button(btn: Button, is_selected: bool):
 
 func _style_sub_on_button(btn: Button, is_selected: bool):
 	var n = StyleBoxFlat.new()
-	n.corner_radius_top_left = 18
-	n.corner_radius_top_right = 18
-	n.corner_radius_bottom_right = 18
-	n.corner_radius_bottom_left = 18
+	n.corner_radius_top_left = 14
+	n.corner_radius_top_right = 14
+	n.corner_radius_bottom_right = 14
+	n.corner_radius_bottom_left = 14
 	n.border_width_left = 2
 	n.border_width_top = 2
 	n.border_width_right = 2
@@ -549,10 +559,10 @@ func _style_sub_on_button(btn: Button, is_selected: bool):
 		n.border_color = COLOR_GREEN
 		btn.add_theme_color_override("font_color", COLOR_GREEN)
 	var h = StyleBoxFlat.new()
-	h.corner_radius_top_left = 18
-	h.corner_radius_top_right = 18
-	h.corner_radius_bottom_right = 18
-	h.corner_radius_bottom_left = 18
+	h.corner_radius_top_left = 14
+	h.corner_radius_top_right = 14
+	h.corner_radius_bottom_right = 14
+	h.corner_radius_bottom_left = 14
 	h.border_width_left = 2
 	h.border_width_top = 2
 	h.border_width_right = 2
@@ -579,21 +589,17 @@ func _on_assign_pressed():
 	if menu.menu_closed.is_connected(_on_assignment_menu_closed):
 		menu.menu_closed.disconnect(_on_assignment_menu_closed)
 	menu.menu_closed.connect(_on_assignment_menu_closed)
-	# Disable mouse capture so AssignmentMenu can receive clicks
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Hide DeskPanel so its overlay doesn't block AssignmentMenu clicks
+	visible = false
 	menu.open_assignment_list(_current_desk)
 
 func _on_assignment_menu_closed():
-	_restore_mouse_filters()
-
-func _on_employee_assigned_from_menu():
-	_restore_mouse_filters()
+	visible = true
 	_refresh()
 
-func _restore_mouse_filters():
-	mouse_filter = Control.MOUSE_FILTER_STOP
-	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+func _on_employee_assigned_from_menu():
+	visible = true
+	_refresh()
 
 func _on_buy_pressed(upgrade_id: String):
 	if not _current_desk:
