@@ -37,6 +37,9 @@ var _boss_trust_label: Label
 # --- Skill Points UI ---
 var _skill_points_label: Label
 
+# --- Reputation Points UI ---
+var _reputation_points_label: Label
+
 # --- Day Summary ---
 var _day_summary: Control
 
@@ -222,6 +225,7 @@ func _ready():
 	PMData.xp_changed.connect(_on_pm_xp_changed)
 	PMData.level_up.connect(_on_pm_level_up)
 	BossManager.trust_changed.connect(_on_boss_trust_changed)
+	ClientManager.reputation_points_changed.connect(_on_reputation_points_changed)
 
 	_attach_topbar_tooltip(time_label, "TOOLTIP_TIME")
 	_attach_topbar_tooltip(balance_label, "TOOLTIP_COMPANY_BUDGET")
@@ -619,20 +623,31 @@ func _build_pm_level_ui():
 	_skill_points_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if UITheme: UITheme.apply_font(_skill_points_label, "bold")
 
+	_reputation_points_label = Label.new()
+	_reputation_points_label.text = tr("UI_REPUTATION_POINTS_SHORT") % ClientManager.reputation_points
+	_reputation_points_label.add_theme_font_size_override("font_size", 13)
+	_reputation_points_label.add_theme_color_override("font_color", Color(0.85, 0.65, 0.13, 1))
+	_reputation_points_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(_reputation_points_label, "bold")
+
 	if spacer_index >= 0:
 		hbox_container.add_child(level_vbox)
 		hbox_container.move_child(level_vbox, spacer_index)
 		hbox_container.add_child(_skill_points_label)
 		hbox_container.move_child(_skill_points_label, spacer_index + 1)
+		hbox_container.add_child(_reputation_points_label)
+		hbox_container.move_child(_reputation_points_label, spacer_index + 2)
 		hbox_container.add_child(_boss_trust_label)
-		hbox_container.move_child(_boss_trust_label, spacer_index + 2)
+		hbox_container.move_child(_boss_trust_label, spacer_index + 3)
 	else:
 		hbox_container.add_child(level_vbox)
 		hbox_container.add_child(_skill_points_label)
+		hbox_container.add_child(_reputation_points_label)
 		hbox_container.add_child(_boss_trust_label)
 
 	_attach_topbar_tooltip(level_vbox, "TOOLTIP_PM_LEVEL")
 	_attach_topbar_tooltip(_skill_points_label, "TOOLTIP_SKILL_POINTS")
+	_attach_topbar_tooltip(_reputation_points_label, "TOOLTIP_REPUTATION_POINTS_TOP")
 	_attach_topbar_tooltip(_boss_trust_label, "TOOLTIP_BOSS_TRUST")
 
 func _update_pm_level_ui():
@@ -805,6 +820,10 @@ func _on_boss_trust_changed(new_trust: int):
 	if _boss_trust_label:
 		_boss_trust_label.text = tr("UI_BOSS_TRUST") % new_trust
 		_boss_trust_label.add_theme_color_override("font_color", BossManager.get_trust_color())
+
+func _on_reputation_points_changed(new_rp: int):
+	if _reputation_points_label:
+		_reputation_points_label.text = tr("UI_REPUTATION_POINTS_SHORT") % new_rp
 
 func _on_employee_leveled_up_toast(emp: EmployeeData, new_level: int, _skill_gain: int, _new_trait: String):
 	if ScreenJuice and emp:

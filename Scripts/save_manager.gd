@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 6
+const SAVE_VERSION = 7
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -13,6 +13,7 @@ const MIGRATIONS = {
 	3: "_migrate_v3_to_v4",
 	4: "_migrate_v4_to_v5",
 	5: "_migrate_v5_to_v6",
+	6: "_migrate_v6_to_v7",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -751,6 +752,40 @@ func _migrate_v5_to_v6(data: Dictionary) -> bool:
 		upgrades["hr_specialist"] = false
 	gs_data["office_upgrades"] = upgrades
 	data["game_state"] = gs_data
+	return true
+
+
+func _migrate_v6_to_v7(data: Dictionary) -> bool:
+	# Convert old loyalty system to new reputation system
+	var clients_arr = data.get("clients", [])
+	var total_loyalty = 0
+
+	for cd in clients_arr:
+		# Sum up old loyalty values
+		total_loyalty += int(cd.get("loyalty", 0))
+		# Remove old loyalty field
+		cd.erase("loyalty")
+		# Initialize new fields with defaults
+		if not cd.has("budget_level"):
+			cd["budget_level"] = 0
+		if not cd.has("has_simple"):
+			cd["has_simple"] = false
+		if not cd.has("has_easy"):
+			cd["has_easy"] = false
+
+	# Create client_manager section if missing
+	if not data.has("client_manager"):
+		data["client_manager"] = {}
+
+	var cm = data["client_manager"]
+	# Global reputation = total old loyalty (non-spendable, only grows)
+	if not cm.has("global_reputation"):
+		cm["global_reputation"] = total_loyalty
+	# Reputation points = same amount as free spendable currency
+	if not cm.has("reputation_points"):
+		cm["reputation_points"] = total_loyalty
+
+	print("🔄 Миграция v6→v7: loyalty → reputation. Total loyalty: %d → RP: %d, GR: %d" % [total_loyalty, cm["reputation_points"], cm["global_reputation"]])
 	return true
 
 

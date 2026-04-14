@@ -74,6 +74,7 @@ func open():
 		visible = true
 
 func close():
+	get_tree().call_group("client_tooltip", "queue_free")
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
@@ -193,6 +194,10 @@ func _build_ui():
 	if UITheme: UITheme.apply_font(_summary_rp_lbl, "bold")
 	summary_hbox.add_child(_summary_rp_lbl)
 
+	var rp_help_btn = _create_help_button()
+	_attach_help_tooltip(rp_help_btn, func(): return tr("TOOLTIP_REPUTATION_POINTS"))
+	summary_hbox.add_child(rp_help_btn)
+
 	var sep = VSeparator.new()
 	summary_hbox.add_child(sep)
 
@@ -202,6 +207,10 @@ func _build_ui():
 	_summary_gr_lbl.add_theme_font_size_override("font_size", 18)
 	if UITheme: UITheme.apply_font(_summary_gr_lbl, "bold")
 	summary_hbox.add_child(_summary_gr_lbl)
+
+	var gr_help_btn = _create_help_button()
+	_attach_help_tooltip(gr_help_btn, func(): return tr("TOOLTIP_GLOBAL_REPUTATION") % ClientManager.get_weekly_project_count())
+	summary_hbox.add_child(gr_help_btn)
 
 	# === КОНТЕНТ ===
 	var content_margin = MarginContainer.new()
@@ -367,3 +376,63 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
 		close()
 		get_viewport().set_input_as_handled()
+
+func _create_help_button() -> Button:
+	var btn = Button.new()
+	btn.text = "?"
+	btn.custom_minimum_size = Vector2(22, 22)
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 11)
+	btn.add_theme_color_override("font_color", COLOR_BLUE)
+
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(1, 1, 1, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = COLOR_BLUE
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", bstyle)
+
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.92, 0.94, 1.0, 1)
+	hover_style.border_width_left = 2
+	hover_style.border_width_top = 2
+	hover_style.border_width_right = 2
+	hover_style.border_width_bottom = 2
+	hover_style.border_color = COLOR_BLUE
+	hover_style.corner_radius_top_left = 11
+	hover_style.corner_radius_top_right = 11
+	hover_style.corner_radius_bottom_right = 11
+	hover_style.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("hover", hover_style)
+
+	return btn
+
+func _attach_help_tooltip(btn: Button, text_provider: Callable) -> void:
+	var tooltip_ref: Array = [null]
+	btn.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper.create_tooltip(text_provider.call(), COLOR_BLUE)
+		add_child(tp)
+		tp.add_to_group("client_tooltip")
+		await get_tree().process_frame
+		if not is_instance_valid(tp): return
+		var btn_global = btn.global_position
+		var viewport_height = get_viewport_rect().size.y
+		var target_pos = Vector2(btn_global.x + 28, btn_global.y - 10)
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = btn_global.y - tp.size.y + 20
+		tp.global_position = target_pos
+		tooltip_ref[0] = tp
+	)
+	btn.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
