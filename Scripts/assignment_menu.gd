@@ -1,6 +1,7 @@
 extends Control
 
 signal employee_assigned
+signal menu_closed
 
 # Ссылка на стол, который сейчас ждёт назначения
 var target_desk = null
@@ -163,6 +164,7 @@ func _on_close_pressed():
 		GameTime.set_paused(false)
 	target_desk = null
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	emit_signal("menu_closed")
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
