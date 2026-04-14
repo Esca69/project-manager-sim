@@ -725,6 +725,16 @@ func _create_card(npc_node) -> PanelContainer:
 		)
 	eff_hbox.add_child(eff_help_btn)
 
+	# === DESK UPGRADE: AI подписка → штраф XP ===
+	if emp.desk_xp_multiplier < 1.0:
+		var ai_xp_lbl = Label.new()
+		ai_xp_lbl.text = tr("ROSTER_DESK_AI_XP_PENALTY")
+		ai_xp_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+		ai_xp_lbl.add_theme_font_size_override("font_size", 11)
+		if UITheme: UITheme.apply_font(ai_xp_lbl, "regular")
+		right_vbox.add_child(ai_xp_lbl)
+		card.set_meta("ai_xp_label", ai_xp_lbl)
+
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_vbox.add_child(spacer)
@@ -1170,6 +1180,10 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	# === OFFICE: Эргономичная мебель ===
 	if bd.has("ergonomic_mod") and bd.ergonomic_mod != 0.0:
 		lines.append(tr("EFF_MOD_ERGONOMIC"))
+
+	# === DESK UPGRADE: Бонус от улучшений рабочего места ===
+	if bd.has("desk_efficiency_bonus") and bd.desk_efficiency_bonus != 0.0:
+		lines.append(tr("ROSTER_EFF_BREAKDOWN_DESK") % _format_mod(bd.desk_efficiency_bonus))
 
 	lines.append("")
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _format_mult(bd.total))

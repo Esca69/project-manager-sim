@@ -191,6 +191,19 @@ func pay_daily_services():
 			daily_service_details.append({"name": name_str, "amount": cost})
 			print("Сервис ", name_str, " списал: ", cost, "$")
 
+# --- ФУНКЦИЯ ЕЖЕДНЕВНОГО СПИСАНИЯ ПОДПИСОК РАБОЧИХ МЕСТ ---
+func pay_daily_desk_subscriptions():
+	var desks = get_tree().get_nodes_in_group("desk")
+	var total_cost = 0
+	for desk in desks:
+		if desk.has_method("get_daily_subscription_cost"):
+			var cost = desk.get_daily_subscription_cost()
+			total_cost += cost
+	if total_cost > 0:
+		add_expense(total_cost)
+		daily_service_details.append({"name": tr("SUMMARY_DESK_SUBSCRIPTIONS"), "amount": total_cost})
+		print("Подписки столов списали: ", total_cost, "$")
+
 # === ЗАПИСЬ ЛЕВЕЛ-АПА ===
 func record_levelup(emp: EmployeeData, new_level: int, skill_gain: int, new_trait: String):
 	# ИСПРАВЛЕНИЕ: Используем переведенное имя и должность

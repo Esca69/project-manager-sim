@@ -738,6 +738,7 @@ func _on_time_tick(_hour, _minute):
 	data.tick_mood_modifiers()
 
 	_update_pm_aura()
+	_update_desk_bonuses()
 
 	if _is_work_time() and current_state != State.HOME and current_state != State.GOING_HOME and current_state != State.ON_VACATION:
 		var mood_zone = data.get_mood_zone().name
@@ -1911,6 +1912,49 @@ func _update_neighbor_bonus():
 			if dist_to_desk > 700.0: continue
 			if "loud" in desk.assigned_npc_node.data.personality:
 				data.neighbor_mod -= 0.05
+
+func _find_my_desk():
+	for desk in get_tree().get_nodes_in_group("desk"):
+		if "assigned_npc_node" in desk and desk.assigned_npc_node == self:
+			return desk
+	return null
+
+func _update_desk_bonuses():
+	if not data:
+		return
+
+	# Бонусы стола работают ТОЛЬКО в состоянии WORKING
+	if current_state != State.WORKING:
+		data.desk_efficiency_bonus = 0.0
+		data.desk_mood_bonus = 0.0
+		data.desk_xp_multiplier = 1.0
+		return
+
+	var my_desk = _find_my_desk()
+	if my_desk == null:
+		data.desk_efficiency_bonus = 0.0
+		data.desk_mood_bonus = 0.0
+		data.desk_xp_multiplier = 1.0
+		return
+
+	var eff_bonus = 0.0
+	var mood_bonus = 0.0
+	var xp_mult = 1.0
+
+	for upgrade_id in my_desk.DESK_UPGRADE_CONFIG:
+		var config = my_desk.DESK_UPGRADE_CONFIG[upgrade_id]
+		if not my_desk.is_upgrade_active(upgrade_id):
+			continue
+		# Проверка role_lock
+		if config.role_lock != "" and data.job_title != config.role_lock:
+			continue
+		eff_bonus += config.efficiency_bonus
+		mood_bonus += config.mood_bonus
+		xp_mult *= config.xp_multiplier
+
+	data.desk_efficiency_bonus = eff_bonus
+	data.desk_mood_bonus = mood_bonus
+	data.desk_xp_multiplier = xp_mult
 
 func _clear_smelly_neighbor_mods():
 	if not data: return

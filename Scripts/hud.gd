@@ -104,6 +104,9 @@ var _reports_panel: Control
 # === ENCYCLOPEDIA PANEL ===
 var _encyclopedia_panel: Control
 
+# === DESK PANEL ===
+var _desk_panel: Control
+
 # >>> ДОБАВЛЕНО: Переменная для FPS
 var _fps_label: Label
 
@@ -283,6 +286,9 @@ func _build_all_dynamic_ui() -> void:
 
 	# === ENCYCLOPEDIA: Создаём панель энциклопедии ===
 	_build_encyclopedia_panel()
+
+	# === DESK PANEL: Создаём панель рабочего места ===
+	_build_desk_panel()
 
 	# === PLAYTEST CAP: Счётчик дней и экран завершения ===
 	_build_playtest_label()
@@ -793,6 +799,8 @@ func is_any_menu_open() -> bool:
 
 	if _encyclopedia_panel and _encyclopedia_panel.visible: return true
 
+	if _desk_panel and _desk_panel.visible: return true
+
 	return false
 
 func _on_project_finished_xp(proj):
@@ -1092,6 +1100,7 @@ func _on_end_day_pressed():
 
 	GameState.pay_daily_salaries()
 	GameState.pay_daily_services()
+	GameState.pay_daily_desk_subscriptions()
 
 	# === ФИНАНСОВАЯ ИСТОРИЯ: Записать снимок дня ===
 	if FinancialHistory:
@@ -1304,6 +1313,15 @@ func _build_encyclopedia_panel():
 	_encyclopedia_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_encyclopedia_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_encyclopedia_panel)
+
+func _build_desk_panel():
+	var script = load("res://Scripts/desk_panel.gd")
+	_desk_panel = Control.new()
+	_desk_panel.set_script(script)
+	_desk_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_desk_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	_desk_panel.name = "DeskPanel"
+	add_child(_desk_panel)
 
 func open_boss_event(event_data: Dictionary):
 	if _boss_event_popup and _boss_event_popup.has_method("open"):

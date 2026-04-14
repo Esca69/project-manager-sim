@@ -59,6 +59,11 @@ var aura_bonus: float = 0.0
 # === RELATIONSHIP SYSTEM: Бонус/штраф от соседей по столу ===
 var neighbor_mod: float = 0.0
 
+# === DESK UPGRADE SYSTEM: Бонусы от улучшений рабочего места ===
+var desk_efficiency_bonus: float = 0.0   # Суммарный бонус эффективности от улучшений стола
+var desk_mood_bonus: float = 0.0         # Суммарный бонус mood от улучшений стола
+var desk_xp_multiplier: float = 1.0      # Множитель XP от улучшений стола (1.0 = норма, 0.5 = -50%)
+
 # === СИСТЕМА ПОВЫШЕНИЯ ЗП (RAISES) ===
 var is_requesting_raise: bool = false       # Активен ли запрос на повышение ЗП
 var raise_requested_salary: int = 0         # Желаемая ЗП (фиксируется при триггере)
@@ -236,6 +241,8 @@ func recalculate_mood():
 	for mod in mood_temp_modifiers:
 		result += mod.value
 
+	result += desk_mood_bonus
+
 	mood = clampf(result, 0.0, 100.0)
 
 	# === MOOD SHIFT FLASH: проверка пересечения порогов ===
@@ -391,6 +398,10 @@ func get_mood_breakdown() -> Dictionary:
 			"minutes_left": mod.minutes_left,
 		})
 
+	# === DESK UPGRADE: Растение на столе ===
+	if desk_mood_bonus != 0.0:
+		permanent_mods.append({"name": tr("MOOD_MOD_DESK_PLANT"), "value": desk_mood_bonus})
+
 	return {
 		"base": MOOD_BASE,
 		"permanent_mods": permanent_mods,
@@ -469,6 +480,10 @@ func add_employee_xp(amount: int) -> Dictionary:
 
 	if has_trait("ambitious"):
 		amount = int(amount * 1.2)
+
+	# === DESK UPGRADE: AI подписка → -50% XP ===
+	if desk_xp_multiplier != 1.0:
+		amount = int(amount * desk_xp_multiplier)
 
 	employee_xp += amount
 
@@ -846,7 +861,7 @@ func get_efficiency_multiplier() -> float:
 	if burnout_level > 0:
 		burnout_mod = -burnout_level * 0.01  # 1% burnout = -0.01
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod)
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -884,7 +899,7 @@ func get_efficiency_breakdown() -> Dictionary:
 	# === BURNOUT SYSTEM: Штраф от выгорания ===
 	var burnout_mod: float = -burnout_level * 0.01 if burnout_level > 0 else 0.0
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod)
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -903,6 +918,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"burnout_mod": burnout_mod,
 		"total": total,
 		"ergonomic_mod": -0.10 if (_get_game_state() and _get_game_state().office_upgrades.get("ergonomic_furniture", false)) else 0.0,
+		"desk_efficiency_bonus": desk_efficiency_bonus,
 	}
 
 # === EVENT SYSTEM: Безопасный доступ к EventManager из Resource ===
