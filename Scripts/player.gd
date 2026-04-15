@@ -458,7 +458,13 @@ func _update_interact_hint():
 		_hide_interact_hint()
 		return
 
-	_current_hint_target = target
+	# Update outline when the target changes
+	if target != _current_hint_target:
+		if _current_hint_target != null:
+			OutlineHelper.set_outline(_current_hint_target, false)
+		OutlineHelper.set_outline(target, true)
+		_current_hint_target = target
+
 	_interact_hint.visible = true
 
 	var target_world_pos: Vector2
@@ -481,6 +487,8 @@ func _update_interact_hint():
 func _hide_interact_hint():
 	if _interact_hint:
 		_interact_hint.visible = false
+	if _current_hint_target != null:
+		OutlineHelper.set_outline(_current_hint_target, false)
 	_current_hint_target = null
 
 
