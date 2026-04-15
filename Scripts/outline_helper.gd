@@ -5,17 +5,13 @@ extends Node
 #
 # Usage: OutlineHelper.set_outline(node, true/false)
 #
-# Supports:
-#   - Nodes with $Sprite2D child (desks)
-#   - Nodes with a body_sprite property (NPCs)
-#   - Objects that already have a ShaderMaterial (volume shader on NPCs):
-#     outline is chained via next_pass so both effects coexist
-#
-# Materials are cached on the sprite node so they are created only once and
-# toggled via the outline_enabled shader parameter on subsequent calls.
+# Approach: creates a duplicate Sprite2D child behind the original sprite
+# with a slightly larger scale and a solid-color shader. This avoids the
+# UV-space clipping problem of the previous shader-only approach.
 
 const OUTLINE_SHADER_PATH: String = "res://Resources/outline.gdshader"
-const OUTLINE_WIDTH: float = 2.0
+# Scale multiplier for the outline copy — increase to make outline thicker
+const OUTLINE_SCALE_MULTIPLIER: float = 1.06
 
 var _outline_shader: Shader = null
 
@@ -24,45 +20,55 @@ func _get_shader() -> Shader:
 		_outline_shader = load(OUTLINE_SHADER_PATH)
 	return _outline_shader
 
-func _create_outline_material() -> ShaderMaterial:
-	var mat := ShaderMaterial.new()
-	mat.shader = _get_shader()
-	mat.set_shader_parameter("outline_enabled", true)
-	mat.set_shader_parameter("outline_color", Color.WHITE)
-	mat.set_shader_parameter("outline_width", OUTLINE_WIDTH)
-	return mat
-
 # Main public API — call this from player.gd
 func set_outline(node: Node, enabled: bool) -> void:
 	var sprite := _find_sprite(node)
 	if sprite == null:
 		return
 
-	# Reuse an already-attached outline material if present (just toggle the uniform)
-	var existing := _find_existing_outline(sprite)
-
 	if enabled:
-		if existing != null:
-			existing.set_shader_parameter("outline_enabled", true)
-		elif sprite.material == null:
-			# No existing material — apply outline shader directly
-			sprite.material = _create_outline_material()
-		else:
-			# Existing material (e.g. volume shader) — chain via next_pass
-			sprite.material.next_pass = _create_outline_material()
+		_show_outline_copy(sprite)
 	else:
-		if existing != null:
-			existing.set_shader_parameter("outline_enabled", false)
+		_hide_outline_copy(sprite)
 
-# Return the ShaderMaterial that holds our outline shader, if one is already
-# attached either directly or via next_pass. Returns null if not found.
-func _find_existing_outline(sprite: Sprite2D) -> ShaderMaterial:
-	if sprite.material is ShaderMaterial and sprite.material.shader == _get_shader():
-		return sprite.material
-	if sprite.material != null and sprite.material.next_pass is ShaderMaterial \
-			and sprite.material.next_pass.shader == _get_shader():
-		return sprite.material.next_pass as ShaderMaterial
-	return null
+func _show_outline_copy(sprite: Sprite2D) -> void:
+	var outline_copy: Sprite2D
+	if sprite.has_meta("_outline_sprite"):
+		outline_copy = sprite.get_meta("_outline_sprite")
+		if not is_instance_valid(outline_copy):
+			outline_copy = null
+
+	if outline_copy == null:
+		outline_copy = Sprite2D.new()
+		outline_copy.scale = Vector2.ONE * OUTLINE_SCALE_MULTIPLIER
+		outline_copy.z_index = -1
+		outline_copy.position = Vector2.ZERO
+		outline_copy.visible = false
+
+		var mat := ShaderMaterial.new()
+		mat.shader = _get_shader()
+		mat.set_shader_parameter("outline_color", Color.WHITE)
+		outline_copy.material = mat
+
+		sprite.add_child(outline_copy)
+		sprite.set_meta("_outline_sprite", outline_copy)
+
+	_sync_outline_properties(outline_copy, sprite)
+	outline_copy.visible = true
+
+func _sync_outline_properties(outline_copy: Sprite2D, sprite: Sprite2D) -> void:
+	outline_copy.texture = sprite.texture
+	outline_copy.hframes = sprite.hframes
+	outline_copy.vframes = sprite.vframes
+	outline_copy.frame = sprite.frame
+	outline_copy.centered = sprite.centered
+	outline_copy.offset = sprite.offset
+
+func _hide_outline_copy(sprite: Sprite2D) -> void:
+	if sprite.has_meta("_outline_sprite"):
+		var outline_copy = sprite.get_meta("_outline_sprite")
+		if is_instance_valid(outline_copy):
+			outline_copy.visible = false
 
 # Find the best Sprite2D target on a node:
 #   1. body_sprite property (NPCs: employee, boss_npc)
