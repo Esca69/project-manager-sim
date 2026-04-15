@@ -23,9 +23,10 @@ void fragment() {
 
 		if (alpha > alpha_threshold) {
 			COLOR = outline_color;
-			return;
+		} else {
+			COLOR = color;
 		}
+	} else {
+		COLOR = color;
 	}
-
-	COLOR = color;
 }
