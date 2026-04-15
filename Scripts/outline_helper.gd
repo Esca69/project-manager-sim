@@ -42,7 +42,6 @@ func _show_outline_copy(sprite: Sprite2D) -> void:
 		outline_copy = Sprite2D.new()
 		outline_copy.scale = Vector2.ONE * OUTLINE_SCALE_MULTIPLIER
 		outline_copy.z_index = -1
-		outline_copy.position = Vector2.ZERO
 		outline_copy.visible = false
 
 		var mat := ShaderMaterial.new()
@@ -63,6 +62,12 @@ func _sync_outline_properties(outline_copy: Sprite2D, sprite: Sprite2D) -> void:
 	outline_copy.frame = sprite.frame
 	outline_copy.centered = sprite.centered
 	outline_copy.offset = sprite.offset
+	# Compensate position so that scaling happens from the visual center of the
+	# sprite rather than from the node origin. Without this, a sprite with a
+	# large offset gets a thick outline on the far side and almost none on the
+	# near side (because scale expands proportionally from the origin).
+	var scale_diff: float = OUTLINE_SCALE_MULTIPLIER - 1.0
+	outline_copy.position = -sprite.offset * scale_diff
 
 func _hide_outline_copy(sprite: Sprite2D) -> void:
 	if sprite.has_meta("_outline_sprite"):
