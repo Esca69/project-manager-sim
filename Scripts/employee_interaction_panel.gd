@@ -145,10 +145,10 @@ func _build_ui():
 	cbtn_style.border_width_right = 2
 	cbtn_style.border_width_bottom = 2
 	cbtn_style.border_color = COLOR_GRAY
-	cbtn_style.corner_radius_top_left = 10
-	cbtn_style.corner_radius_top_right = 10
-	cbtn_style.corner_radius_bottom_right = 10
-	cbtn_style.corner_radius_bottom_left = 10
+	cbtn_style.corner_radius_top_left = 16
+	cbtn_style.corner_radius_top_right = 16
+	cbtn_style.corner_radius_bottom_right = 16
+	cbtn_style.corner_radius_bottom_left = 16
 	var cbtn_hover = StyleBoxFlat.new()
 	cbtn_hover.bg_color = COLOR_GRAY
 	cbtn_hover.border_width_left = 2
@@ -156,10 +156,10 @@ func _build_ui():
 	cbtn_hover.border_width_right = 2
 	cbtn_hover.border_width_bottom = 2
 	cbtn_hover.border_color = COLOR_GRAY
-	cbtn_hover.corner_radius_top_left = 10
-	cbtn_hover.corner_radius_top_right = 10
-	cbtn_hover.corner_radius_bottom_right = 10
-	cbtn_hover.corner_radius_bottom_left = 10
+	cbtn_hover.corner_radius_top_left = 16
+	cbtn_hover.corner_radius_top_right = 16
+	cbtn_hover.corner_radius_bottom_right = 16
+	cbtn_hover.corner_radius_bottom_left = 16
 	close_btn.add_theme_stylebox_override("normal", cbtn_style)
 	close_btn.add_theme_stylebox_override("hover", cbtn_hover)
 	close_btn.add_theme_stylebox_override("pressed", cbtn_hover)
@@ -372,20 +372,21 @@ func _add_action_row(title: String, desc: String, reason: String, callback: Call
 
 	var is_disabled = reason != ""
 	btn.disabled = is_disabled
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	if not is_disabled:
 		var btn_style = StyleBoxFlat.new()
 		btn_style.bg_color = COLOR_BLUE
-		btn_style.corner_radius_top_left = 8
-		btn_style.corner_radius_top_right = 8
-		btn_style.corner_radius_bottom_right = 8
-		btn_style.corner_radius_bottom_left = 8
+		btn_style.corner_radius_top_left = 16
+		btn_style.corner_radius_top_right = 16
+		btn_style.corner_radius_bottom_right = 16
+		btn_style.corner_radius_bottom_left = 16
 		var btn_hover = StyleBoxFlat.new()
 		btn_hover.bg_color = COLOR_BLUE.darkened(0.2)
-		btn_hover.corner_radius_top_left = 8
-		btn_hover.corner_radius_top_right = 8
-		btn_hover.corner_radius_bottom_right = 8
-		btn_hover.corner_radius_bottom_left = 8
+		btn_hover.corner_radius_top_left = 16
+		btn_hover.corner_radius_top_right = 16
+		btn_hover.corner_radius_bottom_right = 16
+		btn_hover.corner_radius_bottom_left = 16
 		btn.add_theme_stylebox_override("normal", btn_style)
 		btn.add_theme_stylebox_override("hover", btn_hover)
 		btn.add_theme_stylebox_override("pressed", btn_hover)
@@ -395,10 +396,10 @@ func _add_action_row(title: String, desc: String, reason: String, callback: Call
 	else:
 		var disabled_style = StyleBoxFlat.new()
 		disabled_style.bg_color = Color(0.7, 0.7, 0.7, 1)
-		disabled_style.corner_radius_top_left = 8
-		disabled_style.corner_radius_top_right = 8
-		disabled_style.corner_radius_bottom_right = 8
-		disabled_style.corner_radius_bottom_left = 8
+		disabled_style.corner_radius_top_left = 16
+		disabled_style.corner_radius_top_right = 16
+		disabled_style.corner_radius_bottom_right = 16
+		disabled_style.corner_radius_bottom_left = 16
 		btn.add_theme_stylebox_override("disabled", disabled_style)
 		btn.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5, 1))
 

@@ -148,7 +148,16 @@ func _on_item_list_item_activated(index):
 			print(tr("LOG_EMP_MOVED_DESK") % [npc_node.data.get_display_name(), old_desk.name])
 		
 		target_desk.assign_employee(npc_node.data, npc_node)
-		npc_node.move_to_desk(target_desk.seat_point.global_position)
+		# Проверяем, отсутствует ли сотрудник (болезнь, отпуск, обучение и т.д.)
+		var absent_states = [
+			npc_node.State.SICK_LEAVE, npc_node.State.DAY_OFF, npc_node.State.ON_VACATION,
+			npc_node.State.ON_TRAINING, npc_node.State.UNPAID_LEAVE,
+			npc_node.State.HOME, npc_node.State.GOING_HOME
+		]
+		if npc_node.current_state in absent_states:
+			npc_node.my_desk_position = target_desk.seat_point.global_position
+		else:
+			npc_node.move_to_desk(target_desk.seat_point.global_position)
 		# ИСПРАВЛЕНИЕ: Выводим локализованное имя в лог
 		print(tr("LOG_EMP_ORDER_DESK") % npc_node.data.get_display_name())
 		

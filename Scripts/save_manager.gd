@@ -328,6 +328,8 @@ func _serialize_employees() -> Array:
 			# === PM ACTIONS: Сохраняем training/unpaid_leave ===
 			"training_days_left": npc.training_days_left,
 			"unpaid_leave_days_left": npc.unpaid_leave_days_left,
+			"pending_training": npc._pending_training if "_pending_training" in npc else false,
+			"pending_unpaid_leave": npc._pending_unpaid_leave if "_pending_unpaid_leave" in npc else false,
 			"pm_praise_cooldown": npc.data.pm_praise_cooldown,
 			"pm_reprimand_cooldown": npc.data.pm_reprimand_cooldown,
 			# === RAISES ===
@@ -950,6 +952,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			# === PM ACTIONS: Восстанавливаем training/unpaid_leave ===
 			npc.training_days_left = int(emp_dict.get("training_days_left", 0))
 			npc.unpaid_leave_days_left = int(emp_dict.get("unpaid_leave_days_left", 0))
+			npc._pending_training = emp_dict.get("pending_training", false)
+			npc._pending_unpaid_leave = emp_dict.get("pending_unpaid_leave", false)
 			npc.data.pm_praise_cooldown = float(emp_dict.get("pm_praise_cooldown", 0.0))
 			npc.data.pm_reprimand_cooldown = float(emp_dict.get("pm_reprimand_cooldown", 0.0))
 			# === RAISES ===
@@ -982,7 +986,25 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			for partner_name in saved_cooldowns:
 				npc._chat_pair_cooldowns[str(partner_name)] = float(saved_cooldowns[partner_name])
 			var saved_state = int(emp_dict.get("current_state", 0))
-			if saved_state == 11:  # State.SICK_LEAVE
+			if saved_state == 3:  # State.GOING_HOME — финализируем в зависимости от pending-флагов
+				if npc._pending_training:
+					npc._pending_training = false
+					npc.visible = false
+					npc.get_node("CollisionShape2D").disabled = true
+					npc.velocity = Vector2.ZERO
+					npc.current_state = 26  # State.ON_TRAINING
+				elif npc._pending_unpaid_leave:
+					npc._pending_unpaid_leave = false
+					npc.visible = false
+					npc.get_node("CollisionShape2D").disabled = true
+					npc.velocity = Vector2.ZERO
+					npc.current_state = 27  # State.UNPAID_LEAVE
+				else:
+					npc.visible = false
+					npc.get_node("CollisionShape2D").disabled = true
+					npc.velocity = Vector2.ZERO
+					npc.current_state = 4  # State.HOME
+			elif saved_state == 11:  # State.SICK_LEAVE
 				npc.visible = false
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
