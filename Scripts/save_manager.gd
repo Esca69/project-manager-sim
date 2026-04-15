@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 9
+const SAVE_VERSION = 10
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -16,6 +16,7 @@ const MIGRATIONS = {
 	6: "_migrate_v6_to_v7",
 	7: "_migrate_v7_to_v8",
 	8: "_migrate_v8_to_v9",
+	9: "_migrate_v9_to_v10",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -332,6 +333,7 @@ func _serialize_employees() -> Array:
 			"pending_unpaid_leave": npc._pending_unpaid_leave if "_pending_unpaid_leave" in npc else false,
 			"pm_praise_cooldown": npc.data.pm_praise_cooldown,
 			"pm_reprimand_cooldown": npc.data.pm_reprimand_cooldown,
+			"pm_loyalty": d.pm_loyalty,
 			# === RAISES ===
 			"is_requesting_raise": d.is_requesting_raise,
 			"raise_requested_salary": d.raise_requested_salary,
@@ -826,6 +828,14 @@ func _migrate_v8_to_v9(data: Dictionary) -> bool:
 	print("🔄 Миграция v8→v9: добавлены поля training, unpaid_leave, pm cooldowns")
 	return true
 
+func _migrate_v9_to_v10(data: Dictionary) -> bool:
+	var employees = data.get("employees", [])
+	for emp_dict in employees:
+		if not emp_dict.has("pm_loyalty"):
+			emp_dict["pm_loyalty"] = 50.0
+	print("🔄 Миграция v9→v10: добавлено поле pm_loyalty")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -956,6 +966,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc._pending_unpaid_leave = emp_dict.get("pending_unpaid_leave", false)
 			npc.data.pm_praise_cooldown = float(emp_dict.get("pm_praise_cooldown", 0.0))
 			npc.data.pm_reprimand_cooldown = float(emp_dict.get("pm_reprimand_cooldown", 0.0))
+			npc.data.pm_loyalty = float(emp_dict.get("pm_loyalty", 50.0))
 			# === RAISES ===
 			npc.data.is_requesting_raise = emp_dict.get("is_requesting_raise", false)
 			npc.data.raise_requested_salary = int(emp_dict.get("raise_requested_salary", 0))

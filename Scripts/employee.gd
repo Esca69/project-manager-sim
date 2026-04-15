@@ -321,6 +321,8 @@ func _ready():
 		_setup_early_bird()
 		if not data.mood_threshold_crossed.is_connected(_on_mood_threshold_crossed):
 			data.mood_threshold_crossed.connect(_on_mood_threshold_crossed)
+		if not data.pm_loyalty_level_changed.is_connected(_on_pm_loyalty_level_changed):
+			data.pm_loyalty_level_changed.connect(_on_pm_loyalty_level_changed)
 
 	coffee_cup_holder.visible = false
 
@@ -739,6 +741,20 @@ func _on_time_tick(_hour, _minute):
 			data.project_adapt_hours_left = max(0.0, data.project_adapt_hours_left - adapt_tick)
 		if data.crunch_efficiency_debuff_hours_left > 0:
 			data.crunch_efficiency_debuff_hours_left -= 1.0
+
+	if _hour == 17 and _minute == 0:
+		var old_loyalty = data.pm_loyalty
+		if data.pm_loyalty > 50.0:
+			data.pm_loyalty -= 0.5
+			if absf(data.pm_loyalty - 50.0) < 0.5:
+				data.pm_loyalty = 50.0
+		elif data.pm_loyalty < 50.0:
+			data.pm_loyalty += 0.5
+			if absf(data.pm_loyalty - 50.0) < 0.5:
+				data.pm_loyalty = 50.0
+		data.pm_loyalty = clampf(data.pm_loyalty, 0.0, 100.0)
+		if old_loyalty != data.pm_loyalty:
+			data.recalculate_mood()
 
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
 		# Тикаем кулдауны PM даже для отсутствующих сотрудников
@@ -1867,6 +1883,15 @@ func _on_mood_threshold_crossed(is_positive: bool):
 		return
 	if ScreenJuice:
 		ScreenJuice.show_mood_ring(self, is_positive)
+
+func _on_pm_loyalty_level_changed(new_level_name: String, is_positive: bool):
+	if not data:
+		return
+	if EventLog:
+		if is_positive:
+			EventLog.add(tr("LOG_LOYALTY_UP") % [data.get_display_name(), tr(new_level_name)], EventLog.LogType.PROGRESS)
+		else:
+			EventLog.add(tr("LOG_LOYALTY_DOWN") % [data.get_display_name(), tr(new_level_name)], EventLog.LogType.ALERT)
 
 func _get_pair_cooldown(partner_name: String) -> float:
 	return _chat_pair_cooldowns.get(partner_name, 0.0)

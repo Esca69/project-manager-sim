@@ -226,6 +226,18 @@ func _refresh_info_block():
 	mood_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	_info_vbox.add_child(mood_lbl)
 
+	var loyalty_lbl = Label.new()
+	var loyalty_level = emp.get_pm_loyalty_level()
+	loyalty_lbl.text = tr("INTERACT_LOYALTY") % [int(emp.pm_loyalty), tr(loyalty_level.name)]
+	loyalty_lbl.add_theme_font_size_override("font_size", 13)
+	if emp.pm_loyalty >= 65.0:
+		loyalty_lbl.add_theme_color_override("font_color", COLOR_GREEN)
+	elif emp.pm_loyalty >= 36.0:
+		loyalty_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+	else:
+		loyalty_lbl.add_theme_color_override("font_color", COLOR_RED)
+	_info_vbox.add_child(loyalty_lbl)
+
 func _refresh_actions_block():
 	for child in _actions_vbox.get_children():
 		child.queue_free()
@@ -420,6 +432,7 @@ func _do_praise():
 
 	# Применить mood
 	emp.add_mood_modifier("pm_praise", "MOOD_MOD_PM_PRAISE", 5.0, 1440.0)
+	emp.change_pm_loyalty(2.0, "praise")
 	# Установить кулдаун
 	emp.pm_praise_cooldown = 4320.0
 
@@ -442,6 +455,7 @@ func _do_reprimand():
 
 	# Применить mood-штраф
 	emp.add_mood_modifier("pm_reprimand_mood", "MOOD_MOD_PM_REPRIMAND", -5.0, 1440.0)
+	emp.change_pm_loyalty(-7.0, "reprimand")
 	# Применить efficiency buff
 	EventManager.add_effect({
 		"type": "efficiency_buff",
@@ -478,6 +492,7 @@ func _do_training():
 
 	# Отправить на обучение
 	_current_npc.start_training()
+	emp.change_pm_loyalty(8.0, "training")
 
 	if EventLog:
 		EventLog.add(tr("LOG_PM_TRAINING_SENT") % emp.get_display_name(), EventLog.LogType.PROGRESS)
@@ -498,6 +513,7 @@ func _do_dayoff():
 	emp.add_mood_modifier("pm_dayoff_mood", "MOOD_MOD_PM_DAYOFF", 8.0, 2880.0)
 	# Снизить burnout
 	emp.burnout_level = maxf(0.0, emp.burnout_level - 1.0)
+	emp.change_pm_loyalty(5.0, "dayoff")
 
 	# Отправить домой
 	_current_npc.start_day_off()
@@ -516,6 +532,7 @@ func _do_unpaid_leave():
 		return
 
 	_current_npc.start_unpaid_leave()
+	emp.change_pm_loyalty(-15.0, "unpaid_leave")
 
 	if EventLog:
 		EventLog.add(tr("LOG_PM_UNPAID_LEAVE_SENT") % emp.get_display_name(), EventLog.LogType.PROGRESS)
@@ -538,6 +555,7 @@ func _do_bonus():
 
 	# Применить mood buff
 	emp.add_mood_modifier("pm_bonus_mood", "MOOD_MOD_PM_BONUS", 15.0, 7200.0)
+	emp.change_pm_loyalty(10.0, "bonus")
 
 	_current_npc.show_thought_bubble("💵", 3.0)
 
