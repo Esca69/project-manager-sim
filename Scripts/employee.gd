@@ -34,6 +34,9 @@ enum State {
 	# === LUNCH WITHOUT KITCHEN: обед-бродилка без кухни ===
 	LUNCH_WANDERING,
 	LUNCH_WANDER_PAUSE,
+	# === PM ACTIONS ===
+	ON_TRAINING,      # На курсах (2 дня)
+	UNPAID_LEAVE,     # Неоплачиваемый отпуск (2 дня)
 }
 
 var current_state = State.IDLE
@@ -154,6 +157,10 @@ var _morning_mood_bubble_emoji: String = ""
 var sick_days_left: int = 0
 var is_on_day_off: bool = false
 var _vacation_log_sent: bool = false  # Чтобы лог отправился один раз
+
+# === PM ACTIONS: Переменные обучения и неоплачиваемого отпуска ===
+var training_days_left: int = 0
+var unpaid_leave_days_left: int = 0
 
 # === LUNCH SYSTEM ===
 const LUNCH_START_HOUR = 11
@@ -731,7 +738,16 @@ func _on_time_tick(_hour, _minute):
 		if data.crunch_efficiency_debuff_hours_left > 0:
 			data.crunch_efficiency_debuff_hours_left -= 1.0
 
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
+		# Тикаем кулдауны PM даже для отсутствующих сотрудников
+		if data.pm_praise_cooldown > 0:
+			data.pm_praise_cooldown -= 1.0
+			if data.pm_praise_cooldown < 0:
+				data.pm_praise_cooldown = 0.0
+		if data.pm_reprimand_cooldown > 0:
+			data.pm_reprimand_cooldown -= 1.0
+			if data.pm_reprimand_cooldown < 0:
+				data.pm_reprimand_cooldown = 0.0
 		return
 
 	data.has_active_desk = (my_desk_position != Vector2.ZERO and _is_my_stage_active())
@@ -788,6 +804,16 @@ func _on_time_tick(_hour, _minute):
 
 	_tick_chat_cooldowns()
 	_try_proximity_chat()
+
+	# === PM INTERACTION: Тикаем кулдауны похвалы и выговора ===
+	if data.pm_praise_cooldown > 0:
+		data.pm_praise_cooldown -= 1.0
+		if data.pm_praise_cooldown < 0:
+			data.pm_praise_cooldown = 0.0
+	if data.pm_reprimand_cooldown > 0:
+		data.pm_reprimand_cooldown -= 1.0
+		if data.pm_reprimand_cooldown < 0:
+			data.pm_reprimand_cooldown = 0.0
 
 	if _morning_mood_bubble_pending:
 		var current_time = GameTime.hour * 60 + GameTime.minute
@@ -908,7 +934,7 @@ func _physics_process(delta):
 		State.HOME:
 			_apply_lean(Vector2.ZERO, delta)
 		
-		State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION:
+		State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION, State.ON_TRAINING, State.UNPAID_LEAVE:
 			pass
 			
 		State.WORKING:
@@ -1707,7 +1733,7 @@ func _on_report_arrived():
 func force_start_report():
 	if not data: return
 	if my_desk_position == Vector2.ZERO: return
-	if current_state in [State.HOME, State.GOING_HOME, State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION]: return
+	if current_state in [State.HOME, State.GOING_HOME, State.SICK_LEAVE, State.DAY_OFF, State.ON_VACATION, State.ON_TRAINING, State.UNPAID_LEAVE]: return
 	if current_state == State.WRITING_REPORT or current_state == State.GOING_TO_REPORT: return
 
 	if current_state == State.WORKING:
@@ -2061,7 +2087,7 @@ func _on_navigation_finished():
 	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
 func _on_work_started():
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
 		return
 	
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
@@ -2121,7 +2147,7 @@ func _on_work_started():
 		_start_wandering()
 
 func _on_work_ended():
-	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
+	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
 		return
 	if data and ProjectManager.is_employee_in_crunch(data):
 		_in_crunch = true
@@ -2613,10 +2639,107 @@ func _return_from_vacation():
 	if EventLog:
 		EventLog.add(tr("LOG_VACATION_ENDED") % data.get_display_name(), EventLog.LogType.PROGRESS)
 
+# =============================================
+# === PM ACTIONS: ОБУЧЕНИЕ (ON_TRAINING) ===
+# =============================================
+func start_training():
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	_release_all_lunch_resources()
+	training_days_left = 2
+	current_state = State.ON_TRAINING
+	visible = false
+	$CollisionShape2D.disabled = true
+	velocity = Vector2.ZERO
+	show_thought_bubble("📚", 3.0)
+
+func _finish_training():
+	training_days_left = 0
+	visible = true
+	$CollisionShape2D.disabled = false
+	z_index = 0
+	var entrance = get_tree().get_first_node_in_group("entrance")
+	if entrance:
+		global_position = entrance.global_position
+	# Начислить XP
+	var xp_result = data.add_employee_xp(100)
+	# Лог
+	if EventLog:
+		EventLog.add(tr("LOG_PM_TRAINING_RETURNED") % data.get_display_name(), EventLog.LogType.PROGRESS)
+	show_thought_bubble("🎓", 5.0)
+	# Обработать level-up если произошёл
+	if xp_result.get("leveled_up", false):
+		ProjectManager.emit_signal("employee_leveled_up", data, xp_result.new_level, xp_result.skill_gain, xp_result.new_trait)
+		if ScreenJuice:
+			ScreenJuice.show_levelup_effect(self)
+	# Перейти в стейт
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		current_state = State.MOVING
+		nav_agent.target_position = my_desk_position
+	else:
+		current_state = State.HOME
+
+# =============================================
+# === PM ACTIONS: НЕОПЛАЧИВАЕМЫЙ ОТПУСК (UNPAID_LEAVE) ===
+# =============================================
+func start_unpaid_leave():
+	coffee_cup_holder.visible = false
+	if coffee_machine_ref:
+		coffee_machine_ref.release(self)
+		coffee_machine_ref = null
+	if toilet_ref:
+		toilet_ref.release(self)
+		toilet_ref = null
+	_release_all_lunch_resources()
+	unpaid_leave_days_left = 2
+	current_state = State.UNPAID_LEAVE
+	visible = false
+	$CollisionShape2D.disabled = true
+	velocity = Vector2.ZERO
+	show_thought_bubble("😔", 3.0)
+
+func _finish_unpaid_leave():
+	unpaid_leave_days_left = 0
+	visible = true
+	$CollisionShape2D.disabled = false
+	z_index = 0
+	var entrance = get_tree().get_first_node_in_group("entrance")
+	if entrance:
+		global_position = entrance.global_position
+	# Применить mood-штраф при возвращении
+	data.add_mood_modifier("pm_unpaid_leave_mood", "MOOD_MOD_PM_UNPAID_LEAVE", -15.0, 4320.0)
+	# Лог
+	if EventLog:
+		EventLog.add(tr("LOG_PM_UNPAID_LEAVE_RETURNED") % data.get_display_name(), EventLog.LogType.PROGRESS)
+	show_thought_bubble("😤", 3.0)
+	# Перейти в стейт
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		current_state = State.MOVING
+		nav_agent.target_position = my_desk_position
+	else:
+		current_state = State.HOME
+
+# =============================================
+# === PM ACTIONS: ХЕЛПЕР ДОСТУПНОСТИ ===
+# =============================================
+func can_pm_interact() -> bool:
+	if not data:
+		return false
+	if not visible:
+		return false
+	if current_state == State.HOME or current_state == State.GOING_HOME:
+		return false
+	return true
+
 func _check_vacation_timer():
 	if not data or data.employment_type != "contractor": return
 	if data.vacation_approved or data.vacation_days_remaining > 0: return
-	if current_state == State.ON_VACATION or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF: return
+	if current_state == State.ON_VACATION or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE: return
 	if data.is_requesting_raise or data.is_quitting: return
 	if data.days_in_company < 10: return
 	if data.vacation_days_until_request < 0:

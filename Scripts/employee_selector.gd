@@ -82,6 +82,17 @@ func open_list(stage_type: String = ""):
 				item_list.set_item_custom_fg_color(vac_index, Color(0.6, 0.6, 0.6, 1))
 				continue
 
+			# Блокируем сотрудников на обучении или в неоплачиваемом отпуске
+			if npc.current_state == npc.State.ON_TRAINING or npc.current_state == npc.State.UNPAID_LEAVE:
+				var abs_name = npc.data.get_display_name() + " (" + tr(npc.data.job_title) + ")"
+				abs_name += " 🚫 " + tr("EMP_SELECT_ABSENT")
+				var abs_index = item_list.add_item(abs_name)
+				item_list.set_item_metadata(abs_index, npc.data)
+				item_list.set_item_disabled(abs_index, true)
+				item_list.set_item_selectable(abs_index, false)
+				item_list.set_item_custom_fg_color(abs_index, Color(0.6, 0.6, 0.6, 1))
+				continue
+
 			var is_busy = _is_employee_assigned_to_any_project(npc.data)
 			
 			# ИСПРАВЛЕНИЕ: Используем get_display_name()

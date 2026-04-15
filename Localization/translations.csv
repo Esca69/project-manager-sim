@@ -1365,3 +1365,41 @@ SUMMARY_DESK_UPGRADE,Улучшение рабочего места,Desk upgrade
 LOG_DESK_UPGRADE_BOUGHT,🖥️ Куплено улучшение: %s,🖥️ Upgrade purchased: %s
 LOG_DESK_SUB_ACTIVATED,✅ Подписка включена: %s,✅ Subscription activated: %s
 LOG_DESK_SUB_PAUSED,⏸️ Подписка приостановлена: %s,⏸️ Subscription paused: %s
+INTERACT_PANEL_TITLE,Сотрудник,Employee
+INTERACT_SECTION_ACTIONS,Действия,Actions
+INTERACT_BTN_EXECUTE,Выполнить,Execute
+INTERACT_PRAISE_TITLE,👏 Похвалить,👏 Praise
+INTERACT_PRAISE_DESC,+5 к настроению на день,+5 mood for a day
+INTERACT_REPRIMAND_TITLE,⚠️ Выговор,⚠️ Reprimand
+INTERACT_REPRIMAND_DESC,−5 настроение — +10%% эффективности на день,−5 mood — +10%% efficiency for a day
+INTERACT_TRAINING_TITLE,📚 Отправить на обучение,📚 Send to Training
+INTERACT_TRAINING_DESC,"2 дня, $800, +100 XP. Только контрактники","2 days, $800, +100 XP. Contractors only"
+INTERACT_DAYOFF_TITLE,🏖️ Оплачиваемый отгул,🏖️ Paid Day-Off
+INTERACT_DAYOFF_DESC,"Уходит домой, +8 настроение, −1%% выгорания. До 11:00","Goes home, +8 mood, −1%% burnout. Before 11:00"
+INTERACT_UNPAID_TITLE,💰 Неоплачиваемый отпуск,💰 Unpaid Leave
+INTERACT_UNPAID_DESC,"2 дня без зарплаты, −15 настроение при возвращении","2 days no pay, −15 mood on return"
+INTERACT_BONUS_TITLE,💵 Выписать премию,💵 Give Bonus
+"INTERACT_BONUS_DESC","25%% от ЗП ($%d), +15 настроение на 5 дней","25%% of salary ($%d), +15 mood for 5 days"
+INTERACT_TRAINING_FREELANCER,Нельзя обучать фрилансера,Cannot train a freelancer
+INTERACT_TRAINING_NO_MONEY,Недостаточно средств ($800),Not enough funds ($800)
+INTERACT_DAYOFF_TOO_LATE,Доступно до 11:00,Available before 11:00
+"INTERACT_BONUS_NO_MONEY","Недостаточно средств ($%d)","Not enough funds ($%d)"
+"INTERACT_COOLDOWN","Кулдаун: %dч %dмин","Cooldown: %dh %dmin"
+MOOD_MOD_PM_PRAISE,Похвала от ПМа,Praised by PM
+MOOD_MOD_PM_REPRIMAND,Выговор от ПМа,Reprimanded by PM
+MOOD_MOD_PM_DAYOFF,Оплачиваемый отгул,Paid day-off
+MOOD_MOD_PM_UNPAID_LEAVE,Неоплачиваемый отпуск,Unpaid leave
+MOOD_MOD_PM_BONUS,Премия от ПМа,Bonus from PM
+LOG_PM_PRAISE,👏 %s получил(а) похвалу от ПМа,👏 %s was praised by PM
+LOG_PM_REPRIMAND,⚠️ %s получил(а) выговор,⚠️ %s received a reprimand
+LOG_PM_TRAINING_SENT,"📚 %s отправлен(а) на обучение (2 дня, $800)","📚 %s sent to training (2 days, $800)"
+LOG_PM_TRAINING_RETURNED,📚 %s вернулся(ась) с курсов (+100 XP),📚 %s returned from training (+100 XP)
+LOG_PM_DAYOFF_GIVEN,🏖️ %s отправлен(а) на оплачиваемый отгул,🏖️ %s given a paid day-off
+LOG_PM_UNPAID_LEAVE_SENT,"💰 %s отправлен(а) в неоплачиваемый отпуск (2 дня)","💰 %s sent on unpaid leave (2 days)"
+LOG_PM_UNPAID_LEAVE_RETURNED,💰 %s вернулся(ась) из неоплачиваемого отпуска,💰 %s returned from unpaid leave
+"LOG_PM_BONUS_GIVEN","💵 %s получил(а) премию ($%d)","💵 %s received a bonus ($%d)"
+EXPENSE_TRAINING,Обучение: %s,Training: %s
+EXPENSE_BONUS,Премия: %s,Bonus: %s
+STATUS_ON_TRAINING,📚 На обучении,📚 In Training
+STATUS_UNPAID_LEAVE,💰 Неоплачиваемый отпуск,💰 Unpaid Leave
+EMP_SELECT_ABSENT,Отсутствует,Absent

@@ -499,6 +499,20 @@ func _get_nearest_interactable():
 		if body.is_in_group("npc") and body.has_method("can_discuss_raise") and body.can_discuss_raise():
 			return body
 
+	# === PM INTERACTION: Второй приоритет — NPC с которым можно взаимодействовать ===
+	var nearest_npc = null
+	var nearest_npc_dist = INF
+	for body in bodies:
+		if body == self:
+			continue
+		if body.is_in_group("npc") and body.has_method("can_pm_interact") and body.can_pm_interact():
+			var dist = global_position.distance_to(body.global_position)
+			if dist < nearest_npc_dist:
+				nearest_npc_dist = dist
+				nearest_npc = body
+	if nearest_npc:
+		return nearest_npc
+
 	for body in bodies:
 		if body == self:
 			continue
@@ -532,6 +546,21 @@ func interact():
 			body.open_raise_dialog()
 			return
 
+	# === PM INTERACTION: NPC без рейза ===
+	var nearest_npc = null
+	var nearest_npc_dist = INF
+	for body in bodies:
+		if body == self:
+			continue
+		if body.is_in_group("npc") and body.has_method("can_pm_interact") and body.can_pm_interact():
+			var dist = global_position.distance_to(body.global_position)
+			if dist < nearest_npc_dist:
+				nearest_npc_dist = dist
+				nearest_npc = body
+	if nearest_npc:
+		_open_employee_interaction(nearest_npc)
+		return
+
 	for body in bodies:
 		if body == self:
 			continue
@@ -549,6 +578,14 @@ func interact():
 			AudioManager.play_sfx("interact")
 			body.interact()
 			return
+
+func _open_employee_interaction(npc_node):
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud:
+		var panel = hud.get_node_or_null("EmployeeInteractionPanel")
+		if panel:
+			AudioManager.play_sfx("interact")
+			panel.open_for_employee(npc_node)
 
 
 # === ПРОГРЕСС-БАР ОБСУЖДЕНИЯ: ПУБЛИЧНЫЙ API ДЛЯ HUD ===

@@ -143,6 +143,9 @@ func pay_daily_salaries():
 
 	for worker in employees:
 		if "data" in worker and worker.data is EmployeeData:
+			# === UNPAID LEAVE: Не платить зарплату ===
+			if worker.current_state == worker.State.UNPAID_LEAVE:
+				continue
 			var salary = worker.data.daily_salary
 			total_daily_cost += salary
 			# ИСПРАВЛЕНИЕ: Используем переведенное имя

@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 8
+const SAVE_VERSION = 9
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -15,6 +15,7 @@ const MIGRATIONS = {
 	5: "_migrate_v5_to_v6",
 	6: "_migrate_v6_to_v7",
 	7: "_migrate_v7_to_v8",
+	8: "_migrate_v8_to_v9",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -324,6 +325,11 @@ func _serialize_employees() -> Array:
 			"is_on_day_off": npc.is_on_day_off,
 			"lunch_done_today": npc._lunch_done_today if "_lunch_done_today" in npc else false,
 			"current_state": npc.current_state,
+			# === PM ACTIONS: Сохраняем training/unpaid_leave ===
+			"training_days_left": npc.training_days_left,
+			"unpaid_leave_days_left": npc.unpaid_leave_days_left,
+			"pm_praise_cooldown": npc.data.pm_praise_cooldown,
+			"pm_reprimand_cooldown": npc.data.pm_reprimand_cooldown,
 			# === RAISES ===
 			"is_requesting_raise": d.is_requesting_raise,
 			"raise_requested_salary": d.raise_requested_salary,
@@ -804,6 +810,20 @@ func _migrate_v7_to_v8(_data: Dictionary) -> bool:
 	print("🔄 Миграция v7→v8: desk upgrades system (no data changes required)")
 	return true
 
+func _migrate_v8_to_v9(data: Dictionary) -> bool:
+	var employees = data.get("employees", [])
+	for emp_dict in employees:
+		if not emp_dict.has("training_days_left"):
+			emp_dict["training_days_left"] = 0
+		if not emp_dict.has("unpaid_leave_days_left"):
+			emp_dict["unpaid_leave_days_left"] = 0
+		if not emp_dict.has("pm_praise_cooldown"):
+			emp_dict["pm_praise_cooldown"] = 0.0
+		if not emp_dict.has("pm_reprimand_cooldown"):
+			emp_dict["pm_reprimand_cooldown"] = 0.0
+	print("🔄 Миграция v8→v9: добавлены поля training, unpaid_leave, pm cooldowns")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -927,6 +947,11 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 			npc.sick_days_left = int(emp_dict.get("sick_days_left", 0))
 			npc.is_on_day_off = emp_dict.get("is_on_day_off", false)
 			npc._lunch_done_today = emp_dict.get("lunch_done_today", false)
+			# === PM ACTIONS: Восстанавливаем training/unpaid_leave ===
+			npc.training_days_left = int(emp_dict.get("training_days_left", 0))
+			npc.unpaid_leave_days_left = int(emp_dict.get("unpaid_leave_days_left", 0))
+			npc.data.pm_praise_cooldown = float(emp_dict.get("pm_praise_cooldown", 0.0))
+			npc.data.pm_reprimand_cooldown = float(emp_dict.get("pm_reprimand_cooldown", 0.0))
 			# === RAISES ===
 			npc.data.is_requesting_raise = emp_dict.get("is_requesting_raise", false)
 			npc.data.raise_requested_salary = int(emp_dict.get("raise_requested_salary", 0))
@@ -974,6 +999,16 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 				npc.get_node("CollisionShape2D").disabled = true
 				npc.velocity = Vector2.ZERO
 				npc.current_state = 21
+			elif saved_state == 26:  # State.ON_TRAINING
+				npc.visible = false
+				npc.get_node("CollisionShape2D").disabled = true
+				npc.velocity = Vector2.ZERO
+				npc.current_state = 26
+			elif saved_state == 27:  # State.UNPAID_LEAVE
+				npc.visible = false
+				npc.get_node("CollisionShape2D").disabled = true
+				npc.velocity = Vector2.ZERO
+				npc.current_state = 27
 
 			employee_map[emp_data.employee_name] = emp_data
 			npc_map[emp_data.employee_name] = npc
