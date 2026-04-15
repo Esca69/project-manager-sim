@@ -85,6 +85,10 @@ func init_vacation_timer():
 		return
 	vacation_days_until_request = randi_range(20, 25)
 
+# === PM INTERACTION COOLDOWNS ===
+var pm_praise_cooldown: float = 0.0      # Оставшиеся минуты до возможности похвалы
+var pm_reprimand_cooldown: float = 0.0   # Оставшиеся минуты до возможности выговора
+
 # === MOOD SYSTEM v2 ===
 # mood вычисляется как: BASE + постоянные + временные, clamp(0..100)
 # Никакого дрейфа. Полная прозрачность для игрока.

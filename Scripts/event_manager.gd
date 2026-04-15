@@ -597,7 +597,7 @@ func _can_trigger_event() -> bool:
 	var employees = get_tree().get_nodes_in_group("npc")
 	var active_count = 0
 	for emp in employees:
-		if emp.current_state != emp.State.HOME and emp.current_state != emp.State.SICK_LEAVE and emp.current_state != emp.State.DAY_OFF:
+		if emp.current_state != emp.State.HOME and emp.current_state != emp.State.SICK_LEAVE and emp.current_state != emp.State.DAY_OFF and emp.current_state != emp.State.ON_TRAINING and emp.current_state != emp.State.UNPAID_LEAVE:
 			active_count += 1
 	if active_count < MIN_EMPLOYEES_FOR_EVENTS:
 		return false
@@ -622,6 +622,9 @@ func _pick_sick_candidate():
 			continue
 		# Не болеет и не в отгуле
 		if emp.current_state == emp.State.SICK_LEAVE or emp.current_state == emp.State.DAY_OFF:
+			continue
+		# Не на обучении и не в неоплачиваемом отпуске
+		if emp.current_state == emp.State.ON_TRAINING or emp.current_state == emp.State.UNPAID_LEAVE:
 			continue
 		# Не ушёл домой
 		if emp.current_state == emp.State.HOME or emp.current_state == emp.State.GOING_HOME:
@@ -1019,6 +1022,8 @@ func _try_hunting() -> bool:
 			continue  # Mutex: нельзя хантить того, кто уже просит рейз
 		if npc.data.is_quitting:
 			continue
+		if npc.current_state == npc.State.ON_TRAINING or npc.current_state == npc.State.UNPAID_LEAVE:
+			continue
 		candidates.append(npc)
 
 	if candidates.is_empty():
@@ -1227,6 +1232,14 @@ func _update_sick_employees():
 			emp.end_day_off()
 		elif emp.current_state == emp.State.ON_VACATION:
 			emp.tick_vacation_day()
+		elif emp.current_state == emp.State.ON_TRAINING:
+			emp.training_days_left -= 1
+			if emp.training_days_left <= 0:
+				emp._finish_training()
+		elif emp.current_state == emp.State.UNPAID_LEAVE:
+			emp.unpaid_leave_days_left -= 1
+			if emp.unpaid_leave_days_left <= 0:
+				emp._finish_unpaid_leave()
 
 # =============================================
 # КУЛДАУНЫ

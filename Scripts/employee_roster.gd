@@ -1479,6 +1479,12 @@ func _get_status_text(npc_node) -> String:
 		# === DAILY REPORTS SYSTEM ===
 		22: return tr("EMP_ACTION_GOING_REPORT")
 		23: return tr("EMP_ACTION_WRITING_REPORT")
+		# === LUNCH WITHOUT KITCHEN ===
+		24: return tr("ROSTER_STATUS_WANDERING")
+		25: return tr("ROSTER_STATUS_THINKING")
+		# === PM ACTIONS ===
+		26: return tr("STATUS_ON_TRAINING")
+		27: return tr("STATUS_UNPAID_LEAVE")
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
@@ -1513,6 +1519,8 @@ func _get_status_color(npc_node) -> Color:
 		22, 23: return Color(0.9, 0.55, 0.2, 1)  # Оранжевый — ежедневные отчёты
 		# === LUNCH WITHOUT KITCHEN ===
 		24, 25: return Color(0.85, 0.55, 0.0, 1)  # Оранжевый — обед без кухни (LUNCH_WANDERING, LUNCH_WANDER_PAUSE)
+		# === PM ACTIONS ===
+		26, 27: return Color(0.5, 0.5, 0.5, 1)  # Серый — обучение / неоплачиваемый отпуск
 	return Color(0.17254902, 0.30980393, 0.5686275, 1)
 
 func _get_event_effect_text(emp_data: EmployeeData) -> String:

@@ -535,6 +535,9 @@ func _build_employees_section():
 		if npc.current_state == npc.State.ON_VACATION:
 			vacation_list.append(npc.data)
 			continue
+		if npc.current_state == npc.State.ON_TRAINING or npc.current_state == npc.State.UNPAID_LEAVE:
+			vacation_list.append(npc.data)
+			continue
 		var work_minutes = npc.data.get_meta("daily_work_minutes", 0.0) if npc.data.has_meta("daily_work_minutes") else 0.0
 		var progress = npc.data.get_meta("daily_progress", 0.0) if npc.data.has_meta("daily_progress") else 0.0
 		var overtime = npc.data.get_meta("crunch_overtime_minutes", 0.0) if npc.data.has_meta("crunch_overtime_minutes") else 0.0
