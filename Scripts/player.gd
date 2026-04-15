@@ -465,7 +465,7 @@ func _update_interact_hint():
 	var target_world_pos: Vector2
 	# NPC с рейзом — хинт выше (над иконкой ❗)
 	if target.is_in_group("npc"):
-		target_world_pos = target.global_position + Vector2(0, -160)
+		target_world_pos = target.global_position + Vector2(0, -100)
 	elif target is Node2D:
 		target_world_pos = target.global_position + Vector2(0, -60)
 	else:
