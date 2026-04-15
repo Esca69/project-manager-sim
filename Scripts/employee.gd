@@ -2676,7 +2676,7 @@ func _finish_training():
 	if xp_result.get("leveled_up", false):
 		ProjectManager.emit_signal("employee_leveled_up", data, xp_result.new_level, xp_result.skill_gain, xp_result.new_trait)
 		if ScreenJuice:
-			ScreenJuice.show_levelup_effect(self)
+			ScreenJuice.show_levelup_effect(self, xp_result.new_level)
 	# Перейти в стейт
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
 		current_state = State.MOVING
