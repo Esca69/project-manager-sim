@@ -175,6 +175,7 @@ func _update_live_data():
 		var eff_lbl = card.get_meta("eff_label") if card.has_meta("eff_label") else null
 		var effect_lbl = card.get_meta("effect_label") if card.has_meta("effect_label") else null
 		var mood_lbl = card.get_meta("mood_label") if card.has_meta("mood_label") else null
+		var loyalty_lbl = card.get_meta("loyalty_label") if card.has_meta("loyalty_label") else null
 		var mood_bar = card.get_meta("mood_bar") if card.has_meta("mood_bar") else null
 		var burnout_lbl = card.get_meta("burnout_label") if card.has_meta("burnout_label") else null
 
@@ -219,6 +220,11 @@ func _update_live_data():
 			var fill_style = mood_bar.get_theme_stylebox("fill") as StyleBoxFlat
 			if fill_style:
 				fill_style.bg_color = _get_mood_color(emp_data.mood)
+
+		if loyalty_lbl:
+			var loyalty_level = emp_data.get_pm_loyalty_level()
+			loyalty_lbl.text = tr("ROSTER_LOYALTY") % [int(emp_data.pm_loyalty), tr(loyalty_level.name)]
+			loyalty_lbl.add_theme_color_override("font_color", _get_loyalty_color(emp_data.pm_loyalty))
 
 		# === BURNOUT SYSTEM: обновляем выгорание в реальном времени ===
 		if burnout_lbl:
@@ -495,6 +501,15 @@ func _create_card(npc_node) -> PanelContainer:
 	if UITheme: UITheme.apply_font(mood_lbl, "semibold")
 	mood_hbox.add_child(mood_lbl)
 	card.set_meta("mood_label", mood_lbl)
+
+	var loyalty_lbl = Label.new()
+	var loyalty_level = emp.get_pm_loyalty_level()
+	loyalty_lbl.text = tr("ROSTER_LOYALTY") % [int(emp.pm_loyalty), tr(loyalty_level.name)]
+	loyalty_lbl.add_theme_color_override("font_color", _get_loyalty_color(emp.pm_loyalty))
+	loyalty_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(loyalty_lbl, "semibold")
+	right_vbox.add_child(loyalty_lbl)
+	card.set_meta("loyalty_label", loyalty_lbl)
 
 	# Кнопка "?" — breakdown настроения
 	var mood_help_btn = _create_help_button()
@@ -1222,6 +1237,13 @@ func _get_burnout_color(burnout_val: float) -> Color:
 		return Color(0.9, 0.45, 0.1, 1)
 	else:
 		return Color(0.85, 0.25, 0.2, 1)
+
+func _get_loyalty_color(loyalty_val: float) -> Color:
+	if loyalty_val >= 65.0:
+		return Color(0.29, 0.69, 0.31, 1)
+	elif loyalty_val >= 36.0:
+		return Color(0.5, 0.5, 0.5, 1)
+	return Color(0.85, 0.25, 0.2, 1)
 
 func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer:
 	var hbox = HBoxContainer.new()

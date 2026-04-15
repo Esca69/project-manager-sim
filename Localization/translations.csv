@@ -1403,3 +1403,14 @@ EXPENSE_BONUS,Премия: %s,Bonus: %s
 STATUS_ON_TRAINING,📚 На обучении,📚 In Training
 STATUS_UNPAID_LEAVE,💰 Неоплачиваемый отпуск,💰 Unpaid Leave
 EMP_SELECT_ABSENT,Отсутствует,Absent
+LOYALTY_LEVEL_DEVOTED,Преданность,Devotion
+LOYALTY_LEVEL_RESPECT,Уважение,Respect
+LOYALTY_LEVEL_TRUST,Доверие,Trust
+LOYALTY_LEVEL_NEUTRAL,Нейтрально,Neutral
+LOYALTY_LEVEL_DISCONTENT,Недовольство,Discontent
+LOYALTY_LEVEL_RESENTMENT,Обида,Resentment
+LOYALTY_LEVEL_HOSTILE,Враждебность,Hostility
+LOG_LOYALTY_UP,📈 %s теперь относится к вам: %s,📈 %s now feels: %s towards you
+LOG_LOYALTY_DOWN,📉 %s теперь относится к вам: %s,📉 %s now feels: %s towards you
+INTERACT_LOYALTY,🤝 Лояльность: %d (%s),🤝 Loyalty: %d (%s)
+ROSTER_LOYALTY,🤝 %d (%s),🤝 %d (%s)

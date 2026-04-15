@@ -88,6 +88,7 @@ func init_vacation_timer():
 # === PM INTERACTION COOLDOWNS ===
 var pm_praise_cooldown: float = 0.0      # Оставшиеся минуты до возможности похвалы
 var pm_reprimand_cooldown: float = 0.0   # Оставшиеся минуты до возможности выговора
+var pm_loyalty: float = 50.0
 
 # === MOOD SYSTEM v2 ===
 # mood вычисляется как: BASE + постоянные + временные, clamp(0..100)
@@ -98,8 +99,19 @@ var mood: float = 55.0  # Будет пересчитан при первом re
 var _previous_mood_zone_high: bool = false  # Был ли mood >= 70 на прошлом тике
 var _previous_mood_zone_low: bool = false   # Был ли mood <= 40 на прошлом тике
 signal mood_threshold_crossed(is_positive: bool)
+signal pm_loyalty_level_changed(new_level_name: String, is_positive: bool)
 
 const MOOD_BASE: float = 50.0  # Базовое значение настроения
+
+const PM_LOYALTY_LEVELS = [
+	{"name": "LOYALTY_LEVEL_DEVOTED", "min": 90.0, "mood_bonus": 15.0, "efficiency_bonus": 0.15, "rank": 6},
+	{"name": "LOYALTY_LEVEL_RESPECT", "min": 75.0, "mood_bonus": 10.0, "efficiency_bonus": 0.10, "rank": 5},
+	{"name": "LOYALTY_LEVEL_TRUST", "min": 65.0, "mood_bonus": 5.0, "efficiency_bonus": 0.05, "rank": 4},
+	{"name": "LOYALTY_LEVEL_NEUTRAL", "min": 36.0, "mood_bonus": 0.0, "efficiency_bonus": 0.0, "rank": 3},
+	{"name": "LOYALTY_LEVEL_DISCONTENT", "min": 25.0, "mood_bonus": -5.0, "efficiency_bonus": -0.05, "rank": 2},
+	{"name": "LOYALTY_LEVEL_RESENTMENT", "min": 10.0, "mood_bonus": -10.0, "efficiency_bonus": -0.10, "rank": 1},
+	{"name": "LOYALTY_LEVEL_HOSTILE", "min": 0.0, "mood_bonus": -15.0, "efficiency_bonus": -0.15, "rank": 0},
+]
 
 # Зоны настроения → множитель эффективности
 const MOOD_ZONES = [
@@ -175,6 +187,32 @@ func _get_game_hour() -> int:
 			return gt.hour
 	return 12  # Дефолт — середина дня (ни athletic, ни sleepyhead не активны)
 
+func _get_pm_loyalty_level_for_value(value: float) -> Dictionary:
+	for level in PM_LOYALTY_LEVELS:
+		if value >= level.min:
+			return level
+	return PM_LOYALTY_LEVELS[PM_LOYALTY_LEVELS.size() - 1]
+
+func get_pm_loyalty_level() -> Dictionary:
+	return _get_pm_loyalty_level_for_value(pm_loyalty)
+
+func change_pm_loyalty(amount: float, source: String = "") -> void:
+	var adjusted_amount = amount
+	if has_trait("teachers_pet") and adjusted_amount > 0.0:
+		adjusted_amount = floorf(adjusted_amount * 1.5)
+	if has_trait("rebel") and adjusted_amount < 0.0:
+		adjusted_amount *= 0.7
+	if has_trait("rebel") and source == "praise" and adjusted_amount > 0.0:
+		adjusted_amount *= 0.5
+
+	var old_level = get_pm_loyalty_level()
+	pm_loyalty = clampf(pm_loyalty + adjusted_amount, 0.0, 100.0)
+	var new_level = get_pm_loyalty_level()
+	recalculate_mood()
+
+	if old_level.name != new_level.name:
+		pm_loyalty_level_changed.emit(new_level.name, new_level.rank > old_level.rank)
+
 # === MOOD: Пересчёт (вызывается каждую игровую минуту) ===
 func recalculate_mood():
 	var result = MOOD_BASE
@@ -206,6 +244,9 @@ func recalculate_mood():
 	# Постоянные: мотивация от PM
 	if motivation_bonus > 0.0:
 		result += MOOD_MOTIVATION_BONUS
+
+	# Постоянные: лояльность к PM
+	result += get_pm_loyalty_level().mood_bonus
 
 	# === BOSS EVENT: Тотальная коммуникация → mood ===
 	var bes = _get_boss_event_system()
@@ -359,6 +400,10 @@ func get_mood_breakdown() -> Dictionary:
 	# Мотивация
 	if motivation_bonus > 0.0:
 		permanent_mods.append({"name": tr("MOOD_MOD_MOTIVATED"), "value": MOOD_MOTIVATION_BONUS})
+
+	var loyalty_level = get_pm_loyalty_level()
+	if loyalty_level.mood_bonus != 0.0:
+		permanent_mods.append({"name": tr(loyalty_level.name), "value": loyalty_level.mood_bonus})
 
 	# === BOSS EVENT: Тотальная коммуникация ===
 	var bes = _get_boss_event_system()
@@ -865,7 +910,9 @@ func get_efficiency_multiplier() -> float:
 	if burnout_level > 0:
 		burnout_mod = -burnout_level * 0.01  # 1% burnout = -0.01
 
-	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus)
+	var loyalty_mod = get_pm_loyalty_level().efficiency_bonus
+
+	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus) * (1.0 + loyalty_mod)
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -903,7 +950,9 @@ func get_efficiency_breakdown() -> Dictionary:
 	# === BURNOUT SYSTEM: Штраф от выгорания ===
 	var burnout_mod: float = -burnout_level * 0.01 if burnout_level > 0 else 0.0
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus)
+	var loyalty_mod = get_pm_loyalty_level().efficiency_bonus
+
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus) * (1.0 + loyalty_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -920,6 +969,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"project_adapt_mod": -0.20 if project_adapt_hours_left > 0 else 0.0,
 		"crunch_mod": crunch_mod,
 		"burnout_mod": burnout_mod,
+		"loyalty_mod": loyalty_mod,
 		"total": total,
 		"ergonomic_mod": -0.10 if (_get_game_state() and _get_game_state().office_upgrades.get("ergonomic_furniture", false)) else 0.0,
 		"desk_efficiency_bonus": desk_efficiency_bonus,

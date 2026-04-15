@@ -828,6 +828,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_ALLOW_MOOD_VALUE,
 					DAYOFF_ALLOW_MOOD_DURATION
 				)
+				emp_node.data.change_pm_loyalty(5.0, "event_dayoff_approved")
 			print("🏠 %s отпущен домой. Завтра +10%% эффективности, +%d mood на 2 суток" % [emp_display_name, int(DAYOFF_ALLOW_MOOD_VALUE)])
 			EventLog.add(tr("LOG_DAYOFF_ALLOWED") % emp_display_name, EventLog.LogType.ROUTINE)
 
@@ -848,6 +849,7 @@ func _apply_dayoff_choice(event_data: Dictionary, choice_id: String):
 					DAYOFF_DENY_MOOD_VALUE,
 					DAYOFF_DENY_MOOD_DURATION
 				)
+				emp_node.data.change_pm_loyalty(-10.0, "event_dayoff_denied")
 			print("😤 %s не отпущен. -20%% эффективности сегодня, %d mood на 2 суток" % [emp_display_name, int(DAYOFF_DENY_MOOD_VALUE)])
 			EventLog.add(tr("LOG_DAYOFF_DENIED") % emp_display_name, EventLog.LogType.ROUTINE)
 
@@ -977,6 +979,7 @@ func _apply_raise_choice(event_data: Dictionary, choice_id: String):
 
 			# +10 mood на 120 игровых часов (7200 мин)
 			emp_data.add_mood_modifier("raise_accepted", "MOOD_MOD_RAISE_ACCEPTED", 10.0, 7200.0)
+			emp_data.change_pm_loyalty(10.0, "event_raise_approved")
 
 			if EventLog:
 				EventLog.add(tr("LOG_RAISE_ACCEPTED") % [emp_display_name, old_salary, emp_data.monthly_salary], EventLog.LogType.PROGRESS)
@@ -989,6 +992,7 @@ func _apply_raise_choice(event_data: Dictionary, choice_id: String):
 
 			# -15 mood на 100 игровых часов (6000 мин)
 			emp_data.add_mood_modifier("raise_denied", "MOOD_MOD_RAISE_DENIED", -15.0, 6000.0)
+			emp_data.change_pm_loyalty(-20.0, "event_raise_denied")
 
 			if EventLog:
 				EventLog.add(tr("LOG_RAISE_DENIED") % emp_display_name, EventLog.LogType.ALERT)
