@@ -473,7 +473,7 @@ func _do_training():
 
 	# Списать деньги
 	GameState.add_expense(800)
-	GameState.daily_event_expenses.append({"reason": "EXPENSE_TRAINING", "amount": 800})
+	GameState.daily_event_expenses.append({"reason": "EXPENSE_TRAINING", "amount": 800, "employee": emp.get_display_name()})
 
 	# Отправить на обучение
 	_current_npc.start_training()
@@ -533,7 +533,7 @@ func _do_bonus():
 
 	# Списать деньги
 	GameState.add_expense(bonus_amount)
-	GameState.daily_event_expenses.append({"reason": "EXPENSE_BONUS", "amount": bonus_amount})
+	GameState.daily_event_expenses.append({"reason": "EXPENSE_BONUS", "amount": bonus_amount, "employee": emp.get_display_name()})
 
 	# Применить mood buff
 	emp.add_mood_modifier("pm_bonus_mood", "MOOD_MOD_PM_BONUS", 15.0, 7200.0)
