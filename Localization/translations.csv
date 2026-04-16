@@ -1078,6 +1078,8 @@ REPORTS_SALARIES,Зарплаты,Salaries
 REPORTS_PM_SALARY,Зарплата PM,PM Salary
 REPORTS_PENALTIES,Штрафы,Penalties
 REPORTS_OFFICE,Офис,Office
+REPORTS_TRAINING,Обучение,Training
+REPORTS_BONUSES,Премии,Bonuses
 REPORTS_PROJECT_INCOME,Доход от проектов,Project Income
 REPORTS_TOTAL,ИТОГО,TOTAL
 REPORTS_NO_DATA,Нет данных,No data
