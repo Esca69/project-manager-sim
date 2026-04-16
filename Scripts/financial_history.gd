@@ -14,6 +14,9 @@ var daily_records: Array = []
 #   pm_salary: int,
 #   penalties: int,
 #   office_costs: int,
+#   training_costs: int,
+#   bonus_costs: int,
+#   service_costs: int,
 #   projects_completed: int,
 #   projects_failed: int,
 #   project_income_details: [{title, payout, labor_cost, profit}],
@@ -29,11 +32,17 @@ func record_day():
 
 	var penalties = 0
 	var office_costs = 0
+	var training_costs = 0
+	var bonus_costs = 0
 	for ev in GameState.daily_event_expenses:
 		var amt = int(ev.get("amount", 0))
 		var reason = str(ev.get("reason", ""))
 		if reason == "SUMMARY_OFFICE_UPGRADES":
 			office_costs += amt
+		elif reason == "EXPENSE_TRAINING":
+			training_costs += amt
+		elif reason == "EXPENSE_BONUS":
+			bonus_costs += amt
 		else:
 			penalties += amt
 
@@ -65,6 +74,8 @@ func record_day():
 		"pm_salary": pm_salary,
 		"penalties": penalties,
 		"office_costs": office_costs,
+		"training_costs": training_costs,
+		"bonus_costs": bonus_costs,
 		"service_costs": service_costs,
 		"projects_completed": GameState.projects_finished_today.size(),
 		"projects_failed": GameState.projects_failed_today.size(),

@@ -14,6 +14,8 @@ const COLOR_SALARIES  = Color(0.8980392, 0.22352941, 0.20784314, 1)
 const COLOR_PM_SAL    = Color(1.0, 0.55, 0.0, 1)
 const COLOR_PENALTIES = Color(0.7, 0.1, 0.1, 1)
 const COLOR_OFFICE    = Color(0.9, 0.5, 0.1, 1)
+const COLOR_TRAINING  = Color(0.3, 0.6, 0.9, 1)
+const COLOR_BONUSES   = Color(0.9, 0.7, 0.2, 1)
 const COLOR_SERVICES  = Color(0.3, 0.5, 0.9, 1)
 
 const PERIOD_7D  = 1
@@ -312,7 +314,7 @@ func _aggregate_records(records: Array) -> Array:
 					weeks[wn] = {
 						"income": 0, "expenses": 0, "balance": 0,
 						"salary_total": 0, "pm_salary": 0, "penalties": 0,
-						"office_costs": 0, "service_costs": 0,
+						"office_costs": 0, "training_costs": 0, "bonus_costs": 0, "service_costs": 0,
 						"day": GameTime.get_week_start_day(wn),
 						"label": "W%d" % wn, "_lb": 0
 					}
@@ -322,6 +324,8 @@ func _aggregate_records(records: Array) -> Array:
 				weeks[wn]["pm_salary"]     += int(r.get("pm_salary", 0))
 				weeks[wn]["penalties"]     += int(r.get("penalties", 0))
 				weeks[wn]["office_costs"]  += int(r.get("office_costs", 0))
+				weeks[wn]["training_costs"] += int(r.get("training_costs", 0))
+				weeks[wn]["bonus_costs"]   += int(r.get("bonus_costs", 0))
 				weeks[wn]["service_costs"] += int(r.get("service_costs", 0))
 				weeks[wn]["_lb"]            = int(r.get("balance", 0))
 			var keys = weeks.keys(); keys.sort()
@@ -338,7 +342,7 @@ func _aggregate_records(records: Array) -> Array:
 					months[mn] = {
 						"income": 0, "expenses": 0, "balance": 0,
 						"salary_total": 0, "pm_salary": 0, "penalties": 0,
-						"office_costs": 0, "service_costs": 0,
+						"office_costs": 0, "training_costs": 0, "bonus_costs": 0, "service_costs": 0,
 						"day": GameTime.get_month_start_day(mn),
 						"label": "M%d" % mn, "_lb": 0
 					}
@@ -348,6 +352,8 @@ func _aggregate_records(records: Array) -> Array:
 				months[mn]["pm_salary"]     += int(r.get("pm_salary", 0))
 				months[mn]["penalties"]     += int(r.get("penalties", 0))
 				months[mn]["office_costs"]  += int(r.get("office_costs", 0))
+				months[mn]["training_costs"] += int(r.get("training_costs", 0))
+				months[mn]["bonus_costs"]   += int(r.get("bonus_costs", 0))
 				months[mn]["service_costs"] += int(r.get("service_costs", 0))
 				months[mn]["_lb"]            = int(r.get("balance", 0))
 			var keys = months.keys(); keys.sort()
@@ -779,7 +785,8 @@ func _build_structure_card() -> PanelContainer:
 	var sd_list = [
 		["REPORTS_PROJECT_INCOME", COLOR_GREEN], ["REPORTS_SALARIES", COLOR_SALARIES],
 		["REPORTS_PM_SALARY", COLOR_PM_SAL], ["REPORTS_PENALTIES", COLOR_PENALTIES],
-		["REPORTS_OFFICE", COLOR_OFFICE], ["REPORTS_SERVICES", COLOR_SERVICES],
+		["REPORTS_OFFICE", COLOR_OFFICE], ["REPORTS_TRAINING", COLOR_TRAINING],
+		["REPORTS_BONUSES", COLOR_BONUSES], ["REPORTS_SERVICES", COLOR_SERVICES],
 	]
 	for sd in sd_list:
 		var item = HBoxContainer.new(); item.add_theme_constant_override("separation", 4)
@@ -808,19 +815,23 @@ func _draw_expense_bar(ctrl: Control):
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, 20), tr("REPORTS_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
 		return
-	var sal = 0; var pm = 0; var pen = 0; var off = 0; var svc = 0
+	var sal = 0; var pm = 0; var pen = 0; var off = 0; var trn = 0; var bon = 0; var svc = 0
 	for r in records:
 		sal += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 		pm  += int(r.get("pm_salary", 0))
 		pen += int(r.get("penalties", 0))
 		off += int(r.get("office_costs", 0))
+		trn += int(r.get("training_costs", 0))
+		bon += int(r.get("bonus_costs", 0))
 		svc += int(r.get("service_costs", 0))
-	var total = sal + pm + pen + off + svc
+	var total = sal + pm + pen + off + trn + bon + svc
 	_draw_stacked_bar_labeled(ctrl, [
 		{"label": tr("REPORTS_SALARIES"),  "value": sal, "color": COLOR_SALARIES},
 		{"label": tr("REPORTS_PM_SALARY"), "value": pm,  "color": COLOR_PM_SAL},
 		{"label": tr("REPORTS_PENALTIES"), "value": pen, "color": COLOR_PENALTIES},
 		{"label": tr("REPORTS_OFFICE"),    "value": off, "color": COLOR_OFFICE},
+		{"label": tr("REPORTS_TRAINING"),  "value": trn, "color": COLOR_TRAINING},
+		{"label": tr("REPORTS_BONUSES"),   "value": bon, "color": COLOR_BONUSES},
 		{"label": tr("REPORTS_SERVICES"),  "value": svc, "color": COLOR_SERVICES},
 	], max(total, 1), 0.0, 0.0, w, h, _expense_segs)
 
@@ -879,6 +890,7 @@ func _build_expense_trend_card() -> PanelContainer:
 	var sd_list = [
 		["REPORTS_SALARIES", COLOR_SALARIES], ["REPORTS_PM_SALARY", COLOR_PM_SAL],
 		["REPORTS_PENALTIES", COLOR_PENALTIES], ["REPORTS_OFFICE", COLOR_OFFICE],
+		["REPORTS_TRAINING", COLOR_TRAINING], ["REPORTS_BONUSES", COLOR_BONUSES],
 		["REPORTS_SERVICES", COLOR_SERVICES],
 	]
 	for sd in sd_list:
@@ -904,7 +916,7 @@ func _draw_expense_trend(ctrl: Control):
 		return
 	var max_exp = 1
 	for g in groups:
-		var t = (int(g.get("salary_total", 0)) - int(g.get("pm_salary", 0))) + int(g.get("pm_salary", 0)) + int(g.get("penalties", 0)) + int(g.get("office_costs", 0)) + int(g.get("service_costs", 0))
+		var t = (int(g.get("salary_total", 0)) - int(g.get("pm_salary", 0))) + int(g.get("pm_salary", 0)) + int(g.get("penalties", 0)) + int(g.get("office_costs", 0)) + int(g.get("training_costs", 0)) + int(g.get("bonus_costs", 0)) + int(g.get("service_costs", 0))
 		max_exp = max(max_exp, t)
 	var gc = Color(0.88, 0.88, 0.88, 1)
 	for i in range(5):
@@ -920,14 +932,18 @@ func _draw_expense_trend(ctrl: Control):
 		var pm  = int(g.get("pm_salary", 0))
 		var pen = int(g.get("penalties", 0))
 		var off = int(g.get("office_costs", 0))
+		var trn = int(g.get("training_costs", 0))
+		var bon = int(g.get("bonus_costs", 0))
 		var svc = int(g.get("service_costs", 0))
-		var tot = sal + pm + pen + off + svc
+		var tot = sal + pm + pen + off + trn + bon + svc
 		var xl  = g.get("label", "D%d" % int(g.get("day", i+1)))
 		var segs = [
 			{"label": tr("REPORTS_SALARIES"),  "value": sal, "color": COLOR_SALARIES},
 			{"label": tr("REPORTS_PM_SALARY"), "value": pm,  "color": COLOR_PM_SAL},
 			{"label": tr("REPORTS_PENALTIES"), "value": pen, "color": COLOR_PENALTIES},
 			{"label": tr("REPORTS_OFFICE"),    "value": off, "color": COLOR_OFFICE},
+			{"label": tr("REPORTS_TRAINING"),  "value": trn, "color": COLOR_TRAINING},
+			{"label": tr("REPORTS_BONUSES"),   "value": bon, "color": COLOR_BONUSES},
 			{"label": tr("REPORTS_SERVICES"),  "value": svc, "color": COLOR_SERVICES},
 		]
 		var bx = PL + float(i) * slot_w + bar_m
@@ -1098,23 +1114,23 @@ func _refresh_pnl():
 		var lbl = Label.new(); lbl.text = tr("REPORTS_NO_DATA")
 		lbl.add_theme_color_override("font_color", COLOR_GRAY); lbl.add_theme_font_size_override("font_size", 14)
 		_pnl_vbox.add_child(lbl); return
-	var ci = 0; var cs = 0; var cp = 0; var cn = 0; var co = 0; var cv = 0
+	var ci = 0; var cs = 0; var cp = 0; var cn = 0; var co = 0; var ct = 0; var cb = 0; var cv = 0
 	for r in records:
 		ci += int(r.get("income", 0))
 		cs += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 		cp += int(r.get("pm_salary", 0)); cn += int(r.get("penalties", 0))
-		co += int(r.get("office_costs", 0)); cv += int(r.get("service_costs", 0))
-	var ce = cs + cp + cn + co + cv; var cnet = ci - ce
+		co += int(r.get("office_costs", 0)); ct += int(r.get("training_costs", 0)); cb += int(r.get("bonus_costs", 0)); cv += int(r.get("service_costs", 0))
+	var ce = cs + cp + cn + co + ct + cb + cv; var cnet = ci - ce
 	var cmarg = 0.0; if ci > 0: cmarg = float(cnet) / float(ci) * 100.0
-	var pi = 0; var ps = 0; var pp = 0; var pn = 0; var po = 0; var pv = 0
+	var pi = 0; var ps = 0; var pp = 0; var pn = 0; var po = 0; var pt = 0; var pb = 0; var pv = 0
 	if _pnl_month_index > 0:
 		var pr = _get_pnl_month_records(_pnl_month_index - 1)
 		for r in pr:
 			pi += int(r.get("income", 0))
 			ps += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 			pp += int(r.get("pm_salary", 0)); pn += int(r.get("penalties", 0))
-			po += int(r.get("office_costs", 0)); pv += int(r.get("service_costs", 0))
-	var pe = ps + pp + pn + po + pv; var pnet = pi - pe
+			po += int(r.get("office_costs", 0)); pt += int(r.get("training_costs", 0)); pb += int(r.get("bonus_costs", 0)); pv += int(r.get("service_costs", 0))
+	var pe = ps + pp + pn + po + pt + pb + pv; var pnet = pi - pe
 	var pmarg = 0.0; if pi > 0: pmarg = float(pnet) / float(pi) * 100.0
 	var team_size = 1
 	if PeopleHistory and not PeopleHistory.daily_records.is_empty():
@@ -1130,6 +1146,7 @@ func _refresh_pnl():
 	var exp_data = [
 		[tr("REPORTS_SALARIES"),  cs, ps], [tr("REPORTS_PM_SALARY"), cp, pp],
 		[tr("REPORTS_PENALTIES"), cn, pn], [tr("REPORTS_OFFICE"),    co, po],
+		[tr("REPORTS_TRAINING"),  ct, pt], [tr("REPORTS_BONUSES"),   cb, pb],
 		[tr("REPORTS_SERVICES"),  cv, pv],
 	]
 	for ed in exp_data:

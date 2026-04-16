@@ -1419,7 +1419,22 @@ func _deserialize_financial_history(d: Dictionary):
 	var fh = get_node_or_null("/root/FinancialHistory")
 	if fh == null:
 		return
-	fh.daily_records = d.get("daily_records", [])
+	var records = d.get("daily_records", [])
+	if not (records is Array):
+		fh.daily_records = []
+		return
+	var normalized: Array = []
+	for rec in records:
+		if rec is Dictionary:
+			var rc = rec.duplicate(true)
+			if not rc.has("training_costs"):
+				rc["training_costs"] = 0
+			if not rc.has("bonus_costs"):
+				rc["bonus_costs"] = 0
+			normalized.append(rc)
+		else:
+			normalized.append(rec)
+	fh.daily_records = normalized
 
 # === ИСТОРИЯ СОТРУДНИКОВ: Десериализация ===
 func _deserialize_people_history(d: Dictionary):
