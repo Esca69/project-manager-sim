@@ -19,6 +19,8 @@ var _progress_label: Label
 var _salary_label: Label
 var _daily_label: Label
 var _partner_label: Label
+var _rep_bar: ProgressBar
+var _rep_label: Label
 var _balance_label: Label
 var _win_btn: Button
 
@@ -215,6 +217,33 @@ func _build_ui():
 	if UITheme: UITheme.apply_font(_partner_label, "semibold")
 	partner_inner.add_child(_partner_label)
 
+	# === Репутация PM среди сотрудников ===
+	var rep_card = _make_card()
+	_content_vbox.add_child(rep_card)
+	var rep_inner = _get_card_inner(rep_card)
+
+	var rep_lbl_header = Label.new()
+	rep_lbl_header.text = "👥 " + tr("PM_REP_TITLE")
+	rep_lbl_header.add_theme_color_override("font_color", COLOR_GRAY)
+	rep_lbl_header.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(rep_lbl_header, "regular")
+	rep_inner.add_child(rep_lbl_header)
+
+	_rep_label = Label.new()
+	_rep_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rep_label.add_theme_color_override("font_color", COLOR_DARK)
+	_rep_label.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(_rep_label, "semibold")
+	rep_inner.add_child(_rep_label)
+
+	_rep_bar = ProgressBar.new()
+	_rep_bar.custom_minimum_size = Vector2(0, 22)
+	_rep_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rep_bar.min_value = 0
+	_rep_bar.max_value = 100
+	_rep_bar.show_percentage = false
+	rep_inner.add_child(_rep_bar)
+
 	# === Кнопка победы (скрыта до накопления цели) ===
 	_win_btn = Button.new()
 	_win_btn.text = tr("MY_LIFE_WIN_BTN")
@@ -300,7 +329,64 @@ func _refresh():
 	_daily_label.text = tr("MY_LIFE_DAILY_RATE") % PMData.get_daily_salary()
 	_partner_label.text = tr("MY_LIFE_PARTNERSHIP") % PMData.get_partner_name()
 
+	var avg_loyalty = _get_pm_rep_avg_loyalty()
+	var rep_data = _get_pm_rep_level(avg_loyalty)
+	_rep_label.text = tr("PM_REP_STATUS") % [int(avg_loyalty), tr(rep_data.name), rep_data.emoji]
+	_rep_bar.value = avg_loyalty
+
+	var rep_bar_color: Color
+	if avg_loyalty <= 30.0:
+		rep_bar_color = Color(0.9, 0.25, 0.25, 1)
+	elif avg_loyalty < 60.0:
+		rep_bar_color = Color(1.0, 0.7, 0.0, 1)
+	elif avg_loyalty < 80.0:
+		rep_bar_color = COLOR_GREEN
+	else:
+		rep_bar_color = COLOR_GOLD
+	_rep_bar.add_theme_color_override("font_color", rep_bar_color)
+
+	var rep_fill_style = StyleBoxFlat.new()
+	rep_fill_style.bg_color = rep_bar_color
+	rep_fill_style.corner_radius_top_left = 6
+	rep_fill_style.corner_radius_top_right = 6
+	rep_fill_style.corner_radius_bottom_right = 6
+	rep_fill_style.corner_radius_bottom_left = 6
+	_rep_bar.add_theme_stylebox_override("fill", rep_fill_style)
+
 	_win_btn.visible = balance >= target
+
+func _get_pm_rep_avg_loyalty() -> float:
+	var npcs = get_tree().get_nodes_in_group("npc")
+	var active_count = 0
+	var loyalty_sum = 0.0
+	for npc in npcs:
+		if not npc.data:
+			continue
+		loyalty_sum += npc.data.pm_loyalty
+		active_count += 1
+
+	if active_count == 0:
+		return 50.0
+	return clamp(loyalty_sum / float(active_count), 0.0, 100.0)
+
+func _get_pm_rep_level(avg_loyalty: float) -> Dictionary:
+	if avg_loyalty >= 90.0:
+		return {"name": "PM_REP_LEGEND", "emoji": "👑"}
+	if avg_loyalty >= 80.0:
+		return {"name": "PM_REP_BORN_LEADER", "emoji": "🌟"}
+	if avg_loyalty >= 70.0:
+		return {"name": "PM_REP_RIDE_OR_DIE", "emoji": "🛡️"}
+	if avg_loyalty >= 60.0:
+		return {"name": "PM_REP_GOOD_MANAGER", "emoji": "👍"}
+	if avg_loyalty >= 40.0:
+		return {"name": "PM_REP_AVERAGE_BOSS", "emoji": "😐"}
+	if avg_loyalty >= 30.0:
+		return {"name": "PM_REP_TENSE", "emoji": "😤"}
+	if avg_loyalty >= 20.0:
+		return {"name": "PM_REP_TOLERATED", "emoji": "💸"}
+	if avg_loyalty >= 10.0:
+		return {"name": "PM_REP_TOXIC", "emoji": "☠️"}
+	return {"name": "PM_REP_ENEMY", "emoji": "🔥"}
 
 func _on_balance_changed(_new_amount: int):
 	if visible:

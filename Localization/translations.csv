@@ -926,6 +926,17 @@ MY_LIFE_MONTHLY_SALARY,Ежемесячная ЗП: $%d,Monthly salary: $%d
 MY_LIFE_DAILY_RATE,Дневная ставка: $%d,Daily rate: $%d
 MY_LIFE_PARTNERSHIP,Статус партнёрства: %s,Partnership status: %s
 MY_LIFE_WIN_BTN,Купить мечту и уйти на пенсию!,Buy the dream and retire!
+PM_REP_TITLE,Как вас видят подчинённые,How Employees See You
+PM_REP_STATUS,%d / 100 — %s %s,%d / 100 — %s %s
+PM_REP_LEGEND,Легенда офиса,Office Legend
+PM_REP_BORN_LEADER,"Лидер, за которым идут",Born Leader
+PM_REP_RIDE_OR_DIE,С ним хоть в продакшн,Ride or Die PM
+PM_REP_GOOD_MANAGER,Хороший руководитель,Good Manager
+PM_REP_AVERAGE_BOSS,Обычный начальник,Average Boss
+PM_REP_TENSE,Напряжённые отношения,Tense Relations
+PM_REP_TOLERATED,Его терпят из-за зарплаты,Tolerated for Pay
+PM_REP_TOXIC,Токсичный менеджер,Toxic Manager
+PM_REP_ENEMY,Враг народа,Public Enemy
 PARTNER_NONE,Нет,None
 PARTNER_JUNIOR,Младший партнёр (1%),Junior Partner (1%)
 PARTNER_MID,Партнёр (5%),Partner (5%)
