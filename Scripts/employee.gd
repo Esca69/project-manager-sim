@@ -2795,7 +2795,8 @@ func can_pm_interact() -> bool:
 		return false
 	if not visible:
 		return false
-	if current_state == State.HOME or current_state == State.GOING_HOME:
+	if current_state in [State.HOME, State.GOING_HOME, State.SICK_LEAVE,
+		State.DAY_OFF, State.ON_VACATION, State.ON_TRAINING, State.UNPAID_LEAVE]:
 		return false
 	return true
 

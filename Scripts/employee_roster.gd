@@ -11,6 +11,9 @@ var card_style_normal: StyleBoxFlat
 var card_style_hover: StyleBoxFlat
 var fire_btn_style: StyleBoxFlat
 var fire_btn_hover_style: StyleBoxFlat
+var interact_btn_style: StyleBoxFlat
+var interact_btn_hover_style: StyleBoxFlat
+var interact_btn_disabled_style: StyleBoxFlat
 
 var _dialog_layer: Control
 var _confirm_label: Label
@@ -123,6 +126,42 @@ func _ready():
 	fire_btn_hover_style.corner_radius_bottom_right = 20
 	fire_btn_hover_style.corner_radius_bottom_left = 20
 
+	interact_btn_style = StyleBoxFlat.new()
+	interact_btn_style.bg_color = Color(1, 1, 1, 1)
+	interact_btn_style.border_width_left = 2
+	interact_btn_style.border_width_top = 2
+	interact_btn_style.border_width_right = 2
+	interact_btn_style.border_width_bottom = 2
+	interact_btn_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	interact_btn_style.corner_radius_top_left = 20
+	interact_btn_style.corner_radius_top_right = 20
+	interact_btn_style.corner_radius_bottom_right = 20
+	interact_btn_style.corner_radius_bottom_left = 20
+
+	interact_btn_hover_style = StyleBoxFlat.new()
+	interact_btn_hover_style.bg_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	interact_btn_hover_style.border_width_left = 2
+	interact_btn_hover_style.border_width_top = 2
+	interact_btn_hover_style.border_width_right = 2
+	interact_btn_hover_style.border_width_bottom = 2
+	interact_btn_hover_style.border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
+	interact_btn_hover_style.corner_radius_top_left = 20
+	interact_btn_hover_style.corner_radius_top_right = 20
+	interact_btn_hover_style.corner_radius_bottom_right = 20
+	interact_btn_hover_style.corner_radius_bottom_left = 20
+
+	interact_btn_disabled_style = StyleBoxFlat.new()
+	interact_btn_disabled_style.bg_color = Color(0.7, 0.7, 0.7, 1)
+	interact_btn_disabled_style.border_width_left = 2
+	interact_btn_disabled_style.border_width_top = 2
+	interact_btn_disabled_style.border_width_right = 2
+	interact_btn_disabled_style.border_width_bottom = 2
+	interact_btn_disabled_style.border_color = Color(0.7, 0.7, 0.7, 1)
+	interact_btn_disabled_style.corner_radius_top_left = 20
+	interact_btn_disabled_style.corner_radius_top_right = 20
+	interact_btn_disabled_style.corner_radius_bottom_right = 20
+	interact_btn_disabled_style.corner_radius_bottom_left = 20
+
 	_build_confirm_dialog()
 
 func _force_fullscreen_size():
@@ -230,6 +269,16 @@ func _update_live_data():
 		if burnout_lbl:
 			burnout_lbl.text = tr("BURNOUT_LABEL") % int(emp_data.burnout_level)
 			burnout_lbl.add_theme_color_override("font_color", _get_burnout_color(emp_data.burnout_level))
+
+		var interact_btn_ref = card.get_meta("interact_btn") if card.has_meta("interact_btn") else null
+		var npc_ref = card.get_meta("npc_node") if card.has_meta("npc_node") else null
+		if interact_btn_ref and npc_ref:
+			var can_interact = npc_ref.can_pm_interact() if is_instance_valid(npc_ref) else false
+			interact_btn_ref.disabled = not can_interact
+			if can_interact:
+				interact_btn_ref.tooltip_text = ""
+			else:
+				interact_btn_ref.tooltip_text = tr("ROSTER_INTERACT_UNAVAILABLE")
 
 		# === MOOD: live-обновление тултипа, пока он открыт ===
 		var mood_tooltip_ref = card.get_meta("mood_tooltip_ref") if card.has_meta("mood_tooltip_ref") else null
@@ -753,6 +802,30 @@ func _create_card(npc_node) -> PanelContainer:
 	var spacer = Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_vbox.add_child(spacer)
+
+	var interact_btn = Button.new()
+	interact_btn.text = tr("ROSTER_INTERACT_BTN")
+	interact_btn.custom_minimum_size = Vector2(180, 40)
+	interact_btn.focus_mode = Control.FOCUS_NONE
+	interact_btn.add_theme_stylebox_override("normal", interact_btn_style)
+	interact_btn.add_theme_stylebox_override("hover", interact_btn_hover_style)
+	interact_btn.add_theme_stylebox_override("pressed", interact_btn_hover_style)
+	interact_btn.add_theme_stylebox_override("disabled", interact_btn_disabled_style)
+	interact_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	interact_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	interact_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	interact_btn.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5, 1))
+	if UITheme: UITheme.apply_font(interact_btn, "semibold")
+	if npc_node.can_pm_interact():
+		interact_btn.pressed.connect(func():
+			_on_interact_pressed(npc_node)
+		)
+	else:
+		interact_btn.disabled = true
+		interact_btn.tooltip_text = tr("ROSTER_INTERACT_UNAVAILABLE")
+	right_vbox.add_child(interact_btn)
+	card.set_meta("interact_btn", interact_btn)
+	card.set_meta("npc_node", npc_node)
 
 	var fire_btn = Button.new()
 	fire_btn.text = tr("ROSTER_FIRE_BTN")
@@ -1576,6 +1649,25 @@ func _find_npc_node(emp_data: EmployeeData):
 		if npc.data == emp_data:
 			return npc
 	return null
+
+func _on_interact_pressed(npc_node):
+	if not npc_node or not is_instance_valid(npc_node):
+		return
+	if not npc_node.can_pm_interact():
+		return
+
+	_kill_all_tooltips()
+	if UITheme:
+		UITheme.fade_out(self, 0.15)
+	else:
+		visible = false
+
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud:
+		var panel = hud.get_node_or_null("EmployeeInteractionPanel")
+		if panel:
+			AudioManager.play_sfx("interact")
+			panel.open_for_employee(npc_node)
 
 func _on_fire_pressed(emp_data: EmployeeData, npc_node):
 	_pending_fire_data = emp_data
