@@ -20,6 +20,8 @@ const SFX_LIBRARY = {
 	"projectdone": "res://Sound/projectdone.mp3",
 	"funsound": "res://Sound/funsound.mp3",
 	"deadline": "res://Sound/deadline.mp3",
+	"pause": "res://Sound/pause.mp3",
+	"start": "res://Sound/start.mp3",
 }
 
 # --- ИНДИВИДУАЛЬНАЯ ГРОМКОСТЬ ЗВУКОВ (Множители от 0.0 до 1.0) ---
@@ -33,6 +35,8 @@ const SFX_VOLUME_MULTIPLIERS = {
 	"projectdone": 0.7,
 	"funsound": 0.8,
 	"deadline": 0.8,
+	"pause": 0.8,
+	"start": 0.8,
 }
 
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
@@ -225,6 +229,16 @@ func play_projectdone_sfx():
 		_is_projectdone_playing = false
 	)
 
+func play_pause_sfx():
+	if _is_sfx_playing("pause"):
+		return
+	play_sfx("pause")
+
+func play_start_sfx():
+	if _is_sfx_playing("start"):
+		return
+	play_sfx("start")
+
 # ============================
 # DEADLINE SFX (макс. 1 одновременно)
 # ============================
@@ -281,6 +295,17 @@ func _get_or_load_sfx(sfx_name: String) -> AudioStream:
 	var stream = load(path)
 	if stream: _sfx_cache[sfx_name] = stream
 	return stream
+
+func _is_sfx_playing(sfx_name: String) -> bool:
+	if not SFX_LIBRARY.has(sfx_name):
+		return false
+	var stream = _get_or_load_sfx(sfx_name)
+	if not stream:
+		return false
+	for player in _sfx_players:
+		if player.playing and player.stream == stream:
+			return true
+	return false
 
 func _get_free_sfx_player() -> AudioStreamPlayer:
 	for player in _sfx_players:
