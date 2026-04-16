@@ -1173,6 +1173,8 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_MOTIVATION") % _format_mod(bd.motivation_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_AURA") % _format_mod(bd.aura_mod))
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_EVENTS") % _format_mod(bd.event_mod))
+	if bd.has("loyalty_mod") and bd.loyalty_mod != 0.0:
+		lines.append(tr("ROSTER_EFF_BREAKDOWN_LOYALTY") % _format_mod(bd.loyalty_mod))
 	
 	# === АДАПТАЦИЯ (новые строки в ТУЛТИП) ===
 	if bd.has("onboarding_mod") and bd.onboarding_mod < 0:

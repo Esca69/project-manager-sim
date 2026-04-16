@@ -146,6 +146,8 @@ static func build_efficiency_breakdown_text(emp) -> String:
 	lines.append(TranslationServer.translate("ROSTER_EFF_BREAKDOWN_MOTIVATION") % fmt_mod(bd.motivation_mod))
 	lines.append(TranslationServer.translate("ROSTER_EFF_BREAKDOWN_AURA") % fmt_mod(bd.aura_mod))
 	lines.append(TranslationServer.translate("ROSTER_EFF_BREAKDOWN_EVENTS") % fmt_mod(bd.event_mod))
+	if bd.has("loyalty_mod") and bd.loyalty_mod != 0.0:
+		lines.append(TranslationServer.translate("ROSTER_EFF_BREAKDOWN_LOYALTY") % fmt_mod(bd.loyalty_mod))
 	if bd.has("onboarding_mod") and bd.onboarding_mod < 0:
 		lines.append(TranslationServer.translate("EFF_MOD_ONBOARDING") + (" (%s)" % fmt_mod(bd.onboarding_mod)))
 	if bd.has("project_adapt_mod") and bd.project_adapt_mod < 0:
