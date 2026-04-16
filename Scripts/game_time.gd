@@ -309,6 +309,11 @@ func set_speed(new_scale: float):
 func set_paused(state: bool):
 	if is_night_skip:
 		return
+
+	if state:
+		AudioManager.play_pause_sfx()
+	else:
+		AudioManager.play_start_sfx()
 	
 	is_game_paused = state
 	get_tree().paused = is_game_paused
