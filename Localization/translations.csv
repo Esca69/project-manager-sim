@@ -498,6 +498,8 @@ EVENT_DAYOFF_ALLOW_DESC,Уйдёт до конца дня. Завтра верн
 EVENT_DAYOFF_CHOICE_DENY,Отказать,Deny
 EVENT_DAYOFF_DENY_DESC,Останется работать с -20% эффективностью до конца дня.,Will stay working but with -20% efficiency until end of day.
 ROSTER_STATUS_SICK,🤒 Болеет (%d дн.),🤒 Sick (%d d.)
+ROSTER_STATUS_ON_TRAINING,📚 На обучении (%d дн.),📚 Training (%d d.)
+ROSTER_STATUS_UNPAID_LEAVE,😔 Неопл. отпуск (%d дн.),😔 Unpaid leave (%d d.)
 ROSTER_STATUS_DAYOFF,🏠 В отгуле,🏠 Day off
 ROSTER_STATUS_BUFF,💚 Мотивирован,💚 Motivated
 ROSTER_STATUS_DEBUFF,😤 Раздражён,😤 Irritated
@@ -1388,6 +1390,7 @@ INTERACT_DAYOFF_TOO_LATE,Доступно до 11:00,Available before 11:00
 MOOD_MOD_PM_PRAISE,Похвала от ПМа,Praised by PM
 MOOD_MOD_PM_REPRIMAND,Выговор от ПМа,Reprimanded by PM
 MOOD_MOD_PM_DAYOFF,Оплачиваемый отгул,Paid day-off
+MOOD_MOD_PM_TRAINING,Устал после обучения,Tired after training
 MOOD_MOD_PM_UNPAID_LEAVE,Неоплачиваемый отпуск,Unpaid leave
 MOOD_MOD_PM_BONUS,Премия от ПМа,Bonus from PM
 LOG_PM_PRAISE,👏 %s получил(а) похвалу от ПМа,👏 %s was praised by PM

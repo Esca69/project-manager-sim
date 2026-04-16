@@ -1292,7 +1292,7 @@ func _force_go_home():
 		toilet_ref = null
 	_release_all_lunch_resources()
 	
-	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION:
+	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
 		return
 	
 	if data:
@@ -2712,6 +2712,8 @@ func _finish_training():
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
 		global_position = entrance.global_position
+	# Применить mood-штраф при возвращении
+	data.add_mood_modifier("pm_training_mood", "MOOD_MOD_PM_TRAINING", -10.0, 4320.0)
 	# Начислить XP
 	var xp_result = data.add_employee_xp(100)
 	# Лог

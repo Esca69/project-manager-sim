@@ -1505,8 +1505,8 @@ func _get_status_text(npc_node) -> String:
 		24: return tr("ROSTER_STATUS_WANDERING")
 		25: return tr("ROSTER_STATUS_THINKING")
 		# === PM ACTIONS ===
-		26: return tr("STATUS_ON_TRAINING")
-		27: return tr("STATUS_UNPAID_LEAVE")
+		26: return tr("ROSTER_STATUS_ON_TRAINING") % npc_node.training_days_left
+		27: return tr("ROSTER_STATUS_UNPAID_LEAVE") % npc_node.unpaid_leave_days_left
 	return "—"
 
 func _get_status_color(npc_node) -> Color:
