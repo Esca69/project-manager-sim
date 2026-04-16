@@ -209,14 +209,6 @@ func _refresh_info_block():
 	grade_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	_info_vbox.add_child(grade_lbl)
 
-	# Тип занятости
-	var type_lbl = Label.new()
-	var type_text = tr("ROSTER_TYPE_CONTRACTOR") if emp.employment_type == "contractor" else tr("ROSTER_TYPE_FREELANCER")
-	type_lbl.text = type_text
-	type_lbl.add_theme_font_size_override("font_size", 13)
-	type_lbl.add_theme_color_override("font_color", COLOR_GRAY)
-	_info_vbox.add_child(type_lbl)
-
 	# Настроение
 	var mood_lbl = Label.new()
 	var mood_val = int(emp.mood)

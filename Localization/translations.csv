@@ -517,6 +517,7 @@ ROSTER_EFF_BREAKDOWN_ENERGY,⚡ Энергия: %d%% → %s,⚡ Energy: %d%% →
 ROSTER_EFF_BREAKDOWN_TRAITS,🧬 Трейты: %s,🧬 Traits: %s
 ROSTER_EFF_BREAKDOWN_MOTIVATION,🔥 Мотивация: %s,🔥 Motivation: %s
 ROSTER_EFF_BREAKDOWN_EVENTS,🎲 Ивенты: %s,🎲 Events: %s
+ROSTER_EFF_BREAKDOWN_LOYALTY,❤️ Лояльность: %s,❤️ Loyalty: %s
 ROSTER_EFF_BREAKDOWN_TOTAL,📊 Итого: %s,📊 Total: %s
 MOOD_MOD_HAS_DESK,Есть рабочее задание,Has work assignment
 MOOD_MOD_NO_DESK,Нет рабочего задания,No work assignment
@@ -1417,5 +1418,5 @@ LOYALTY_LEVEL_RESENTMENT,Обида,Resentment
 LOYALTY_LEVEL_HOSTILE,Враждебность,Hostility
 LOG_LOYALTY_UP,📈 %s теперь относится к вам: %s,📈 %s now feels: %s towards you
 LOG_LOYALTY_DOWN,📉 %s теперь относится к вам: %s,📉 %s now feels: %s towards you
-INTERACT_LOYALTY,🤝 Лояльность: %d (%s),🤝 Loyalty: %d (%s)
-ROSTER_LOYALTY,🤝 %d (%s),🤝 %d (%s)
+INTERACT_LOYALTY,❤️ Лояльность: %d (%s),❤️ Loyalty: %d (%s)
+ROSTER_LOYALTY,❤️ Лояльность: %d (%s),❤️ Loyalty: %d (%s)
