@@ -247,13 +247,14 @@ func _on_day_started(_day_number: int = 0):
 	if cooldown_days > 0:
 		cooldown_days -= 1
 
-	if GameTime.is_weekend():
-		return
-		
+	# Активный ивент тикает КАЖДЫЙ день (включая выходные) для баланса длительности
 	if state == State.ACTIVE:
 		active_days_remaining -= 1
 		if active_days_remaining <= 0:
 			_end_active_event()
+
+	if GameTime.is_weekend():
+		return
 
 func _end_active_event():
 	var ended_id = active_event_id
