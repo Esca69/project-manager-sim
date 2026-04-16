@@ -816,11 +816,10 @@ func _create_card(npc_node) -> PanelContainer:
 	interact_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
 	interact_btn.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5, 1))
 	if UITheme: UITheme.apply_font(interact_btn, "semibold")
-	if npc_node.can_pm_interact():
-		interact_btn.pressed.connect(func():
-			_on_interact_pressed(npc_node)
-		)
-	else:
+	interact_btn.pressed.connect(func():
+		_on_interact_pressed(npc_node)
+	)
+	if not npc_node.can_pm_interact():
 		interact_btn.disabled = true
 		interact_btn.tooltip_text = tr("ROSTER_INTERACT_UNAVAILABLE")
 	right_vbox.add_child(interact_btn)
