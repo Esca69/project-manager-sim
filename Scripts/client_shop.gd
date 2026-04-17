@@ -254,6 +254,20 @@ func _rebuild():
 			"📋"
 		))
 
+	# Support-контракт (параллельная ветка)
+	if client.has_support:
+		items_vbox.add_child(_make_card_purchased(tr("CLIENT_SUPPORT_TITLE"), tr("CLIENT_SUPPORT_DESC"), "🛟"))
+	else:
+		var can_afford_support = ClientManager.reputation_points >= ClientData.SUPPORT_UNLOCK_COST
+		items_vbox.add_child(_make_card_buyable(
+			tr("CLIENT_SUPPORT_TITLE"),
+			tr("CLIENT_SUPPORT_DESC"),
+			ClientData.SUPPORT_UNLOCK_COST,
+			can_afford_support,
+			func(): _buy_support(),
+			"🛟"
+		))
+
 	# === СЕКЦИЯ: БЮДЖЕТ ПРОЕКТОВ ===
 	items_vbox.add_child(_make_section_header(tr("CLIENT_SECTION_BUDGET")))
 
@@ -521,6 +535,13 @@ func _buy_easy():
 	var client = ClientManager.get_client_by_id(client_id)
 	if client == null: return
 	if ClientManager.buy_easy_unlock(client_id):
+		EventLog.add(tr("LOG_CLIENT_UPGRADE") % client.get_display_name(), EventLog.LogType.PROGRESS)
+		_rebuild()
+
+func _buy_support():
+	var client = ClientManager.get_client_by_id(client_id)
+	if client == null: return
+	if ClientManager.buy_support_unlock(client_id):
 		EventLog.add(tr("LOG_CLIENT_UPGRADE") % client.get_display_name(), EventLog.LogType.PROGRESS)
 		_rebuild()
 

@@ -23,6 +23,7 @@ boot_splash/minimum_display_time=3000
 GameTime="*res://Scripts/game_time.gd"
 GameState="*res://Scripts/game_state.gd"
 ProjectManager="*res://Scripts/project_manager.gd"
+SupportProjectManager="*res://Scripts/support_project_manager.gd"
 PMData="*res://Scripts/pm_data.gd"
 AudioManager="*res://Scripts/audio_manager.gd"
 UITheme="*res://Scripts/ui_theme.gd"

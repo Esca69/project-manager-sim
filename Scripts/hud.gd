@@ -68,6 +68,8 @@ const AUTO_END_DAY_HOUR: int = 21
 
 # === ЭКРАН ВЫБОРА РОЛИ (HR) ===
 var _hr_role_screen: Control
+var _support_project_window: Control
+var _sla_selection_window: Control
 
 # >>> ДОБАВЛЕНО: Пауз-меню (Escape)
 var _pause_menu: CanvasLayer
@@ -266,6 +268,7 @@ func _build_all_dynamic_ui() -> void:
 	_build_boss_ui()
 
 	_build_hr_role_screen()
+	_build_support_windows()
 
 	# === EVENT SYSTEM: Создаём ивент-попап ===
 	_build_event_popup()
@@ -448,6 +451,24 @@ func _build_hr_role_screen():
 
 	if not _hr_role_screen.search_started.is_connected(_on_hr_search_started):
 		_hr_role_screen.search_started.connect(_on_hr_search_started)
+
+func _build_support_windows():
+	var support_script = load("res://Scripts/support_project_window.gd")
+	_support_project_window = Control.new()
+	_support_project_window.set_script(support_script)
+	_support_project_window.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_support_project_window.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_support_project_window)
+
+	if not _support_project_window.closed.is_connected(_on_support_window_closed):
+		_support_project_window.closed.connect(_on_support_window_closed)
+
+	var sla_script = load("res://Scripts/sla_selection_window.gd")
+	_sla_selection_window = Control.new()
+	_sla_selection_window.set_script(sla_script)
+	_sla_selection_window.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_sla_selection_window.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_sla_selection_window)
 
 # === ОТКРЫТЬ HR (вызывается из hr_desk.gd) ===
 func open_hr_search():
@@ -772,6 +793,8 @@ func is_any_menu_open() -> bool:
 	if info_panel.visible: return true
 	if selection_ui.visible: return true
 	if project_window.visible: return true
+	if _support_project_window and _support_project_window.visible: return true
+	if _sla_selection_window and _sla_selection_window.visible: return true
 	if employee_selector.visible: return true
 	if project_list_menu.visible: return true
 	if employee_roster.visible: return true
@@ -920,7 +943,12 @@ func open_work_menu():
 	# Меню откроется, но покажет EmptyLabel (как в EmployeeRoster)
 	project_list_menu.open_menu()
 
-func _on_project_taken(proj_data: ProjectData):
+func _on_project_taken(proj_data):
+	if proj_data is SupportProjectData:
+		if _sla_selection_window:
+			_sla_selection_window.open_for_project(proj_data)
+		return
+
 	# Мгновенное взятие проекта (meeting больше не нужен)
 	var today = GameTime.day
 	proj_data.created_at_day = today
@@ -941,7 +969,12 @@ func _on_project_taken(proj_data: ProjectData):
 	if TutorialManager.is_active():
 		TutorialManager.notify_discussion_finished()
 
-func _on_project_list_opened(proj_data: ProjectData):
+func _on_project_list_opened(proj_data):
+	if proj_data is SupportProjectData:
+		if _support_project_window:
+			_support_project_window.open_for_project(proj_data)
+		return
+
 	project_window.setup(proj_data, employee_selector)
 	if UITheme:
 		UITheme.fade_in(project_window)
@@ -951,6 +984,9 @@ func _on_project_list_opened(proj_data: ProjectData):
 func _on_project_window_closed():
 	project_list_menu.open_menu()
 	TutorialManager.notify_project_screen_closed()
+
+func _on_support_window_closed():
+	project_list_menu.open_menu()
 
 func _on_bottom_tab_pressed(tab_name: String):
 	match tab_name:

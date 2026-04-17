@@ -116,6 +116,11 @@ func open_list(stage_type: String = ""):
 		item_list.set_item_selectable(0, false)
 
 func _is_employee_assigned_to_any_project(emp_data: EmployeeData) -> bool:
+	if SupportProjectManager and SupportProjectManager.is_employee_on_support(emp_data):
+		return true
+	if SupportProjectManager and SupportProjectManager.is_employee_on_ticket(emp_data):
+		return true
+
 	for project in ProjectManager.active_projects:
 		if project.state == ProjectData.State.FINISHED:
 			continue
@@ -137,6 +142,8 @@ func _matches_stage_type(data: EmployeeData, stage_type: String) -> bool:
 			return data.job_title == "Backend Developer"
 		"QA":
 			return data.job_title == "QA Engineer"
+		"SUPPORT":
+			return data.job_title == "Customer Support"
 	return true
 
 func _get_role_name(stage_type: String) -> String:
@@ -144,6 +151,7 @@ func _get_role_name(stage_type: String) -> String:
 		"BA": return tr("HR_ROLE_BA")
 		"DEV": return tr("HR_ROLE_DEV")
 		"QA": return tr("HR_ROLE_QA")
+		"SUPPORT": return tr("HR_ROLE_SUPPORT")
 	return stage_type
 
 func _on_cancel_button_pressed():

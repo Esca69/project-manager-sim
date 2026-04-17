@@ -10,12 +10,14 @@ class_name ClientData
 @export var budget_level: int = 0   # 0–6, каждый уровень = +5% к бюджету
 @export var has_simple: bool = false
 @export var has_easy: bool = false
+@export var has_support: bool = false
 
 # === СТОИМОСТЬ УЛУЧШЕНИЙ ===
 const BUDGET_UPGRADE_COST: int = 5
 const MAX_BUDGET_LEVEL: int = 6
 const SIMPLE_UNLOCK_COST: int = 10
 const EASY_UNLOCK_COST: int = 20
+const SUPPORT_UNLOCK_COST: int = 15
 
 # === СТАТИСТИКА ===
 @export var projects_completed_on_time: int = 0   # Завершены до софт-дедлайна
@@ -33,6 +35,8 @@ func get_unlocked_project_types() -> Array[String]:
 		types.append("simple")
 	if has_easy:
 		types.append("easy")
+	if has_support:
+		types.append("support")
 	return types
 
 func get_total_projects() -> int:

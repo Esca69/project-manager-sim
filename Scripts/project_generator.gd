@@ -204,6 +204,18 @@ static func generate_random_project(current_game_day: int, client: ClientData = 
 
 	return new_proj
 
+static func generate_support_project(current_game_day: int, client: ClientData) -> SupportProjectData:
+	var proj = SupportProjectData.new()
+	proj.project_id = "support_%s_%d" % [client.client_id, current_game_day]
+	proj.client_id = client.client_id
+	proj.title = "SUPPORT_PROJ_%s" % client.client_id.to_upper()
+	proj.created_at_day = current_game_day
+	proj.daily_rate = randi_range(130, 170)
+	var bonus = client.get_budget_bonus_percent()
+	if bonus > 0:
+		proj.daily_rate = int(proj.daily_rate * (1.0 + float(bonus) / 100.0))
+	return proj
+
 static func _pick_category_by_weights(available_types: Array[String]) -> String:
 	var key: String
 	if available_types.has("easy"):
