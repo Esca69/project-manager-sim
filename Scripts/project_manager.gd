@@ -306,6 +306,11 @@ func _get_skill_for_stage(type, worker):
 	return 10
 
 func is_employee_on_active_stage(emp_data: EmployeeData) -> bool:
+	if SupportProjectManager:
+		if SupportProjectManager.is_employee_on_support(emp_data):
+			return true
+		if SupportProjectManager.is_employee_on_ticket(emp_data):
+			return true
 	for project in active_projects:
 		if project.state != ProjectData.State.IN_PROGRESS:
 			continue
