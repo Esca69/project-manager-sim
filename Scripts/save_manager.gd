@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 10
+const SAVE_VERSION = 11
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -17,6 +17,7 @@ const MIGRATIONS = {
 	7: "_migrate_v7_to_v8",
 	8: "_migrate_v8_to_v9",
 	9: "_migrate_v9_to_v10",
+	10: "_migrate_v10_to_v11",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -155,6 +156,7 @@ func save_game():
 
 		# --- Проекты ---
 		"projects": _serialize_projects(),
+		"support_projects": _serialize_support_projects(),
 		
 		# --- Привязка столов ---
 		"desk_assignments": _serialize_desk_assignments(),
@@ -250,6 +252,7 @@ func _serialize_clients() -> Array:
 			"budget_level": c.budget_level,
 			"has_simple": c.has_simple,
 			"has_easy": c.has_easy,
+			"has_support": c.has_support,
 			"projects_completed_on_time": c.projects_completed_on_time,
 			"projects_completed_late": c.projects_completed_late,
 			"projects_failed": c.projects_failed,
@@ -296,6 +299,7 @@ func _serialize_employees() -> Array:
 			"skill_backend": d.skill_backend,
 			"skill_qa": d.skill_qa,
 			"skill_business_analysis": d.skill_business_analysis,
+			"skill_support": d.skill_support,
 			"traits": d.traits.duplicate(),
 			"gender": d.gender,
 			"personality": d.personality.duplicate(),
@@ -437,6 +441,11 @@ func _serialize_projects() -> Array:
 		result.append(proj_dict)
 	return result
 
+func _serialize_support_projects() -> Dictionary:
+	if SupportProjectManager:
+		return SupportProjectManager.serialize()
+	return {}
+
 # --- Сериализация проектов для выбора у босса ---
 func _serialize_project_selection() -> Dictionary:
 	var sel_ui = get_tree().get_first_node_in_group("project_selection_ui")
@@ -454,7 +463,9 @@ func _serialize_project_selection() -> Dictionary:
 		if opt == null:
 			options_data.append(null)
 		elif opt is ProjectData:
-			options_data.append(_serialize_single_project(opt))
+			options_data.append({"kind": "project", "data": _serialize_single_project(opt)})
+		elif opt is SupportProjectData:
+			options_data.append({"kind": "support", "data": _serialize_single_support_offer(opt)})
 		else:
 			options_data.append(null)
 	
@@ -497,6 +508,18 @@ func _serialize_single_project(proj: ProjectData) -> Dictionary:
 			"xp_bonus_employee": stage.get("xp_bonus_employee", ""),
 		})
 	return proj_dict
+
+func _serialize_single_support_offer(proj: SupportProjectData) -> Dictionary:
+	return {
+		"project_id": proj.project_id,
+		"client_id": proj.client_id,
+		"title": proj.title,
+		"created_at_day": proj.created_at_day,
+		"sla_level": proj.sla_level,
+		"daily_rate": proj.daily_rate,
+		"is_active": proj.is_active,
+		"week_start_day": proj.week_start_day,
+	}
 
 # === EVENT SYSTEM: Сериализация EventManager ===
 func _serialize_event_manager() -> Dictionary:
@@ -836,6 +859,16 @@ func _migrate_v9_to_v10(data: Dictionary) -> bool:
 	print("🔄 Миграция v9→v10: добавлено поле pm_loyalty")
 	return true
 
+func _migrate_v10_to_v11(data: Dictionary) -> bool:
+	var clients_arr = data.get("clients", [])
+	for cd in clients_arr:
+		if not cd.has("has_support"):
+			cd["has_support"] = false
+	if not data.has("support_projects"):
+		data["support_projects"] = {"active": [], "completed": []}
+	print("🔄 Миграция v10→v11: добавлены support-поля")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -895,6 +928,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		emp_data.skill_backend = int(emp_dict.get("skill_backend", 10))
 		emp_data.skill_qa = int(emp_dict.get("skill_qa", 5))
 		emp_data.skill_business_analysis = int(emp_dict.get("skill_business_analysis", 0))
+		emp_data.skill_support = int(emp_dict.get("skill_support", 0))
 		emp_data.current_energy = float(emp_dict.get("current_energy", 100.0))
 		emp_data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
 
@@ -1107,6 +1141,9 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		else:
 			ProjectManager.active_projects.append(proj)
 
+	if SupportProjectManager:
+		SupportProjectManager.deserialize(data.get("support_projects", {}))
+
 	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
 	_rebind_employees_to_desks()
 
@@ -1242,8 +1279,15 @@ func _restore_project_selection(sel_data: Dictionary):
 		if opt_data == null or not opt_data is Dictionary:
 			sel_ui.current_options.append(null)
 		else:
-			var proj = _deserialize_single_project(opt_data)
-			sel_ui.current_options.append(proj)
+			if opt_data.has("kind"):
+				var kind = str(opt_data.get("kind", ""))
+				var payload = opt_data.get("data", {})
+				if kind == "support":
+					sel_ui.current_options.append(_deserialize_single_support_offer(payload))
+				else:
+					sel_ui.current_options.append(_deserialize_single_project(payload))
+			else:
+				sel_ui.current_options.append(_deserialize_single_project(opt_data))
 
 	sel_ui._generated_for_week = saved_week
 	print("📋 Восстановлены проекты у босса: %d шт., неделя %d" % [sel_ui.current_options.size(), saved_week])
@@ -1280,6 +1324,18 @@ func _deserialize_single_project(d: Dictionary) -> ProjectData:
 			"completed_worker_names": [],
 		})
 
+	return proj
+
+func _deserialize_single_support_offer(d: Dictionary) -> SupportProjectData:
+	var proj = SupportProjectData.new()
+	proj.project_id = str(d.get("project_id", ""))
+	proj.client_id = str(d.get("client_id", ""))
+	proj.title = str(d.get("title", ""))
+	proj.created_at_day = int(d.get("created_at_day", GameTime.day))
+	proj.sla_level = str(d.get("sla_level", "medium"))
+	proj.daily_rate = int(d.get("daily_rate", 0))
+	proj.is_active = bool(d.get("is_active", true))
+	proj.week_start_day = int(d.get("week_start_day", proj.created_at_day))
 	return proj
 
 func _load_game_time(d: Dictionary):
@@ -1369,6 +1425,7 @@ func _load_clients(arr: Array):
 			client.budget_level = int(cd.get("budget_level", 0))
 			client.has_simple = cd.get("has_simple", false)
 			client.has_easy = cd.get("has_easy", false)
+			client.has_support = cd.get("has_support", false)
 			client.projects_completed_on_time = int(cd.get("projects_completed_on_time", 0))
 			client.projects_completed_late = int(cd.get("projects_completed_late", 0))
 			client.projects_failed = int(cd.get("projects_failed", 0))

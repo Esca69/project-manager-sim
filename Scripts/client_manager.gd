@@ -90,6 +90,14 @@ func buy_easy_unlock(client_id: String) -> bool:
 	client.has_easy = true
 	return true
 
+func buy_support_unlock(client_id: String) -> bool:
+	var client = get_client_by_id(client_id)
+	if client == null: return false
+	if client.has_support: return false
+	if not spend_reputation_points(ClientData.SUPPORT_UNLOCK_COST): return false
+	client.has_support = true
+	return true
+
 # === ДИНАМИЧЕСКОЕ КОЛИЧЕСТВО ПРОЕКТОВ НА НЕДЕЛЮ (зависит от ГР) ===
 func get_weekly_project_count() -> int:
 	if global_reputation >= 50:

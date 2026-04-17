@@ -576,6 +576,8 @@ func _apply_skill_gain(amount: int):
 			skill_backend += amount
 		"QA Engineer":
 			skill_qa += amount
+		"Customer Support":
+			skill_support += amount
 
 func _roll_random_trait() -> String:
 	var pool: Array
@@ -626,6 +628,7 @@ func get_primary_skill_value() -> int:
 		"Business Analyst": return skill_business_analysis
 		"Backend Developer": return skill_backend
 		"QA Engineer": return skill_qa
+		"Customer Support": return skill_support
 	return 0
 
 # --- СИСТЕМА ТРЕЙТОВ ---
@@ -858,6 +861,7 @@ var hourly_rate: int:
 @export var skill_backend: int = 10
 @export var skill_qa: int = 5
 @export var skill_business_analysis: int = 0
+@export var skill_support: int = 0
 
 @export var avatar: Texture2D
 

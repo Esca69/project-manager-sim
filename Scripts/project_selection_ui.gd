@@ -1,6 +1,6 @@
 extends Control
 
-signal project_selected(data: ProjectData)
+signal project_selected(data)
 
 @onready var close_btn = find_child("CloseButton", true, false)
 @onready var cards_margin = $Window/MainVBox/CardsMargin
@@ -409,6 +409,20 @@ func generate_new_projects():
 		var proj = ProjectGenerator.generate_random_project(GameTime.day)
 		current_options.append(proj)
 
+	for client in ClientManager.clients:
+		if not client.has_support:
+			continue
+		if SupportProjectManager.has_active_support_for_client(client.client_id):
+			continue
+		var has_offer_for_client = false
+		for opt in current_options:
+			if opt is SupportProjectData and opt.client_id == client.client_id:
+				has_offer_for_client = true
+				break
+		if has_offer_for_client:
+			continue
+		current_options.append(ProjectGenerator.generate_support_project(GameTime.day, client))
+
 # === ПРОВЕРКИ ОГРАНИЧЕНИЙ ===
 
 func _is_project_limit_reached() -> bool:
@@ -496,7 +510,7 @@ func _create_warning_bar(title_text: String, hint_text: String, color: Color) ->
 	return bar
 
 # === СОЗДАНИЕ КАРТОЧКИ ===
-func _create_card(data: ProjectData, index: int) -> PanelContainer:
+func _create_card(data, index: int) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_theme_stylebox_override("panel", _card_style_normal)
@@ -526,27 +540,29 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	var left_info = VBoxContainer.new()
 	top_hbox.add_child(left_info)
 
-	var cat_label = data.get_category_label()
+	var is_support = data is SupportProjectData
+	var cat_label = tr("PROJ_CAT_SUPPORT") if is_support else data.get_category_label()
 
 	var client_text = ""
 	if data.client_id != "":
 		var client = data.get_client()
 		if client:
-			# ИСПРАВЛЕНИЕ: Используем get_display_name() клиента (эмодзи уже внутри)
 			client_text = client.get_display_name() + "  —  "
 
 	var name_lbl = Label.new()
-	# ИСПРАВЛЕНИЕ: Используем get_display_title()
 	name_lbl.text = client_text + cat_label + " " + data.get_display_title()
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	left_info.add_child(name_lbl)
 
 	var work_lbl = Label.new()
-	var parts = []
-	for stage in data.stages:
-		parts.append(tr("ROLE_SHORT_" + stage.type) + " " + PMData.get_blurred_work(stage.amount))
-	work_lbl.text = tr("PROJ_SEL_WORK_LABEL") + "  " + "    ".join(parts)
+	if is_support:
+		work_lbl.text = tr("SUPPORT_DAILY_RATE_LABEL") % data.daily_rate
+	else:
+		var parts = []
+		for stage in data.stages:
+			parts.append(tr("ROLE_SHORT_" + stage.type) + " " + PMData.get_blurred_work(stage.amount))
+		work_lbl.text = tr("PROJ_SEL_WORK_LABEL") + "  " + "    ".join(parts)
 	work_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(work_lbl, "regular")
 	left_info.add_child(work_lbl)
@@ -559,11 +575,15 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	top_hbox.add_child(right_info)
 
 	var budget_lbl = Label.new()
-	var budget_text = tr("PROJ_SEL_BUDGET_LABEL") % PMData.get_blurred_budget(data.budget)
-	if data.client_id != "":
-		var client = data.get_client()
-		if client and client.get_budget_bonus_percent() > 0:
-			budget_text += "  (⭐+%d%%)" % client.get_budget_bonus_percent()
+	var budget_text = ""
+	if is_support:
+		budget_text = tr("SLA_DAILY_RATE") % data.daily_rate
+	else:
+		budget_text = tr("PROJ_SEL_BUDGET_LABEL") % PMData.get_blurred_budget(data.budget)
+		if data.client_id != "":
+			var client = data.get_client()
+			if client and client.get_budget_bonus_percent() > 0:
+				budget_text += "  (⭐+%d%%)" % client.get_budget_bonus_percent()
 	budget_lbl.text = budget_text
 	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	budget_lbl.add_theme_font_size_override("font_size", 20)
@@ -573,6 +593,8 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 
 	var is_limit = _is_project_limit_reached()
 	var btn_blocked = is_limit
+	if is_support:
+		btn_blocked = false
 
 	var select_btn = Button.new()
 	if is_limit:
@@ -599,21 +621,22 @@ func _create_card(data: ProjectData, index: int) -> PanelContainer:
 	if UITheme: UITheme.apply_font(select_btn, "semibold")
 	right_info.add_child(select_btn)
 
-	var deadlines_hbox = HBoxContainer.new()
-	deadlines_hbox.add_theme_constant_override("separation", 40)
-	card_vbox.add_child(deadlines_hbox)
+	if not is_support:
+		var deadlines_hbox = HBoxContainer.new()
+		deadlines_hbox.add_theme_constant_override("separation", 40)
+		card_vbox.add_child(deadlines_hbox)
 
-	var soft_lbl = Label.new()
-	soft_lbl.text = tr("PROJ_SEL_SOFT_DAYS") % [data.soft_days_budget, data.soft_deadline_penalty_percent]
-	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
-	if UITheme: UITheme.apply_font(soft_lbl, "regular")
-	deadlines_hbox.add_child(soft_lbl)
+		var soft_lbl = Label.new()
+		soft_lbl.text = tr("PROJ_SEL_SOFT_DAYS") % [data.soft_days_budget, data.soft_deadline_penalty_percent]
+		soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
+		if UITheme: UITheme.apply_font(soft_lbl, "regular")
+		deadlines_hbox.add_child(soft_lbl)
 
-	var hard_lbl = Label.new()
-	hard_lbl.text = tr("PROJ_SEL_HARD_DAYS") % data.hard_days_budget
-	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
-	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
-	deadlines_hbox.add_child(hard_lbl)
+		var hard_lbl = Label.new()
+		hard_lbl.text = tr("PROJ_SEL_HARD_DAYS") % data.hard_days_budget
+		hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
+		if UITheme: UITheme.apply_font(hard_lbl, "semibold")
+		deadlines_hbox.add_child(hard_lbl)
 
 	call_deferred("_set_children_pass_filter", card)
 
@@ -626,11 +649,10 @@ func _on_select_pressed(index: int):
 	if selected == null:
 		return
 
-	if not TutorialManager.is_active():
+	if not TutorialManager.is_active() and not (selected is SupportProjectData):
 		if _is_project_limit_reached():
 			return
 
-	# ИСПРАВЛЕНИЕ: Берем локализованное имя для логов
 	print("✅ Берём проект: ", selected.get_display_title())
 
 	current_options[index] = null

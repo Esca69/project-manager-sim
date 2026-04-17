@@ -69,6 +69,7 @@ const SALARY_CONFIG = {
 	"QA Engineer":        { "base": 800,  "mult": 8,  "rand": 200 },
 	"Business Analyst":   { "base": 1000, "mult": 12, "rand": 200 },
 	"Backend Developer":  { "base": 1200, "mult": 16, "rand": 200 },
+	"Customer Support":   { "base": 600,  "mult": 6,  "rand": 150 },
 }
 
 # === РАСПРЕДЕЛЕНИЕ ГРЕЙДОВ ПО МЕСЯЦУ ИГРЫ (1 мес = 30 дней) ===
@@ -257,6 +258,8 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 			new_emp.skill_backend = primary_skill_value
 		"QA Engineer":
 			new_emp.skill_qa = primary_skill_value
+		"Customer Support":
+			new_emp.skill_support = primary_skill_value
 
 	# 4. Зарплата ПО РОЛИ
 	var cfg = SALARY_CONFIG[role]
@@ -303,6 +306,8 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 					new_emp.skill_backend = primary_skill_value
 				"QA Engineer":
 					new_emp.skill_qa = primary_skill_value
+				"Customer Support":
+					new_emp.skill_support = primary_skill_value
 			raw_salary = cfg["base"] + (primary_skill_value * cfg["mult"]) + randi_range(-cfg["rand"], cfg["rand"])
 		var freelance_mult = randf_range(0.80, 0.90)
 		raw_salary = int(raw_salary * freelance_mult)

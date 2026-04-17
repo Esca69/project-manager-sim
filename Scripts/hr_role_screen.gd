@@ -106,6 +106,38 @@ func _remove_tutorial_restrictions():
 		btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
 		btn.remove_theme_color_override("font_disabled_color")
 		btn.disabled = false
+	_apply_support_role_availability()
+
+func _has_active_support_projects() -> bool:
+	return SupportProjectManager and SupportProjectManager.active_support_projects.size() > 0
+
+func _apply_support_role_availability():
+	var has_support = _has_active_support_projects()
+	for rd in _role_buttons:
+		if rd["role"] != "Customer Support":
+			continue
+		var btn: Button = rd["button"]
+		if has_support:
+			btn.tooltip_text = ""
+			if not TutorialManager.is_active():
+				btn.disabled = false
+			btn.add_theme_stylebox_override("normal", _role_style_normal)
+			btn.add_theme_stylebox_override("hover", _role_style_hover)
+			btn.add_theme_stylebox_override("pressed", _role_style_selected)
+			btn.add_theme_color_override("font_color", COLOR_BLUE)
+			btn.add_theme_color_override("font_hover_color", COLOR_BLUE)
+			btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+		else:
+			btn.tooltip_text = tr("HR_SUPPORT_LOCKED")
+			btn.disabled = true
+			btn.add_theme_stylebox_override("normal", _role_style_disabled)
+			btn.add_theme_stylebox_override("hover", _role_style_disabled)
+			btn.add_theme_stylebox_override("pressed", _role_style_disabled)
+			btn.add_theme_stylebox_override("disabled", _role_style_disabled)
+			btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6, 1))
+			btn.add_theme_color_override("font_hover_color", Color(0.6, 0.6, 0.6, 1))
+			btn.add_theme_color_override("font_pressed_color", Color(0.6, 0.6, 0.6, 1))
+			btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
 
 func close():
 	if TutorialManager.is_active():
@@ -346,6 +378,7 @@ func _build_ui():
 		{ "role": "Business Analyst", "icon": "📊", "label": "HR_ROLE_BA" },
 		{ "role": "Backend Developer", "icon": "💻", "label": "HR_ROLE_DEV" },
 		{ "role": "QA Engineer", "icon": "🧪", "label": "HR_ROLE_QA" },
+		{ "role": "Customer Support", "icon": "🎧", "label": "HR_ROLE_SUPPORT" },
 	]
 
 	for rd in role_data:
@@ -369,6 +402,8 @@ func _build_ui():
 		btn.pressed.connect(_on_role_selected.bind(rd["role"]))
 		roles_vbox.add_child(btn)
 		_role_buttons.append({ "button": btn, "role": rd["role"] })
+
+	_apply_support_role_availability()
 
 	# Время поиска (динамическое)
 	_time_info_lbl = Label.new()

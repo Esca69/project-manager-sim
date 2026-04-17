@@ -1,6 +1,6 @@
 extends Control
 
-signal project_opened(proj: ProjectData)
+signal project_opened(proj)
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
@@ -219,6 +219,9 @@ func _rebuild_cards():
 			var is_done = (proj.state == ProjectData.State.FINISHED or proj.state == ProjectData.State.FAILED)
 			if not is_done:
 				filtered_projects.append(proj)
+		for support_proj in SupportProjectManager.active_support_projects:
+			if support_proj.is_active:
+				filtered_projects.append(support_proj)
 	else:
 		filtered_projects = ProjectManager.completed_projects.duplicate()
 
@@ -235,6 +238,10 @@ func _rebuild_cards():
 
 	# Сортировка
 	filtered_projects.sort_custom(func(proj_a, proj_b):
+		if proj_a is SupportProjectData and proj_b is ProjectData:
+			return true
+		if proj_a is ProjectData and proj_b is SupportProjectData:
+			return false
 		if _current_tab == "completed":
 			var time_a = _get_project_finish_time(proj_a)
 			var time_b = _get_project_finish_time(proj_b)
@@ -294,7 +301,10 @@ func _set_children_pass_filter(node: Node):
 			child.mouse_filter = Control.MOUSE_FILTER_PASS
 		_set_children_pass_filter(child)
 
-func _create_card(proj: ProjectData) -> PanelContainer:
+func _create_card(proj) -> PanelContainer:
+	if proj is SupportProjectData:
+		return _create_support_card(proj)
+
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -461,7 +471,94 @@ func _create_card(proj: ProjectData) -> PanelContainer:
 
 	return card
 
-func _on_open_pressed(proj: ProjectData):
+func _create_support_card(proj: SupportProjectData) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 20
+	style.border_width_left = 3
+	style.border_width_top = 3
+	style.border_width_right = 3
+	style.border_width_bottom = 3
+	style.bg_color = Color(0.95, 1.0, 1.0, 1)
+	style.border_color = Color(0.0, 0.6, 0.6, 1)
+	if UITheme: UITheme.apply_shadow(style)
+	card.add_theme_stylebox_override("panel", style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_top", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_bottom", 15)
+	card.add_child(margin)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 5)
+	margin.add_child(vbox)
+
+	var top_hbox = HBoxContainer.new()
+	vbox.add_child(top_hbox)
+
+	var left_info = VBoxContainer.new()
+	top_hbox.add_child(left_info)
+
+	var client = proj.get_client()
+	var client_name = client.get_display_name() if client else proj.client_id
+	var title_lbl = Label.new()
+	title_lbl.text = tr("SUPPORT_WINDOW_TITLE") % client_name
+	title_lbl.add_theme_color_override("font_color", Color(0.0, 0.55, 0.55, 1))
+	if UITheme: UITheme.apply_font(title_lbl, "bold")
+	left_info.add_child(title_lbl)
+
+	var open_count = 0
+	var overdue_count = 0
+	for ticket in proj.tickets:
+		if ticket is SupportTicketData and not ticket.is_completed:
+			open_count += 1
+			if ticket.is_overdue:
+				overdue_count += 1
+	var status_lbl = Label.new()
+	status_lbl.text = tr("SUPPORT_STATUS_TICKETS") % [open_count, overdue_count]
+	status_lbl.add_theme_color_override("font_color", Color(0.0, 0.5, 0.5, 1))
+	if UITheme: UITheme.apply_font(status_lbl, "regular")
+	left_info.add_child(status_lbl)
+
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_hbox.add_child(spacer)
+
+	var right = VBoxContainer.new()
+	top_hbox.add_child(right)
+
+	var weekly_lbl = Label.new()
+	weekly_lbl.text = tr("SUPPORT_WEEKLY_RATE") % (SupportProjectManager.get_effective_daily_rate(proj) * 5)
+	weekly_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	weekly_lbl.add_theme_color_override("font_color", Color(0.2, 0.65, 0.3, 1))
+	weekly_lbl.add_theme_font_size_override("font_size", 20)
+	if UITheme: UITheme.apply_font(weekly_lbl, "bold")
+	right.add_child(weekly_lbl)
+
+	var open_btn = Button.new()
+	open_btn.text = tr("UI_OPEN")
+	open_btn.custom_minimum_size = Vector2(180, 40)
+	open_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	open_btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	open_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	open_btn.add_theme_stylebox_override("normal", btn_style)
+	open_btn.add_theme_stylebox_override("hover", btn_style_hover)
+	open_btn.add_theme_stylebox_override("pressed", btn_style_hover)
+	if UITheme: UITheme.apply_font(open_btn, "semibold")
+	open_btn.pressed.connect(_on_open_pressed.bind(proj))
+	right.add_child(open_btn)
+
+	call_deferred("_set_children_pass_filter", card)
+	return card
+
+func _on_open_pressed(proj):
 	if proj == null:
 		return
 	emit_signal("project_opened", proj)
@@ -514,5 +611,5 @@ func _process(_delta):
 			continue
 		var proj = child.get_meta("project_ref")
 		var lbl = child.get_meta("progress_label")
-		if proj.state == ProjectData.State.IN_PROGRESS and is_instance_valid(lbl):
+		if proj is ProjectData and proj.state == ProjectData.State.IN_PROGRESS and is_instance_valid(lbl):
 			lbl.text = _get_progress_text(proj)
