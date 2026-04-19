@@ -1,5 +1,4 @@
 extends Node
-class_name SupportProjectManager
 
 var active_support_projects: Array = []
 var completed_support_projects: Array = []

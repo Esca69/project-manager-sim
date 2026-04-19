@@ -19,6 +19,8 @@ var _cards_container: VBoxContainer
 var _scroll_ready: bool = false
 
 var _overlay: ColorRect
+var _sla_selection_window: Control
+var _pending_support_offer_index: int = -1
 
 var _was_paused: bool = false
 
@@ -119,6 +121,26 @@ func _ready():
 	tab_inactive_style.bg_color = Color(1, 1, 1, 0)
 
 	_setup_scroll_container()
+	_ensure_sla_selection_window()
+
+func _ensure_sla_selection_window():
+	if _sla_selection_window and is_instance_valid(_sla_selection_window):
+		return
+	var sla_script = load("res://Scripts/sla_selection_window.gd")
+	if sla_script == null:
+		push_error("project_selection_ui: не удалось загрузить sla_selection_window.gd")
+		return
+	_sla_selection_window = Control.new()
+	_sla_selection_window.set_script(sla_script)
+	_sla_selection_window.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_sla_selection_window.process_mode = Node.PROCESS_MODE_ALWAYS
+	var parent_node: Node = get_tree().current_scene if get_tree().current_scene != null else get_parent()
+	if parent_node:
+		parent_node.add_child(_sla_selection_window)
+	else:
+		add_child(_sla_selection_window)
+	if not _sla_selection_window.contract_signed.is_connected(_on_support_contract_signed):
+		_sla_selection_window.contract_signed.connect(_on_support_contract_signed)
 
 func _force_fullscreen_size():
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -649,6 +671,14 @@ func _on_select_pressed(index: int):
 	if selected == null:
 		return
 
+	if selected is SupportProjectData:
+		_pending_support_offer_index = index
+		_ensure_sla_selection_window()
+		_close_ui()
+		if _sla_selection_window:
+			_sla_selection_window.open_for_project(selected)
+		return
+
 	if not TutorialManager.is_active() and not (selected is SupportProjectData):
 		if _is_project_limit_reached():
 			return
@@ -666,6 +696,21 @@ func _on_select_pressed(index: int):
 	emit_signal("project_selected", selected)
 
 	# === ТУТОРИАЛ: уведомляем ПОСЛЕ закрытия окна и emit сигнала ===
+	TutorialManager.notify_any_project_taken()
+
+func _on_support_contract_signed(proj: SupportProjectData):
+	if proj == null:
+		return
+	if _pending_support_offer_index >= 0 and _pending_support_offer_index < current_options.size() and current_options[_pending_support_offer_index] == proj:
+		current_options[_pending_support_offer_index] = null
+	else:
+		for i in range(current_options.size()):
+			if current_options[i] == proj:
+				current_options[i] = null
+				break
+	_pending_support_offer_index = -1
+	if visible:
+		_rebuild_cards()
 	TutorialManager.notify_any_project_taken()
 
 # === ОБРАБОТКА ВВОДА (ESC) ===
