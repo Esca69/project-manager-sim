@@ -18,12 +18,12 @@ var total_labor_cost: float = 0.0
 var daily_labor_cost: float = 0.0
 
 func get_client():
-if client_id == "":
-return null
-var cm = Engine.get_main_loop().root.get_node_or_null("/root/ClientManager")
-if cm:
-return cm.get_client_by_id(client_id)
-return null
+	if client_id == "":
+		return null
+	var cm = Engine.get_main_loop().root.get_node_or_null("/root/ClientManager")
+	if cm:
+		return cm.get_client_by_id(client_id)
+	return null
 
 func get_display_title() -> String:
-return tr(title)
+	return tr(title)
