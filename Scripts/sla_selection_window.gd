@@ -7,6 +7,7 @@ const COLOR_WHITE = Color(1, 1, 1, 1)
 const COLOR_BORDER = Color(0.8784314, 0.8784314, 0.8784314, 1)
 const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
 const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_CARD_BG = Color(0.98, 0.98, 0.98, 1)
 
 var _overlay: ColorRect
 var _window: PanelContainer
@@ -235,7 +236,7 @@ func _make_sla_card(definition: Dictionary) -> PanelContainer:
     card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
     var selected = _selected_sla == str(definition["id"])
     var card_style = StyleBoxFlat.new()
-    card_style.bg_color = Color(0.98, 0.98, 0.98, 1)
+    card_style.bg_color = COLOR_CARD_BG
     card_style.border_width_left = 2 if selected else 1
     card_style.border_width_top = 2 if selected else 1
     card_style.border_width_right = 2 if selected else 1
