@@ -198,6 +198,9 @@ func _ready():
 	if selection_ui.has_signal("project_selected"):
 		if not selection_ui.project_selected.is_connected(_on_project_taken):
 			selection_ui.project_selected.connect(_on_project_taken)
+	if selection_ui.has_signal("support_project_selected"):
+		if not selection_ui.support_project_selected.is_connected(_on_support_project_selected):
+			selection_ui.support_project_selected.connect(_on_support_project_selected)
 
 	if not project_list_menu.project_opened.is_connected(_on_project_list_opened):
 		project_list_menu.project_opened.connect(_on_project_list_opened)
@@ -470,6 +473,8 @@ func _build_support_windows():
 	_sla_selection_window.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_sla_selection_window.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_sla_selection_window)
+	if not _sla_selection_window.contract_signed.is_connected(_on_sla_contract_signed):
+		_sla_selection_window.contract_signed.connect(_on_sla_contract_signed)
 
 # === ОТКРЫТЬ HR (вызывается из hr_desk.gd) ===
 func open_hr_search():
@@ -969,6 +974,24 @@ func _on_project_taken(proj_data):
 	# === ТУТОРИАЛ ===
 	if TutorialManager.is_active():
 		TutorialManager.notify_discussion_finished()
+
+func _on_support_project_selected(proj_data: SupportProjectData):
+	if proj_data == null:
+		return
+	if _sla_selection_window:
+		_sla_selection_window.open_for_project(proj_data)
+
+func _on_sla_contract_signed(proj_data: SupportProjectData):
+	if proj_data == null:
+		return
+	if selection_ui:
+		for i in range(selection_ui.current_options.size()):
+			if selection_ui.current_options[i] == proj_data:
+				selection_ui.current_options[i] = null
+				break
+		if selection_ui.visible and selection_ui.has_method("_rebuild_cards"):
+			selection_ui._rebuild_cards()
+	TutorialManager.notify_any_project_taken()
 
 func _on_project_list_opened(proj_data):
 	if proj_data is SupportProjectData:
