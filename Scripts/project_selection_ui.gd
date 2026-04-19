@@ -414,6 +414,12 @@ func _close_ui():
 	else:
 		visible = false
 
+func _tr_format_safe(key: String, args, fallback: String) -> String:
+	var text = tr(key)
+	if text.find("%") >= 0:
+		return text % args
+	return fallback
+
 func _on_close_pressed():
 	if TutorialManager.is_active():
 		return  # Can't close project selection during tutorial
@@ -579,7 +585,7 @@ func _create_card(data, index: int) -> PanelContainer:
 
 	var work_lbl = Label.new()
 	if is_support:
-		work_lbl.text = tr("SUPPORT_DAILY_RATE_LABEL") % data.daily_rate
+		work_lbl.text = _tr_format_safe("SUPPORT_DAILY_RATE_LABEL", data.daily_rate, "Rate: $%d/day" % data.daily_rate)
 	else:
 		var parts = []
 		for stage in data.stages:
@@ -599,7 +605,7 @@ func _create_card(data, index: int) -> PanelContainer:
 	var budget_lbl = Label.new()
 	var budget_text = ""
 	if is_support:
-		budget_text = tr("SLA_DAILY_RATE") % data.daily_rate
+		budget_text = _tr_format_safe("SLA_DAILY_RATE", data.daily_rate, "Rate: $%d/day" % data.daily_rate)
 	else:
 		budget_text = tr("PROJ_SEL_BUDGET_LABEL") % PMData.get_blurred_budget(data.budget)
 		if data.client_id != "":

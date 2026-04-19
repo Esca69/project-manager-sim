@@ -5,6 +5,12 @@ var completed_support_projects: Array = []
 
 var _planned_ticket_minutes: Dictionary = {}
 
+func _tr_format_safe(key: String, args, fallback: String) -> String:
+	var text = tr(key)
+	if text.find("%") >= 0:
+		return text % args
+	return fallback
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if GameTime and not GameTime.work_started.is_connected(_on_work_started):
@@ -157,9 +163,10 @@ func _generate_ticket(proj: SupportProjectData):
 	ticket.deadline_day = _add_working_days(ticket.created_at_day, get_sla_deadline_days(proj.sla_level))
 	proj.tickets.append(ticket)
 
-	EventLog.add(tr("LOG_SUPPORT_TICKET_NEW") % [tr("ROLE_SHORT_" + ticket.required_role), proj.get_display_title()], EventLog.LogType.PROGRESS)
+	var role_name = tr("ROLE_SHORT_" + ticket.required_role)
+	EventLog.add(_tr_format_safe("LOG_SUPPORT_TICKET_NEW", [role_name, proj.get_display_title()], "New ticket (%s) for project %s" % [role_name, proj.get_display_title()]), EventLog.LogType.PROGRESS)
 	if ScreenJuice:
-		ScreenJuice.show_toast("📋", tr("TOAST_SUPPORT_TICKET") % tr("ROLE_SHORT_" + ticket.required_role))
+		ScreenJuice.show_toast("📋", _tr_format_safe("TOAST_SUPPORT_TICKET", role_name, "New ticket: %s" % role_name))
 
 func _process_weekly_payouts():
 	for proj in active_support_projects:
@@ -186,10 +193,10 @@ func _process_weekly_payouts():
 		var client = proj.get_client()
 		var client_name = client.get_display_name() if client else proj.client_id
 		if penalty_percent > 0:
-			EventLog.add(tr("LOG_SUPPORT_PENALTY") % [client_name, penalty_percent, overdue_count], EventLog.LogType.ALERT)
-		EventLog.add(tr("LOG_SUPPORT_WEEKLY_PAYOUT") % [client_name, final_payout], EventLog.LogType.PROGRESS)
+			EventLog.add(_tr_format_safe("LOG_SUPPORT_PENALTY", [client_name, penalty_percent, overdue_count], "Support %s: -%d%% penalty for %d overdue tickets" % [client_name, penalty_percent, overdue_count]), EventLog.LogType.ALERT)
+		EventLog.add(_tr_format_safe("LOG_SUPPORT_WEEKLY_PAYOUT", [client_name, final_payout], "Support %s: received $%d for the week" % [client_name, final_payout]), EventLog.LogType.PROGRESS)
 		if ScreenJuice:
-			ScreenJuice.show_toast("💰", tr("TOAST_SUPPORT_PAYOUT") % final_payout)
+			ScreenJuice.show_toast("💰", _tr_format_safe("TOAST_SUPPORT_PAYOUT", final_payout, "Support: +$%d" % final_payout))
 
 		proj.week_start_day = _get_next_monday(GameTime.day)
 

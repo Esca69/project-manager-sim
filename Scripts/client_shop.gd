@@ -256,7 +256,7 @@ func _rebuild():
 
 	# Support-контракт (параллельная ветка)
 	if client.has_support:
-		items_vbox.add_child(_make_card_purchased(tr("CLIENT_SUPPORT_TITLE"), tr("CLIENT_SUPPORT_DESC"), "🛟"))
+		items_vbox.add_child(_make_card_purchased(tr("CLIENT_SUPPORT_TITLE"), tr("CLIENT_SUPPORT_DESC"), "🔧"))
 	else:
 		var can_afford_support = ClientManager.reputation_points >= ClientData.SUPPORT_UNLOCK_COST
 		items_vbox.add_child(_make_card_buyable(
@@ -265,7 +265,7 @@ func _rebuild():
 			ClientData.SUPPORT_UNLOCK_COST,
 			can_afford_support,
 			func(): _buy_support(),
-			"🛟"
+			"🔧"
 		))
 
 	# === СЕКЦИЯ: БЮДЖЕТ ПРОЕКТОВ ===

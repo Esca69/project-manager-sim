@@ -195,8 +195,9 @@ func _ready():
 	# Переводим кнопку конца дня
 	end_day_button.text = tr("END_DAY_BTN")
 
-	if not selection_ui.project_selected.is_connected(_on_project_taken):
-		selection_ui.project_selected.connect(_on_project_taken)
+	if selection_ui.has_signal("project_selected"):
+		if not selection_ui.project_selected.is_connected(_on_project_taken):
+			selection_ui.project_selected.connect(_on_project_taken)
 
 	if not project_list_menu.project_opened.is_connected(_on_project_list_opened):
 		project_list_menu.project_opened.connect(_on_project_list_opened)

@@ -15,6 +15,12 @@ var _project: SupportProjectData = null
 var _selected_sla: String = ""
 var _was_paused: bool = false
 
+func _tr_format_safe(key: String, args, fallback: String) -> String:
+    var text = tr(key)
+    if text.find("%") >= 0:
+        return text % args
+    return fallback
+
 func _ready():
     process_mode = Node.PROCESS_MODE_ALWAYS
     visible = false
@@ -219,7 +225,7 @@ func _make_sla_card(definition: Dictionary) -> PanelContainer:
     h.add_child(right)
 
     var rate_lbl = Label.new()
-    rate_lbl.text = tr("SLA_DAILY_RATE") % rate
+    rate_lbl.text = _tr_format_safe("SLA_DAILY_RATE", rate, "Rate: $%d/day" % rate)
     rate_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
     rate_lbl.add_theme_color_override("font_color", Color(0.2, 0.65, 0.2, 1))
     if UITheme:
@@ -227,7 +233,7 @@ func _make_sla_card(definition: Dictionary) -> PanelContainer:
     right.add_child(rate_lbl)
 
     var week_lbl = Label.new()
-    week_lbl.text = tr("SLA_WEEKLY_ESTIMATE") % weekly_estimate
+    week_lbl.text = _tr_format_safe("SLA_WEEKLY_ESTIMATE", weekly_estimate, "≈ $%d/week" % weekly_estimate)
     week_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
     if UITheme:
         UITheme.apply_font(week_lbl, "regular")
@@ -255,9 +261,10 @@ func _on_confirm_pressed():
 
     var client = _project.get_client()
     var client_name = client.get_display_name() if client else _project.client_id
-    EventLog.add(tr("LOG_SUPPORT_CONTRACT_SIGNED") % [client_name, tr("SLA_" + _selected_sla.to_upper())], EventLog.LogType.PROGRESS)
+    var sla_name = tr("SLA_" + _selected_sla.to_upper())
+    EventLog.add(_tr_format_safe("LOG_SUPPORT_CONTRACT_SIGNED", [client_name, sla_name], "Support contract with %s signed (SLA: %s)" % [client_name, sla_name]), EventLog.LogType.PROGRESS)
     if ScreenJuice:
-        ScreenJuice.show_toast("🛟", tr("TOAST_SUPPORT_SIGNED"))
+        ScreenJuice.show_toast("🔧", tr("TOAST_SUPPORT_SIGNED"))
 
     emit_signal("contract_signed", _project)
     _close_window()

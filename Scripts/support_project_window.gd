@@ -19,6 +19,12 @@ var _assignment_overlay: ColorRect
 var _assignment_list: ItemList
 var _assignment_callback: Callable
 
+func _tr_format_safe(key: String, args, fallback: String) -> String:
+    var text = tr(key)
+    if text.find("%") >= 0:
+        return text % args
+    return fallback
+
 func _ready():
     process_mode = Node.PROCESS_MODE_ALWAYS
     visible = false
@@ -210,14 +216,14 @@ func _rebuild():
     var title_lbl: Label = _window.find_child("TitleLabel", true, false)
     var client = _project.get_client()
     var client_name = client.get_display_name() if client else _project.client_id
-    title_lbl.text = tr("SUPPORT_WINDOW_TITLE") % client_name
+    title_lbl.text = _tr_format_safe("SUPPORT_WINDOW_TITLE", client_name, "Support — %s" % client_name)
 
     var sla_text = tr("SLA_" + _project.sla_level.to_upper())
     var sla_days = SupportProjectManager.get_sla_deadline_days(_project.sla_level)
-    _top_vbox.add_child(_info_label(tr("SUPPORT_SLA_BADGE") % [sla_text, sla_days], Color(0.1, 0.55, 0.55, 1), true))
+    _top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_SLA_BADGE", [sla_text, sla_days], "SLA: %s (%d days)" % [sla_text, sla_days]), Color(0.1, 0.55, 0.55, 1), true))
 
     var eff_rate = SupportProjectManager.get_effective_daily_rate(_project)
-    _top_vbox.add_child(_info_label(tr("SUPPORT_DAILY_RATE_LABEL") % eff_rate, Color(0.2, 0.6, 0.2, 1), true))
+    _top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_DAILY_RATE_LABEL", eff_rate, "Rate: $%d/day" % eff_rate), Color(0.2, 0.6, 0.2, 1), true))
 
     var support_row = HBoxContainer.new()
     support_row.add_theme_constant_override("separation", 8)
@@ -262,8 +268,8 @@ func _rebuild():
             open_count += 1
             if t.is_overdue:
                 overdue_count += 1
-    _top_vbox.add_child(_info_label(tr("SUPPORT_STATUS_TICKETS") % [open_count, overdue_count], COLOR_BLUE, false))
-    _top_vbox.add_child(_info_label(tr("SUPPORT_WEEKLY_RATE") % (eff_rate * 5), Color(0.2, 0.6, 0.2, 1), true))
+    _top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_STATUS_TICKETS", [open_count, overdue_count], "Tickets: %d open / %d overdue" % [open_count, overdue_count]), COLOR_BLUE, false))
+    _top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_WEEKLY_RATE", eff_rate * 5, "~$%d/wk" % (eff_rate * 5)), Color(0.2, 0.6, 0.2, 1), true))
 
     var sorted_tickets = _project.tickets.duplicate()
     sorted_tickets.sort_custom(func(a, b): return _ticket_sort_key(a) < _ticket_sort_key(b))
@@ -336,7 +342,7 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
     root.add_child(_info_label("%d / %d" % [int(ticket.progress), ticket.work_amount], COLOR_BLUE, false))
 
     var date_txt = GameTime.get_date_short(ticket.deadline_day)
-    root.add_child(_info_label(tr("TICKET_DEADLINE") % [date_txt, max(days_left, 0)], Color(0.4, 0.4, 0.4, 1), false))
+    root.add_child(_info_label(_tr_format_safe("TICKET_DEADLINE", [date_txt, max(days_left, 0)], "Deadline: %s (%d days left)" % [date_txt, max(days_left, 0)]), Color(0.4, 0.4, 0.4, 1), false))
 
     if ticket.is_overdue and not ticket.is_completed:
         root.add_child(_info_label(tr("TICKET_OVERDUE"), Color(0.9, 0.2, 0.2, 1), true))
