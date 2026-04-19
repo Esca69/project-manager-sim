@@ -26,6 +26,12 @@ const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
 # === ДОБАВЛЕНО ДЛЯ ФОНА ===
 var _overlay: ColorRect
 
+func _tr_format_safe(key: String, args, fallback: String) -> String:
+	var text = tr(key)
+	if text.find("%") >= 0:
+		return text % args
+	return fallback
+
 func _ready():
 	visible = false
 	z_index = 90
@@ -509,7 +515,7 @@ func _create_support_card(proj: SupportProjectData) -> PanelContainer:
 	var client = proj.get_client()
 	var client_name = client.get_display_name() if client else proj.client_id
 	var title_lbl = Label.new()
-	title_lbl.text = tr("SUPPORT_WINDOW_TITLE") % client_name
+	title_lbl.text = _tr_format_safe("SUPPORT_WINDOW_TITLE", client_name, "Support — %s" % client_name)
 	title_lbl.add_theme_color_override("font_color", Color(0.0, 0.55, 0.55, 1))
 	if UITheme: UITheme.apply_font(title_lbl, "bold")
 	left_info.add_child(title_lbl)
@@ -522,7 +528,7 @@ func _create_support_card(proj: SupportProjectData) -> PanelContainer:
 			if ticket.is_overdue:
 				overdue_count += 1
 	var status_lbl = Label.new()
-	status_lbl.text = tr("SUPPORT_STATUS_TICKETS") % [open_count, overdue_count]
+	status_lbl.text = _tr_format_safe("SUPPORT_STATUS_TICKETS", [open_count, overdue_count], "Tickets: %d open / %d overdue" % [open_count, overdue_count])
 	status_lbl.add_theme_color_override("font_color", Color(0.0, 0.5, 0.5, 1))
 	if UITheme: UITheme.apply_font(status_lbl, "regular")
 	left_info.add_child(status_lbl)
@@ -535,7 +541,8 @@ func _create_support_card(proj: SupportProjectData) -> PanelContainer:
 	top_hbox.add_child(right)
 
 	var weekly_lbl = Label.new()
-	weekly_lbl.text = tr("SUPPORT_WEEKLY_RATE") % (SupportProjectManager.get_effective_daily_rate(proj) * 5)
+	var weekly_rate = SupportProjectManager.get_effective_daily_rate(proj) * 5
+	weekly_lbl.text = _tr_format_safe("SUPPORT_WEEKLY_RATE", weekly_rate, "~$%d/wk" % weekly_rate)
 	weekly_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	weekly_lbl.add_theme_color_override("font_color", Color(0.2, 0.65, 0.3, 1))
 	weekly_lbl.add_theme_font_size_override("font_size", 20)
