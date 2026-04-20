@@ -568,6 +568,8 @@ func _process(_delta):
         var label: Label = entry.get("label")
         if not is_instance_valid(label):
             continue
+        if ticket == null:
+            continue
         if ticket is SupportTicketData:
             label.text = "%d / %d" % [int(ticket.progress), ticket.work_amount]
     var key = GameTime.hour * 60 + GameTime.minute
