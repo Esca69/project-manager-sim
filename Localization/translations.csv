@@ -1443,11 +1443,23 @@ PROJ_CAT_SUPPORT,🔧 Support,🔧 Support
 SLA_SELECTION_TITLE,Выберите уровень SLA,Choose SLA Level
 SLA_STRICT,Строгий,Strict
 SLA_STRICT_DESC,Дедлайн 2 рабочих дня. Оплата +20%,2 business day deadline. +20% pay
+SLA_STRICT_TERMINATION_HINT,⚠️ Расторжение при 3 просрочках/нед,⚠️ Auto-terminate at 3 overdue/wk
 SLA_MEDIUM,Средний,Medium
 SLA_MEDIUM_DESC,Дедлайн 3 рабочих дня. Стандартная оплата,3 business day deadline. Standard pay
+SLA_MEDIUM_TERMINATION_HINT,⚠️ Расторжение при 5 просрочках/нед,⚠️ Auto-terminate at 5 overdue/wk
 SLA_EASY,Лёгкий,Easy
 SLA_EASY_DESC,Дедлайн 4 рабочих дня. Оплата -20%,4 business day deadline. -20% pay
-SLA_CONFIRM,Подтвердить,Confirm
+SLA_EASY_TERMINATION_HINT,⚠️ Расторжение при 9 просрочках/нед,⚠️ Auto-terminate at 9 overdue/wk
+SLA_DURATION_TITLE,Шаг 2: Срок контракта,Step 2: Contract Duration
+SLA_PREVIEW_PICK_BOTH,Выберите SLA и срок,Pick SLA and duration
+SLA_PREVIEW_RATE,Ставка: $%d/день,Rate: $%d/day
+SLA_PREVIEW_DURATION,Срок: %d рабочих дней (≈%d нед),Duration: %d work days (≈%d weeks)
+SLA_PREVIEW_TOTAL,Примерный итог: ≈$%d,Estimated total: ≈$%d
+DURATION_5_DAYS,5 дн (−10%),5 days (−10%)
+DURATION_10_DAYS,10 дн,10 days
+DURATION_15_DAYS,15 дн (+5%),15 days (+5%)
+DURATION_20_DAYS,20 дн (+10%),20 days (+10%)
+SLA_CONFIRM,Подтвердить контракт,Sign Contract
 SLA_DAILY_RATE,Ставка: $%d/день,Rate: $%d/day
 SLA_WEEKLY_ESTIMATE,≈ $%d/неделю,≈ $%d/week
 SUPPORT_WINDOW_TITLE,🔧 Support — %s,🔧 Support — %s
@@ -1457,6 +1469,7 @@ SUPPORT_NO_SPECIALIST,⚠️ Специалист не назначен — ти
 SUPPORT_SLA_BADGE,SLA: %s (%d дн.),SLA: %s (%d days)
 SUPPORT_DAILY_RATE_LABEL,Ставка: $%d/день,Rate: $%d/day
 SUPPORT_STATUS_TICKETS,Тикетов: %d открыто / %d просрочено,Tickets: %d open / %d overdue
+SUPPORT_DURATION_INFO,Срок: %d раб. дн. | Осталось: %d,Duration: %d work days | %d left
 SUPPORT_WEEKLY_RATE,~$%d/нед.,~$%d/wk
 TICKET_DEADLINE,Дедлайн: %s (через %d дн.),Deadline: %s (%d days left)
 TICKET_OVERDUE,⚠️ Просрочен!,⚠️ Overdue!
@@ -1467,6 +1480,11 @@ LOG_SUPPORT_CONTRACT_SIGNED,🔧 Support-контракт с %s подписан
 LOG_SUPPORT_TICKET_NEW,📋 Новый тикет (%s) по проекту %s,📋 New ticket (%s) for project %s
 LOG_SUPPORT_WEEKLY_PAYOUT,💰 Support %s: получено $%d за неделю,💰 Support %s: received $%d for the week
 LOG_SUPPORT_PENALTY,⚠️ Support %s: штраф -%d%% за %d просроченных тикетов,⚠️ Support %s: -%d%% penalty for %d overdue tickets
+LOG_SUPPORT_TERMINATED,⛔ Support-контракт с %s расторгнут из-за просрочек,⛔ Support contract with %s terminated due to overdue
+TOAST_SUPPORT_TERMINATED,⛔ Контракт расторгнут: %s,⛔ Contract terminated: %s
+LOG_SUPPORT_COMPLETED,✅ Support-контракт с %s завершён. Заработано: $%d,✅ Support contract with %s completed. Earned: $%d
+TOAST_SUPPORT_COMPLETED,✅ Контракт завершён: %s,✅ Contract completed: %s
+LOG_SUPPORT_FINAL_PAYOUT,💰 Support %s: финальная выплата $%d,💰 Support %s: final payout $%d
 TOAST_SUPPORT_SIGNED,🔧 Support-контракт подписан!,🔧 Support contract signed!
 TOAST_SUPPORT_TICKET,📋 Новый тикет: %s,📋 New ticket: %s
 TOAST_SUPPORT_PAYOUT,💰 Support: +$%d,💰 Support: +$%d

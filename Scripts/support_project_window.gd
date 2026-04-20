@@ -311,8 +311,10 @@ func _rebuild():
     var sla_days = SupportProjectManager.get_sla_deadline_days(_project.sla_level)
     _top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_SLA_BADGE", [sla_text, sla_days], "SLA: %s (%d days)" % [sla_text, sla_days]), Color(0.1, 0.55, 0.55, 1), true))
 
-    var eff_rate = SupportProjectManager.get_effective_daily_rate(_project)
-    _top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_DAILY_RATE_LABEL", eff_rate, "Rate: $%d/day" % eff_rate), Color(0.2, 0.6, 0.2, 1), true))
+	var eff_rate = SupportProjectManager.get_effective_daily_rate(_project)
+	_top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_DAILY_RATE_LABEL", eff_rate, "Rate: $%d/day" % eff_rate), Color(0.2, 0.6, 0.2, 1), true))
+	var remaining_days = SupportProjectManager._count_workdays_between(GameTime.day, _project.end_day) if _project.end_day >= GameTime.day else 0
+	_top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_DURATION_INFO", [_project.contract_duration_days, remaining_days], "Duration: %d work days | %d left" % [_project.contract_duration_days, remaining_days]), Color(0.25, 0.45, 0.8, 1), false))
 
     var support_row = HBoxContainer.new()
     support_row.add_theme_constant_override("separation", 8)

@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 11
+const SAVE_VERSION = 12
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -18,6 +18,7 @@ const MIGRATIONS = {
 	8: "_migrate_v8_to_v9",
 	9: "_migrate_v9_to_v10",
 	10: "_migrate_v10_to_v11",
+	11: "_migrate_v11_to_v12",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -518,6 +519,11 @@ func _serialize_single_support_offer(proj: SupportProjectData) -> Dictionary:
 		"sla_level": proj.sla_level,
 		"daily_rate": proj.daily_rate,
 		"is_active": proj.is_active,
+		"contract_duration_days": proj.contract_duration_days,
+		"duration_bonus_percent": proj.duration_bonus_percent,
+		"end_day": proj.end_day,
+		"weekly_overdue_count": proj.weekly_overdue_count,
+		"termination_reason": proj.termination_reason,
 		"week_start_day": proj.week_start_day,
 	}
 
@@ -867,6 +873,10 @@ func _migrate_v10_to_v11(data: Dictionary) -> bool:
 	if not data.has("support_projects"):
 		data["support_projects"] = {"active": [], "completed": []}
 	print("🔄 Миграция v10→v11: добавлены support-поля")
+	return true
+
+func _migrate_v11_to_v12(_data: Dictionary) -> bool:
+	print("🔄 Миграция v11→v12: support contracts v1.1 schema")
 	return true
 
 
@@ -1335,6 +1345,11 @@ func _deserialize_single_support_offer(d: Dictionary) -> SupportProjectData:
 	proj.sla_level = str(d.get("sla_level", "medium"))
 	proj.daily_rate = int(d.get("daily_rate", 0))
 	proj.is_active = bool(d.get("is_active", true))
+	proj.contract_duration_days = int(d.get("contract_duration_days", 10))
+	proj.duration_bonus_percent = int(d.get("duration_bonus_percent", 0))
+	proj.end_day = int(d.get("end_day", 0))
+	proj.weekly_overdue_count = int(d.get("weekly_overdue_count", 0))
+	proj.termination_reason = str(d.get("termination_reason", ""))
 	proj.week_start_day = int(d.get("week_start_day", proj.created_at_day))
 	return proj
 
