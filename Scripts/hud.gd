@@ -1166,6 +1166,9 @@ func _on_end_day_pressed():
 	# === ПРИНУДИТЕЛЬНО УБИРАЕМ ВСЕХ СОТРУДНИКОВ ИЗ ОФИСА ===
 	_dismiss_all_employees()
 
+	if SupportProjectManager:
+		SupportProjectManager.flush_weekly_payout_if_pending()
+
 	GameState.pay_daily_salaries()
 	GameState.pay_daily_services()
 	GameState.pay_daily_desk_subscriptions()
