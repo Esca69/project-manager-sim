@@ -4,7 +4,6 @@ signal closed
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
-const COLOR_TURQUOISE = Color(0.0, 0.6, 0.6, 1)
 
 var _overlay: ColorRect
 var _window: PanelContainer
@@ -61,12 +60,15 @@ func _build_ui():
     _overlay.mouse_filter = Control.MOUSE_FILTER_STOP
     add_child(_overlay)
 
-    var center = CenterContainer.new()
-    center.set_anchors_preset(Control.PRESET_FULL_RECT)
-    add_child(center)
-
     _window = PanelContainer.new()
-    _window.custom_minimum_size = Vector2(1200, 750)
+    _window.custom_minimum_size = Vector2(1500, 900)
+    _window.set_anchors_preset(Control.PRESET_CENTER)
+    _window.offset_left = -750
+    _window.offset_top = -450
+    _window.offset_right = 750
+    _window.offset_bottom = 450
+    _window.grow_horizontal = Control.GROW_DIRECTION_BOTH
+    _window.grow_vertical = Control.GROW_DIRECTION_BOTH
     var ws = StyleBoxFlat.new()
     ws.bg_color = COLOR_WHITE
     ws.border_width_left = 3
@@ -81,14 +83,14 @@ func _build_ui():
     if UITheme:
         UITheme.apply_shadow(ws, false)
     _window.add_theme_stylebox_override("panel", ws)
-    center.add_child(_window)
+    add_child(_window)
 
     var root = VBoxContainer.new()
     root.add_theme_constant_override("separation", 0)
     _window.add_child(root)
 
     var header = Panel.new()
-    header.custom_minimum_size = Vector2(0, 42)
+    header.custom_minimum_size = Vector2(0, 40)
     var hs = StyleBoxFlat.new()
     hs.bg_color = COLOR_BLUE
     hs.corner_radius_top_left = 20
@@ -103,10 +105,37 @@ func _build_ui():
     title_lbl.set_anchors_preset(Control.PRESET_CENTER)
     title_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
     title_lbl.grow_vertical = Control.GROW_DIRECTION_BOTH
+    title_lbl.offset_left = -88
+    title_lbl.offset_top = -11.5
+    title_lbl.offset_right = 88
+    title_lbl.offset_bottom = 11.5
     title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     if UITheme:
         UITheme.apply_font(title_lbl, "bold")
     header.add_child(title_lbl)
+
+    var close_btn = Button.new()
+    close_btn.text = "X"
+    close_btn.focus_mode = Control.FOCUS_NONE
+    close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+    close_btn.offset_left = -51
+    close_btn.offset_top = -15
+    close_btn.offset_right = -24
+    close_btn.offset_bottom = 16
+    close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+    close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+    close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+    var close_style = StyleBoxFlat.new()
+    close_style.bg_color = COLOR_WHITE
+    close_style.corner_radius_top_left = 10
+    close_style.corner_radius_top_right = 10
+    close_style.corner_radius_bottom_right = 10
+    close_style.corner_radius_bottom_left = 10
+    close_btn.add_theme_stylebox_override("normal", close_style)
+    if UITheme:
+        UITheme.apply_font(close_btn, "semibold")
+    close_btn.pressed.connect(_close_window)
+    header.add_child(close_btn)
 
     var margin = MarginContainer.new()
     margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -135,50 +164,6 @@ func _build_ui():
     _tickets_vbox.add_theme_constant_override("separation", 8)
     scroll.add_child(_tickets_vbox)
 
-    var footer_margin = MarginContainer.new()
-    footer_margin.add_theme_constant_override("margin_top", 4)
-    body.add_child(footer_margin)
-
-    var close_center = CenterContainer.new()
-    footer_margin.add_child(close_center)
-
-    var close_btn = Button.new()
-    close_btn.text = tr("UI_CLOSE")
-    close_btn.custom_minimum_size = Vector2(160, 36)
-    close_btn.add_theme_font_size_override("font_size", 14)
-    close_btn.focus_mode = Control.FOCUS_NONE
-    if UITheme:
-        UITheme.apply_font(close_btn, "semibold")
-    var cbtn_style = StyleBoxFlat.new()
-    cbtn_style.bg_color = COLOR_WHITE
-    cbtn_style.border_width_left = 2
-    cbtn_style.border_width_top = 2
-    cbtn_style.border_width_right = 2
-    cbtn_style.border_width_bottom = 2
-    cbtn_style.border_color = Color(0.5, 0.5, 0.5, 1)
-    cbtn_style.corner_radius_top_left = 16
-    cbtn_style.corner_radius_top_right = 16
-    cbtn_style.corner_radius_bottom_right = 16
-    cbtn_style.corner_radius_bottom_left = 16
-    var cbtn_hover = StyleBoxFlat.new()
-    cbtn_hover.bg_color = Color(0.5, 0.5, 0.5, 1)
-    cbtn_hover.border_width_left = 2
-    cbtn_hover.border_width_top = 2
-    cbtn_hover.border_width_right = 2
-    cbtn_hover.border_width_bottom = 2
-    cbtn_hover.border_color = Color(0.5, 0.5, 0.5, 1)
-    cbtn_hover.corner_radius_top_left = 16
-    cbtn_hover.corner_radius_top_right = 16
-    cbtn_hover.corner_radius_bottom_right = 16
-    cbtn_hover.corner_radius_bottom_left = 16
-    close_btn.add_theme_stylebox_override("normal", cbtn_style)
-    close_btn.add_theme_stylebox_override("hover", cbtn_hover)
-    close_btn.add_theme_stylebox_override("pressed", cbtn_hover)
-    close_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
-    close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-    close_btn.pressed.connect(_close_window)
-    close_center.add_child(close_btn)
-
     _build_assignment_popup()
 
 func _build_assignment_popup():
@@ -190,45 +175,79 @@ func _build_assignment_popup():
     add_child(_assignment_overlay)
 
     var panel = PanelContainer.new()
-    panel.custom_minimum_size = Vector2(560, 560)
+    panel.custom_minimum_size = Vector2(500, 500)
     panel.set_anchors_preset(Control.PRESET_CENTER)
-    panel.offset_left = -280
-    panel.offset_top = -280
-    panel.offset_right = 280
-    panel.offset_bottom = 280
+    panel.offset_left = -250
+    panel.offset_top = -250
+    panel.offset_right = 250
+    panel.offset_bottom = 250
     var ps = StyleBoxFlat.new()
     ps.bg_color = COLOR_WHITE
-    ps.border_width_left = 3
-    ps.border_width_top = 3
-    ps.border_width_right = 3
-    ps.border_width_bottom = 3
-    ps.border_color = COLOR_TURQUOISE
-    ps.corner_radius_top_left = 20
-    ps.corner_radius_top_right = 20
-    ps.corner_radius_bottom_left = 20
-    ps.corner_radius_bottom_right = 20
+    ps.border_width_left = 2
+    ps.border_width_top = 2
+    ps.border_width_right = 2
+    ps.border_width_bottom = 2
+    ps.border_color = Color(0.85, 0.85, 0.85, 1)
+    ps.corner_radius_top_left = 10
+    ps.corner_radius_top_right = 10
+    ps.corner_radius_bottom_left = 10
+    ps.corner_radius_bottom_right = 10
     panel.add_theme_stylebox_override("panel", ps)
     _assignment_overlay.add_child(panel)
 
+    var content_margin = MarginContainer.new()
+    content_margin.add_theme_constant_override("margin_left", 16)
+    content_margin.add_theme_constant_override("margin_top", 16)
+    content_margin.add_theme_constant_override("margin_right", 16)
+    content_margin.add_theme_constant_override("margin_bottom", 16)
+    panel.add_child(content_margin)
+
     var v = VBoxContainer.new()
-    v.add_theme_constant_override("separation", 10)
-    panel.add_child(v)
+    v.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    v.add_theme_constant_override("separation", 12)
+    content_margin.add_child(v)
 
     var title = Label.new()
-    title.text = tr("TICKET_ASSIGN")
+    title.text = tr("EMP_SELECT_TITLE")
     title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.add_theme_font_size_override("font_size", 16)
     if UITheme:
         UITheme.apply_font(title, "bold")
     v.add_child(title)
 
     _assignment_list = ItemList.new()
     _assignment_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    if UITheme:
+        UITheme.apply_font(_assignment_list, "regular")
+    var list_style = StyleBoxFlat.new()
+    list_style.bg_color = COLOR_WHITE
+    list_style.border_width_left = 2
+    list_style.border_width_top = 2
+    list_style.border_width_right = 2
+    list_style.border_width_bottom = 2
+    list_style.border_color = Color(0.85, 0.85, 0.85, 1)
+    list_style.corner_radius_top_left = 10
+    list_style.corner_radius_top_right = 10
+    list_style.corner_radius_bottom_right = 10
+    list_style.corner_radius_bottom_left = 10
+    _assignment_list.add_theme_stylebox_override("panel", list_style)
+    _assignment_list.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+    var selected_style = StyleBoxFlat.new()
+    selected_style.bg_color = Color(0.9, 0.94, 1.0, 1)
+    selected_style.corner_radius_top_left = 4
+    selected_style.corner_radius_top_right = 4
+    selected_style.corner_radius_bottom_right = 4
+    selected_style.corner_radius_bottom_left = 4
+    _assignment_list.add_theme_stylebox_override("selected", selected_style)
+    _assignment_list.add_theme_stylebox_override("selected_focus", selected_style)
+    _assignment_list.add_theme_stylebox_override("hovered", selected_style)
     _assignment_list.item_activated.connect(_on_assignment_item_activated)
     v.add_child(_assignment_list)
 
     var close_btn = Button.new()
-    close_btn.text = tr("UI_CANCEL")
+    close_btn.text = tr("UI_CLOSE")
     close_btn.custom_minimum_size = Vector2(0, 42)
+    _style_blue_button(close_btn)
     close_btn.pressed.connect(func(): _assignment_overlay.visible = false)
     v.add_child(close_btn)
 
@@ -338,7 +357,7 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
     s.corner_radius_bottom_left = 12
     s.corner_radius_bottom_right = 12
 
-    var days_left = ticket.deadline_day - GameTime.day
+    var days_left = _count_workdays_left(GameTime.day, ticket.deadline_day)
     if ticket.is_completed:
         s.bg_color = Color(0.91, 0.98, 0.91, 1)
         s.border_color = Color(0.29803923, 0.6862745, 0.3137255, 1)
@@ -389,7 +408,6 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
         btn.text = tr("TICKET_ASSIGN")
         btn.custom_minimum_size = Vector2(180, 34)
         _style_blue_button(btn)
-        btn.disabled = ticket.assigned_worker != null
         btn.pressed.connect(func():
             _open_assignment_popup(_role_to_job_title(ticket.required_role), func(emp):
                 ticket.assigned_worker = emp
@@ -433,6 +451,13 @@ func _style_blue_button(btn: Button):
     btn.add_theme_color_override("font_color", COLOR_BLUE)
     btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
     btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+
+func _count_workdays_left(from_day: int, to_day: int) -> int:
+    var count = 0
+    for d in range(from_day + 1, to_day + 1):
+        if not GameTime.is_weekend(d):
+            count += 1
+    return count
 
 func _role_to_job_title(role: String) -> String:
     match role:
