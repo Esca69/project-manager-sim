@@ -281,7 +281,7 @@ func _get_support_grade(emp: EmployeeData) -> String:
 		return "junior"
 	if emp.employee_level <= 4:
 		return "middle"
-	return "senior"  # 5+ → Senior, Lead для саппорта запрещён
+	return "senior"  # 5-6 → Senior (max level for Customer Support, Lead запрещён)
 
 # Возвращает [min, max] для randi_range — кол-во тикетов в день
 # в зависимости от грейда назначенного саппорта.
