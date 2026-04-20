@@ -410,7 +410,6 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
         _style_blue_button(btn)
         btn.pressed.connect(func():
             _open_assignment_popup(_role_to_job_title(ticket.required_role), func(emp):
-                ticket.assigned_worker = null
                 ticket.assigned_worker = emp
                 _rebuild()
             )
