@@ -4,6 +4,7 @@ var active_support_projects: Array = []
 var completed_support_projects: Array = []
 
 var _planned_ticket_minutes: Dictionary = {}
+var _planned_ticket_day: Dictionary = {}
 
 func _tr_format_safe(key: String, args, fallback: String) -> String:
 	var text = tr(key)
@@ -76,12 +77,16 @@ func _on_work_started():
 	for proj in active_support_projects:
 		proj.daily_labor_cost = 0.0
 		if not proj.is_active:
+			_planned_ticket_minutes.erase(proj.project_id)
+			_planned_ticket_day.erase(proj.project_id)
 			continue
 		if proj.assigned_support_employee == null:
 			_planned_ticket_minutes[proj.project_id] = []
+			_planned_ticket_day.erase(proj.project_id)
 			continue
 		if GameTime.is_weekend():
 			_planned_ticket_minutes[proj.project_id] = []
+			_planned_ticket_day.erase(proj.project_id)
 			continue
 		var tickets_today = randi_range(0, 3)
 		var minutes: Array = []
@@ -89,6 +94,7 @@ func _on_work_started():
 			minutes.append(randi_range(GameTime.START_HOUR * 60, (GameTime.END_HOUR - 1) * 60 + 50))
 		minutes.sort()
 		_planned_ticket_minutes[proj.project_id] = minutes
+		_planned_ticket_day[proj.project_id] = GameTime.day
 
 func _on_time_tick(hour: int, minute: int):
 	if GameTime.day <= 0:
@@ -98,14 +104,30 @@ func _on_time_tick(hour: int, minute: int):
 		var minute_of_day = hour * 60 + minute
 		for proj in active_support_projects:
 			if not proj.is_active:
+				_planned_ticket_minutes.erase(proj.project_id)
+				_planned_ticket_day.erase(proj.project_id)
 				continue
 			if proj.assigned_support_employee == null:
+				_planned_ticket_minutes[proj.project_id] = []
+				_planned_ticket_day.erase(proj.project_id)
 				continue
-			var planned: Array = _planned_ticket_minutes.get(proj.project_id, [])
+			var project_id = proj.project_id
+			if int(_planned_ticket_day.get(project_id, -1)) != GameTime.day:
+				var tickets_today = randi_range(0, 3)
+				var minutes: Array = []
+				for i in range(tickets_today):
+					var min_time = max(minute_of_day + 1, GameTime.START_HOUR * 60)
+					var max_time = (GameTime.END_HOUR - 1) * 60 + 50
+					if min_time <= max_time:
+						minutes.append(randi_range(min_time, max_time))
+				minutes.sort()
+				_planned_ticket_minutes[project_id] = minutes
+				_planned_ticket_day[project_id] = GameTime.day
+			var planned: Array = _planned_ticket_minutes.get(project_id, [])
 			while planned.size() > 0 and int(planned[0]) <= minute_of_day:
 				planned.pop_front()
 				_generate_ticket(proj)
-			_planned_ticket_minutes[proj.project_id] = planned
+			_planned_ticket_minutes[project_id] = planned
 
 	if hour == 18 and minute == 0 and GameTime.get_weekday_index() == 4:
 		_process_weekly_payouts()
@@ -252,6 +274,7 @@ func deserialize(d: Dictionary):
 	active_support_projects.clear()
 	completed_support_projects.clear()
 	_planned_ticket_minutes.clear()
+	_planned_ticket_day.clear()
 
 	for pd in d.get("active", []):
 		var proj = _deserialize_project_dict(pd)
