@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 12
+const SAVE_VERSION = 13
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -19,6 +19,7 @@ const MIGRATIONS = {
 	9: "_migrate_v9_to_v10",
 	10: "_migrate_v10_to_v11",
 	11: "_migrate_v11_to_v12",
+	12: "_migrate_v12_to_v13",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -877,6 +878,11 @@ func _migrate_v10_to_v11(data: Dictionary) -> bool:
 
 func _migrate_v11_to_v12(_data: Dictionary) -> bool:
 	print("🔄 Миграция v11→v12: support contracts v1.1 schema")
+	return true
+
+func _migrate_v12_to_v13(_data: Dictionary) -> bool:
+	# Support v1.3: новое поле was_unattended у тикетов (дефолт false применяется при десериализации)
+	print("🔄 Миграция v12→v13: support tickets v1.3 (was_unattended)")
 	return true
 
 

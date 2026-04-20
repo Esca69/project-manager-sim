@@ -1487,6 +1487,9 @@ TOAST_SUPPORT_COMPLETED,✅ Контракт завершён: %s,✅ Contract c
 LOG_SUPPORT_FINAL_PAYOUT,💰 Support %s: финальная выплата $%d,💰 Support %s: final payout $%d
 TOAST_SUPPORT_SIGNED,🔧 Support-контракт подписан!,🔧 Support contract signed!
 TOAST_SUPPORT_TICKET,📋 Новый тикет: %s,📋 New ticket: %s
+LOG_SUPPORT_TICKET_UNATTENDED,"📞 Клиент дозвонился, но %s не на месте — тикет безнадзорный (+100%% объём) по проекту %s","📞 Client called but %s was away — unattended ticket (+100%% work) for project %s"
+TOAST_SUPPORT_TICKET_UNATTENDED,🔥 Безнадзорный тикет: %s,🔥 Unattended ticket: %s
+TICKET_UNATTENDED,🔥 Безнадзорный (+100%% объём),🔥 Unattended (+100%% work)
 TOAST_SUPPORT_PAYOUT,💰 Support: +$%d,💰 Support: +$%d
 SUPPORT_PROJ_NOVOTECH,Техподдержка НовоТех,NovaTech Support
 SUPPORT_PROJ_EDAPLUS,Техподдержка ЕдаПлюс,EatPlus Support

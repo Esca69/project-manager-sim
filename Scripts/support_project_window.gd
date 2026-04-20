@@ -435,13 +435,19 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
 		role_icon = "💻"
 	elif ticket.required_role == "QA":
 		role_icon = "🧪"
-	root.add_child(_info_label("%s %s" % [role_icon, tr("ROLE_SHORT_" + ticket.required_role)], COLOR_BLUE, true))
+	var title_prefix = ""
+	if ticket.was_unattended:
+		title_prefix = "🔥 "
+	root.add_child(_info_label("%s%s %s" % [title_prefix, role_icon, tr("ROLE_SHORT_" + ticket.required_role)], COLOR_BLUE, true))
 	var progress_lbl = _info_label("%d / %d" % [int(ticket.progress), ticket.work_amount], COLOR_BLUE, false)
 	root.add_child(progress_lbl)
 	_ticket_progress_labels.append({"label": progress_lbl, "ticket": ticket})
 
 	var date_txt = GameTime.get_date_short(ticket.deadline_day)
 	root.add_child(_info_label(_tr_format_safe("TICKET_DEADLINE", [date_txt, max(days_left, 0)], "Deadline: %s (%d days left)" % [date_txt, max(days_left, 0)]), Color(0.4, 0.4, 0.4, 1), false))
+
+	if ticket.was_unattended:
+		root.add_child(_info_label(tr("TICKET_UNATTENDED"), Color(0.9, 0.3, 0.1, 1), false))
 
 	if ticket.is_overdue and not ticket.is_completed:
 		root.add_child(_info_label(tr("TICKET_OVERDUE"), Color(0.9, 0.2, 0.2, 1), true))

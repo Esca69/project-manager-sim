@@ -241,6 +241,9 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 
 	# 2. Определяем уровень на основе дня игры
 	var level = _roll_level()
+	# === SUPPORT v1.3: Customer Support не может быть Lead (max level 6 = Senior) ===
+	if role == "Customer Support" and level > 6:
+		level = 6
 	new_emp.employee_level = level
 	new_emp.employee_xp = 0
 
