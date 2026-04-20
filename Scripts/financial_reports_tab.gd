@@ -814,6 +814,7 @@ func _draw_income_bar(ctrl: Control):
 	for r in records:
 		total += int(r.get("income", 0))
 		support_total += int(r.get("support_income", 0))
+	support_total = clamp(support_total, 0, total)
 	var project_total = max(0, total - support_total)
 	var segments: Array = []
 	if project_total > 0:
@@ -1150,6 +1151,8 @@ func _refresh_pnl():
 			po += int(r.get("office_costs", 0)); pt += int(r.get("training_costs", 0)); pb += int(r.get("bonus_costs", 0)); pv += int(r.get("service_costs", 0))
 	var pe = ps + pp + pn + po + pt + pb + pv; var pnet = pi - pe
 	var pmarg = 0.0; if pi > 0: pmarg = float(pnet) / float(pi) * 100.0
+	csi = clamp(csi, 0, ci)
+	psi = clamp(psi, 0, pi)
 	var cur_project_inc = max(0, ci - csi)
 	var prev_project_inc = max(0, pi - psi)
 	var cur_project_pct = "-"
