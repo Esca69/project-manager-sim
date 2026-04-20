@@ -101,7 +101,8 @@ func _on_work_started():
 			_planned_ticket_minutes[proj.project_id] = []
 			_planned_ticket_day.erase(proj.project_id)
 			continue
-		var tickets_today = randi_range(0, 3)
+		var rng = _get_daily_ticket_range(proj.assigned_support_employee)
+		var tickets_today = randi_range(rng[0], rng[1])
 		var minutes: Array = []
 		for i in range(tickets_today):
 			minutes.append(randi_range(GameTime.START_HOUR * 60, (GameTime.END_HOUR - 1) * 60 + 50))
@@ -126,7 +127,8 @@ func _on_time_tick(hour: int, minute: int):
 				continue
 			var project_id = proj.project_id
 			if int(_planned_ticket_day.get(project_id, -1)) != GameTime.day:
-				var tickets_today = randi_range(0, 3)
+				var rng = _get_daily_ticket_range(proj.assigned_support_employee)
+				var tickets_today = randi_range(rng[0], rng[1])
 				var minutes: Array = []
 				for i in range(tickets_today):
 					var min_time = max(minute_of_day + 1, GameTime.START_HOUR * 60)
@@ -222,16 +224,84 @@ func _generate_ticket(proj: SupportProjectData):
 	var ticket = SupportTicketData.new()
 	ticket.ticket_id = "ticket_%s_%d_%d" % [proj.project_id, GameTime.day, proj.tickets.size() + 1]
 	ticket.required_role = ["BA", "DEV", "QA"][randi_range(0, 2)]
-	ticket.work_amount = randi_range(80, 200)
+
+	# === SUPPORT v1.3: расчёт work_amount с учётом грейда и "безнадзорности" ===
+	var base_amount = float(randi_range(80, 200))
+	var support_emp: EmployeeData = proj.assigned_support_employee
+	var is_unattended = not _is_support_working(support_emp)
+
+	if is_unattended:
+		base_amount *= 2.0
+
+	var grade = _get_support_grade(support_emp)
+	match grade:
+		"junior":
+			base_amount *= 1.2
+		"senior":
+			base_amount *= 0.8
+		# middle / "" — без изменений
+
+	ticket.work_amount = int(round(base_amount))
+	ticket.was_unattended = is_unattended
+	# ====================================================================
+
 	ticket.progress = 0.0
 	ticket.created_at_day = GameTime.day
 	ticket.deadline_day = _add_working_days(ticket.created_at_day, get_sla_deadline_days(proj.sla_level))
 	proj.tickets.append(ticket)
 
 	var role_name = tr("ROLE_SHORT_" + ticket.required_role)
-	EventLog.add(_tr_format_safe("LOG_SUPPORT_TICKET_NEW", [role_name, proj.get_display_title()], "New ticket (%s) for project %s" % [role_name, proj.get_display_title()]), EventLog.LogType.PROGRESS)
-	if ScreenJuice:
-		ScreenJuice.show_toast("📋", _tr_format_safe("TOAST_SUPPORT_TICKET", role_name, "New ticket: %s" % role_name))
+
+	# === SUPPORT v1.3: ALERT-лог для безнадзорного тикета ===
+	if is_unattended:
+		var support_name = support_emp.get_display_name() if support_emp else proj.client_id
+		EventLog.add(
+			_tr_format_safe("LOG_SUPPORT_TICKET_UNATTENDED",
+				[support_name, proj.get_display_title()],
+				"📞 Client called, but %s was away — unattended ticket (+100%% work) for project %s" % [support_name, proj.get_display_title()]),
+			EventLog.LogType.ALERT
+		)
+		if ScreenJuice:
+			ScreenJuice.show_toast("🔥",
+				_tr_format_safe("TOAST_SUPPORT_TICKET_UNATTENDED", role_name,
+					"Unattended ticket: %s" % role_name))
+	else:
+		EventLog.add(_tr_format_safe("LOG_SUPPORT_TICKET_NEW", [role_name, proj.get_display_title()], "New ticket (%s) for project %s" % [role_name, proj.get_display_title()]), EventLog.LogType.PROGRESS)
+		if ScreenJuice:
+			ScreenJuice.show_toast("📋", _tr_format_safe("TOAST_SUPPORT_TICKET", role_name, "New ticket: %s" % role_name))
+
+# === SUPPORT v1.3: helpers ===
+
+# Возвращает "junior" / "middle" / "senior" по уровню саппорт-специалиста.
+# Для не-саппортов и null возвращает "" (используется только во внутренней логике менеджера).
+func _get_support_grade(emp: EmployeeData) -> String:
+	if emp == null:
+		return ""
+	if emp.employee_level <= 2:
+		return "junior"
+	if emp.employee_level <= 4:
+		return "middle"
+	return "senior"  # 5+ → Senior, Lead для саппорта запрещён
+
+# Возвращает [min, max] для randi_range — кол-во тикетов в день
+# в зависимости от грейда назначенного саппорта.
+func _get_daily_ticket_range(emp: EmployeeData) -> Array:
+	var grade = _get_support_grade(emp)
+	match grade:
+		"junior":
+			return [1, 4]   # раздражает клиентов, эскалирует мелочи
+		"senior":
+			return [0, 2]   # фильтрует на входе
+	return [0, 3]            # middle / fallback
+
+# Возвращает true, если назначенный саппорт находится в офисе и реально работает.
+func _is_support_working(emp: EmployeeData) -> bool:
+	if emp == null:
+		return false
+	var node = _get_employee_node(emp)
+	if node == null:
+		return false  # NPC ещё не в сцене — считаем как "не на месте"
+	return node.current_state == node.State.WORKING
 
 func _process_weekly_payouts():
 	for proj in active_support_projects:
@@ -453,6 +523,7 @@ func _serialize_projects_array(arr: Array) -> Array:
 				"deadline_day": ticket.deadline_day,
 				"is_completed": ticket.is_completed,
 				"is_overdue": ticket.is_overdue,
+				"was_unattended": ticket.was_unattended,
 				"assigned_worker": ticket.assigned_worker.employee_name if ticket.assigned_worker else "",
 			})
 		out.append(pd)
@@ -491,6 +562,7 @@ func _deserialize_project_dict(d: Dictionary) -> SupportProjectData:
 		ticket.deadline_day = int(td.get("deadline_day", 0))
 		ticket.is_completed = bool(td.get("is_completed", false))
 		ticket.is_overdue = bool(td.get("is_overdue", false))
+		ticket.was_unattended = bool(td.get("was_unattended", false))
 		ticket.assigned_worker = _find_employee_by_name(str(td.get("assigned_worker", "")))
 		proj.tickets.append(ticket)
 	return proj

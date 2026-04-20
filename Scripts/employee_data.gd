@@ -542,6 +542,13 @@ func add_employee_xp(amount: int) -> Dictionary:
 		result["leveled_up"] = true
 		result["new_level"] = employee_level
 
+		# === SUPPORT v1.3: Customer Support капается на Senior (level 6) ===
+		if job_title == "Customer Support" and employee_level > 6:
+			employee_level = 6
+			employee_xp = 0
+			result["new_level"] = employee_level
+			break
+
 		# === RAISES: Проверка смены грейда ===
 		var old_grade = GRADE_NAMES.get(employee_level - 1, "")
 		var new_grade = GRADE_NAMES.get(employee_level, "")

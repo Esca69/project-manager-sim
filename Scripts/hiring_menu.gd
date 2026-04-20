@@ -321,8 +321,7 @@ func _fill_card(card: Control, data: EmployeeData, _index: int):
 		skill_text = tr("ROLE_SHORT_DEV") + ": " + PMData.get_blurred_skill(data.skill_backend)
 	elif data.skill_qa > 0:
 		skill_text = tr("ROLE_SHORT_QA") + ": " + PMData.get_blurred_skill(data.skill_qa)
-	elif data.skill_support > 0:
-		skill_text = tr("ROLE_SHORT_SUPPORT") + ": " + PMData.get_blurred_skill(data.skill_support)
+	# Customer Support: скилл намеренно не показываем — игроку важен только грейд (бейдж уровня)
 
 	if skill_lbl:
 		skill_lbl.text = skill_text
@@ -501,8 +500,7 @@ func _create_extra_card(data: EmployeeData, index: int) -> PanelContainer:
 		skill_text = tr("ROLE_SHORT_DEV") + ": " + PMData.get_blurred_skill(data.skill_backend)
 	elif data.skill_qa > 0:
 		skill_text = tr("ROLE_SHORT_QA") + ": " + PMData.get_blurred_skill(data.skill_qa)
-	elif data.skill_support > 0:
-		skill_text = tr("ROLE_SHORT_SUPPORT") + ": " + PMData.get_blurred_skill(data.skill_support)
+	# Customer Support: скилл намеренно не показываем — игроку важен только грейд (бейдж уровня)
 
 	var skill_lbl = Label.new()
 	skill_lbl.text = skill_text
