@@ -8,6 +8,11 @@ extends Resource
 @export var sla_level: String = "medium"
 @export var daily_rate: int = 0
 @export var is_active: bool = true
+@export var contract_duration_days: int = 10
+@export var duration_bonus_percent: int = 0
+@export var end_day: int = 0
+@export var weekly_overdue_count: int = 0
+@export var termination_reason: String = ""
 
 var assigned_support_employee: EmployeeData = null
 var tickets: Array = []

@@ -28,6 +28,10 @@ func add_support_project(proj: SupportProjectData) -> bool:
 		return false
 	if proj.week_start_day <= 0:
 		proj.week_start_day = proj.created_at_day
+	if proj.contract_duration_days <= 0:
+		proj.contract_duration_days = 10
+	if proj.end_day <= 0:
+		proj.end_day = _add_working_days(proj.created_at_day, proj.contract_duration_days)
 	active_support_projects.append(proj)
 	return true
 
@@ -57,13 +61,14 @@ func is_employee_on_ticket(emp_data: EmployeeData) -> bool:
 func get_effective_daily_rate(proj: SupportProjectData) -> int:
 	if proj == null:
 		return 0
-	var effective_rate = proj.daily_rate
+	var effective_rate = float(proj.daily_rate)
 	match proj.sla_level:
 		"strict":
-			effective_rate = int(proj.daily_rate * 1.2)
+			effective_rate *= 1.2
 		"easy":
-			effective_rate = int(proj.daily_rate * 0.8)
-	return effective_rate
+			effective_rate *= 0.8
+	effective_rate *= (1.0 + float(proj.duration_bonus_percent) / 100.0)
+	return int(effective_rate)
 
 func get_sla_deadline_days(sla_level: String) -> int:
 	match sla_level:
@@ -72,6 +77,14 @@ func get_sla_deadline_days(sla_level: String) -> int:
 		"easy":
 			return 4
 	return 3
+
+func get_overdue_termination_limit(sla_level: String) -> int:
+	match sla_level:
+		"strict":
+			return 3
+		"easy":
+			return 9
+	return 5
 
 func _on_work_started():
 	for proj in active_support_projects:
@@ -190,12 +203,20 @@ func _physics_process(delta: float):
 					ticket.assigned_worker = null
 
 func _on_day_started(_day_number: int):
-	for proj in active_support_projects:
+	for proj in active_support_projects.duplicate():
+		if not proj.is_active:
+			continue
 		for ticket in proj.tickets:
 			if not (ticket is SupportTicketData):
 				continue
-			if not ticket.is_completed and GameTime.day > ticket.deadline_day:
+			if not ticket.is_completed and not ticket.is_overdue and GameTime.day > ticket.deadline_day:
 				ticket.is_overdue = true
+				proj.weekly_overdue_count += 1
+		if proj.is_active and proj.weekly_overdue_count >= get_overdue_termination_limit(proj.sla_level):
+			_terminate_contract(proj)
+			continue
+		if proj.is_active and proj.end_day > 0 and GameTime.day > proj.end_day:
+			_complete_contract(proj)
 
 func _generate_ticket(proj: SupportProjectData):
 	var ticket = SupportTicketData.new()
@@ -242,7 +263,96 @@ func _process_weekly_payouts():
 		if ScreenJuice:
 			ScreenJuice.show_toast("💰", _tr_format_safe("TOAST_SUPPORT_PAYOUT", final_payout, "Support: +$%d" % final_payout))
 
+		proj.weekly_overdue_count = 0
 		proj.week_start_day = _get_next_monday(GameTime.day)
+
+func _terminate_contract(proj: SupportProjectData):
+	if proj == null or not proj.is_active:
+		return
+	proj.is_active = false
+	proj.termination_reason = "terminated_overdue"
+
+	var client = proj.get_client()
+	if ClientManager:
+		if ClientManager.has_method("penalize_reputation_points"):
+			ClientManager.penalize_reputation_points(10)
+		else:
+			ClientManager.spend_reputation_points(10)
+
+	var client_name = client.get_display_name() if client else proj.client_id
+	EventLog.add(_tr_format_safe("LOG_SUPPORT_TERMINATED", client_name, "⛔ Support contract with %s terminated due to overdue" % client_name), EventLog.LogType.NEGATIVE)
+	if ScreenJuice:
+		ScreenJuice.show_toast("⛔", _tr_format_safe("TOAST_SUPPORT_TERMINATED", client_name, "⛔ Contract terminated: %s" % client_name))
+
+	_release_and_archive(proj)
+
+func _complete_contract(proj: SupportProjectData):
+	if proj == null or not proj.is_active:
+		return
+
+	_process_final_payout(proj)
+	proj.is_active = false
+	proj.termination_reason = "completed"
+
+	var client = proj.get_client()
+	var client_name = client.get_display_name() if client else proj.client_id
+	EventLog.add(_tr_format_safe("LOG_SUPPORT_COMPLETED", [client_name, proj.total_earned], "✅ Support contract with %s completed. Earned: $%d" % [client_name, proj.total_earned]), EventLog.LogType.PROGRESS)
+	if ScreenJuice:
+		ScreenJuice.show_toast("✅", _tr_format_safe("TOAST_SUPPORT_COMPLETED", client_name, "✅ Contract completed: %s" % client_name))
+
+	_release_and_archive(proj)
+
+func _process_final_payout(proj: SupportProjectData):
+	if proj == null:
+		return
+	var start_day = max(proj.week_start_day, proj.created_at_day)
+	var last_paid_day = min(proj.end_day, GameTime.day - 1)
+	if last_paid_day < start_day:
+		return
+
+	var worked_days = _count_workdays_between(start_day, last_paid_day)
+	if worked_days <= 0:
+		return
+
+	var overdue_count = 0
+	for ticket in proj.tickets:
+		if ticket is SupportTicketData and ticket.is_overdue and not ticket.is_completed:
+			overdue_count += 1
+
+	var effective_rate = get_effective_daily_rate(proj)
+	var base_payout = worked_days * effective_rate
+	var penalty_percent = min(overdue_count * 10, 100)
+	var final_payout = int(base_payout * (1.0 - float(penalty_percent) / 100.0))
+
+	if final_payout > 0:
+		GameState.add_income(final_payout)
+		GameState.daily_income_details.append({"reason": tr("PROJ_CAT_SUPPORT"), "amount": final_payout, "category": "support"})
+		proj.total_earned += final_payout
+
+	var client = proj.get_client()
+	var client_name = client.get_display_name() if client else proj.client_id
+	EventLog.add(_tr_format_safe("LOG_SUPPORT_FINAL_PAYOUT", [client_name, final_payout], "💰 Support %s: final payout $%d" % [client_name, final_payout]), EventLog.LogType.PROGRESS)
+	if ScreenJuice:
+		ScreenJuice.show_toast("💰", _tr_format_safe("TOAST_SUPPORT_PAYOUT", final_payout, "Support: +$%d" % final_payout))
+
+func _release_and_archive(proj: SupportProjectData):
+	if proj == null:
+		return
+	proj.assigned_support_employee = null
+	for ticket in proj.tickets:
+		if not (ticket is SupportTicketData):
+			continue
+		ticket.assigned_worker = null
+		if not ticket.is_completed:
+			ticket.progress = 0.0
+			ticket.is_overdue = false
+
+	_planned_ticket_minutes.erase(proj.project_id)
+	_planned_ticket_day.erase(proj.project_id)
+
+	active_support_projects.erase(proj)
+	if not completed_support_projects.has(proj):
+		completed_support_projects.append(proj)
 
 func _count_workdays_between(start_day: int, end_day: int) -> int:
 	if end_day < start_day:
@@ -320,6 +430,11 @@ func _serialize_projects_array(arr: Array) -> Array:
 			"sla_level": proj.sla_level,
 			"daily_rate": proj.daily_rate,
 			"is_active": proj.is_active,
+			"contract_duration_days": proj.contract_duration_days,
+			"duration_bonus_percent": proj.duration_bonus_percent,
+			"end_day": proj.end_day,
+			"weekly_overdue_count": proj.weekly_overdue_count,
+			"termination_reason": proj.termination_reason,
 			"week_start_day": proj.week_start_day,
 			"total_earned": proj.total_earned,
 			"total_labor_cost": proj.total_labor_cost,
@@ -354,10 +469,17 @@ func _deserialize_project_dict(d: Dictionary) -> SupportProjectData:
 	proj.sla_level = str(d.get("sla_level", "medium"))
 	proj.daily_rate = int(d.get("daily_rate", 0))
 	proj.is_active = bool(d.get("is_active", true))
+	proj.contract_duration_days = int(d.get("contract_duration_days", 10))
+	proj.duration_bonus_percent = int(d.get("duration_bonus_percent", 0))
+	proj.end_day = int(d.get("end_day", 0))
+	proj.weekly_overdue_count = int(d.get("weekly_overdue_count", 0))
+	proj.termination_reason = str(d.get("termination_reason", ""))
 	proj.week_start_day = int(d.get("week_start_day", proj.created_at_day))
 	proj.total_earned = int(d.get("total_earned", 0))
 	proj.total_labor_cost = float(d.get("total_labor_cost", 0.0))
 	proj.assigned_support_employee = _find_employee_by_name(str(d.get("assigned_support_employee", "")))
+	if proj.end_day == 0 and proj.is_active:
+		proj.end_day = _add_working_days(GameTime.day, 10)
 
 	for td in d.get("tickets", []):
 		var ticket = SupportTicketData.new()

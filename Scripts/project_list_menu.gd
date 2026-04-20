@@ -533,6 +533,13 @@ func _create_support_card(proj: SupportProjectData) -> PanelContainer:
 	if UITheme: UITheme.apply_font(status_lbl, "regular")
 	left_info.add_child(status_lbl)
 
+	var remaining_days = SupportProjectManager._count_workdays_between(GameTime.day, proj.end_day) if proj.end_day >= GameTime.day else 0
+	var duration_lbl = Label.new()
+	duration_lbl.text = _tr_format_safe("SUPPORT_DURATION_INFO", [proj.contract_duration_days, remaining_days], "Duration: %d work days | %d left" % [proj.contract_duration_days, remaining_days])
+	duration_lbl.add_theme_color_override("font_color", Color(0.0, 0.5, 0.5, 1))
+	if UITheme: UITheme.apply_font(duration_lbl, "regular")
+	left_info.add_child(duration_lbl)
+
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)

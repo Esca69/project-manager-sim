@@ -60,6 +60,10 @@ func spend_reputation_points(amount: int) -> bool:
 	emit_signal("reputation_points_changed", reputation_points)
 	return true
 
+func penalize_reputation_points(amount: int):
+	reputation_points -= amount
+	emit_signal("reputation_points_changed", reputation_points)
+
 func add_global_reputation(amount: int):
 	global_reputation += amount
 	emit_signal("global_reputation_changed", global_reputation)
