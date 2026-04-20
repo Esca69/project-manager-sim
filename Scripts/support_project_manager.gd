@@ -67,7 +67,7 @@ func get_effective_daily_rate(proj: SupportProjectData) -> int:
 			effective_rate *= 1.2
 		"easy":
 			effective_rate *= 0.8
-		effective_rate *= (1.0 + float(proj.duration_bonus_percent) / 100.0)
+	effective_rate *= (1.0 + float(proj.duration_bonus_percent) / 100.0)
 	return int(effective_rate)
 
 func get_sla_deadline_days(sla_level: String) -> int:
@@ -137,10 +137,10 @@ func _on_time_tick(hour: int, minute: int):
 				_planned_ticket_minutes[project_id] = minutes
 				_planned_ticket_day[project_id] = GameTime.day
 			var planned: Array = _planned_ticket_minutes.get(project_id, [])
-				while planned.size() > 0 and int(planned[0]) <= minute_of_day:
-					planned.pop_front()
-					_generate_ticket(proj)
-				_planned_ticket_minutes[project_id] = planned
+			while planned.size() > 0 and int(planned[0]) <= minute_of_day:
+				planned.pop_front()
+				_generate_ticket(proj)
+			_planned_ticket_minutes[project_id] = planned
 
 	if hour == 18 and minute == 0 and GameTime.get_weekday_index() == 4:
 		flush_weekly_payout_if_pending()
@@ -342,10 +342,10 @@ func _release_and_archive(proj: SupportProjectData):
 	for ticket in proj.tickets:
 		if not (ticket is SupportTicketData):
 			continue
-			ticket.assigned_worker = null
-			if not ticket.is_completed:
-				ticket.progress = 0.0
-				ticket.is_overdue = false
+		ticket.assigned_worker = null
+		if not ticket.is_completed:
+			ticket.progress = 0.0
+			ticket.is_overdue = false
 
 	_planned_ticket_minutes.erase(proj.project_id)
 	_planned_ticket_day.erase(proj.project_id)
@@ -422,40 +422,40 @@ func _serialize_projects_array(arr: Array) -> Array:
 	for proj in arr:
 		if not (proj is SupportProjectData):
 			continue
-			var pd = {
-				"project_id": proj.project_id,
-				"client_id": proj.client_id,
-				"title": proj.title,
-				"created_at_day": proj.created_at_day,
-				"sla_level": proj.sla_level,
-				"daily_rate": proj.daily_rate,
-				"is_active": proj.is_active,
-				"contract_duration_days": proj.contract_duration_days,
-				"duration_bonus_percent": proj.duration_bonus_percent,
-				"end_day": proj.end_day,
-				"weekly_overdue_count": proj.weekly_overdue_count,
-				"termination_reason": proj.termination_reason,
-				"week_start_day": proj.week_start_day,
-				"total_earned": proj.total_earned,
-				"total_labor_cost": proj.total_labor_cost,
-				"assigned_support_employee": proj.assigned_support_employee.employee_name if proj.assigned_support_employee else "",
-				"tickets": [],
-			}
-			for ticket in proj.tickets:
-				if not (ticket is SupportTicketData):
-					continue
-					pd["tickets"].append({
-						"ticket_id": ticket.ticket_id,
-						"required_role": ticket.required_role,
-						"work_amount": ticket.work_amount,
-						"progress": ticket.progress,
-						"created_at_day": ticket.created_at_day,
-						"deadline_day": ticket.deadline_day,
-						"is_completed": ticket.is_completed,
-						"is_overdue": ticket.is_overdue,
-						"assigned_worker": ticket.assigned_worker.employee_name if ticket.assigned_worker else "",
-					})
-			out.append(pd)
+		var pd = {
+			"project_id": proj.project_id,
+			"client_id": proj.client_id,
+			"title": proj.title,
+			"created_at_day": proj.created_at_day,
+			"sla_level": proj.sla_level,
+			"daily_rate": proj.daily_rate,
+			"is_active": proj.is_active,
+			"contract_duration_days": proj.contract_duration_days,
+			"duration_bonus_percent": proj.duration_bonus_percent,
+			"end_day": proj.end_day,
+			"weekly_overdue_count": proj.weekly_overdue_count,
+			"termination_reason": proj.termination_reason,
+			"week_start_day": proj.week_start_day,
+			"total_earned": proj.total_earned,
+			"total_labor_cost": proj.total_labor_cost,
+			"assigned_support_employee": proj.assigned_support_employee.employee_name if proj.assigned_support_employee else "",
+			"tickets": [],
+		}
+		for ticket in proj.tickets:
+			if not (ticket is SupportTicketData):
+				continue
+			pd["tickets"].append({
+				"ticket_id": ticket.ticket_id,
+				"required_role": ticket.required_role,
+				"work_amount": ticket.work_amount,
+				"progress": ticket.progress,
+				"created_at_day": ticket.created_at_day,
+				"deadline_day": ticket.deadline_day,
+				"is_completed": ticket.is_completed,
+				"is_overdue": ticket.is_overdue,
+				"assigned_worker": ticket.assigned_worker.employee_name if ticket.assigned_worker else "",
+			})
+		out.append(pd)
 	return out
 
 func _deserialize_project_dict(d: Dictionary) -> SupportProjectData:
