@@ -130,7 +130,29 @@ func _on_time_tick(hour: int, minute: int):
 			_planned_ticket_minutes[project_id] = planned
 
 	if hour == 18 and minute == 0 and GameTime.get_weekday_index() == 4:
-		_process_weekly_payouts()
+		flush_weekly_payout_if_pending()
+
+func flush_weekly_payout_if_pending():
+	if GameTime.day <= 0:
+		return
+	if GameTime.get_weekday_index() != 4:
+		return
+	if GameTime.hour < GameTime.END_HOUR:
+		return
+	if not _has_pending_weekly_payouts():
+		return
+	_process_weekly_payouts()
+
+func _has_pending_weekly_payouts() -> bool:
+	for proj in active_support_projects:
+		if not proj.is_active:
+			continue
+		var start_day = max(proj.week_start_day, proj.created_at_day)
+		if start_day > GameTime.day:
+			continue
+		if _count_workdays_between(start_day, GameTime.day) > 0:
+			return true
+	return false
 
 func _physics_process(delta: float):
 	if GameTime.is_game_paused:
@@ -209,7 +231,7 @@ func _process_weekly_payouts():
 
 		if final_payout > 0:
 			GameState.add_income(final_payout)
-			GameState.daily_income_details.append({"reason": tr("PROJ_CAT_SUPPORT"), "amount": final_payout})
+			GameState.daily_income_details.append({"reason": tr("PROJ_CAT_SUPPORT"), "amount": final_payout, "category": "support"})
 			proj.total_earned += final_payout
 
 		var client = proj.get_client()

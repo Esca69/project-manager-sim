@@ -50,6 +50,11 @@ func record_day():
 	for svc in GameState.daily_service_details:
 		service_costs += int(svc.get("amount", 0))
 
+	var support_income = 0
+	for entry in GameState.daily_income_details:
+		if str(entry.get("category", "")) == "support":
+			support_income += int(entry.get("amount", 0))
+
 	var project_details = []
 	for entry in GameState.projects_finished_today:
 		var proj = entry.get("project", null)
@@ -68,6 +73,7 @@ func record_day():
 	var record = {
 		"day": GameTime.day,
 		"income": GameState.daily_income,
+		"support_income": support_income,
 		"expenses": GameState.daily_expenses,
 		"balance": GameState.company_balance,
 		"salary_total": salary_total,

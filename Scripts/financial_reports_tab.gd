@@ -5,6 +5,7 @@ extends Control
 
 const COLOR_BLUE      = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_GREEN     = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_SUPPORT   = Color(0.0, 0.6, 0.6, 1)
 const COLOR_RED       = Color(0.8980392, 0.22352941, 0.20784314, 1)
 const COLOR_ORANGE    = Color(1.0, 0.55, 0.0, 1)
 const COLOR_GRAY      = Color(0.5, 0.5, 0.5, 1)
@@ -312,13 +313,14 @@ func _aggregate_records(records: Array) -> Array:
 				var wn = GameTime.get_week_number(d)
 				if not weeks.has(wn):
 					weeks[wn] = {
-						"income": 0, "expenses": 0, "balance": 0,
+						"income": 0, "support_income": 0, "expenses": 0, "balance": 0,
 						"salary_total": 0, "pm_salary": 0, "penalties": 0,
 						"office_costs": 0, "training_costs": 0, "bonus_costs": 0, "service_costs": 0,
 						"day": GameTime.get_week_start_day(wn),
 						"label": "W%d" % wn, "_lb": 0
 					}
 				weeks[wn]["income"]        += int(r.get("income", 0))
+				weeks[wn]["support_income"] += int(r.get("support_income", 0))
 				weeks[wn]["expenses"]      += int(r.get("expenses", 0))
 				weeks[wn]["salary_total"]  += int(r.get("salary_total", 0))
 				weeks[wn]["pm_salary"]     += int(r.get("pm_salary", 0))
@@ -340,13 +342,14 @@ func _aggregate_records(records: Array) -> Array:
 				var mn = GameTime.get_month(d)
 				if not months.has(mn):
 					months[mn] = {
-						"income": 0, "expenses": 0, "balance": 0,
+						"income": 0, "support_income": 0, "expenses": 0, "balance": 0,
 						"salary_total": 0, "pm_salary": 0, "penalties": 0,
 						"office_costs": 0, "training_costs": 0, "bonus_costs": 0, "service_costs": 0,
 						"day": GameTime.get_month_start_day(mn),
 						"label": "M%d" % mn, "_lb": 0
 					}
 				months[mn]["income"]        += int(r.get("income", 0))
+				months[mn]["support_income"] += int(r.get("support_income", 0))
 				months[mn]["expenses"]      += int(r.get("expenses", 0))
 				months[mn]["salary_total"]  += int(r.get("salary_total", 0))
 				months[mn]["pm_salary"]     += int(r.get("pm_salary", 0))
@@ -783,7 +786,7 @@ func _build_structure_card() -> PanelContainer:
 	vbox.add_child(_expense_bar)
 	var legend = HBoxContainer.new(); legend.add_theme_constant_override("separation", 16); vbox.add_child(legend)
 	var sd_list = [
-		["REPORTS_PROJECT_INCOME", COLOR_GREEN], ["REPORTS_SALARIES", COLOR_SALARIES],
+		["REPORTS_PROJECT_INCOME", COLOR_GREEN], ["REPORTS_SUPPORT_INCOME", COLOR_SUPPORT], ["REPORTS_SALARIES", COLOR_SALARIES],
 		["REPORTS_PM_SALARY", COLOR_PM_SAL], ["REPORTS_PENALTIES", COLOR_PENALTIES],
 		["REPORTS_OFFICE", COLOR_OFFICE], ["REPORTS_TRAINING", COLOR_TRAINING],
 		["REPORTS_BONUSES", COLOR_BONUSES], ["REPORTS_SERVICES", COLOR_SERVICES],
@@ -806,8 +809,22 @@ func _draw_income_bar(ctrl: Control):
 	if records.is_empty():
 		ctrl.draw_string(ThemeDB.fallback_font, Vector2(0, 20), tr("REPORTS_NO_DATA"), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, COLOR_GRAY)
 		return
-	var total = 0; for r in records: total += int(r.get("income", 0))
-	_draw_stacked_bar_labeled(ctrl, [{"label": tr("REPORTS_PROJECT_INCOME"), "value": total, "color": COLOR_GREEN}], max(total, 1), 0.0, 0.0, w, h, _income_segs)
+	var total = 0
+	var support_total = 0
+	for r in records:
+		total += int(r.get("income", 0))
+		support_total += int(r.get("support_income", 0))
+	support_total = clamp(support_total, 0, total)
+	var project_total = max(0, total - support_total)
+	var segments: Array = []
+	if project_total > 0:
+		segments.append({"label": tr("REPORTS_PROJECT_INCOME"), "value": project_total, "color": COLOR_GREEN})
+	if support_total > 0:
+		segments.append({"label": tr("REPORTS_SUPPORT_INCOME"), "value": support_total, "color": COLOR_SUPPORT})
+	if total <= 0:
+		_draw_stacked_bar_labeled(ctrl, [], 0.0, 0.0, 0.0, w, h, _income_segs)
+		return
+	_draw_stacked_bar_labeled(ctrl, segments, float(total), 0.0, 0.0, w, h, _income_segs)
 
 func _draw_expense_bar(ctrl: Control):
 	_expense_segs.clear()
@@ -1114,24 +1131,36 @@ func _refresh_pnl():
 		var lbl = Label.new(); lbl.text = tr("REPORTS_NO_DATA")
 		lbl.add_theme_color_override("font_color", COLOR_GRAY); lbl.add_theme_font_size_override("font_size", 14)
 		_pnl_vbox.add_child(lbl); return
-	var ci = 0; var cs = 0; var cp = 0; var cn = 0; var co = 0; var ct = 0; var cb = 0; var cv = 0
+	var ci = 0; var csi = 0; var cs = 0; var cp = 0; var cn = 0; var co = 0; var ct = 0; var cb = 0; var cv = 0
 	for r in records:
 		ci += int(r.get("income", 0))
+		csi += int(r.get("support_income", 0))
 		cs += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 		cp += int(r.get("pm_salary", 0)); cn += int(r.get("penalties", 0))
 		co += int(r.get("office_costs", 0)); ct += int(r.get("training_costs", 0)); cb += int(r.get("bonus_costs", 0)); cv += int(r.get("service_costs", 0))
 	var ce = cs + cp + cn + co + ct + cb + cv; var cnet = ci - ce
 	var cmarg = 0.0; if ci > 0: cmarg = float(cnet) / float(ci) * 100.0
-	var pi = 0; var ps = 0; var pp = 0; var pn = 0; var po = 0; var pt = 0; var pb = 0; var pv = 0
+	var pi = 0; var psi = 0; var ps = 0; var pp = 0; var pn = 0; var po = 0; var pt = 0; var pb = 0; var pv = 0
 	if _pnl_month_index > 0:
 		var pr = _get_pnl_month_records(_pnl_month_index - 1)
 		for r in pr:
 			pi += int(r.get("income", 0))
+			psi += int(r.get("support_income", 0))
 			ps += int(r.get("salary_total", 0)) - int(r.get("pm_salary", 0))
 			pp += int(r.get("pm_salary", 0)); pn += int(r.get("penalties", 0))
 			po += int(r.get("office_costs", 0)); pt += int(r.get("training_costs", 0)); pb += int(r.get("bonus_costs", 0)); pv += int(r.get("service_costs", 0))
 	var pe = ps + pp + pn + po + pt + pb + pv; var pnet = pi - pe
 	var pmarg = 0.0; if pi > 0: pmarg = float(pnet) / float(pi) * 100.0
+	csi = clamp(csi, 0, ci)
+	psi = clamp(psi, 0, pi)
+	var cur_project_inc = max(0, ci - csi)
+	var prev_project_inc = max(0, pi - psi)
+	var cur_project_pct = "-"
+	if ci > 0:
+		cur_project_pct = "%.0f%%" % (float(cur_project_inc) / float(ci) * 100.0)
+	var cur_support_pct = "-"
+	if ci > 0:
+		cur_support_pct = "%.0f%%" % (float(csi) / float(ci) * 100.0)
 	var team_size = 1
 	if PeopleHistory and not PeopleHistory.daily_records.is_empty():
 		var ld = 0; for r in records:
@@ -1140,8 +1169,10 @@ func _refresh_pnl():
 			if int(pr.get("day", 0)) == ld: team_size = max(1, int(pr.get("team_size", 1))); break
 	_pnl_row(["", tr("REPORTS_PNL_VALUE"), tr("REPORTS_PNL_PCT_INCOME"), tr("REPORTS_PNL_VS_PREV")], true, [COLOR_GRAY, COLOR_GRAY, COLOR_GRAY, COLOR_GRAY])
 	_pnl_sep()
-	_pnl_row([tr("REPORTS_PROJECT_INCOME"), "+$"+_format_money(ci), "100%", _pcmp(ci, pi)],
-		false, [COLOR_DARK, COLOR_GREEN, COLOR_GRAY, _pcmp_col(ci, pi, true)])
+	_pnl_row([tr("REPORTS_PROJECT_INCOME"), "+$"+_format_money(cur_project_inc), cur_project_pct, _pcmp(cur_project_inc, prev_project_inc)],
+		false, [COLOR_DARK, COLOR_GREEN, COLOR_GRAY, _pcmp_col(cur_project_inc, prev_project_inc, true)])
+	_pnl_row([tr("REPORTS_SUPPORT_INCOME"), "+$"+_format_money(csi), cur_support_pct, _pcmp(csi, psi)],
+		false, [COLOR_DARK, COLOR_SUPPORT, COLOR_GRAY, _pcmp_col(csi, psi, true)])
 	_pnl_sep()
 	var exp_data = [
 		[tr("REPORTS_SALARIES"),  cs, ps], [tr("REPORTS_PM_SALARY"), cp, pp],
