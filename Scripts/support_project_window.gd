@@ -17,6 +17,7 @@ var _last_refresh_key: int = -1
 var _assignment_overlay: ColorRect
 var _assignment_list: ItemList
 var _assignment_callback: Callable
+var _ticket_progress_labels: Array = []
 
 func _tr_format_safe(key: String, args, fallback: String) -> String:
     var text = tr(key)
@@ -175,48 +176,95 @@ func _build_assignment_popup():
     add_child(_assignment_overlay)
 
     var panel = PanelContainer.new()
-    panel.custom_minimum_size = Vector2(500, 500)
+    panel.custom_minimum_size = Vector2(450, 400)
     panel.set_anchors_preset(Control.PRESET_CENTER)
-    panel.offset_left = -250
-    panel.offset_top = -250
-    panel.offset_right = 250
-    panel.offset_bottom = 250
+    panel.offset_left = -225
+    panel.offset_top = -200
+    panel.offset_right = 225
+    panel.offset_bottom = 200
     var ps = StyleBoxFlat.new()
     ps.bg_color = COLOR_WHITE
-    ps.border_width_left = 2
-    ps.border_width_top = 2
-    ps.border_width_right = 2
-    ps.border_width_bottom = 2
-    ps.border_color = Color(0.85, 0.85, 0.85, 1)
-    ps.corner_radius_top_left = 10
-    ps.corner_radius_top_right = 10
-    ps.corner_radius_bottom_left = 10
-    ps.corner_radius_bottom_right = 10
+    ps.border_width_left = 3
+    ps.border_width_top = 3
+    ps.border_width_right = 3
+    ps.border_width_bottom = 3
+    ps.border_color = Color(0, 0, 0, 1)
+    ps.corner_radius_top_left = 22
+    ps.corner_radius_top_right = 22
+    ps.corner_radius_bottom_left = 20
+    ps.corner_radius_bottom_right = 20
+    if UITheme:
+        UITheme.apply_shadow(ps, false)
     panel.add_theme_stylebox_override("panel", ps)
     _assignment_overlay.add_child(panel)
 
-    var content_margin = MarginContainer.new()
-    content_margin.add_theme_constant_override("margin_left", 16)
-    content_margin.add_theme_constant_override("margin_top", 16)
-    content_margin.add_theme_constant_override("margin_right", 16)
-    content_margin.add_theme_constant_override("margin_bottom", 16)
-    panel.add_child(content_margin)
+    var main_vbox = VBoxContainer.new()
+    main_vbox.add_theme_constant_override("separation", 0)
+    panel.add_child(main_vbox)
 
-    var v = VBoxContainer.new()
-    v.size_flags_vertical = Control.SIZE_EXPAND_FILL
-    v.add_theme_constant_override("separation", 12)
-    content_margin.add_child(v)
+    var header = Panel.new()
+    header.custom_minimum_size = Vector2(0, 40)
+    var hs = StyleBoxFlat.new()
+    hs.bg_color = COLOR_BLUE
+    hs.corner_radius_top_left = 20
+    hs.corner_radius_top_right = 20
+    header.add_theme_stylebox_override("panel", hs)
+    main_vbox.add_child(header)
 
     var title = Label.new()
     title.text = tr("EMP_SELECT_TITLE")
+    title.set_anchors_preset(Control.PRESET_CENTER)
+    title.grow_horizontal = Control.GROW_DIRECTION_BOTH
+    title.grow_vertical = Control.GROW_DIRECTION_BOTH
+    title.offset_left = -100
+    title.offset_top = -11.5
+    title.offset_right = 100
+    title.offset_bottom = 11.5
     title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.add_theme_color_override("font_color", COLOR_WHITE)
     title.add_theme_font_size_override("font_size", 16)
     if UITheme:
         UITheme.apply_font(title, "bold")
-    v.add_child(title)
+    header.add_child(title)
+
+    var close_btn = Button.new()
+    close_btn.text = "X"
+    close_btn.focus_mode = Control.FOCUS_NONE
+    close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+    close_btn.offset_left = -51
+    close_btn.offset_top = -15
+    close_btn.offset_right = -24
+    close_btn.offset_bottom = 16
+    close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+    close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+    close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+    var close_style = StyleBoxFlat.new()
+    close_style.bg_color = COLOR_WHITE
+    close_style.corner_radius_top_left = 10
+    close_style.corner_radius_top_right = 10
+    close_style.corner_radius_bottom_right = 10
+    close_style.corner_radius_bottom_left = 10
+    close_btn.add_theme_stylebox_override("normal", close_style)
+    if UITheme:
+        UITheme.apply_font(close_btn, "semibold")
+    close_btn.pressed.connect(func(): _assignment_overlay.visible = false)
+    header.add_child(close_btn)
+
+    var content_margin = MarginContainer.new()
+    content_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    content_margin.add_theme_constant_override("margin_left", 15)
+    content_margin.add_theme_constant_override("margin_top", 15)
+    content_margin.add_theme_constant_override("margin_right", 15)
+    content_margin.add_theme_constant_override("margin_bottom", 15)
+    main_vbox.add_child(content_margin)
+
+    var v = VBoxContainer.new()
+    v.add_theme_constant_override("separation", 12)
+    content_margin.add_child(v)
 
     _assignment_list = ItemList.new()
     _assignment_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    _assignment_list.add_theme_color_override("font_color", COLOR_BLUE)
     if UITheme:
         UITheme.apply_font(_assignment_list, "regular")
     var list_style = StyleBoxFlat.new()
@@ -244,13 +292,6 @@ func _build_assignment_popup():
     _assignment_list.item_activated.connect(_on_assignment_item_activated)
     v.add_child(_assignment_list)
 
-    var close_btn = Button.new()
-    close_btn.text = tr("UI_CLOSE")
-    close_btn.custom_minimum_size = Vector2(0, 42)
-    _style_blue_button(close_btn)
-    close_btn.pressed.connect(func(): _assignment_overlay.visible = false)
-    v.add_child(close_btn)
-
 func _rebuild():
     if _project == null:
         return
@@ -259,6 +300,7 @@ func _rebuild():
         c.queue_free()
     for c in _tickets_vbox.get_children():
         c.queue_free()
+    _ticket_progress_labels.clear()
 
     var title_lbl: Label = _window.find_child("TitleLabel", true, false)
     var client = _project.get_client()
@@ -282,6 +324,10 @@ func _rebuild():
         specialist_lbl.text = "🎧 %s" % _project.assigned_support_employee.get_display_name()
     else:
         specialist_lbl.text = tr("TICKET_NOT_ASSIGNED")
+    specialist_lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+    specialist_lbl.add_theme_font_size_override("font_size", 14)
+    if UITheme:
+        UITheme.apply_font(specialist_lbl, "semibold")
     support_row.add_child(specialist_lbl)
 
     if _project.assigned_support_employee:
@@ -388,7 +434,9 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
     elif ticket.required_role == "QA":
         role_icon = "🧪"
     root.add_child(_info_label("%s %s" % [role_icon, tr("ROLE_SHORT_" + ticket.required_role)], COLOR_BLUE, true))
-    root.add_child(_info_label("%d / %d" % [int(ticket.progress), ticket.work_amount], COLOR_BLUE, false))
+    var progress_lbl = _info_label("%d / %d" % [int(ticket.progress), ticket.work_amount], COLOR_BLUE, false)
+    root.add_child(progress_lbl)
+    _ticket_progress_labels.append({"label": progress_lbl, "ticket": ticket})
 
     var date_txt = GameTime.get_date_short(ticket.deadline_day)
     root.add_child(_info_label(_tr_format_safe("TICKET_DEADLINE", [date_txt, max(days_left, 0)], "Deadline: %s (%d days left)" % [date_txt, max(days_left, 0)]), Color(0.4, 0.4, 0.4, 1), false))
@@ -515,6 +563,13 @@ func _is_employee_busy(emp: EmployeeData) -> bool:
 func _process(_delta):
     if not visible or _project == null:
         return
+    for entry in _ticket_progress_labels:
+        var ticket = entry.get("ticket")
+        var label: Label = entry.get("label")
+        if not is_instance_valid(label):
+            continue
+        if ticket is SupportTicketData:
+            label.text = "%d / %d" % [int(ticket.progress), ticket.work_amount]
     var key = GameTime.hour * 60 + GameTime.minute
     if key != _last_refresh_key:
         _last_refresh_key = key
