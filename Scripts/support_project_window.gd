@@ -30,6 +30,7 @@ func _ready():
     visible = false
     z_index = 97
     mouse_filter = Control.MOUSE_FILTER_IGNORE
+    set_anchors_preset(Control.PRESET_FULL_RECT)
     _build_ui()
 
 func open_for_project(proj: SupportProjectData):
@@ -60,13 +61,12 @@ func _build_ui():
     _overlay.mouse_filter = Control.MOUSE_FILTER_STOP
     add_child(_overlay)
 
+    var center = CenterContainer.new()
+    center.set_anchors_preset(Control.PRESET_FULL_RECT)
+    add_child(center)
+
     _window = PanelContainer.new()
-    _window.custom_minimum_size = Vector2(1520, 900)
-    _window.set_anchors_preset(Control.PRESET_CENTER)
-    _window.offset_left = -760
-    _window.offset_top = -450
-    _window.offset_right = 760
-    _window.offset_bottom = 450
+    _window.custom_minimum_size = Vector2(1200, 750)
     var ws = StyleBoxFlat.new()
     ws.bg_color = COLOR_WHITE
     ws.border_width_left = 3
@@ -81,7 +81,7 @@ func _build_ui():
     if UITheme:
         UITheme.apply_shadow(ws, false)
     _window.add_theme_stylebox_override("panel", ws)
-    add_child(_window)
+    center.add_child(_window)
 
     var root = VBoxContainer.new()
     root.add_theme_constant_override("separation", 0)
@@ -96,33 +96,17 @@ func _build_ui():
     header.add_theme_stylebox_override("panel", hs)
     root.add_child(header)
 
-    var title = Label.new()
-    title.name = "TitleLabel"
-    title.set_anchors_preset(Control.PRESET_CENTER)
-    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    title.add_theme_color_override("font_color", Color.WHITE)
+    var title_lbl = Label.new()
+    title_lbl.name = "TitleLabel"
+    title_lbl.add_theme_color_override("font_color", COLOR_WHITE)
+    title_lbl.add_theme_font_size_override("font_size", 16)
+    title_lbl.set_anchors_preset(Control.PRESET_CENTER)
+    title_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
+    title_lbl.grow_vertical = Control.GROW_DIRECTION_BOTH
+    title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     if UITheme:
-        UITheme.apply_font(title, "bold")
-    header.add_child(title)
-
-    var close_btn = Button.new()
-    close_btn.text = "X"
-    close_btn.focus_mode = Control.FOCUS_NONE
-    close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-    close_btn.offset_left = -50
-    close_btn.offset_top = -14
-    close_btn.offset_right = -24
-    close_btn.offset_bottom = 14
-    close_btn.add_theme_color_override("font_color", COLOR_BLUE)
-    var cs = StyleBoxFlat.new()
-    cs.bg_color = COLOR_WHITE
-    cs.corner_radius_top_left = 10
-    cs.corner_radius_top_right = 10
-    cs.corner_radius_bottom_left = 10
-    cs.corner_radius_bottom_right = 10
-    close_btn.add_theme_stylebox_override("normal", cs)
-    close_btn.pressed.connect(_close_window)
-    header.add_child(close_btn)
+        UITheme.apply_font(title_lbl, "bold")
+    header.add_child(title_lbl)
 
     var margin = MarginContainer.new()
     margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -150,6 +134,50 @@ func _build_ui():
     _tickets_vbox = VBoxContainer.new()
     _tickets_vbox.add_theme_constant_override("separation", 8)
     scroll.add_child(_tickets_vbox)
+
+    var footer_margin = MarginContainer.new()
+    footer_margin.add_theme_constant_override("margin_top", 4)
+    body.add_child(footer_margin)
+
+    var close_center = CenterContainer.new()
+    footer_margin.add_child(close_center)
+
+    var close_btn = Button.new()
+    close_btn.text = tr("UI_CLOSE")
+    close_btn.custom_minimum_size = Vector2(160, 36)
+    close_btn.add_theme_font_size_override("font_size", 14)
+    close_btn.focus_mode = Control.FOCUS_NONE
+    if UITheme:
+        UITheme.apply_font(close_btn, "semibold")
+    var cbtn_style = StyleBoxFlat.new()
+    cbtn_style.bg_color = COLOR_WHITE
+    cbtn_style.border_width_left = 2
+    cbtn_style.border_width_top = 2
+    cbtn_style.border_width_right = 2
+    cbtn_style.border_width_bottom = 2
+    cbtn_style.border_color = Color(0.5, 0.5, 0.5, 1)
+    cbtn_style.corner_radius_top_left = 16
+    cbtn_style.corner_radius_top_right = 16
+    cbtn_style.corner_radius_bottom_right = 16
+    cbtn_style.corner_radius_bottom_left = 16
+    var cbtn_hover = StyleBoxFlat.new()
+    cbtn_hover.bg_color = Color(0.5, 0.5, 0.5, 1)
+    cbtn_hover.border_width_left = 2
+    cbtn_hover.border_width_top = 2
+    cbtn_hover.border_width_right = 2
+    cbtn_hover.border_width_bottom = 2
+    cbtn_hover.border_color = Color(0.5, 0.5, 0.5, 1)
+    cbtn_hover.corner_radius_top_left = 16
+    cbtn_hover.corner_radius_top_right = 16
+    cbtn_hover.corner_radius_bottom_right = 16
+    cbtn_hover.corner_radius_bottom_left = 16
+    close_btn.add_theme_stylebox_override("normal", cbtn_style)
+    close_btn.add_theme_stylebox_override("hover", cbtn_hover)
+    close_btn.add_theme_stylebox_override("pressed", cbtn_hover)
+    close_btn.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+    close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+    close_btn.pressed.connect(_close_window)
+    close_center.add_child(close_btn)
 
     _build_assignment_popup()
 
@@ -241,6 +269,7 @@ func _rebuild():
         var remove_btn = Button.new()
         remove_btn.text = tr("SUPPORT_REMOVE_SPECIALIST")
         remove_btn.custom_minimum_size = Vector2(160, 34)
+        _style_blue_button(remove_btn)
         remove_btn.pressed.connect(func():
             _project.assigned_support_employee = null
             _rebuild()
@@ -250,6 +279,7 @@ func _rebuild():
         var assign_btn = Button.new()
         assign_btn.text = tr("SUPPORT_ASSIGN_SPECIALIST")
         assign_btn.custom_minimum_size = Vector2(260, 34)
+        _style_blue_button(assign_btn)
         assign_btn.pressed.connect(func():
             _open_assignment_popup("Customer Support", func(emp):
                 _project.assigned_support_employee = emp
@@ -358,6 +388,7 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
         var btn = Button.new()
         btn.text = tr("TICKET_ASSIGN")
         btn.custom_minimum_size = Vector2(180, 34)
+        _style_blue_button(btn)
         btn.disabled = ticket.assigned_worker != null
         btn.pressed.connect(func():
             _open_assignment_popup(_role_to_job_title(ticket.required_role), func(emp):
@@ -368,6 +399,40 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
         root.add_child(btn)
 
     return card
+
+func _style_blue_button(btn: Button):
+    btn.add_theme_font_size_override("font_size", 13)
+    btn.focus_mode = Control.FOCUS_NONE
+    if UITheme:
+        UITheme.apply_font(btn, "semibold")
+    var btn_n = StyleBoxFlat.new()
+    btn_n.bg_color = COLOR_WHITE
+    btn_n.border_width_left = 2
+    btn_n.border_width_top = 2
+    btn_n.border_width_right = 2
+    btn_n.border_width_bottom = 2
+    btn_n.border_color = COLOR_BLUE
+    btn_n.corner_radius_top_left = 16
+    btn_n.corner_radius_top_right = 16
+    btn_n.corner_radius_bottom_right = 16
+    btn_n.corner_radius_bottom_left = 16
+    var btn_h = StyleBoxFlat.new()
+    btn_h.bg_color = COLOR_BLUE
+    btn_h.border_width_left = 2
+    btn_h.border_width_top = 2
+    btn_h.border_width_right = 2
+    btn_h.border_width_bottom = 2
+    btn_h.border_color = COLOR_BLUE
+    btn_h.corner_radius_top_left = 16
+    btn_h.corner_radius_top_right = 16
+    btn_h.corner_radius_bottom_right = 16
+    btn_h.corner_radius_bottom_left = 16
+    btn.add_theme_stylebox_override("normal", btn_n)
+    btn.add_theme_stylebox_override("hover", btn_h)
+    btn.add_theme_stylebox_override("pressed", btn_h)
+    btn.add_theme_color_override("font_color", COLOR_BLUE)
+    btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+    btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
 
 func _role_to_job_title(role: String) -> String:
     match role:

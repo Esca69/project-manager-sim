@@ -12,7 +12,6 @@ const COLOR_CARD_BG = Color(0.98, 0.98, 0.98, 1)
 var _overlay: ColorRect
 var _window: PanelContainer
 var _list_vbox: VBoxContainer
-var _confirm_btn: Button
 
 var _project: SupportProjectData = null
 var _selected_sla: String = ""
@@ -131,92 +130,6 @@ func _build_ui():
     _list_vbox.add_theme_constant_override("separation", 8)
     cards_scroll.add_child(_list_vbox)
 
-    var confirm_center = CenterContainer.new()
-    content_vbox.add_child(confirm_center)
-
-    _confirm_btn = Button.new()
-    _confirm_btn.text = tr("SLA_CONFIRM")
-    _confirm_btn.custom_minimum_size = Vector2(220, 40)
-    _confirm_btn.disabled = true
-    _confirm_btn.add_theme_font_size_override("font_size", 14)
-    _confirm_btn.focus_mode = Control.FOCUS_NONE
-    if UITheme:
-        UITheme.apply_font(_confirm_btn, "semibold")
-    var cfm_n = StyleBoxFlat.new()
-    cfm_n.bg_color = COLOR_WHITE
-    cfm_n.border_width_left = 2
-    cfm_n.border_width_top = 2
-    cfm_n.border_width_right = 2
-    cfm_n.border_width_bottom = 2
-    cfm_n.border_color = COLOR_GREEN
-    cfm_n.corner_radius_top_left = 16
-    cfm_n.corner_radius_top_right = 16
-    cfm_n.corner_radius_bottom_right = 16
-    cfm_n.corner_radius_bottom_left = 16
-    var cfm_h = StyleBoxFlat.new()
-    cfm_h.bg_color = COLOR_GREEN
-    cfm_h.border_width_left = 2
-    cfm_h.border_width_top = 2
-    cfm_h.border_width_right = 2
-    cfm_h.border_width_bottom = 2
-    cfm_h.border_color = COLOR_GREEN
-    cfm_h.corner_radius_top_left = 16
-    cfm_h.corner_radius_top_right = 16
-    cfm_h.corner_radius_bottom_right = 16
-    cfm_h.corner_radius_bottom_left = 16
-    _confirm_btn.add_theme_stylebox_override("normal", cfm_n)
-    _confirm_btn.add_theme_stylebox_override("hover", cfm_h)
-    _confirm_btn.add_theme_stylebox_override("pressed", cfm_h)
-    _confirm_btn.add_theme_color_override("font_color", COLOR_GREEN)
-    _confirm_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-    _confirm_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
-    _confirm_btn.pressed.connect(_on_confirm_pressed)
-    confirm_center.add_child(_confirm_btn)
-
-    var footer_margin = MarginContainer.new()
-    footer_margin.add_theme_constant_override("margin_top", 4)
-    content_vbox.add_child(footer_margin)
-
-    var close_center = CenterContainer.new()
-    footer_margin.add_child(close_center)
-
-    var close_btn = Button.new()
-    close_btn.text = tr("UI_CLOSE")
-    close_btn.custom_minimum_size = Vector2(160, 36)
-    close_btn.add_theme_font_size_override("font_size", 14)
-    close_btn.focus_mode = Control.FOCUS_NONE
-    if UITheme:
-        UITheme.apply_font(close_btn, "semibold")
-    var cbtn_style = StyleBoxFlat.new()
-    cbtn_style.bg_color = COLOR_WHITE
-    cbtn_style.border_width_left = 2
-    cbtn_style.border_width_top = 2
-    cbtn_style.border_width_right = 2
-    cbtn_style.border_width_bottom = 2
-    cbtn_style.border_color = COLOR_GRAY
-    cbtn_style.corner_radius_top_left = 16
-    cbtn_style.corner_radius_top_right = 16
-    cbtn_style.corner_radius_bottom_right = 16
-    cbtn_style.corner_radius_bottom_left = 16
-    var cbtn_hover = StyleBoxFlat.new()
-    cbtn_hover.bg_color = COLOR_GRAY
-    cbtn_hover.border_width_left = 2
-    cbtn_hover.border_width_top = 2
-    cbtn_hover.border_width_right = 2
-    cbtn_hover.border_width_bottom = 2
-    cbtn_hover.border_color = COLOR_GRAY
-    cbtn_hover.corner_radius_top_left = 16
-    cbtn_hover.corner_radius_top_right = 16
-    cbtn_hover.corner_radius_bottom_right = 16
-    cbtn_hover.corner_radius_bottom_left = 16
-    close_btn.add_theme_stylebox_override("normal", cbtn_style)
-    close_btn.add_theme_stylebox_override("hover", cbtn_hover)
-    close_btn.add_theme_stylebox_override("pressed", cbtn_hover)
-    close_btn.add_theme_color_override("font_color", COLOR_GRAY)
-    close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-    close_btn.pressed.connect(_close_window)
-    close_center.add_child(close_btn)
-
 func _rebuild_cards():
     for c in _list_vbox.get_children():
         c.queue_free()
@@ -229,7 +142,6 @@ func _rebuild_cards():
 
     for d in definitions:
         _list_vbox.add_child(_make_sla_card(d))
-    _confirm_btn.disabled = _selected_sla == ""
 
 func _make_sla_card(definition: Dictionary) -> PanelContainer:
     var card = PanelContainer.new()
@@ -345,16 +257,16 @@ func _make_sla_card(definition: Dictionary) -> PanelContainer:
     pick_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
     pick_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
     pick_btn.pressed.connect(func():
-        _selected_sla = str(definition["id"])
-        _rebuild_cards()
+        _confirm_and_close(str(definition["id"]))
     )
     right.add_child(pick_btn)
 
     return card
 
-func _on_confirm_pressed():
-    if _project == null or _selected_sla == "":
+func _confirm_and_close(sla_id: String):
+    if _project == null or sla_id == "":
         return
+    _selected_sla = sla_id
     _project.sla_level = _selected_sla
     if _project.week_start_day <= 0:
         _project.week_start_day = GameTime.day
