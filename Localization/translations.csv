@@ -1496,3 +1496,16 @@ SUPPORT_PROJ_EDAPLUS,Техподдержка ЕдаПлюс,EatPlus Support
 SUPPORT_PROJ_FINANSGROUP,Техподдержка ФинансГрупп,FinanceGroup Support
 SUPPORT_PROJ_MEDIALINE,Техподдержка МедиаЛайн,MediaLine Support
 SUPPORT_PROJ_STROYMASTER,Техподдержка СтройМастер,BuildMaster Support
+SKILL_CATEGORY_MANAGEMENT,Управление,Management
+SKILL_DESK_ONE_TIME_NAME,🛒 Закупки,🛒 Purchases
+SKILL_DESK_ONE_TIME_DESC,Открывает раздел разовых покупок для рабочих столов (второй монитор; растение и т.д.),Unlocks one-time purchases section for desks (second monitor; plant etc.)
+SKILL_DESK_SUBS_NAME,📅 Подписки,📅 Subscriptions
+SKILL_DESK_SUBS_DESC,Открывает раздел подписок для рабочих столов (софт BA/Dev/QA; AI),Unlocks subscriptions section for desks (BA/Dev/QA software; AI)
+SKILL_INTERACT_FEEDBACK_NAME,💬 Обратная связь,💬 Feedback
+SKILL_INTERACT_FEEDBACK_DESC,Открывает действия «Похвала» и «Выговор» в панели взаимодействия с сотрудником,Unlocks Praise and Reprimand actions in the employee interaction panel
+SKILL_INTERACT_HR_TOOLS_NAME,🧰 HR инструменты,🧰 HR Tools
+SKILL_INTERACT_HR_TOOLS_DESC,Открывает действия: отправить на обучение; оплачиваемый отгул; неоплачиваемый отпуск; премия,"Unlocks actions: send to training; paid day off; unpaid leave; bonus"
+DESK_LOCK_ONE_TIME_TOOLTIP,Откройте навык «🛒 Закупки» в дереве PM-навыков; чтобы покупать улучшения для столов,Unlock the «🛒 Purchases» skill in the PM skill tree to buy desk upgrades
+DESK_LOCK_SUBS_TOOLTIP,Откройте навык «📅 Подписки» в дереве PM-навыков; чтобы управлять подписками,Unlock the «📅 Subscriptions» skill in the PM skill tree to manage subscriptions
+INTERACT_LOCK_FEEDBACK_TOOLTIP,Откройте навык «💬 Обратная связь» в дереве PM-навыков,Unlock the «💬 Feedback» skill in the PM skill tree
+INTERACT_LOCK_HR_TOOLS_TOOLTIP,Откройте навык «🧰 HR инструменты» в дереве PM-навыков,Unlock the «🧰 HR Tools» skill in the PM skill tree

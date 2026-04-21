@@ -253,7 +253,9 @@ func _refresh_actions_block():
 		tr("INTERACT_PRAISE_TITLE"),
 		tr("INTERACT_PRAISE_DESC"),
 		praise_reason,
-		func(): _do_praise()
+		func(): _do_praise(),
+		"interact_feedback_unlock",
+		"INTERACT_LOCK_FEEDBACK_TOOLTIP"
 	)
 
 	# ⚠️ Выговор
@@ -266,7 +268,9 @@ func _refresh_actions_block():
 		tr("INTERACT_REPRIMAND_TITLE"),
 		tr("INTERACT_REPRIMAND_DESC"),
 		reprimand_reason,
-		func(): _do_reprimand()
+		func(): _do_reprimand(),
+		"interact_feedback_unlock",
+		"INTERACT_LOCK_FEEDBACK_TOOLTIP"
 	)
 
 	# Сепаратор
@@ -282,7 +286,9 @@ func _refresh_actions_block():
 		tr("INTERACT_TRAINING_TITLE"),
 		tr("INTERACT_TRAINING_DESC"),
 		training_reason,
-		func(): _do_training()
+		func(): _do_training(),
+		"interact_hr_tools_unlock",
+		"INTERACT_LOCK_HR_TOOLS_TOOLTIP"
 	)
 
 	# 🏖️ Оплачиваемый отгул
@@ -293,7 +299,9 @@ func _refresh_actions_block():
 		tr("INTERACT_DAYOFF_TITLE"),
 		tr("INTERACT_DAYOFF_DESC"),
 		dayoff_reason,
-		func(): _do_dayoff()
+		func(): _do_dayoff(),
+		"interact_hr_tools_unlock",
+		"INTERACT_LOCK_HR_TOOLS_TOOLTIP"
 	)
 
 	# 💰 Неоплачиваемый отпуск
@@ -301,7 +309,9 @@ func _refresh_actions_block():
 		tr("INTERACT_UNPAID_TITLE"),
 		tr("INTERACT_UNPAID_DESC"),
 		"",
-		func(): _do_unpaid_leave()
+		func(): _do_unpaid_leave(),
+		"interact_hr_tools_unlock",
+		"INTERACT_LOCK_HR_TOOLS_TOOLTIP"
 	)
 
 	# 💵 Премия
@@ -312,10 +322,12 @@ func _refresh_actions_block():
 		tr("INTERACT_BONUS_TITLE"),
 		tr("INTERACT_BONUS_DESC") % bonus_amount,
 		bonus_reason,
-		func(): _do_bonus()
+		func(): _do_bonus(),
+		"interact_hr_tools_unlock",
+		"INTERACT_LOCK_HR_TOOLS_TOOLTIP"
 	)
 
-func _add_action_row(title: String, desc: String, reason: String, callback: Callable):
+func _add_action_row(title: String, desc: String, reason: String, callback: Callable, required_skill: String = "", lock_tooltip_key: String = ""):
 	var row = PanelContainer.new()
 	var row_style = StyleBoxFlat.new()
 	row_style.bg_color = COLOR_LIGHT_GRAY
@@ -365,6 +377,11 @@ func _add_action_row(title: String, desc: String, reason: String, callback: Call
 		reason_lbl.add_theme_color_override("font_color", COLOR_RED)
 		left_vbox.add_child(reason_lbl)
 
+	if required_skill != "" and not PMData.has_skill(required_skill):
+		var lock = _create_lock_control(lock_tooltip_key)
+		hbox.add_child(lock)
+		return
+
 	# Правая часть: кнопка
 	var btn = Button.new()
 	btn.text = tr("INTERACT_BTN_EXECUTE")
@@ -408,6 +425,40 @@ func _add_action_row(title: String, desc: String, reason: String, callback: Call
 		btn.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5, 1))
 
 	hbox.add_child(btn)
+
+func _create_lock_control(tooltip_key: String) -> Control:
+	var lock_lbl = Label.new()
+	lock_lbl.text = "🔒"
+	lock_lbl.add_theme_font_size_override("font_size", 18)
+	lock_lbl.custom_minimum_size = Vector2(40, 34)
+	lock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lock_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lock_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	lock_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	var tooltip_ref: Array = [null]
+	var parent_ref = self
+	lock_lbl.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper.create_tooltip(tr(tooltip_key), Color(0.5, 0.5, 0.5, 1))
+		parent_ref.add_child(tp)
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp):
+			return
+		var lbl_global = lock_lbl.global_position
+		tp.global_position = Vector2(lbl_global.x + 28, lbl_global.y - 10)
+		var vp_size = parent_ref.get_viewport().get_visible_rect().size
+		tp.global_position.x = min(tp.global_position.x, vp_size.x - tp.size.x - 10)
+		tp.global_position.y = max(tp.global_position.y, 10)
+		tooltip_ref[0] = tp
+	)
+	lock_lbl.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+	return lock_lbl
 
 # ==========================================
 # === ДЕЙСТВИЯ PM ===

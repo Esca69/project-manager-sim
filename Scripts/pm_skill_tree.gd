@@ -62,6 +62,13 @@ const CATEGORIES = [
 		"branches": ["motivate", "no_toilet", "work_is_fun"],
 	},
 	{
+		"id": "management",
+		"label": "SKILL_CATEGORY_MANAGEMENT",
+		"emoji": "🏢",
+		"color": COLOR_TEAL,
+		"branches": ["desk_one_time", "desk_subs", "interact_feedback", "interact_hr_tools"],
+	},
+	{
 		"id": "passive",
 		"label": "SKILL_CATEGORY_PASSIVE",
 		"emoji": "🛡",
@@ -266,7 +273,7 @@ func _rebuild_tree():
 		cursor_y += 32
 
 		# --- Ряды навыков внутри категории ---
-		var is_inline = (cat_id == "analytics" or cat_id == "active")
+		var is_inline = (cat_id == "analytics" or cat_id == "active" or cat_id == "management")
 
 		if is_inline:
 			var x = LEFT_MARGIN

@@ -408,72 +408,112 @@ func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 
 	if config.type == "one_time":
 		if not is_bought:
-			var buy_btn = Button.new()
-			buy_btn.text = tr("DESK_UPG_BUY")
-			buy_btn.custom_minimum_size = Vector2(120, 34)
-			buy_btn.add_theme_font_size_override("font_size", 12)
-			buy_btn.focus_mode = Control.FOCUS_NONE
-			if UITheme:
-				UITheme.apply_font(buy_btn, "semibold")
-			_style_buy_button(buy_btn)
-			buy_btn.pressed.connect(_on_buy_pressed.bind(upgrade_id))
-			action_box.add_child(buy_btn)
+			if not PMData.has_skill("desk_one_time_unlock"):
+				action_box.add_child(_create_lock_control("DESK_LOCK_ONE_TIME_TOOLTIP"))
+			else:
+				var buy_btn = Button.new()
+				buy_btn.text = tr("DESK_UPG_BUY")
+				buy_btn.custom_minimum_size = Vector2(120, 34)
+				buy_btn.add_theme_font_size_override("font_size", 12)
+				buy_btn.focus_mode = Control.FOCUS_NONE
+				if UITheme:
+					UITheme.apply_font(buy_btn, "semibold")
+				_style_buy_button(buy_btn)
+				buy_btn.pressed.connect(_on_buy_pressed.bind(upgrade_id))
+				action_box.add_child(buy_btn)
 	elif config.type == "subscription":
-		var is_active = _current_desk.desk_upgrades.get(upgrade_id + "_active", false)
+		if not PMData.has_skill("desk_subs_unlock"):
+			action_box.add_child(_create_lock_control("DESK_LOCK_SUBS_TOOLTIP"))
+		else:
+			var is_active = _current_desk.desk_upgrades.get(upgrade_id + "_active", false)
 
-		# Off radio pair
-		var off_pair = HBoxContainer.new()
-		off_pair.add_theme_constant_override("separation", 4)
-		off_pair.alignment = BoxContainer.ALIGNMENT_CENTER
-		action_box.add_child(off_pair)
+			# Off radio pair
+			var off_pair = HBoxContainer.new()
+			off_pair.add_theme_constant_override("separation", 4)
+			off_pair.alignment = BoxContainer.ALIGNMENT_CENTER
+			action_box.add_child(off_pair)
 
-		var off_btn = Button.new()
-		off_btn.text = SYMBOL_RADIO_ON if not is_active else SYMBOL_RADIO_OFF
-		off_btn.custom_minimum_size = Vector2(28, 28)
-		off_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		off_btn.add_theme_font_size_override("font_size", 10)
-		off_btn.focus_mode = Control.FOCUS_NONE
-		_style_sub_off_button(off_btn, not is_active)
-		off_btn.pressed.connect(_on_sub_off_pressed.bind(upgrade_id))
-		off_pair.add_child(off_btn)
+			var off_btn = Button.new()
+			off_btn.text = SYMBOL_RADIO_ON if not is_active else SYMBOL_RADIO_OFF
+			off_btn.custom_minimum_size = Vector2(28, 28)
+			off_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			off_btn.add_theme_font_size_override("font_size", 10)
+			off_btn.focus_mode = Control.FOCUS_NONE
+			_style_sub_off_button(off_btn, not is_active)
+			off_btn.pressed.connect(_on_sub_off_pressed.bind(upgrade_id))
+			off_pair.add_child(off_btn)
 
-		var off_lbl = Label.new()
-		off_lbl.text = tr("DESK_UPG_TOGGLE_OFF")
-		off_lbl.add_theme_font_size_override("font_size", 11)
-		off_lbl.add_theme_color_override("font_color", COLOR_DARK)
-		if UITheme:
-			UITheme.apply_font(off_lbl, "regular")
-		off_pair.add_child(off_lbl)
+			var off_lbl = Label.new()
+			off_lbl.text = tr("DESK_UPG_TOGGLE_OFF")
+			off_lbl.add_theme_font_size_override("font_size", 11)
+			off_lbl.add_theme_color_override("font_color", COLOR_DARK)
+			if UITheme:
+				UITheme.apply_font(off_lbl, "regular")
+			off_pair.add_child(off_lbl)
 
-		var spacer = Control.new()
-		spacer.custom_minimum_size = Vector2(8, 0)
-		action_box.add_child(spacer)
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(8, 0)
+			action_box.add_child(spacer)
 
-		# On radio pair
-		var on_pair = HBoxContainer.new()
-		on_pair.add_theme_constant_override("separation", 4)
-		on_pair.alignment = BoxContainer.ALIGNMENT_CENTER
-		action_box.add_child(on_pair)
+			# On radio pair
+			var on_pair = HBoxContainer.new()
+			on_pair.add_theme_constant_override("separation", 4)
+			on_pair.alignment = BoxContainer.ALIGNMENT_CENTER
+			action_box.add_child(on_pair)
 
-		var on_btn = Button.new()
-		on_btn.text = SYMBOL_RADIO_ON if is_active else SYMBOL_RADIO_OFF
-		on_btn.custom_minimum_size = Vector2(28, 28)
-		on_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		on_btn.add_theme_font_size_override("font_size", 10)
-		on_btn.focus_mode = Control.FOCUS_NONE
-		_style_sub_on_button(on_btn, is_active)
-		on_btn.pressed.connect(_on_sub_on_pressed.bind(upgrade_id))
-		on_pair.add_child(on_btn)
+			var on_btn = Button.new()
+			on_btn.text = SYMBOL_RADIO_ON if is_active else SYMBOL_RADIO_OFF
+			on_btn.custom_minimum_size = Vector2(28, 28)
+			on_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			on_btn.add_theme_font_size_override("font_size", 10)
+			on_btn.focus_mode = Control.FOCUS_NONE
+			_style_sub_on_button(on_btn, is_active)
+			on_btn.pressed.connect(_on_sub_on_pressed.bind(upgrade_id))
+			on_pair.add_child(on_btn)
 
-		var on_lbl = Label.new()
-		on_lbl.text = tr("DESK_UPG_TOGGLE_ON")
-		on_lbl.add_theme_font_size_override("font_size", 11)
-		on_lbl.add_theme_color_override("font_color", COLOR_DARK)
-		if UITheme:
-			UITheme.apply_font(on_lbl, "regular")
-		on_pair.add_child(on_lbl)
+			var on_lbl = Label.new()
+			on_lbl.text = tr("DESK_UPG_TOGGLE_ON")
+			on_lbl.add_theme_font_size_override("font_size", 11)
+			on_lbl.add_theme_color_override("font_color", COLOR_DARK)
+			if UITheme:
+				UITheme.apply_font(on_lbl, "regular")
+			on_pair.add_child(on_lbl)
 
 	return card
+
+func _create_lock_control(tooltip_key: String) -> Control:
+	var lock_lbl = Label.new()
+	lock_lbl.text = "🔒"
+	lock_lbl.add_theme_font_size_override("font_size", 18)
+	lock_lbl.custom_minimum_size = Vector2(40, 34)
+	lock_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lock_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lock_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+	lock_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	var tooltip_ref: Array = [null]
+	var parent_ref = self
+	lock_lbl.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper.create_tooltip(tr(tooltip_key), Color(0.5, 0.5, 0.5, 1))
+		parent_ref.add_child(tp)
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp):
+			return
+		var lbl_global = lock_lbl.global_position
+		tp.global_position = Vector2(lbl_global.x + 28, lbl_global.y - 10)
+		var vp_size = parent_ref.get_viewport().get_visible_rect().size
+		tp.global_position.x = min(tp.global_position.x, vp_size.x - tp.size.x - 10)
+		tp.global_position.y = max(tp.global_position.y, 10)
+		tooltip_ref[0] = tp
+	)
+	lock_lbl.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+	return lock_lbl
 
 func _style_buy_button(btn: Button):
 	var n = StyleBoxFlat.new()
