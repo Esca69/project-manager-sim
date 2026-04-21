@@ -340,6 +340,46 @@ const SKILL_TREE = {
 		"branch": "crisis_management",
 		"branch_order": 0,
 	},
+
+	# ====================================
+	# === КАТЕГОРИЯ: УПРАВЛЕНИЕ ===
+	# ====================================
+	"desk_one_time_unlock": {
+		"name": "SKILL_DESK_ONE_TIME_NAME",
+		"description": "SKILL_DESK_ONE_TIME_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "management",
+		"branch": "desk_one_time",
+		"branch_order": 0,
+	},
+	"desk_subs_unlock": {
+		"name": "SKILL_DESK_SUBS_NAME",
+		"description": "SKILL_DESK_SUBS_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "management",
+		"branch": "desk_subs",
+		"branch_order": 0,
+	},
+	"interact_feedback_unlock": {
+		"name": "SKILL_INTERACT_FEEDBACK_NAME",
+		"description": "SKILL_INTERACT_FEEDBACK_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "management",
+		"branch": "interact_feedback",
+		"branch_order": 0,
+	},
+	"interact_hr_tools_unlock": {
+		"name": "SKILL_INTERACT_HR_TOOLS_NAME",
+		"description": "SKILL_INTERACT_HR_TOOLS_DESC",
+		"cost": 1,
+		"prerequisite": "",
+		"category": "management",
+		"branch": "interact_hr_tools",
+		"branch_order": 0,
+	},
 }
 
 # === ИЗУЧЕННЫЕ НАВЫКИ ===
