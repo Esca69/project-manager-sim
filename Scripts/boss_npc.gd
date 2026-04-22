@@ -284,10 +284,11 @@ func _move_along_path(delta):
 		return
 	var next_pos = nav_agent.get_next_path_position()
 	var to_next = next_pos - global_position
-	var direction = to_next.normalized() if to_next.length() > 0.001 else Vector2.ZERO
+	var distance_to_next = to_next.length()
+	var direction = to_next.normalized() if distance_to_next > 0.001 else Vector2.ZERO
 	var step_speed = movement_speed
 	var max_step = step_speed * delta
-	if to_next.length() < max_step and delta > 0.0:
+	if distance_to_next < max_step and delta > 0.0:
 		velocity = to_next / delta
 	else:
 		velocity = direction * step_speed
