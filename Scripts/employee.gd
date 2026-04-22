@@ -725,6 +725,13 @@ func _on_day_started(_day_number: int):
 
 func _on_time_tick(_hour, _minute):
 	if not data: return
+
+	if data.pm_praise_cooldown > 0:
+		data.pm_praise_cooldown = max(0.0, data.pm_praise_cooldown - 1.0)
+	if data.pm_reprimand_cooldown > 0:
+		data.pm_reprimand_cooldown = max(0.0, data.pm_reprimand_cooldown - 1.0)
+	data.tick_mood_modifiers()
+
 	if GameTime and GameTime.is_night_skip:
 		return
 
@@ -757,19 +764,9 @@ func _on_time_tick(_hour, _minute):
 			data.recalculate_mood()
 
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
-		# Тикаем кулдауны PM даже для отсутствующих сотрудников
-		if data.pm_praise_cooldown > 0:
-			data.pm_praise_cooldown -= 1.0
-			if data.pm_praise_cooldown < 0:
-				data.pm_praise_cooldown = 0.0
-		if data.pm_reprimand_cooldown > 0:
-			data.pm_reprimand_cooldown -= 1.0
-			if data.pm_reprimand_cooldown < 0:
-				data.pm_reprimand_cooldown = 0.0
 		return
 
 	data.has_active_desk = (my_desk_position != Vector2.ZERO and _is_my_stage_active())
-	data.tick_mood_modifiers()
 
 	_update_pm_aura()
 	_update_desk_bonuses()
@@ -822,16 +819,6 @@ func _on_time_tick(_hour, _minute):
 
 	_tick_chat_cooldowns()
 	_try_proximity_chat()
-
-	# === PM INTERACTION: Тикаем кулдауны похвалы и выговора ===
-	if data.pm_praise_cooldown > 0:
-		data.pm_praise_cooldown -= 1.0
-		if data.pm_praise_cooldown < 0:
-			data.pm_praise_cooldown = 0.0
-	if data.pm_reprimand_cooldown > 0:
-		data.pm_reprimand_cooldown -= 1.0
-		if data.pm_reprimand_cooldown < 0:
-			data.pm_reprimand_cooldown = 0.0
 
 	if _morning_mood_bubble_pending:
 		var current_time = GameTime.hour * 60 + GameTime.minute
