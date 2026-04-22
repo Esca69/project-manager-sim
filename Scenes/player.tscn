@@ -12,6 +12,8 @@ radius = 87.39
 
 [node name="Player" type="CharacterBody2D"]
 y_sort_enabled = true
+collision_layer = 2
+collision_mask = 1
 script = ExtResource("1_onrkg")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -35,6 +37,7 @@ position_smoothing_enabled = true
 
 [node name="InteractionZone" type="Area2D" parent="."]
 position = Vector2(-2, -55)
+collision_mask = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionZone"]
 position = Vector2(-2, -32)
