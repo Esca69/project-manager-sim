@@ -294,8 +294,11 @@ func _make_sla_card(definition: Dictionary) -> PanelContainer:
 	pick_btn.text = tr("PROJ_SEL_BTN_SELECT")
 	pick_btn.custom_minimum_size = Vector2(140, 34)
 	_style_secondary_button(pick_btn)
+	
 	if selected:
+		_style_primary_button(pick_btn) # ПРИМЕНЯЕМ ПЕРВИЧНЫЙ СТИЛЬ (СИНИЙ) ДЛЯ ВЫБРАННОЙ КНОПКИ
 		pick_btn.disabled = true
+		
 	pick_btn.pressed.connect(func():
 		_selected_sla = str(definition["id"])
 		_rebuild_cards()

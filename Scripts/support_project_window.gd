@@ -264,11 +264,19 @@ func _build_assignment_popup():
 
 	_assignment_list = ItemList.new()
 	_assignment_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_assignment_list.add_theme_color_override("font_color", COLOR_BLUE)
+	
 	if UITheme:
 		UITheme.apply_font(_assignment_list, "regular")
+
+	# === ТЕ САМЫЕ ЦВЕТА ИЗ ТВОЕГО ASSIGNMENTMENU.TSCN ===
+	_assignment_list.add_theme_color_override("font_color", COLOR_BLUE)
+	_assignment_list.add_theme_color_override("font_hovered_color", COLOR_BLUE)
+	_assignment_list.add_theme_color_override("font_selected_color", Color(0, 0, 0, 1))
+	_assignment_list.add_theme_color_override("font_hovered_selected_color", Color(0, 0, 0, 1))
+	# ====================================================
+
 	var list_style = StyleBoxFlat.new()
-	list_style.bg_color = COLOR_WHITE
+	list_style.bg_color = Color(1, 1, 1, 1)
 	list_style.border_width_left = 2
 	list_style.border_width_top = 2
 	list_style.border_width_right = 2
@@ -279,16 +287,20 @@ func _build_assignment_popup():
 	list_style.corner_radius_bottom_right = 10
 	list_style.corner_radius_bottom_left = 10
 	_assignment_list.add_theme_stylebox_override("panel", list_style)
+	
 	_assignment_list.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	
 	var selected_style = StyleBoxFlat.new()
 	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1)
 	selected_style.corner_radius_top_left = 4
 	selected_style.corner_radius_top_right = 4
 	selected_style.corner_radius_bottom_right = 4
 	selected_style.corner_radius_bottom_left = 4
+	
 	_assignment_list.add_theme_stylebox_override("selected", selected_style)
 	_assignment_list.add_theme_stylebox_override("selected_focus", selected_style)
 	_assignment_list.add_theme_stylebox_override("hovered", selected_style)
+
 	_assignment_list.item_activated.connect(_on_assignment_item_activated)
 	v.add_child(_assignment_list)
 
@@ -528,18 +540,33 @@ func _role_to_job_title(role: String) -> String:
 func _open_assignment_popup(required_job_title: String, callback: Callable):
 	_assignment_callback = callback
 	_assignment_list.clear()
+	
+	var found_any = false
+	
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if not npc.data:
 			continue
 		var emp: EmployeeData = npc.data
+		
 		if required_job_title != "" and emp.job_title != required_job_title:
 			continue
+			
+		var display_name = emp.get_display_name() + " (" + tr(emp.job_title) + ")"
+		
 		if _is_employee_busy(emp):
-			continue
-		var idx = _assignment_list.add_item("%s (%s)" % [emp.get_display_name(), tr(emp.job_title)])
-		_assignment_list.set_item_metadata(idx, emp)
+			display_name += " " + tr("EMP_SELECT_BUSY")
+			var idx = _assignment_list.add_item(display_name)
+			_assignment_list.set_item_metadata(idx, emp)
+			_assignment_list.set_item_disabled(idx, true)
+			_assignment_list.set_item_selectable(idx, false)
+			_assignment_list.set_item_custom_fg_color(idx, Color(0.6, 0.6, 0.6, 1))
+		else:
+			var idx = _assignment_list.add_item(display_name)
+			_assignment_list.set_item_metadata(idx, emp)
+			
+		found_any = true
 
-	if _assignment_list.item_count == 0:
+	if not found_any or _assignment_list.item_count == 0:
 		var idx = _assignment_list.add_item(tr("ASSIGN_MENU_NO_STAFF"))
 		_assignment_list.set_item_disabled(idx, true)
 		_assignment_list.set_item_selectable(idx, false)
