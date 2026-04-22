@@ -752,8 +752,7 @@ func _on_pm_level_up(new_level: int):
 		label.text = "🆙"
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		var label_settings = LabelSettings.new()
-		label_settings.font_size = 42
+		var label_settings = UITheme.make_label_settings(42)
 		label.label_settings = label_settings
 
 		bubble.scale = Vector2.ZERO
