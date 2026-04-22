@@ -638,8 +638,12 @@ func _on_assignment_menu_closed():
 	_refresh()
 
 func _on_employee_assigned_from_menu():
-	visible = true
-	_refresh()
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud:
+		var menu = hud.get_node_or_null("AssignmentMenu")
+		if menu and menu.menu_closed.is_connected(_on_assignment_menu_closed):
+			menu.menu_closed.disconnect(_on_assignment_menu_closed)
+	_on_close_pressed()
 
 func _on_buy_pressed(upgrade_id: String):
 	if not _current_desk:
