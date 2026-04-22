@@ -283,8 +283,15 @@ func _move_along_path(delta):
 	if nav_agent.is_navigation_finished():
 		return
 	var next_pos = nav_agent.get_next_path_position()
-	var direction = global_position.direction_to(next_pos)
-	velocity = direction * movement_speed
+	var to_next = next_pos - global_position
+	var distance_to_next = to_next.length()
+	var direction = to_next.normalized() if distance_to_next > 0.001 else Vector2.ZERO
+	var step_speed = movement_speed
+	var max_step = step_speed * delta
+	if distance_to_next < max_step and delta > 0.0:
+		velocity = to_next / delta
+	else:
+		velocity = direction * step_speed
 	move_and_slide()
 	# Лёгкий наклон тела (lean) как у сотрудника
 	if body_sprite and direction.length() > 0.1:

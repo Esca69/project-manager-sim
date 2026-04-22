@@ -1336,25 +1336,43 @@ func _apply_crunch_penalties():
 
 func _move_along_path(delta):
 	var next_path_position = nav_agent.get_next_path_position()
-	var direction = global_position.direction_to(next_path_position)
-	var new_velocity = direction * movement_speed
-	velocity = new_velocity
+	var to_next = next_path_position - global_position
+	var distance_to_next = to_next.length()
+	var direction = to_next.normalized() if distance_to_next > 0.001 else Vector2.ZERO
+	var step_speed = movement_speed
+	var max_step = step_speed * delta
+	if distance_to_next < max_step and delta > 0.0:
+		velocity = to_next / delta
+	else:
+		velocity = direction * step_speed
 	move_and_slide()
 	_apply_lean(direction, delta)
 
 func _move_along_path_fast(delta):
 	var next_path_position = nav_agent.get_next_path_position()
-	var direction = global_position.direction_to(next_path_position)
-	var new_velocity = direction * movement_speed * 1.5
-	velocity = new_velocity
+	var to_next = next_path_position - global_position
+	var distance_to_next = to_next.length()
+	var direction = to_next.normalized() if distance_to_next > 0.001 else Vector2.ZERO
+	var step_speed = movement_speed * 1.5
+	var max_step = step_speed * delta
+	if distance_to_next < max_step and delta > 0.0:
+		velocity = to_next / delta
+	else:
+		velocity = direction * step_speed
 	move_and_slide()
 	_apply_lean(direction, delta)
 
 func _move_along_path_slow(delta):
 	var next_path_position = nav_agent.get_next_path_position()
-	var direction = global_position.direction_to(next_path_position)
-	var new_velocity = direction * movement_speed * WANDER_SPEED_MULT
-	velocity = new_velocity
+	var to_next = next_path_position - global_position
+	var distance_to_next = to_next.length()
+	var direction = to_next.normalized() if distance_to_next > 0.001 else Vector2.ZERO
+	var step_speed = movement_speed * WANDER_SPEED_MULT
+	var max_step = step_speed * delta
+	if distance_to_next < max_step and delta > 0.0:
+		velocity = to_next / delta
+	else:
+		velocity = direction * step_speed
 	move_and_slide()
 	_apply_lean(direction, delta)
 
