@@ -162,8 +162,9 @@ func _add_message_label(entry: Dictionary):
 	_messages_vbox.add_child(lbl)
 	_messages_vbox.move_child(lbl, 0)
 	# Удаляем старые записи С КОНЦА (самые старые теперь внизу)
-	while _messages_vbox.get_child_count() > EventLog.MAX_ENTRIES:
-		var last_child = _messages_vbox.get_child(_messages_vbox.get_child_count() - 1)
+	if _messages_vbox.get_child_count() > EventLog.MAX_ENTRIES:
+		var last_child := _messages_vbox.get_child(_messages_vbox.get_child_count() - 1)
+		_messages_vbox.remove_child(last_child)
 		last_child.queue_free()
 
 func _get_color_for_type(type: int) -> Color:
