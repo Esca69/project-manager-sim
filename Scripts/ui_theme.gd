@@ -59,6 +59,17 @@ func apply_font(node: Control, weight: String = "regular"):
 	elif node is LineEdit:
 		node.add_theme_font_override("font", font)
 
+# Returns a LabelSettings preconfigured with the project font (Inter + emoji fallback).
+# Use this anywhere you create a Label via LabelSettings, so emoji render cross-platform.
+# weight: "regular" | "semibold" | "bold"
+func make_label_settings(font_size: int = 14, weight: String = "regular") -> LabelSettings:
+	var ls = LabelSettings.new()
+	ls.font_size = font_size
+	var f = _get_font(weight)
+	if f:
+		ls.font = f
+	return ls
+
 func _get_font(weight: String) -> Font:
 	match weight:
 		"regular": return font_regular

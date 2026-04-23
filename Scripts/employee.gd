@@ -2415,8 +2415,7 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 
 	current_bubble.scale = Vector2.ZERO
@@ -2470,8 +2469,7 @@ func _show_raise_bubble():
 	label.text = "❗"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 
 func _hide_raise_bubble():
@@ -2517,8 +2515,7 @@ func _show_no_desk_bubble():
 	label.text = "🪑"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 
 func _hide_no_desk_bubble():

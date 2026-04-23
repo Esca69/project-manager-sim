@@ -422,8 +422,7 @@ func _build_exclamation_mark():
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 
 	panel.add_child(label)

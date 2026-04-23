@@ -741,8 +741,7 @@ func _show_motivate_wave():
 	label.text = "🔥"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 
 	bubble.scale = Vector2.ZERO
@@ -828,8 +827,7 @@ func _show_no_toilet_wave():
 	label.text = "🚫"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 
 	bubble.scale = Vector2.ZERO
@@ -1097,8 +1095,7 @@ func _show_work_fun_wave():
 	label.grow_vertical = Control.GROW_DIRECTION_BOTH
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	var label_settings = LabelSettings.new()
-	label_settings.font_size = 42
+	var label_settings = UITheme.make_label_settings(42)
 	label.label_settings = label_settings
 	bubble.scale = Vector2.ZERO
 	var tween = create_tween()
