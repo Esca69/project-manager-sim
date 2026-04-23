@@ -2408,7 +2408,7 @@ func show_thought_bubble(emoji_text: String, duration: float = 9.0):
 	
 	label.custom_minimum_size = Vector2(72, 72)
 	label.size = Vector2(72, 72)
-	label.position = Vector2.ZERO
+	label.position = Vector2(0, -4)
 	
 	label.text = emoji_text
 	
@@ -2465,7 +2465,7 @@ func _show_raise_bubble():
 	panel.add_child(label)
 	label.custom_minimum_size = Vector2(72, 72)
 	label.size = Vector2(72, 72)
-	label.position = Vector2.ZERO
+	label.position = Vector2(0, -4)
 	label.text = "❗"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -2511,7 +2511,7 @@ func _show_no_desk_bubble():
 	panel.add_child(label)
 	label.custom_minimum_size = Vector2(72, 72)
 	label.size = Vector2(72, 72)
-	label.position = Vector2.ZERO
+	label.position = Vector2(0, -4)
 	label.text = "🪑"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

@@ -822,15 +822,41 @@ func create_time_line_if_needed():
 		hard_deadline_line.visible = false
 		timeline_header.add_child(hard_deadline_line)
 
+# === НОВАЯ ФУНКЦИЯ: Расчет реалистичной длительности с учетом выходных и ночей ===
+func _calculate_realistic_duration(start_offset_days: float, stage: Dictionary) -> float:
+	var total_skill = get_total_skill_for_stage(stage)
+	if total_skill < 1: total_skill = 1
+	
+	var efficiency = 0.80 # Сотрудники работают на 70%
+	var hours_per_day = 6.0 # Число рабочих часов в день (с 09:00 до 18:00)
+	
+	var effective_skill = float(total_skill) * efficiency
+	var total_work_hours = float(stage.amount) / effective_skill
+	var work_days_needed = total_work_hours / hours_per_day
+	
+	var current_abs_day = project.created_at_day + int(start_offset_days)
+	var calendar_days_passed = 0.0
+	
+	while work_days_needed > 0:
+		if GameTime.is_weekend(current_abs_day):
+			calendar_days_passed += 1.0
+			current_abs_day += 1
+		else:
+			if work_days_needed >= 1.0:
+				calendar_days_passed += 1.0
+				work_days_needed -= 1.0
+				current_abs_day += 1
+			else:
+				calendar_days_passed += work_days_needed
+				work_days_needed = 0.0
+				
+	return calendar_days_passed
+
 func freeze_plan():
 	var current_time_offset_days = 0.0
 	for stage in project.stages:
 		stage["plan_start"] = current_time_offset_days
-		var duration_days = 1.0
-		var total_skill = get_total_skill_for_stage(stage)
-		if total_skill > 0:
-			var total_work_hours = float(stage.amount) / float(total_skill)
-			duration_days = total_work_hours / 9.0
+		var duration_days = _calculate_realistic_duration(current_time_offset_days, stage)
 		stage["plan_duration"] = duration_days
 		current_time_offset_days += duration_days
 
@@ -943,9 +969,7 @@ func recalculate_schedule_preview():
 		var track_node = tracks_container.get_child(i)
 		if stage.workers.size() > 0:
 			any_assigned = true
-			var total_skill = get_total_skill_for_stage(stage)
-			if total_skill < 1: total_skill = 1
-			var duration_days = (float(stage.amount) / float(total_skill)) / 9.0
+			var duration_days = _calculate_realistic_duration(current_offset, stage)
 			var color = get_color_for_stage(stage.type)
 			track_node.update_bar_preview(current_offset * preview_px_per_day, duration_days * preview_px_per_day, color)
 			current_offset += duration_days
