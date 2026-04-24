@@ -31,7 +31,7 @@ func _ready():
 	add_to_group("office")
 	
 	# === ЗАГРУЗКА СЦЕНЫ СОТРУДНИКА ===
-	employee_scene = preload("res://Scenes/Employee.tscn")
+	employee_scene = preload("res://Scenes/employee.tscn")
 	
 	# === WorldEnvironment — настраиваем кодом (deferred чтобы дерево было готово) ===
 	call_deferred("_setup_environment")
@@ -177,7 +177,7 @@ func _setup_environment():
 func spawn_new_employee(data: EmployeeData):
 	# Подстраховка: если не загрузилось в _ready, пробуем ещё раз
 	if employee_scene == null:
-		employee_scene = load("res://Scenes/Employee.tscn")
+		employee_scene = load("res://Scenes/employee.tscn")
 	if employee_scene == null:
 		push_error("🔴 [OFFICE] Employee.tscn НЕ ЗАГРУЖЕН! Сотрудник не создан: " + data.employee_name)
 		return
