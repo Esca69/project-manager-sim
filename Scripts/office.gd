@@ -179,7 +179,7 @@ func spawn_new_employee(data: EmployeeData):
 	if employee_scene == null:
 		employee_scene = load("res://Scenes/employee.tscn")
 	if employee_scene == null:
-		push_error("🔴 [OFFICE] Employee.tscn НЕ ЗАГРУЖЕН! Сотрудник не создан: " + data.employee_name)
+		push_error("🔴 [OFFICE] employee.tscn НЕ ЗАГРУЖЕН! Сотрудник не создан: " + data.employee_name)
 		return
 
 	# 1. Создаем копию

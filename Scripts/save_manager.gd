@@ -1188,7 +1188,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeData):
 	var employee_scene = load("res://Scenes/employee.tscn")
 	if not employee_scene:
-		push_error("Не удалось загрузить Employee.tscn")
+		push_error("Не удалось загрузить employee.tscn")
 		return null
 
 	var npc = employee_scene.instantiate()
