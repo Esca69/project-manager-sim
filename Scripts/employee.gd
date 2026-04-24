@@ -2685,17 +2685,15 @@ func start_training():
 		toilet_ref = null
 	_release_all_lunch_resources()
 	training_days_left = 2
-	_pending_training = true
+	_pending_training = false
+	visible = false
+	$CollisionShape2D.disabled = true
 	velocity = Vector2.ZERO
 	z_index = 0
+	current_state = State.ON_TRAINING
 	show_thought_bubble("📚", 3.0)
-
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		nav_agent.target_position = entrance.global_position
-		current_state = State.GOING_HOME
-	else:
-		_finalize_training_departure()
+	if data:
+		print("📚 %s ушёл на обучение (%d дн.)" % [data.get_display_name(), training_days_left])
 
 func _finalize_training_departure():
 	_pending_training = false
@@ -2747,17 +2745,15 @@ func start_unpaid_leave():
 		toilet_ref = null
 	_release_all_lunch_resources()
 	unpaid_leave_days_left = 2
-	_pending_unpaid_leave = true
+	_pending_unpaid_leave = false
+	visible = false
+	$CollisionShape2D.disabled = true
 	velocity = Vector2.ZERO
 	z_index = 0
+	current_state = State.UNPAID_LEAVE
 	show_thought_bubble("😔", 3.0)
-
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		nav_agent.target_position = entrance.global_position
-		current_state = State.GOING_HOME
-	else:
-		_finalize_unpaid_leave_departure()
+	if data:
+		print("😔 %s ушёл в неоплачиваемый отпуск (%d дн.)" % [data.get_display_name(), unpaid_leave_days_left])
 
 func _finalize_unpaid_leave_departure():
 	_pending_unpaid_leave = false

@@ -1229,6 +1229,12 @@ func _remove_intraday_effects():
 func _update_sick_employees():
 	var employees = get_tree().get_nodes_in_group("npc")
 	for emp in employees:
+		# Страховка для старых сейвов: финализировать зависших в GOING_HOME с pending-флагами
+		if emp.current_state != emp.State.ON_TRAINING and emp.get("_pending_training"):
+			emp._finalize_training_departure()
+		elif emp.current_state != emp.State.UNPAID_LEAVE and emp.get("_pending_unpaid_leave"):
+			emp._finalize_unpaid_leave_departure()
+
 		if emp.current_state == emp.State.SICK_LEAVE:
 			emp.tick_sick_day()
 		elif emp.current_state == emp.State.DAY_OFF:
