@@ -143,8 +143,11 @@ func pay_daily_salaries():
 
 	for worker in employees:
 		if "data" in worker and worker.data is EmployeeData:
-			# === UNPAID LEAVE: Не платить зарплату ===
-			if worker.current_state == worker.State.UNPAID_LEAVE:
+			# === UNPAID LEAVE: Не платить зарплату (ни в день отправки, ни в дни отсутствия) ===
+			var is_on_unpaid_leave = worker.current_state == worker.State.UNPAID_LEAVE
+			var is_pending_unpaid = ("_pending_unpaid_leave" in worker) and worker._pending_unpaid_leave
+			var has_unpaid_days_left = ("unpaid_leave_days_left" in worker) and worker.unpaid_leave_days_left > 0
+			if is_on_unpaid_leave or is_pending_unpaid or has_unpaid_days_left:
 				continue
 			var salary = worker.data.daily_salary
 			total_daily_cost += salary
