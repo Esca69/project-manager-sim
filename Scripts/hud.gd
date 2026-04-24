@@ -1131,7 +1131,16 @@ func _on_bottom_tab_pressed(tab_name: String):
 func _dismiss_all_employees():
 	var npcs = get_tree().get_nodes_in_group("npc")
 	for npc in npcs:
-		if npc.current_state == npc.State.HOME or npc.current_state == npc.State.SICK_LEAVE or npc.current_state == npc.State.DAY_OFF:
+		# Пропускаем сотрудников, которые уже физически отсутствуют в офисе
+		# (иначе сбросим их в HOME и тикалка дней (EventManager._update_sick_employees)
+		# перестанет видеть их как ON_TRAINING / UNPAID_LEAVE / ON_VACATION,
+		# из-за чего счётчик дней не уменьшится и они "вернутся" уже завтра без бонусов)
+		if npc.current_state == npc.State.HOME \
+			or npc.current_state == npc.State.SICK_LEAVE \
+			or npc.current_state == npc.State.DAY_OFF \
+			or npc.current_state == npc.State.ON_TRAINING \
+			or npc.current_state == npc.State.UNPAID_LEAVE \
+			or npc.current_state == npc.State.ON_VACATION:
 			continue
 		npc._go_to_sleep_instant()
 	print("🏠 Все сотрудники отправлены домой принудительно")
