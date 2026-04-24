@@ -732,10 +732,7 @@ func _on_time_tick(_hour, _minute):
 		data.pm_reprimand_cooldown = max(0.0, data.pm_reprimand_cooldown - 1.0)
 	data.tick_mood_modifiers()
 
-	if GameTime and GameTime.is_night_skip:
-		return
-
-	# === ТАЙМЕРЫ АДАПТАЦИИ ===
+	# === ТАЙМЕРЫ АДАПТАЦИИ — always (game hours) ===
 	if _minute == 0:
 		var dev_tools_active = false
 		var gs = get_node_or_null("/root/GameState")
@@ -748,6 +745,9 @@ func _on_time_tick(_hour, _minute):
 			data.project_adapt_hours_left = max(0.0, data.project_adapt_hours_left - adapt_tick)
 		if data.crunch_efficiency_debuff_hours_left > 0:
 			data.crunch_efficiency_debuff_hours_left -= 1.0
+
+	if GameTime and GameTime.is_night_skip:
+		return
 
 	if _hour == 17 and _minute == 0:
 		var old_loyalty = data.pm_loyalty
