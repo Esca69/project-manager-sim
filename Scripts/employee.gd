@@ -76,6 +76,11 @@ var _coffee_sound_timer: float = 0.0 # Таймер для паузы в 2 се�
 
 const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
+const SHADOW_LEAN_STRETCH_FACTOR = 1.2
+const SHADOW_LEAN_SHIFT_DISTANCE = 12.0
+const SHADOW_BREATHING_SCALE_MAX = 1.03
+const SHADOW_BREATHING_SCALE_MIN = 0.97
+const SHADOW_BREATHING_DURATION = 1.5
 
 const WANDER_RADIUS = 1000.0
 const WANDER_PAUSE_MIN = 2.0
@@ -109,6 +114,7 @@ var _should_go_home: bool = false
 # Ссылка на текущий бабл с мыслями
 var current_bubble: Node2D = null
 var current_bubble_tween: Tween = null
+var _shadow_breathing_tween: Tween = null
 var _volume_shader_material: ShaderMaterial = null
 # Таймер для фоновых мыслей во время работы
 var _work_bubble_cooldown := 0.0
@@ -282,14 +288,23 @@ const FEMALE_BODY_PATHS: Dictionary = {
 
 @onready var body_sprite = $Visuals/Body
 @onready var head_sprite = $Visuals/Body/Head
+@onready var shadow_sprite = $Visuals/Shadow
 @onready var nav_agent = $NavigationAgent2D 
 @onready var debug_label = $DebugLabel
 @onready var coffee_cup_holder = $CoffeeCupHolder
 
 var hair_sprite: Sprite2D = null
 
+var _shadow_base_pos: Vector2 = Vector2.ZERO
+var _shadow_base_scale: Vector2 = Vector2.ONE
+# Separate breathing scale factor animated by tween; combined with lean in _apply_lean()
+var _shadow_breathing_scale_x: float = 1.0
+
 func _ready():
 	add_to_group("npc")
+	if shadow_sprite:
+		_shadow_base_pos = shadow_sprite.position
+		_shadow_base_scale = shadow_sprite.scale
 	start_breathing_animation()
 	
 	_apply_volume_materials()
@@ -1386,6 +1401,13 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 	body_sprite.rotation = lerp(body_sprite.rotation, target_lean, LEAN_SPEED * delta)
 	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
 
+	if shadow_sprite:
+		var lean_amount = body_sprite.rotation
+		var target_scale_x = _shadow_base_scale.x * (1.0 + abs(lean_amount) * SHADOW_LEAN_STRETCH_FACTOR) * _shadow_breathing_scale_x
+		var target_pos_x = _shadow_base_pos.x + lean_amount * SHADOW_LEAN_SHIFT_DISTANCE
+		shadow_sprite.scale.x = lerp(shadow_sprite.scale.x, target_scale_x, LEAN_SPEED * delta)
+		shadow_sprite.position.x = lerp(shadow_sprite.position.x, target_pos_x, LEAN_SPEED * delta)
+
 func _is_work_time() -> bool:
 	if GameTime.is_weekend():
 		return false
@@ -2243,11 +2265,21 @@ func _go_to_sleep_instant():
 
 func start_breathing_animation():
 	if not body_sprite: return
+	var phase_offset = randf_range(0.0, 1.0)
 	var tween = create_tween()
 	tween.set_loops()
-	tween.tween_interval(randf_range(0.0, 1.0))
+	tween.tween_interval(phase_offset)
 	tween.tween_property(body_sprite, "scale", Vector2(0.98, 1.02), 1.5).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(body_sprite, "scale", Vector2(1.02, 0.98), 1.5).set_trans(Tween.TRANS_SINE)
+
+	if shadow_sprite:
+		if _shadow_breathing_tween and _shadow_breathing_tween.is_valid():
+			_shadow_breathing_tween.kill()
+		_shadow_breathing_tween = create_tween()
+		_shadow_breathing_tween.set_loops()
+		_shadow_breathing_tween.tween_interval(phase_offset)
+		_shadow_breathing_tween.tween_property(self, "_shadow_breathing_scale_x", SHADOW_BREATHING_SCALE_MAX, SHADOW_BREATHING_DURATION).set_trans(Tween.TRANS_SINE)
+		_shadow_breathing_tween.tween_property(self, "_shadow_breathing_scale_x", SHADOW_BREATHING_SCALE_MIN, SHADOW_BREATHING_DURATION).set_trans(Tween.TRANS_SINE)
 
 func setup_employee(new_data: EmployeeData):
 	data = new_data
@@ -2269,11 +2301,11 @@ func update_visuals():
 		else:
 			body_sprite.texture = load(DEFAULT_BODY_PATH)
 		body_sprite.self_modulate = personal_color
-		# Fix skinny body horizontal offset: since centered=false, narrower textures
-		# appear shifted. Compensate by offsetting to align with body2.png center.
-		if body_type == "man_skinny" or body_type == "woman_skinny":
-			var skinny_width = body_sprite.texture.get_width() if body_sprite.texture else 0
-			body_sprite.offset.x = (DEFAULT_BODY_WIDTH - skinny_width) / 2.0
+		# Fix body horizontal offset: since centered=false, textures wider or narrower than
+		# DEFAULT_BODY_WIDTH appear shifted. Compensate to align with head and shadow.
+		if body_sprite.texture and body_type != "default":
+			var body_width = body_sprite.texture.get_width()
+			body_sprite.offset.x = (DEFAULT_BODY_WIDTH - body_width) / 2.0
 		else:
 			body_sprite.offset.x = 0.0
 	if head_sprite:

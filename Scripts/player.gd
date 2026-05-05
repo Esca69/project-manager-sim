@@ -9,6 +9,8 @@ const ZOOM_SMOOTH_SPEED = 8.0
 
 const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
+const SHADOW_LEAN_STRETCH_FACTOR = 1.2
+const SHADOW_LEAN_SHIFT_DISTANCE = 12.0
 
 # === МОТИВАЦИЯ ===
 const MOTIVATE_RADIUS = 350.0
@@ -34,8 +36,12 @@ var _work_fun_cooldown_left: float = 0.0
 @onready var camera = $Camera2D
 @onready var body_sprite = $Sprite2D
 @onready var head_sprite = $Sprite2D/Head2
+@onready var shadow_sprite = $Shadow
 
 var target_zoom: Vector2 = Vector2.ONE
+
+var _shadow_base_pos: Vector2 = Vector2.ZERO
+var _shadow_base_scale: Vector2 = Vector2.ONE
 
 # === СВОБОДНАЯ КАМЕРА ===
 var _free_camera_mode: bool = false
@@ -97,6 +103,9 @@ func _ready():
 	add_to_group("player")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	target_zoom = camera.zoom
+	if shadow_sprite:
+		_shadow_base_pos = shadow_sprite.position
+		_shadow_base_scale = shadow_sprite.scale
 	_create_interact_hint()
 	_create_discuss_bar()
 
@@ -390,6 +399,13 @@ func _physics_process(delta):
 
 	body_sprite.rotation = lerp(body_sprite.rotation, target_lean, LEAN_SPEED * delta)
 	head_sprite.rotation = lerp(head_sprite.rotation, target_lean * 0.6, LEAN_SPEED * delta)
+
+	if shadow_sprite:
+		var lean_amount = body_sprite.rotation
+		var target_scale_x = _shadow_base_scale.x * (1.0 + abs(lean_amount) * SHADOW_LEAN_STRETCH_FACTOR)
+		var target_pos_x = _shadow_base_pos.x + lean_amount * SHADOW_LEAN_SHIFT_DISTANCE
+		shadow_sprite.scale.x = lerp(shadow_sprite.scale.x, target_scale_x, LEAN_SPEED * delta)
+		shadow_sprite.position.x = lerp(shadow_sprite.position.x, target_pos_x, LEAN_SPEED * delta)
 
 	_update_interact_hint()
 
