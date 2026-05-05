@@ -44,6 +44,7 @@ position = Vector2(24, -52)
 
 [node name="Monitor2" type="Sprite2D" parent="."]
 position = Vector2(-85, -115)
+visible = false
 texture = ExtResource("3_wxfjs")
 
 [node name="Monitor" type="Sprite2D" parent="."]
@@ -52,8 +53,10 @@ texture = ExtResource("2_eoxvh")
 
 [node name="Mug" type="Sprite2D" parent="."]
 position = Vector2(79, -114)
+visible = false
 texture = ExtResource("6_miiws")
 
 [node name="Littleflower" type="Sprite2D" parent="."]
 position = Vector2(117, -96)
+visible = false
 texture = ExtResource("2_vxmgg")

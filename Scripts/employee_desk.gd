@@ -136,6 +136,7 @@ func buy_upgrade(upgrade_id: String) -> bool:
 	var el = get_node_or_null("/root/EventLog")
 	if el:
 		el.add(tr("LOG_DESK_UPGRADE_BOUGHT") % tr(config.name_key), el.LogType.PROGRESS)
+	update_desk_visuals()
 	return true
 
 func toggle_subscription(upgrade_id: String):
@@ -250,3 +251,16 @@ func update_desk_visuals():
 	else:
 		name_tag.text = tr("DESK_AVAILABLE")
 		name_tag.modulate = Color.WHITE
+
+	# Видимость дополнительных элементов стола
+	var monitor2 = get_node_or_null("Monitor2")
+	if monitor2:
+		monitor2.visible = is_upgrade_active("second_monitor")
+
+	var littleflower = get_node_or_null("Littleflower")
+	if littleflower:
+		littleflower.visible = is_upgrade_active("desk_plant")
+
+	var mug = get_node_or_null("Mug")
+	if mug:
+		mug.visible = assigned_employee != null
