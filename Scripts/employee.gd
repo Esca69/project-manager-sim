@@ -78,6 +78,9 @@ const LEAN_ANGLE = 0.12
 const LEAN_SPEED = 10.0
 const SHADOW_LEAN_STRETCH_FACTOR = 1.2
 const SHADOW_LEAN_SHIFT_DISTANCE = 12.0
+const SHADOW_BREATHING_SCALE_MAX = 1.03
+const SHADOW_BREATHING_SCALE_MIN = 0.97
+const SHADOW_BREATHING_DURATION = 1.5
 
 const WANDER_RADIUS = 1000.0
 const WANDER_PAUSE_MIN = 2.0
@@ -294,6 +297,8 @@ var hair_sprite: Sprite2D = null
 
 var _shadow_base_pos: Vector2 = Vector2.ZERO
 var _shadow_base_scale: Vector2 = Vector2.ONE
+# Separate breathing scale factor animated by tween; combined with lean in _apply_lean()
+var _shadow_breathing_scale_x: float = 1.0
 
 func _ready():
 	add_to_group("npc")
@@ -1398,7 +1403,7 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 
 	if shadow_sprite:
 		var lean_amount = body_sprite.rotation
-		var target_scale_x = _shadow_base_scale.x * (1.0 + abs(lean_amount) * SHADOW_LEAN_STRETCH_FACTOR)
+		var target_scale_x = _shadow_base_scale.x * (1.0 + abs(lean_amount) * SHADOW_LEAN_STRETCH_FACTOR) * _shadow_breathing_scale_x
 		var target_pos_x = _shadow_base_pos.x + lean_amount * SHADOW_LEAN_SHIFT_DISTANCE
 		shadow_sprite.scale.x = lerp(shadow_sprite.scale.x, target_scale_x, LEAN_SPEED * delta)
 		shadow_sprite.position.x = lerp(shadow_sprite.position.x, target_pos_x, LEAN_SPEED * delta)
@@ -2271,8 +2276,8 @@ func start_breathing_animation():
 			_shadow_breathing_tween.kill()
 		_shadow_breathing_tween = create_tween()
 		_shadow_breathing_tween.set_loops()
-		_shadow_breathing_tween.tween_property(shadow_sprite, "scale:x", _shadow_base_scale.x * 1.03, 1.5).set_trans(Tween.TRANS_SINE)
-		_shadow_breathing_tween.tween_property(shadow_sprite, "scale:x", _shadow_base_scale.x * 0.97, 1.5).set_trans(Tween.TRANS_SINE)
+		_shadow_breathing_tween.tween_property(self, "_shadow_breathing_scale_x", SHADOW_BREATHING_SCALE_MAX, SHADOW_BREATHING_DURATION).set_trans(Tween.TRANS_SINE)
+		_shadow_breathing_tween.tween_property(self, "_shadow_breathing_scale_x", SHADOW_BREATHING_SCALE_MIN, SHADOW_BREATHING_DURATION).set_trans(Tween.TRANS_SINE)
 
 func setup_employee(new_data: EmployeeData):
 	data = new_data
