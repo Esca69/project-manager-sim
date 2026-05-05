@@ -26,9 +26,10 @@ var _departure_minute: int = 0
 var _is_player_in_radius: bool = false
 var _schedule_generated: bool = false
 
-# Bubble и звук
+# Bubble, звук и визуал
 var _exclamation_bubble: Node2D = null
 var _boss_player: AudioStreamPlayer = null
+var hair_sprite: Sprite2D = null
 
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D
 @onready var body_sprite: Sprite2D = $Visuals/Body
@@ -40,11 +41,19 @@ func _ready():
 	add_to_group("boss_npc")
 	y_sort_enabled = true
 
-	# Красим тело в чёрный цвет (self_modulate не затрагивает дочерние ноды)
+	# Устанавливаем текстуру тела босса (уже с цветом) и сбрасываем модуляцию
 	if body_sprite:
-		body_sprite.self_modulate = Color(0.1, 0.1, 0.1, 1.0)
+		body_sprite.texture = load("res://Sprites/Office/boss_body.png")
+		body_sprite.self_modulate = Color.WHITE
+	
 	if head_sprite:
 		head_sprite.self_modulate = Color("#fff0e1")
+
+	# Добавляем седую причёску
+	_create_hair_sprite()
+
+	# ПРИМЕНЯЕМ ШЕЙДЕР ТЕНИ (вызов функции)
+	
 
 	# Строим exclamation bubble
 	_build_exclamation_mark()
@@ -61,6 +70,21 @@ func _ready():
 
 	# Подключаем сигналы времени (deferred, чтобы autoload'ы были готовы)
 	call_deferred("_connect_signals")
+
+func _create_hair_sprite():
+	if hair_sprite and is_instance_valid(hair_sprite):
+		hair_sprite.queue_free()
+
+	hair_sprite = Sprite2D.new()
+	hair_sprite.name = "Hair"
+	hair_sprite.position = Vector2(0.0, -20.0) # Смещение как в employee.gd
+	hair_sprite.texture = load("res://Sprites/hairs/man_hair3.png")
+	
+	# Красим волосы в седой цвет
+	hair_sprite.self_modulate = Color(0.8, 0.8, 0.8, 1.0)
+
+	if head_sprite:
+		head_sprite.add_child(hair_sprite)
 
 func _connect_signals():
 	GameTime.time_tick.connect(_on_time_tick)
@@ -83,7 +107,7 @@ func _generate_schedule_for_current_day():
 func _generate_schedule(day_num: int):
 	_schedule_generated = true
 
-	# День 1 (туториал, GameTime.day == 1): босс в офисе весь день
+	# День 1 (туториал): босс в офисе весь день
 	if day_num <= 1:
 		_arrival_hour = 8
 		_arrival_minute = 0
@@ -125,7 +149,6 @@ func _generate_schedule(day_num: int):
 
 func _sync_state_to_current_time():
 	if _arrival_hour == -1:
-		# Выходной — босс не приходит
 		_set_state_away(false)
 		return
 
@@ -134,14 +157,11 @@ func _sync_state_to_current_time():
 	var departure_minutes = _departure_hour * 60 + _departure_minute
 
 	if now_minutes >= arrival_minutes and now_minutes < departure_minutes:
-		# Должен быть в офисе прямо сейчас (например, при загрузке сохранения)
 		global_position = desk_position
 		_set_state_in_office(false)
 	elif now_minutes >= departure_minutes:
-		# Уже ушёл
 		_set_state_away(false)
 	else:
-		# Ещё не пришёл
 		_set_state_away(false)
 
 # =========================================================
@@ -164,16 +184,9 @@ func _on_time_tick(h: int, m: int):
 		BossState.AWAY:
 			if now_minutes >= arrival_minutes and now_minutes < departure_minutes:
 				_start_coming()
-
-		BossState.COMING:
-			pass  # Движение обрабатывается в _physics_process
-
 		BossState.IN_OFFICE:
 			if now_minutes >= departure_minutes:
 				_start_leaving()
-
-		BossState.LEAVING:
-			pass  # Движение обрабатывается в _physics_process
 
 var _is_night_skip: bool = false
 
@@ -183,21 +196,15 @@ func _on_night_skip_started():
 		BossState.IN_OFFICE:
 			_start_leaving()
 		BossState.COMING:
-			# Перенаправляем к выходу
 			current_state = BossState.LEAVING
 			var entrance = get_tree().get_first_node_in_group("entrance")
 			if entrance:
 				nav_agent.target_position = entrance.global_position
 			else:
 				_set_state_away(false)
-		BossState.LEAVING:
-			pass  # уже идёт к выходу, пусть дойдёт
-		BossState.AWAY:
-			pass  # уже ушёл
 
 func _on_night_skip_finished():
 	_is_night_skip = false
-	# Страховка: если босс не дошёл до выхода за время промотки — принудительно убираем
 	if current_state != BossState.AWAY:
 		_set_state_away(false)
 	_sync_state_to_current_time()
@@ -234,12 +241,10 @@ func _set_state_in_office(show_toast: bool = true):
 
 func _start_leaving():
 	current_state = BossState.LEAVING
-
 	var entrance = get_tree().get_first_node_in_group("entrance")
 	if entrance:
 		nav_agent.target_position = entrance.global_position
 	else:
-		# Нет точки выхода — уходим немедленно
 		_set_state_away()
 
 func _set_state_away(show_toast: bool = true):
@@ -293,7 +298,7 @@ func _move_along_path(delta):
 	else:
 		velocity = direction * step_speed
 	move_and_slide()
-	# Лёгкий наклон тела (lean) как у сотрудника
+	
 	if body_sprite and direction.length() > 0.1:
 		var target_lean = direction.x * 0.12
 		var current_lean = body_sprite.rotation
@@ -304,7 +309,6 @@ func _move_along_path(delta):
 # =========================================================
 
 func _process(_delta):
-	# Exclamation bubble
 	if _exclamation_bubble:
 		if current_state != BossState.IN_OFFICE or TutorialManager.is_active():
 			_exclamation_bubble.visible = false
@@ -314,8 +318,6 @@ func _process(_delta):
 				BossManager.should_show_report() or
 				BossEventSystem.has_pending_event()
 			)
-
-	# Звук и туториал-уведомления
 	_check_proximity()
 
 func _check_proximity():
@@ -326,7 +328,6 @@ func _check_proximity():
 	var dist = global_position.distance_to(player.global_position)
 
 	if current_state == BossState.IN_OFFICE:
-		# Звук
 		if dist <= BOSS_SOUND_RADIUS:
 			if not _is_player_in_radius:
 				_is_player_in_radius = true
@@ -336,7 +337,6 @@ func _check_proximity():
 		else:
 			_is_player_in_radius = false
 
-		# Туториал
 		if dist <= TUTORIAL_PROXIMITY_RADIUS:
 			TutorialManager.notify_player_near_boss()
 	else:
@@ -356,30 +356,25 @@ func interact():
 	if not hud:
 		return
 
-	# === ТУТОРИАЛ: на шаге 2 просто открываем меню проектов ===
 	if TutorialManager.is_active():
 		if TutorialManager.current_step == TutorialManager.Step.STEP_2_TAKE_PROJECT:
 			hud.open_boss_menu()
 		return
 
-	# Приоритет 1: Отчёт за прошлый месяц
 	if BossManager.should_show_report():
 		var last_report = BossManager.quest_history[BossManager.quest_history.size() - 1]
 		hud.open_boss_report(last_report)
 		return
 
-	# Приоритет 2: Ивент босса
 	if BossEventSystem.has_pending_event():
 		hud.open_boss_event(BossEventSystem.get_pending_event_data())
 		return
 
-	# Приоритет 3: Новый квест
 	if BossManager.should_show_quest():
 		var quest = BossManager.generate_quest_for_month(GameTime.get_month())
 		hud.open_boss_quest(quest)
 		return
 
-	# Приоритет 4: Обычное меню проектов
 	hud.open_boss_menu()
 
 # =========================================================
@@ -417,19 +412,69 @@ func _build_exclamation_mark():
 	var label = Label.new()
 	label.custom_minimum_size = Vector2(72, 72)
 	label.size = Vector2(72, 72)
-	label.position = Vector2.ZERO
 	label.text = "❗"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-
-	var label_settings = UITheme.make_label_settings(42)
-	label.label_settings = label_settings
-
+	label.label_settings = UITheme.make_label_settings(42)
 	panel.add_child(label)
-
-# =========================================================
-# === ВСПОМОГАТЕЛЬНЫЕ ======================================
-# =========================================================
 
 func is_in_office() -> bool:
 	return current_state == BossState.IN_OFFICE
+
+# =========================================================
+# === ОБЪЕМНАЯ ТЕНЬ ТЕЛА (САМА ФУНКЦИЯ) ====================
+# =========================================================
+
+func _apply_volume_materials():
+	if not body_sprite: return
+	
+	body_sprite.clip_children = CanvasItem.CLIP_CHILDREN_DISABLED
+
+	for child in body_sprite.get_children():
+		if child is Sprite2D and child != head_sprite:
+			child.queue_free()
+
+	# Шейдер методом "Смещенной маски" (Inner Shadow)
+	var shader_code = """
+	shader_type canvas_item;
+
+	void fragment() {
+		// Оригинальный пиксель тела
+		vec4 c = texture(TEXTURE, UV) * COLOR;
+
+		// ТОЛЩИНА ТЕНИ в пикселях (уменьшена до 8, чтобы не перекрывать все тело)
+		float shadow_x = 8.0; 
+		float shadow_y = 8.0; 
+
+		// Смещаем координаты ВЛЕВО (-X) и ВНИЗ (+Y)
+		vec2 offset = vec2(-shadow_x * TEXTURE_PIXEL_SIZE.x, shadow_y * TEXTURE_PIXEL_SIZE.y);
+		vec2 sample_uv = UV + offset;
+
+		// По умолчанию считаем, что вылезли за пределы текстуры - там пустота
+		float shifted_alpha = 0.0; 
+		
+		// Читаем соседний пиксель, если он внутри картинки
+		if (sample_uv.x >= 0.0 && sample_uv.x <= 1.0 && sample_uv.y >= 0.0 && sample_uv.y <= 1.0) {
+			shifted_alpha = texture(TEXTURE, sample_uv).a;
+		}
+
+		// Если мы часть тела, а смещенный пиксель - пустота, значит мы на контуре!
+		float is_shadow = 0.0;
+		if (c.a > 0.1 && shifted_alpha < 0.1) {
+			is_shadow = 1.0;
+		}
+
+		// Накладываем черный цвет с прозрачностью 10% (0.1)
+		c.rgb = mix(c.rgb, vec3(0.0), 0.1 * is_shadow);
+
+		COLOR = c;
+	}
+	"""
+
+	var mat = ShaderMaterial.new()
+	var shader = Shader.new()
+	shader.code = shader_code
+	mat.shader = shader
+
+	# Шейдер применяется ТОЛЬКО к рубашке
+	body_sprite.material = mat

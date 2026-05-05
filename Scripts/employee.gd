@@ -2906,29 +2906,59 @@ func _unassign_from_desk():
 			break
 
 func _apply_volume_materials():
+	# Разрешаем отрисовку дочерних узлов без обрезки (чтобы голова была видна)
 	body_sprite.clip_children = CanvasItem.CLIP_CHILDREN_DISABLED
 
+	# Удаляем старые тестовые спрайты теней, если они остались в сцене
 	for child in body_sprite.get_children():
 		if child is Sprite2D and child != head_sprite:
 			child.queue_free()
 
-	if _volume_shader_material == null:
-		var shader_code = """
+	# Исправленный шейдер: метод "Смещенной маски"
+	var shader_code = """
 	shader_type canvas_item;
 
 	void fragment() {
+		// Оригинальный пиксель тела
 		vec4 c = texture(TEXTURE, UV) * COLOR;
-		float shadow = smoothstep(0.6, 1.0, UV.y);
-		float highlight = smoothstep(0.3, 0.0, UV.y);
-		c.rgb = mix(c.rgb, c.rgb * 0.4, shadow * 0.4);
-		c.rgb = c.rgb + (vec3(1.0) * highlight * 0.15);
+
+		// ТОЛЩИНА ТЕНИ в пикселях.
+		float shadow_x = 20.0; // Ширина тени слева
+		float shadow_y = 20.0; // Высота тени снизу
+
+		// ИСПРАВЛЕНИЕ ЗДЕСЬ: Смещаем координаты ВЛЕВО (-X) и ВНИЗ (+Y).
+		// Это найдет именно левый и нижний контуры тела.
+		vec2 offset = vec2(-shadow_x * TEXTURE_PIXEL_SIZE.x, shadow_y * TEXTURE_PIXEL_SIZE.y);
+		vec2 sample_uv = UV + offset;
+
+		// По умолчанию считаем, что если мы вылезли за пределы текстуры - там пустота (0.0)
+		float shifted_alpha = 0.0; 
+		
+		// Читаем соседний пиксель, если он внутри картинки
+		if (sample_uv.x >= 0.0 && sample_uv.x <= 1.0 && sample_uv.y >= 0.0 && sample_uv.y <= 1.0) {
+			shifted_alpha = texture(TEXTURE, sample_uv).a;
+		}
+
+		// ЛОГИКА ТЕНИ:
+		// Если текущий пиксель - это часть тела (c.a > 0.1)
+		// А пиксель, смещенный влево-вниз - это пустота (shifted_alpha < 0.1)
+		// Значит мы находимся ровно на левом или нижнем контуре!
+		float is_shadow = 0.0;
+		if (c.a > 0.1 && shifted_alpha < 0.1) {
+			is_shadow = 1.0;
+		}
+
+		// Накладываем черный цвет с прозрачностью 10% (0.1)
+		c.rgb = mix(c.rgb, vec3(0.0), 0.1 * is_shadow);
+
 		COLOR = c;
 	}
 	"""
-		var mat = ShaderMaterial.new()
-		var shader = Shader.new()
-		shader.code = shader_code
-		mat.shader = shader
-		_volume_shader_material = mat
 
-	body_sprite.material = _volume_shader_material
+	var mat = ShaderMaterial.new()
+	var shader = Shader.new()
+	shader.code = shader_code
+	mat.shader = shader
+
+	# Шейдер применяется ТОЛЬКО к рубашке
+	body_sprite.material = mat
