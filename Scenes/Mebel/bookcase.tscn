@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwqb17qv73pg8"]
+
+[ext_resource type="Texture2D" uid="uid://5m42mmfqj5bw" path="res://Sprites/Office/bookcase.png" id="1_022r8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_022r8"]
+size = Vector2(185, 49)
+
+[node name="Shkaf" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(4, -98)
+texture = ExtResource("1_022r8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-3, -27.5)
+shape = SubResource("RectangleShape2D_022r8")

@@ -11,7 +11,7 @@ script = ExtResource("1_l24qr")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 texture = ExtResource("2_eehe3")
-offset = Vector2(0, -60)
+offset = Vector2(2, -60)
 
 [node name="ToiletSpot" type="Marker2D" parent="."]
 position = Vector2(0, -2)

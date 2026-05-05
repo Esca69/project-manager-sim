@@ -11,7 +11,7 @@ script = ExtResource("2_fridge")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_og6nu")
-offset = Vector2(0, -115)
+offset = Vector2(2, -115)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -55.5)

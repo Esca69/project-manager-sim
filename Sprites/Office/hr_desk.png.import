@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c12beibbk3sxw"
-path="res://.godot/imported/boss_desk.png-28ce788274bbb54e25400fe11890cd56.ctex"
+uid="uid://2ref3h643edk"
+path="res://.godot/imported/hr_desk.png-d5d16f4297666502c09f939cead54076.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Office/boss_desk.png"
-dest_files=["res://.godot/imported/boss_desk.png-28ce788274bbb54e25400fe11890cd56.ctex"]
+source_file="res://Sprites/Office/hr_desk.png"
+dest_files=["res://.godot/imported/hr_desk.png-d5d16f4297666502c09f939cead54076.ctex"]
 
 [params]
 

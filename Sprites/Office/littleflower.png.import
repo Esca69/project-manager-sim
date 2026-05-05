@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://fvk50dhrrui7"
-path="res://.godot/imported/full_office5.png-bd0b972138d6438e229972912c6719c8.ctex"
+uid="uid://c0xmjx65tvf8g"
+path="res://.godot/imported/littleflower.png-81a81b348bdfa27d49c335ad9fa252a8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Office/full_office5.png"
-dest_files=["res://.godot/imported/full_office5.png-bd0b972138d6438e229972912c6719c8.ctex"]
+source_file="res://Sprites/Office/littleflower.png"
+dest_files=["res://.godot/imported/littleflower.png-81a81b348bdfa27d49c335ad9fa252a8.ctex"]
 
 [params]
 

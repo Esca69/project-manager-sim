@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://ctiyuggrd05q" path="res://Sprites/Office/PM Desk.png" id="2_sc3oo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sc3oo"]
-size = Vector2(252, 133)
+size = Vector2(298, 133)
 
 [node name="ComputerDesk" type="StaticBody2D" groups=["desk"]]
 script = ExtResource("1_sc3oo")
@@ -14,5 +14,5 @@ texture = ExtResource("2_sc3oo")
 offset = Vector2(0, -70)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -69)
+position = Vector2(1, -69)
 shape = SubResource("RectangleShape2D_sc3oo")

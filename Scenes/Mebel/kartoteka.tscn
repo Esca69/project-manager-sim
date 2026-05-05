@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://6ct3yf7kk710"]
+
+[ext_resource type="Texture2D" uid="uid://wgwup6753m6v" path="res://Sprites/Office/kartoteka.png" id="1_acqyl"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wylpi"]
+size = Vector2(79, 41)
+
+[node name="Kartoteka" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_acqyl")
+offset = Vector2(0, -70)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-3, -19.5)
+shape = SubResource("RectangleShape2D_wylpi")

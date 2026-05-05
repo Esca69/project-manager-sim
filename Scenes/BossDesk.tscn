@@ -1,9 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://bwgwnl47ai4v6"]
+[gd_scene load_steps=4 format=3 uid="uid://bwgwnl47ai4v6"]
 
-[ext_resource type="Texture2D" uid="uid://l0vwstt4lcb0" path="res://Sprites/Office/boss_desk.png" id="1_a7p6o"]
+[ext_resource type="Texture2D" uid="uid://c12beibbk3sxw" path="res://Sprites/Office/boss_desk.png" id="1_a7p6o"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_80mlq"]
 size = Vector2(288.5, 76.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_a7p6o"]
+size = Vector2(73.5, 120)
 
 [node name="BossDesk" type="StaticBody2D" groups=["desk"]]
 
@@ -14,3 +17,7 @@ offset = Vector2(0, -90)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-2.25, -35.75)
 shape = SubResource("RectangleShape2D_80mlq")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="."]
+position = Vector2(108.25, -134)
+shape = SubResource("RectangleShape2D_a7p6o")

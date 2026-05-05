@@ -1,7 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://800ken273kfj"]
+[gd_scene load_steps=9 format=3 uid="uid://800ken273kfj"]
 
 [ext_resource type="Script" uid="uid://buoyrfwm72weh" path="res://Scripts/employee_desk.gd" id="1_68q08"]
 [ext_resource type="Texture2D" uid="uid://c7fwbjuu45tqn" path="res://Sprites/Office/empoloyee_desk2.png" id="2_68q08"]
+[ext_resource type="Texture2D" uid="uid://dl65pquhy73k" path="res://Sprites/Office/monitor.png" id="2_eoxvh"]
+[ext_resource type="Texture2D" uid="uid://c0xmjx65tvf8g" path="res://Sprites/Office/littleflower.png" id="2_vxmgg"]
+[ext_resource type="Texture2D" uid="uid://ddsig4vve5gqc" path="res://Sprites/Office/monitor 2.png" id="3_wxfjs"]
+[ext_resource type="Texture2D" uid="uid://ck16uljdukr" path="res://Sprites/Office/mug.png" id="6_miiws"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_eoxvh"]
 font_size = 12
@@ -13,7 +17,6 @@ radius = 38.96379
 height = 255.99988
 
 [node name="EmployeeDesk" type="StaticBody2D" groups=["desk"]]
-y_sort_enabled = true
 script = ExtResource("1_68q08")
 
 [node name="NameTag" type="Label" parent="."]
@@ -34,7 +37,23 @@ shape = SubResource("CapsuleShape2D_68q08")
 position = Vector2(-0.74999905, 1.0357208)
 scale = Vector2(0.89534885, 0.9285714)
 texture = ExtResource("2_68q08")
-offset = Vector2(0, -80)
+offset = Vector2(5, -60)
 
 [node name="SeatPosition" type="Marker2D" parent="."]
 position = Vector2(24, -52)
+
+[node name="Monitor2" type="Sprite2D" parent="."]
+position = Vector2(-85, -115)
+texture = ExtResource("3_wxfjs")
+
+[node name="Monitor" type="Sprite2D" parent="."]
+position = Vector2(7, -102)
+texture = ExtResource("2_eoxvh")
+
+[node name="Mug" type="Sprite2D" parent="."]
+position = Vector2(79, -114)
+texture = ExtResource("6_miiws")
+
+[node name="Littleflower" type="Sprite2D" parent="."]
+position = Vector2(117, -96)
+texture = ExtResource("2_vxmgg")

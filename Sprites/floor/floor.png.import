@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cb0dtm6ukb4rl"
-path="res://.godot/imported/full_office2.png-c4629c7fe0fa6c097d45c3dbd77d63c2.ctex"
+uid="uid://buwux814la4c5"
+path="res://.godot/imported/floor.png-3f1b78a53ac8a9452d1097f77a00c00d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Sprites/Office/full_office2.png"
-dest_files=["res://.godot/imported/full_office2.png-c4629c7fe0fa6c097d45c3dbd77d63c2.ctex"]
+source_file="res://Sprites/floor/floor.png"
+dest_files=["res://.godot/imported/floor.png-3f1b78a53ac8a9452d1097f77a00c00d.ctex"]
 
 [params]
 

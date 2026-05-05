@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://chdeu0mwljspg"]
+
+[ext_resource type="Texture2D" uid="uid://dpvwemp6qprgh" path="res://Sprites/Office/panel.png" id="1_ju5ci"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fa1jr"]
+size = Vector2(185.5, 62)
+
+[node name="Panel" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_ju5ci")
+offset = Vector2(0, -79)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-6.25, -31)
+shape = SubResource("RectangleShape2D_fa1jr")
