@@ -2265,9 +2265,10 @@ func _go_to_sleep_instant():
 
 func start_breathing_animation():
 	if not body_sprite: return
+	var phase_offset = randf_range(0.0, 1.0)
 	var tween = create_tween()
 	tween.set_loops()
-	tween.tween_interval(randf_range(0.0, 1.0))
+	tween.tween_interval(phase_offset)
 	tween.tween_property(body_sprite, "scale", Vector2(0.98, 1.02), 1.5).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(body_sprite, "scale", Vector2(1.02, 0.98), 1.5).set_trans(Tween.TRANS_SINE)
 
@@ -2276,6 +2277,7 @@ func start_breathing_animation():
 			_shadow_breathing_tween.kill()
 		_shadow_breathing_tween = create_tween()
 		_shadow_breathing_tween.set_loops()
+		_shadow_breathing_tween.tween_interval(phase_offset)
 		_shadow_breathing_tween.tween_property(self, "_shadow_breathing_scale_x", SHADOW_BREATHING_SCALE_MAX, SHADOW_BREATHING_DURATION).set_trans(Tween.TRANS_SINE)
 		_shadow_breathing_tween.tween_property(self, "_shadow_breathing_scale_x", SHADOW_BREATHING_SCALE_MIN, SHADOW_BREATHING_DURATION).set_trans(Tween.TRANS_SINE)
 
