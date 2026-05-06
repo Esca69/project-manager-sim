@@ -1033,7 +1033,7 @@ func _rebuild_office_dev():
 		"🍽️",
 		tr("UPG_KITCHEN_TITLE"),
 		tr("UPG_KITCHEN_DESC"),
-		5000, 10,
+		1500, 10,
 		kitchen_bought,
 		func():
 			var ok = GameState.buy_upgrade("kitchen", 5000, 10)
@@ -1156,7 +1156,7 @@ func _rebuild_office_dev():
 		"🛠️",
 		tr("UPG_DEV_TOOLS_TITLE"),
 		tr("UPG_DEV_TOOLS_DESC"),
-		2, 50,
+		2, 80,
 		dev_tools_bought,
 		func():
 			var ok = GameState.buy_service("dev_tools", 2)
@@ -1173,7 +1173,7 @@ func _rebuild_office_dev():
 		"🧠",
 		tr("UPG_PSYCHOLOGIST_TITLE"),
 		tr("UPG_PSYCHOLOGIST_DESC"),
-		2, 45,
+		2, 55,
 		psych_bought,
 		func():
 			var ok = GameState.buy_service("corporate_psychologist", 2)

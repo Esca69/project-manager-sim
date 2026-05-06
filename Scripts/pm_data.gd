@@ -398,7 +398,7 @@ func add_xp(amount: int):
 			break
 		if xp >= XP_THRESHOLDS[next_index]:
 			_last_threshold_index = next_index
-			skill_points += 3
+			skill_points += 2
 			print("🎯 PM получил очки навыков! (всего: ", skill_points, ")")
 		else:
 			break
