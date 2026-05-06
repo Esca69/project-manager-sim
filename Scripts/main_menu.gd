@@ -647,10 +647,29 @@ func _reset_all_singletons():
 	GameState.daily_income = 0
 	GameState.daily_expenses = 0
 	GameState.daily_salary_details.clear()
+	GameState.daily_service_details.clear()
+	GameState.daily_income_details.clear()
+	GameState.daily_event_expenses.clear()
+	GameState._last_reset_day = 0
 	GameState.projects_finished_today.clear()
 	GameState.projects_failed_today.clear()
 	GameState.levelups_today.clear()
 	GameState.reputation_changes_today.clear()
+	GameState.office_upgrades = {
+		"coffee_machine": false,
+		"kitchen": false,
+		"desk_count": 3,
+		# Passive services
+		"legal_consultant": false,
+		"project_management_soft": false,
+		"dev_tools": false,
+		"corporate_psychologist": false,
+		"corporate_dms": false,
+		"hr_specialist": false,
+		# One-time purchases
+		"ergonomic_furniture": false,
+		"corporate_library": false,
+	}
 
 	# PMData
 	PMData.xp = 0
@@ -690,6 +709,7 @@ func _reset_all_singletons():
 	TutorialManager.current_step = TutorialManager.Step.NONE
 	TutorialManager._tutorial_project = null
 	TutorialManager._tutorial_candidate = null
+	TutorialManager.shown_hints.clear()
 
 	# === EVENT SYSTEM: Сброс ивент-системы ===
 	var em = get_node_or_null("/root/EventManager")
