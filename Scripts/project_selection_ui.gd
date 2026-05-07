@@ -52,6 +52,12 @@ const ROLE_COLORS := {
 	"dev": Color(0.30, 0.65, 0.85, 1),
 	"qa": Color(0.40, 0.60, 0.45, 1),
 }
+const ROLE_LABEL_MIN_WIDTH = 180
+const TOOLTIP_PANEL_OFFSET_X = 10
+const TOOLTIP_PANEL_OFFSET_Y = -5
+const TOOLTIP_BUTTON_OFFSET_X = 28
+const TOOLTIP_BUTTON_OFFSET_Y = -10
+const TOOLTIP_OVERFLOW_FIX_Y = 20
 
 func _ready():
 	add_to_group("project_selection_ui")
@@ -535,7 +541,10 @@ func _create_warning_bar(title_text: String, hint_text: String, color: Color) ->
 	return bar
 
 func _kill_all_tooltips():
-	for tp in get_tree().get_nodes_in_group("project_selection_tooltip"):
+	var tree := get_tree()
+	if tree == null:
+		return
+	for tp in tree.get_nodes_in_group("project_selection_tooltip"):
 		if is_instance_valid(tp):
 			tp.queue_free()
 
@@ -592,13 +601,19 @@ func _attach_tooltip(btn_or_panel: Control, tooltip_text: String, color: Color):
 		if not is_instance_valid(tp): return
 
 		var target_global = btn_or_panel.global_position
-		var target_pos = Vector2(target_global.x + btn_or_panel.size.x + 10, target_global.y - 5)
+		var target_pos = Vector2(
+			target_global.x + btn_or_panel.size.x + TOOLTIP_PANEL_OFFSET_X,
+			target_global.y + TOOLTIP_PANEL_OFFSET_Y
+		)
 		if btn_or_panel is Button:
-			target_pos = Vector2(target_global.x + 28, target_global.y - 10)
+			target_pos = Vector2(
+				target_global.x + TOOLTIP_BUTTON_OFFSET_X,
+				target_global.y + TOOLTIP_BUTTON_OFFSET_Y
+			)
 
 		var viewport_height = parent_ref.get_viewport_rect().size.y
 		if target_pos.y + tp.size.y > viewport_height:
-			target_pos.y = target_global.y - tp.size.y + 20
+			target_pos.y = target_global.y - tp.size.y + TOOLTIP_OVERFLOW_FIX_Y
 
 		tp.global_position = target_pos
 		tooltip_ref[0] = tp
@@ -610,11 +625,15 @@ func _attach_tooltip(btn_or_panel: Control, tooltip_text: String, color: Color):
 		tooltip_ref[0] = null
 	)
 
-func _create_category_badge(category_id: String, _data) -> PanelContainer:
+func _create_category_badge(category_id: String, data) -> PanelContainer:
 	var panel = PanelContainer.new()
 	panel.name = "category_badge"
 
 	var category_key = category_id.to_lower()
+	if category_key == "" and data != null:
+		var raw_category = data.get("category")
+		if raw_category != null:
+			category_key = str(raw_category).to_lower()
 	var color: Color = CATEGORY_COLORS.get(category_key, COLOR_BLUE)
 	var style = StyleBoxFlat.new()
 	style.corner_radius_top_left = 10
@@ -646,7 +665,10 @@ func _create_category_badge(category_id: String, _data) -> PanelContainer:
 	margin.mouse_filter = Control.MOUSE_FILTER_PASS
 	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 
-	var tooltip_text = tr("PROJ_CAT_TOOLTIP_" + category_key.to_upper())
+	var tooltip_key = "PROJ_CAT_TOOLTIP_" + category_key.to_upper()
+	var tooltip_text = tr(tooltip_key)
+	if tooltip_text == tooltip_key:
+		tooltip_text = tr("PROJ_CAT_TOOLTIP_UNKNOWN")
 	_attach_tooltip(panel, tooltip_text, color)
 
 	return panel
@@ -655,14 +677,11 @@ func _format_budget_range(value: int) -> String:
 	var blurred = PMData.get_blurred_budget(value).strip_edges()
 	if blurred.begins_with("$"):
 		return blurred
-	if blurred.find("–") >= 0:
-		var parts = blurred.split("–")
-		if parts.size() == 2:
-			return "$%s - $%s" % [parts[0].strip_edges(), parts[1].strip_edges()]
-	if blurred.find("-") >= 0:
-		var parts_dash = blurred.split("-")
-		if parts_dash.size() == 2:
-			return "$%s - $%s" % [parts_dash[0].strip_edges(), parts_dash[1].strip_edges()]
+	for separator in ["–", "-"]:
+		if blurred.find(separator) >= 0:
+			var parts = blurred.split(separator)
+			if parts.size() == 2:
+				return "$%s - $%s" % [parts[0].strip_edges(), parts[1].strip_edges()]
 	return "$" + blurred
 
 func _create_scope_section(data) -> Control:
@@ -692,8 +711,12 @@ func _create_scope_section(data) -> Control:
 		roles_vbox.add_child(role_row)
 
 		var role_lbl = Label.new()
-		role_lbl.text = tr("ROLE_SHORT_" + str(stage.type))
-		role_lbl.custom_minimum_size = Vector2(180, 0)
+		var role_key = "ROLE_SHORT_" + str(stage.type)
+		var role_text = tr(role_key)
+		if role_text == role_key:
+			role_text = str(stage.type).to_upper()
+		role_lbl.text = role_text
+		role_lbl.custom_minimum_size = Vector2(ROLE_LABEL_MIN_WIDTH, 0)
 		role_lbl.add_theme_color_override("font_color", role_color)
 		role_lbl.add_theme_font_size_override("font_size", 14)
 		if UITheme: UITheme.apply_font(role_lbl, "semibold")

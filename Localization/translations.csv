@@ -391,6 +391,7 @@ PROJ_CAT_UNKNOWN,[???],[???]
 PROJ_CAT_TOOLTIP_MICRO,Мелкий проект: 1 этап и 1 специалист,Micro project: 1 stage and 1 specialist
 PROJ_CAT_TOOLTIP_SIMPLE,Маленький проект: 2 этапа и 2 специалиста,Small project: 2 stages and 2 specialists
 PROJ_CAT_TOOLTIP_EASY,Проект побольше: 3 этапа и 3 специалиста,Larger project: 3 stages and 3 specialists
+PROJ_CAT_TOOLTIP_UNKNOWN,Категория проекта,Project category
 PROJ_LIST_EMPTY,Нет активных проектов.\nВозьмите проект у босса.,No active projects.\nTake a project from the boss.
 PROJ_LIST_STATUS_DRAFT,📝 Черновик — назначьте людей и нажмите Старт,📝 Draft — assign people and press Start
 PROJ_LIST_STATUS_IN_PROGRESS,🔧 В работе — этап: %s,🔧 In progress — stage: %s
@@ -423,7 +424,7 @@ PROJ_SEL_BTN_SELECT,Выбрать,Select
 PROJ_SEL_SOFT_DEADLINE_LABEL,Софт дедлайн,Soft Deadline
 PROJ_SEL_HARD_DEADLINE_LABEL,Хард дедлайн,Hard Deadline
 PROJ_SEL_SOFT_DAYS,%d дн. (штраф -%d%%),%d days (penalty -%d%%)
-PROJ_SEL_HARD_DAYS,%d дн. (провал),%d days (failing)
+PROJ_SEL_HARD_DAYS,%d дн. (провал),%d days (fail)
 PROJ_SOFT_DEADLINE_TOOLTIP,"Если сдадите проект после soft-дедлайна, но до hard-дедлайна, получите оплату со штрафом -%d%% от бюджета.","If you deliver after the soft deadline but before the hard deadline, payout is reduced by -%d%% of the budget."
 PROJ_HARD_DEADLINE_TOOLTIP,"Если не уложитесь в hard-дедлайн, проект будет считаться проваленным. Оплаты не будет, а вы потеряете очки лояльности босса и репутацию у клиента.","If you miss the hard deadline, the project fails. There is no payout, and you lose boss loyalty and client reputation."
 PROJ_BUDGET_TOOLTIP,"При успешном завершении проекта эта сумма поступит на счёт компании. Tip: чтобы видеть точную сумму, прокачайте ветку навыков PM «Оценка бюджета».","When a project is completed successfully, this amount is paid to your company account. Tip: to see exact payout values, upgrade the PM's Budget Estimate skill branch."
