@@ -1,5 +1,7 @@
 extends Control
 
+const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
+
 signal project_selected(data)
 signal support_project_selected(data)
 
@@ -40,24 +42,7 @@ const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
 const COLOR_BUDGET_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
 const COLOR_SOFT_DEADLINE = Color(1.0, 0.55, 0.0, 1)
 const COLOR_HARD_DEADLINE = Color(0.8980392, 0.22352941, 0.20784314, 1)
-
-const CATEGORY_COLORS := {
-	"micro": Color(0.29, 0.69, 0.31, 1),
-	"simple": Color(0.30, 0.65, 0.85, 1),
-	"easy": Color(0.17, 0.31, 0.57, 1),
-}
-
-const ROLE_COLORS := {
-	"ba": Color(0.9, 0.55, 0.2, 1),
-	"dev": Color(0.30, 0.65, 0.85, 1),
-	"qa": Color(0.40, 0.60, 0.45, 1),
-}
 const ROLE_LABEL_MIN_WIDTH = 180
-const TOOLTIP_PANEL_OFFSET_X = 10
-const TOOLTIP_PANEL_OFFSET_Y = -5
-const TOOLTIP_BUTTON_OFFSET_X = 28
-const TOOLTIP_BUTTON_OFFSET_Y = -10
-const TOOLTIP_OVERFLOW_FIX_Y = 20
 
 func _ready():
 	add_to_group("project_selection_ui")
@@ -548,131 +533,6 @@ func _kill_all_tooltips():
 		if is_instance_valid(tp):
 			tp.queue_free()
 
-func _create_help_button() -> Button:
-	var btn = Button.new()
-	btn.text = "?"
-	btn.custom_minimum_size = Vector2(22, 22)
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.add_theme_font_size_override("font_size", 11)
-	btn.add_theme_color_override("font_color", COLOR_BLUE)
-
-	var bstyle = StyleBoxFlat.new()
-	bstyle.bg_color = Color(1, 1, 1, 1)
-	bstyle.border_width_left = 2
-	bstyle.border_width_top = 2
-	bstyle.border_width_right = 2
-	bstyle.border_width_bottom = 2
-	bstyle.border_color = COLOR_BLUE
-	bstyle.corner_radius_top_left = 11
-	bstyle.corner_radius_top_right = 11
-	bstyle.corner_radius_bottom_right = 11
-	bstyle.corner_radius_bottom_left = 11
-	btn.add_theme_stylebox_override("normal", bstyle)
-
-	var hover_style = StyleBoxFlat.new()
-	hover_style.bg_color = Color(0.92, 0.94, 1.0, 1)
-	hover_style.border_width_left = 2
-	hover_style.border_width_top = 2
-	hover_style.border_width_right = 2
-	hover_style.border_width_bottom = 2
-	hover_style.border_color = COLOR_BLUE
-	hover_style.corner_radius_top_left = 11
-	hover_style.corner_radius_top_right = 11
-	hover_style.corner_radius_bottom_right = 11
-	hover_style.corner_radius_bottom_left = 11
-	btn.add_theme_stylebox_override("hover", hover_style)
-	if UITheme: UITheme.apply_font(btn, "semibold")
-
-	return btn
-
-func _attach_tooltip(btn_or_panel: Control, tooltip_text: String, color: Color):
-	btn_or_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	var tooltip_ref: Array = [null]
-	var parent_ref = self
-
-	btn_or_panel.mouse_entered.connect(func():
-		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
-			tooltip_ref[0].queue_free()
-		var tp = TraitUIHelper.create_tooltip(tooltip_text, color)
-		parent_ref.add_child(tp)
-		tp.add_to_group("project_selection_tooltip")
-
-		await parent_ref.get_tree().process_frame
-		if not is_instance_valid(tp): return
-
-		var target_global = btn_or_panel.global_position
-		var target_pos = Vector2(
-			target_global.x + btn_or_panel.size.x + TOOLTIP_PANEL_OFFSET_X,
-			target_global.y + TOOLTIP_PANEL_OFFSET_Y
-		)
-		if btn_or_panel is Button:
-			target_pos = Vector2(
-				target_global.x + TOOLTIP_BUTTON_OFFSET_X,
-				target_global.y + TOOLTIP_BUTTON_OFFSET_Y
-			)
-
-		var viewport_height = parent_ref.get_viewport_rect().size.y
-		if target_pos.y + tp.size.y > viewport_height:
-			target_pos.y = target_global.y - tp.size.y + TOOLTIP_OVERFLOW_FIX_Y
-
-		tp.global_position = target_pos
-		tooltip_ref[0] = tp
-	)
-
-	btn_or_panel.mouse_exited.connect(func():
-		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
-			tooltip_ref[0].queue_free()
-		tooltip_ref[0] = null
-	)
-
-func _create_category_badge(category_id: String, data) -> PanelContainer:
-	var panel = PanelContainer.new()
-	panel.name = "category_badge"
-
-	var category_key = category_id.to_lower()
-	if category_key == "" and data != null:
-		var raw_category = data.get("category")
-		if raw_category != null:
-			category_key = str(raw_category).to_lower()
-	var color: Color = CATEGORY_COLORS.get(category_key, COLOR_BLUE)
-	var style = StyleBoxFlat.new()
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = color
-	style.bg_color = Color(color.r, color.g, color.b, 0.18)
-	panel.add_theme_stylebox_override("panel", style)
-
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 8)
-	margin.add_theme_constant_override("margin_top", 2)
-	margin.add_theme_constant_override("margin_right", 8)
-	margin.add_theme_constant_override("margin_bottom", 2)
-	panel.add_child(margin)
-
-	var lbl = Label.new()
-	lbl.text = category_key.to_upper()
-	lbl.add_theme_font_size_override("font_size", 12)
-	lbl.add_theme_color_override("font_color", color)
-	if UITheme: UITheme.apply_font(lbl, "semibold")
-	margin.add_child(lbl)
-
-	margin.mouse_filter = Control.MOUSE_FILTER_PASS
-	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-
-	var tooltip_key = "PROJ_CAT_TOOLTIP_" + category_key.to_upper()
-	var tooltip_text = tr(tooltip_key)
-	if tooltip_text == tooltip_key:
-		tooltip_text = tr("PROJ_CAT_TOOLTIP_UNKNOWN")
-	_attach_tooltip(panel, tooltip_text, color)
-
-	return panel
-
 func _format_budget_range(value: int) -> String:
 	var blurred = PMData.get_blurred_budget(value).strip_edges()
 	if blurred.begins_with("$"):
@@ -685,30 +545,25 @@ func _format_budget_range(value: int) -> String:
 	return "$" + blurred
 
 func _create_scope_section(data) -> Control:
-	var scope_row = HBoxContainer.new()
-	scope_row.name = "scope_section"
-	scope_row.add_theme_constant_override("separation", 10)
-
-	var scope_lbl = Label.new()
-	scope_lbl.text = tr("PROJ_SCOPE_LABEL")
-	scope_lbl.add_theme_color_override("font_color", COLOR_BLUE)
-	scope_lbl.add_theme_font_size_override("font_size", 14)
-	if UITheme: UITheme.apply_font(scope_lbl, "semibold")
-	scope_row.add_child(scope_lbl)
-
 	var roles_vbox = VBoxContainer.new()
+	roles_vbox.name = "scope_section"
 	roles_vbox.add_theme_constant_override("separation", 3)
 	roles_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scope_row.add_child(roles_vbox)
 
 	for i in range(data.stages.size()):
 		var stage = data.stages[i]
-		var stage_key = str(stage.type).to_lower()
-		var role_color: Color = ROLE_COLORS.get(stage_key, COLOR_BLUE)
+		var role_color: Color = ProjectCardHelpers.get_role_color(stage.type)
 
 		var role_row = HBoxContainer.new()
 		role_row.add_theme_constant_override("separation", 8)
 		roles_vbox.add_child(role_row)
+
+		var specialist_lbl = Label.new()
+		specialist_lbl.text = tr("PROJ_SPECIALIST_LABEL")
+		specialist_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		specialist_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(specialist_lbl, "semibold")
+		role_row.add_child(specialist_lbl)
 
 		var role_lbl = Label.new()
 		var role_key = "ROLE_SHORT_" + str(stage.type)
@@ -723,18 +578,22 @@ func _create_scope_section(data) -> Control:
 		role_row.add_child(role_lbl)
 
 		var amount_lbl = Label.new()
-		amount_lbl.text = "%s %s" % [PMData.get_blurred_work(stage.amount), tr("PROJ_PROGRESS_POINTS_SUFFIX")]
+		amount_lbl.text = "%s %s %s" % [tr("PROJ_SCOPE_LABEL"), PMData.get_blurred_work(stage.amount), tr("PROJ_PROGRESS_POINTS_SUFFIX")]
 		amount_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 		amount_lbl.add_theme_font_size_override("font_size", 14)
 		if UITheme: UITheme.apply_font(amount_lbl, "regular")
 		role_row.add_child(amount_lbl)
 
 		if i == 0:
-			var help_btn = _create_help_button()
-			_attach_tooltip(help_btn, tr("PROJ_PROGRESS_POINTS_TOOLTIP"), COLOR_BLUE)
+			var spacer = Control.new()
+			spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			role_row.add_child(spacer)
+
+			var help_btn = ProjectCardHelpers.create_help_button()
+			ProjectCardHelpers.attach_tooltip(help_btn, self, tr("PROJ_PROGRESS_POINTS_TOOLTIP"), COLOR_BLUE, "project_selection_tooltip")
 			role_row.add_child(help_btn)
 
-	return scope_row
+	return roles_vbox
 
 func _create_deadlines_section(data) -> Control:
 	var deadlines_hbox = HBoxContainer.new()
@@ -754,11 +613,13 @@ func _create_deadlines_section(data) -> Control:
 	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	soft_row.add_child(soft_lbl)
 
-	var soft_help = _create_help_button()
-	_attach_tooltip(
+	var soft_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(
 		soft_help,
+		self,
 		tr("PROJ_SOFT_DEADLINE_TOOLTIP") % data.soft_deadline_penalty_percent,
-		COLOR_SOFT_DEADLINE
+		COLOR_SOFT_DEADLINE,
+		"project_selection_tooltip"
 	)
 	soft_row.add_child(soft_help)
 
@@ -773,8 +634,8 @@ func _create_deadlines_section(data) -> Control:
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	hard_row.add_child(hard_lbl)
 
-	var hard_help = _create_help_button()
-	_attach_tooltip(hard_help, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE)
+	var hard_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(hard_help, self, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE, "project_selection_tooltip")
 	hard_row.add_child(hard_help)
 
 	return deadlines_hbox
@@ -796,8 +657,8 @@ func _create_budget_section(data) -> Control:
 	if UITheme: UITheme.apply_font(budget_lbl, "bold")
 	budget_row.add_child(budget_lbl)
 
-	var budget_help = _create_help_button()
-	_attach_tooltip(budget_help, tr("PROJ_BUDGET_TOOLTIP"), COLOR_BUDGET_GREEN)
+	var budget_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(budget_help, self, tr("PROJ_BUDGET_TOOLTIP"), COLOR_BUDGET_GREEN, "project_selection_tooltip")
 	budget_row.add_child(budget_help)
 
 	return budget_row
@@ -870,7 +731,7 @@ func _create_card(data, index: int) -> PanelContainer:
 		if UITheme: UITheme.apply_font(name_lbl, "bold")
 		header_hbox.add_child(name_lbl)
 
-		var category_badge = _create_category_badge(data.category, data)
+		var category_badge = ProjectCardHelpers.create_category_badge(data.category, self)
 		header_hbox.add_child(category_badge)
 
 		left_info.add_child(_create_scope_section(data))
