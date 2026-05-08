@@ -1,4 +1,3 @@
-class_name ProjectCardHelpers
 extends RefCounted
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
@@ -64,9 +63,9 @@ static func create_category_badge(category_id: String, parent: Control) -> Panel
 	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	var tooltip_key = "PROJ_CAT_TOOLTIP_" + category_key.to_upper()
-	var tooltip_text = tr(tooltip_key)
+	var tooltip_text = parent.tr(tooltip_key)
 	if tooltip_text == tooltip_key:
-		tooltip_text = tr("PROJ_CAT_TOOLTIP_UNKNOWN")
+		tooltip_text = parent.tr("PROJ_CAT_TOOLTIP_UNKNOWN")
 	attach_tooltip(panel, parent, tooltip_text, color, _resolve_tooltip_group(parent))
 
 	return panel
