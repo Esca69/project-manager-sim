@@ -1,6 +1,7 @@
 extends Control
 
 signal project_opened(proj)
+const CardHelpers = preload("res://Scripts/project_card_helpers.gd")
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
@@ -421,7 +422,7 @@ func _create_card_header(proj) -> Control:
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	header_hbox.add_child(name_lbl)
 
-	var category_badge = ProjectCardHelpers.create_category_badge(proj.category, self)
+	var category_badge = CardHelpers.create_category_badge(proj.category, self)
 	header_hbox.add_child(category_badge)
 
 	return header_hbox
@@ -506,7 +507,7 @@ func _create_stage_row(stage, stage_index: int, proj: ProjectData) -> Dictionary
 	if role_text == role_key:
 		role_text = str(stage.type).to_upper()
 	role_lbl.text = role_text
-	role_lbl.add_theme_color_override("font_color", ProjectCardHelpers.get_role_color(stage.type))
+	role_lbl.add_theme_color_override("font_color", CardHelpers.get_role_color(stage.type))
 	role_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(role_lbl, "semibold")
 	row.add_child(role_lbl)
@@ -525,7 +526,7 @@ func _create_stage_row(stage, stage_index: int, proj: ProjectData) -> Dictionary
 		warn_lbl.add_theme_color_override("font_color", COLOR_WARNING)
 		if UITheme: UITheme.apply_font(warn_lbl, "bold")
 		row.add_child(warn_lbl)
-		ProjectCardHelpers.attach_tooltip(warn_lbl, self, tr("PROJ_LIST_DRAFT_STAGE_HINT"), COLOR_WARNING, "project_list_tooltip")
+		CardHelpers.attach_tooltip(warn_lbl, self, tr("PROJ_LIST_DRAFT_STAGE_HINT"), COLOR_WARNING, "project_list_tooltip")
 
 	var scope_lbl = Label.new()
 	scope_lbl.add_theme_color_override("font_color", COLOR_BLUE)
@@ -565,8 +566,8 @@ func _create_deadlines_section(proj: ProjectData) -> Control:
 	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	soft_row.add_child(soft_lbl)
 
-	var soft_help = ProjectCardHelpers.create_help_button()
-	ProjectCardHelpers.attach_tooltip(soft_help, self, tr("PROJ_SOFT_DEADLINE_TOOLTIP") % proj.soft_deadline_penalty_percent, COLOR_SOFT_DEADLINE, "project_list_tooltip")
+	var soft_help = CardHelpers.create_help_button()
+	CardHelpers.attach_tooltip(soft_help, self, tr("PROJ_SOFT_DEADLINE_TOOLTIP") % proj.soft_deadline_penalty_percent, COLOR_SOFT_DEADLINE, "project_list_tooltip")
 	soft_row.add_child(soft_help)
 
 	var hard_row = HBoxContainer.new()
@@ -580,8 +581,8 @@ func _create_deadlines_section(proj: ProjectData) -> Control:
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	hard_row.add_child(hard_lbl)
 
-	var hard_help = ProjectCardHelpers.create_help_button()
-	ProjectCardHelpers.attach_tooltip(hard_help, self, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE, "project_list_tooltip")
+	var hard_help = CardHelpers.create_help_button()
+	CardHelpers.attach_tooltip(hard_help, self, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE, "project_list_tooltip")
 	hard_row.add_child(hard_help)
 
 	return deadlines_vbox
