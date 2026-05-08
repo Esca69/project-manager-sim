@@ -37,6 +37,27 @@ var tab_inactive_style: StyleBoxFlat
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
+const COLOR_BUDGET_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_SOFT_DEADLINE = Color(1.0, 0.55, 0.0, 1)
+const COLOR_HARD_DEADLINE = Color(0.8980392, 0.22352941, 0.20784314, 1)
+
+const CATEGORY_COLORS := {
+	"micro": Color(0.29, 0.69, 0.31, 1),
+	"simple": Color(0.30, 0.65, 0.85, 1),
+	"easy": Color(0.17, 0.31, 0.57, 1),
+}
+
+const ROLE_COLORS := {
+	"ba": Color(0.9, 0.55, 0.2, 1),
+	"dev": Color(0.30, 0.65, 0.85, 1),
+	"qa": Color(0.40, 0.60, 0.45, 1),
+}
+const ROLE_LABEL_MIN_WIDTH = 180
+const TOOLTIP_PANEL_OFFSET_X = 10
+const TOOLTIP_PANEL_OFFSET_Y = -5
+const TOOLTIP_BUTTON_OFFSET_X = 28
+const TOOLTIP_BUTTON_OFFSET_Y = -10
+const TOOLTIP_OVERFLOW_FIX_Y = 20
 
 func _ready():
 	add_to_group("project_selection_ui")
@@ -386,6 +407,7 @@ func _setup_tutorial_mode():
 		close_btn.visible = false
 
 func _close_ui():
+	_kill_all_tooltips()
 	if not _was_paused:
 		GameTime.set_paused(false)
 	if UITheme:
@@ -440,6 +462,8 @@ func _rebuild_cards():
 	if _cards_container == null:
 		push_error("project_selection_ui: _cards_container is null в _rebuild_cards!")
 		return
+
+	_kill_all_tooltips()
 
 	for child in _cards_container.get_children():
 		_cards_container.remove_child(child)
@@ -516,6 +540,268 @@ func _create_warning_bar(title_text: String, hint_text: String, color: Color) ->
 
 	return bar
 
+func _kill_all_tooltips():
+	var tree := get_tree()
+	if tree == null:
+		return
+	for tp in tree.get_nodes_in_group("project_selection_tooltip"):
+		if is_instance_valid(tp):
+			tp.queue_free()
+
+func _create_help_button() -> Button:
+	var btn = Button.new()
+	btn.text = "?"
+	btn.custom_minimum_size = Vector2(22, 22)
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 11)
+	btn.add_theme_color_override("font_color", COLOR_BLUE)
+
+	var bstyle = StyleBoxFlat.new()
+	bstyle.bg_color = Color(1, 1, 1, 1)
+	bstyle.border_width_left = 2
+	bstyle.border_width_top = 2
+	bstyle.border_width_right = 2
+	bstyle.border_width_bottom = 2
+	bstyle.border_color = COLOR_BLUE
+	bstyle.corner_radius_top_left = 11
+	bstyle.corner_radius_top_right = 11
+	bstyle.corner_radius_bottom_right = 11
+	bstyle.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("normal", bstyle)
+
+	var hover_style = StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.92, 0.94, 1.0, 1)
+	hover_style.border_width_left = 2
+	hover_style.border_width_top = 2
+	hover_style.border_width_right = 2
+	hover_style.border_width_bottom = 2
+	hover_style.border_color = COLOR_BLUE
+	hover_style.corner_radius_top_left = 11
+	hover_style.corner_radius_top_right = 11
+	hover_style.corner_radius_bottom_right = 11
+	hover_style.corner_radius_bottom_left = 11
+	btn.add_theme_stylebox_override("hover", hover_style)
+	if UITheme: UITheme.apply_font(btn, "semibold")
+
+	return btn
+
+func _attach_tooltip(btn_or_panel: Control, tooltip_text: String, color: Color):
+	btn_or_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	var tooltip_ref: Array = [null]
+	var parent_ref = self
+
+	btn_or_panel.mouse_entered.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		var tp = TraitUIHelper.create_tooltip(tooltip_text, color)
+		parent_ref.add_child(tp)
+		tp.add_to_group("project_selection_tooltip")
+
+		await parent_ref.get_tree().process_frame
+		if not is_instance_valid(tp): return
+
+		var target_global = btn_or_panel.global_position
+		var target_pos = Vector2(
+			target_global.x + btn_or_panel.size.x + TOOLTIP_PANEL_OFFSET_X,
+			target_global.y + TOOLTIP_PANEL_OFFSET_Y
+		)
+		if btn_or_panel is Button:
+			target_pos = Vector2(
+				target_global.x + TOOLTIP_BUTTON_OFFSET_X,
+				target_global.y + TOOLTIP_BUTTON_OFFSET_Y
+			)
+
+		var viewport_height = parent_ref.get_viewport_rect().size.y
+		if target_pos.y + tp.size.y > viewport_height:
+			target_pos.y = target_global.y - tp.size.y + TOOLTIP_OVERFLOW_FIX_Y
+
+		tp.global_position = target_pos
+		tooltip_ref[0] = tp
+	)
+
+	btn_or_panel.mouse_exited.connect(func():
+		if tooltip_ref[0] != null and is_instance_valid(tooltip_ref[0]):
+			tooltip_ref[0].queue_free()
+		tooltip_ref[0] = null
+	)
+
+func _create_category_badge(category_id: String, data) -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.name = "category_badge"
+
+	var category_key = category_id.to_lower()
+	if category_key == "" and data != null:
+		var raw_category = data.get("category")
+		if raw_category != null:
+			category_key = str(raw_category).to_lower()
+	var color: Color = CATEGORY_COLORS.get(category_key, COLOR_BLUE)
+	var style = StyleBoxFlat.new()
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = color
+	style.bg_color = Color(color.r, color.g, color.b, 0.18)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_top", 2)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_bottom", 2)
+	panel.add_child(margin)
+
+	var lbl = Label.new()
+	lbl.text = category_key.to_upper()
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", color)
+	if UITheme: UITheme.apply_font(lbl, "semibold")
+	margin.add_child(lbl)
+
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS
+	lbl.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	var tooltip_key = "PROJ_CAT_TOOLTIP_" + category_key.to_upper()
+	var tooltip_text = tr(tooltip_key)
+	if tooltip_text == tooltip_key:
+		tooltip_text = tr("PROJ_CAT_TOOLTIP_UNKNOWN")
+	_attach_tooltip(panel, tooltip_text, color)
+
+	return panel
+
+func _format_budget_range(value: int) -> String:
+	var blurred = PMData.get_blurred_budget(value).strip_edges()
+	if blurred.begins_with("$"):
+		return blurred
+	for separator in ["–", "-"]:
+		if blurred.find(separator) >= 0:
+			var parts = blurred.split(separator)
+			if parts.size() == 2:
+				return "$%s - $%s" % [parts[0].strip_edges(), parts[1].strip_edges()]
+	return "$" + blurred
+
+func _create_scope_section(data) -> Control:
+	var scope_row = HBoxContainer.new()
+	scope_row.name = "scope_section"
+	scope_row.add_theme_constant_override("separation", 10)
+
+	var scope_lbl = Label.new()
+	scope_lbl.text = tr("PROJ_SCOPE_LABEL")
+	scope_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	scope_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(scope_lbl, "semibold")
+	scope_row.add_child(scope_lbl)
+
+	var roles_vbox = VBoxContainer.new()
+	roles_vbox.add_theme_constant_override("separation", 3)
+	roles_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scope_row.add_child(roles_vbox)
+
+	for i in range(data.stages.size()):
+		var stage = data.stages[i]
+		var stage_key = str(stage.type).to_lower()
+		var role_color: Color = ROLE_COLORS.get(stage_key, COLOR_BLUE)
+
+		var role_row = HBoxContainer.new()
+		role_row.add_theme_constant_override("separation", 8)
+		roles_vbox.add_child(role_row)
+
+		var role_lbl = Label.new()
+		var role_key = "ROLE_SHORT_" + str(stage.type)
+		var role_text = tr(role_key)
+		if role_text == role_key:
+			role_text = str(stage.type).to_upper()
+		role_lbl.text = role_text
+		role_lbl.custom_minimum_size = Vector2(ROLE_LABEL_MIN_WIDTH, 0)
+		role_lbl.add_theme_color_override("font_color", role_color)
+		role_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(role_lbl, "semibold")
+		role_row.add_child(role_lbl)
+
+		var amount_lbl = Label.new()
+		amount_lbl.text = "%s %s" % [PMData.get_blurred_work(stage.amount), tr("PROJ_PROGRESS_POINTS_SUFFIX")]
+		amount_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		amount_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(amount_lbl, "regular")
+		role_row.add_child(amount_lbl)
+
+		if i == 0:
+			var help_btn = _create_help_button()
+			_attach_tooltip(help_btn, tr("PROJ_PROGRESS_POINTS_TOOLTIP"), COLOR_BLUE)
+			role_row.add_child(help_btn)
+
+	return scope_row
+
+func _create_deadlines_section(data) -> Control:
+	var deadlines_hbox = HBoxContainer.new()
+	deadlines_hbox.add_theme_constant_override("separation", 30)
+
+	var soft_row = HBoxContainer.new()
+	soft_row.add_theme_constant_override("separation", 6)
+	deadlines_hbox.add_child(soft_row)
+
+	var soft_lbl = Label.new()
+	soft_lbl.text = "%s %s" % [
+		tr("PROJ_SEL_SOFT_DEADLINE_LABEL"),
+		tr("PROJ_SEL_SOFT_DAYS") % [data.soft_days_budget, data.soft_deadline_penalty_percent]
+	]
+	soft_lbl.add_theme_color_override("font_color", COLOR_SOFT_DEADLINE)
+	soft_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(soft_lbl, "regular")
+	soft_row.add_child(soft_lbl)
+
+	var soft_help = _create_help_button()
+	_attach_tooltip(
+		soft_help,
+		tr("PROJ_SOFT_DEADLINE_TOOLTIP") % data.soft_deadline_penalty_percent,
+		COLOR_SOFT_DEADLINE
+	)
+	soft_row.add_child(soft_help)
+
+	var hard_row = HBoxContainer.new()
+	hard_row.add_theme_constant_override("separation", 6)
+	deadlines_hbox.add_child(hard_row)
+
+	var hard_lbl = Label.new()
+	hard_lbl.text = "%s %s" % [tr("PROJ_SEL_HARD_DEADLINE_LABEL"), tr("PROJ_SEL_HARD_DAYS") % data.hard_days_budget]
+	hard_lbl.add_theme_color_override("font_color", COLOR_HARD_DEADLINE)
+	hard_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
+	hard_row.add_child(hard_lbl)
+
+	var hard_help = _create_help_button()
+	_attach_tooltip(hard_help, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE)
+	hard_row.add_child(hard_help)
+
+	return deadlines_hbox
+
+func _create_budget_section(data) -> Control:
+	var budget_row = HBoxContainer.new()
+	budget_row.add_theme_constant_override("separation", 6)
+
+	var budget_lbl = Label.new()
+	var budget_text = tr("PROJ_SEL_BUDGET_LABEL") % _format_budget_range(data.budget)
+	if data.client_id != "":
+		var client = data.get_client()
+		if client and client.get_budget_bonus_percent() > 0:
+			budget_text += "  (⭐+%d%%)" % client.get_budget_bonus_percent()
+	budget_lbl.text = budget_text
+	budget_lbl.add_theme_color_override("font_color", COLOR_BUDGET_GREEN)
+	budget_lbl.add_theme_font_size_override("font_size", 23)
+	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if UITheme: UITheme.apply_font(budget_lbl, "bold")
+	budget_row.add_child(budget_lbl)
+
+	var budget_help = _create_help_button()
+	_attach_tooltip(budget_help, tr("PROJ_BUDGET_TOOLTIP"), COLOR_BUDGET_GREEN)
+	budget_row.add_child(budget_help)
+
+	return budget_row
+
 # === СОЗДАНИЕ КАРТОЧКИ ===
 func _create_card(data, index: int) -> PanelContainer:
 	var card = PanelContainer.new()
@@ -541,14 +827,7 @@ func _create_card(data, index: int) -> PanelContainer:
 	card_vbox.add_theme_constant_override("separation", 5)
 	margin.add_child(card_vbox)
 
-	var top_hbox = HBoxContainer.new()
-	card_vbox.add_child(top_hbox)
-
-	var left_info = VBoxContainer.new()
-	top_hbox.add_child(left_info)
-
 	var is_support = data is SupportProjectData
-	var cat_label = tr("PROJ_CAT_SUPPORT") if is_support else data.get_category_label()
 
 	var client_text = ""
 	if data.client_id != "":
@@ -556,47 +835,65 @@ func _create_card(data, index: int) -> PanelContainer:
 		if client:
 			client_text = client.get_display_name() + "  —  "
 
-	var name_lbl = Label.new()
-	name_lbl.text = client_text + cat_label + " " + data.get_display_title()
-	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	if UITheme: UITheme.apply_font(name_lbl, "bold")
-	left_info.add_child(name_lbl)
+	var top_hbox = HBoxContainer.new()
+	top_hbox.add_theme_constant_override("separation", 12)
+	card_vbox.add_child(top_hbox)
 
-	var work_lbl = Label.new()
+	var left_info = VBoxContainer.new()
+	left_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_info.add_theme_constant_override("separation", 6)
+	top_hbox.add_child(left_info)
+
 	if is_support:
+		var cat_label = tr("PROJ_CAT_SUPPORT")
+		var name_lbl = Label.new()
+		name_lbl.text = client_text + cat_label + " " + data.get_display_title()
+		name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		if UITheme: UITheme.apply_font(name_lbl, "bold")
+		left_info.add_child(name_lbl)
+
+		var work_lbl = Label.new()
 		work_lbl.text = _tr_format_safe("SUPPORT_DAILY_RATE_LABEL", data.daily_rate, "Rate: $%d/day" % data.daily_rate)
+		work_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		if UITheme: UITheme.apply_font(work_lbl, "regular")
+		left_info.add_child(work_lbl)
 	else:
-		var parts = []
-		for stage in data.stages:
-			parts.append(tr("ROLE_SHORT_" + stage.type) + " " + PMData.get_blurred_work(stage.amount))
-		work_lbl.text = tr("PROJ_SEL_WORK_LABEL") + "  " + "    ".join(parts)
-	work_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	if UITheme: UITheme.apply_font(work_lbl, "regular")
-	left_info.add_child(work_lbl)
+		var header_hbox = HBoxContainer.new()
+		header_hbox.add_theme_constant_override("separation", 8)
+		left_info.add_child(header_hbox)
+
+		var name_lbl = Label.new()
+		name_lbl.name = "name_label"
+		name_lbl.text = client_text + data.get_display_title()
+		name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+		name_lbl.add_theme_font_size_override("font_size", 20)
+		if UITheme: UITheme.apply_font(name_lbl, "bold")
+		header_hbox.add_child(name_lbl)
+
+		var category_badge = _create_category_badge(data.category, data)
+		header_hbox.add_child(category_badge)
+
+		left_info.add_child(_create_scope_section(data))
 
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
 
 	var right_info = VBoxContainer.new()
+	right_info.add_theme_constant_override("separation", 6)
+	right_info.alignment = BoxContainer.ALIGNMENT_END
 	top_hbox.add_child(right_info)
 
-	var budget_lbl = Label.new()
-	var budget_text = ""
 	if is_support:
-		budget_text = _tr_format_safe("SLA_DAILY_RATE", data.daily_rate, "Rate: $%d/day" % data.daily_rate)
+		var budget_lbl = Label.new()
+		budget_lbl.text = _tr_format_safe("SLA_DAILY_RATE", data.daily_rate, "Rate: $%d/day" % data.daily_rate)
+		budget_lbl.add_theme_color_override("font_color", COLOR_BUDGET_GREEN)
+		budget_lbl.add_theme_font_size_override("font_size", 20)
+		budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		if UITheme: UITheme.apply_font(budget_lbl, "bold")
+		right_info.add_child(budget_lbl)
 	else:
-		budget_text = tr("PROJ_SEL_BUDGET_LABEL") % PMData.get_blurred_budget(data.budget)
-		if data.client_id != "":
-			var client = data.get_client()
-			if client and client.get_budget_bonus_percent() > 0:
-				budget_text += "  (⭐+%d%%)" % client.get_budget_bonus_percent()
-	budget_lbl.text = budget_text
-	budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
-	budget_lbl.add_theme_font_size_override("font_size", 20)
-	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	if UITheme: UITheme.apply_font(budget_lbl, "bold")
-	right_info.add_child(budget_lbl)
+		right_info.add_child(_create_budget_section(data))
 
 	var is_limit = _is_project_limit_reached()
 	var btn_blocked = is_limit
@@ -629,21 +926,7 @@ func _create_card(data, index: int) -> PanelContainer:
 	right_info.add_child(select_btn)
 
 	if not is_support:
-		var deadlines_hbox = HBoxContainer.new()
-		deadlines_hbox.add_theme_constant_override("separation", 40)
-		card_vbox.add_child(deadlines_hbox)
-
-		var soft_lbl = Label.new()
-		soft_lbl.text = tr("PROJ_SEL_SOFT_DAYS") % [data.soft_days_budget, data.soft_deadline_penalty_percent]
-		soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
-		if UITheme: UITheme.apply_font(soft_lbl, "regular")
-		deadlines_hbox.add_child(soft_lbl)
-
-		var hard_lbl = Label.new()
-		hard_lbl.text = tr("PROJ_SEL_HARD_DAYS") % data.hard_days_budget
-		hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
-		if UITheme: UITheme.apply_font(hard_lbl, "semibold")
-		deadlines_hbox.add_child(hard_lbl)
+		card_vbox.add_child(_create_deadlines_section(data))
 
 	call_deferred("_set_children_pass_filter", card)
 
