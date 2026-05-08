@@ -1,7 +1,5 @@
 extends Control
 
-const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
-
 signal project_selected(data)
 signal support_project_selected(data)
 

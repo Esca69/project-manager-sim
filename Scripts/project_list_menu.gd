@@ -1,7 +1,5 @@
 extends Control
 
-const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
-
 signal project_opened(proj)
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
