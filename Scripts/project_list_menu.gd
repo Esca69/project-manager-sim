@@ -1,5 +1,7 @@
 extends Control
 
+const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
+
 signal project_opened(proj)
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
@@ -22,6 +24,10 @@ var tab_inactive_style: StyleBoxFlat
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_GRAY = Color(0.5, 0.5, 0.5, 1)
+const COLOR_BUDGET_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_SOFT_DEADLINE = Color(1.0, 0.55, 0.0, 1)
+const COLOR_HARD_DEADLINE = Color(0.8980392, 0.22352941, 0.20784314, 1)
+const COLOR_WARNING = Color(0.9, 0.5, 0.1, 1)
 
 # === ДОБАВЛЕНО ДЛЯ ФОНА ===
 var _overlay: ColorRect
@@ -197,10 +203,16 @@ func open_menu():
 		visible = true
 
 func _on_close_pressed():
+	_kill_all_tooltips()
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
 		visible = false
+
+func _kill_all_tooltips():
+	for tp in get_tree().get_nodes_in_group("project_list_tooltip"):
+		if is_instance_valid(tp):
+			tp.queue_free()
 
 func _get_project_finish_time(proj: ProjectData) -> float:
 	var last_end = 0.0
@@ -211,6 +223,7 @@ func _get_project_finish_time(proj: ProjectData) -> float:
 
 func _rebuild_cards():
 	_update_tab_styles()
+	_kill_all_tooltips()
 	
 	for child in cards_container.get_children():
 		if child == empty_label:
@@ -338,31 +351,15 @@ func _create_card(proj) -> PanelContainer:
 	margin.add_child(vbox)
 
 	var top_hbox = HBoxContainer.new()
+	top_hbox.add_theme_constant_override("separation", 12)
 	vbox.add_child(top_hbox)
 
 	var left_info = VBoxContainer.new()
+	left_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_info.add_theme_constant_override("separation", 6)
 	top_hbox.add_child(left_info)
 
-	var cat_label = proj.get_category_label()
-	var client_prefix = ""
-	if proj.client_id != "":
-		var client = proj.get_client()
-		if client:
-			# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо emoji + client_name
-			client_prefix = client.get_display_name() + "  —  "
-	
-	# ИСПРАВЛЕНИЕ: Используем get_display_title() вместо tr(proj.title)
-	var title_text = client_prefix + cat_label + " " + proj.get_display_title()
-	if proj.state == ProjectData.State.FINISHED:
-		title_text = "✅ " + title_text
-	elif proj.state == ProjectData.State.FAILED:
-		title_text = "❌ " + title_text
-
-	var name_lbl = Label.new()
-	name_lbl.text = title_text
-	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	if UITheme: UITheme.apply_font(name_lbl, "bold")
-	left_info.add_child(name_lbl)
+	left_info.add_child(_create_card_header(proj))
 
 	var status_lbl = Label.new()
 	match proj.state:
@@ -382,25 +379,221 @@ func _create_card(proj) -> PanelContainer:
 	if UITheme: UITheme.apply_font(status_lbl, "regular")
 	left_info.add_child(status_lbl)
 
-	if proj.state == ProjectData.State.IN_PROGRESS:
-		var progress_text = _get_progress_text(proj)
-		var progress_lbl = Label.new()
-		progress_lbl.text = progress_text
-		progress_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-		if UITheme: UITheme.apply_font(progress_lbl, "semibold")
-		left_info.add_child(progress_lbl)
-		card.set_meta("progress_label", progress_lbl)
-		card.set_meta("project_ref", proj)
-
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top_hbox.add_child(spacer)
 
 	var right_info = VBoxContainer.new()
+	right_info.add_theme_constant_override("separation", 6)
+	right_info.alignment = BoxContainer.ALIGNMENT_END
 	top_hbox.add_child(right_info)
+	right_info.add_child(_create_budget_section(proj))
+
+	var is_active_layout = proj.state == ProjectData.State.DRAFTING or proj.state == ProjectData.State.IN_PROGRESS
+	if is_active_layout:
+		if proj.state == ProjectData.State.DRAFTING:
+			vbox.add_child(_create_draft_warning_bar())
+		vbox.add_child(_create_stages_section(proj, card))
+		vbox.add_child(_create_deadlines_section(proj))
+
+	call_deferred("_set_children_pass_filter", card)
+
+	return card
+
+func _create_card_header(proj) -> Control:
+	var header_hbox = HBoxContainer.new()
+	header_hbox.add_theme_constant_override("separation", 8)
+
+	var client_prefix = ""
+	if proj.client_id != "":
+		var client = proj.get_client()
+		if client:
+			client_prefix = client.get_display_name() + "  —  "
+
+	var status_prefix = ""
+	if proj.state == ProjectData.State.FINISHED:
+		status_prefix = "✅ "
+	elif proj.state == ProjectData.State.FAILED:
+		status_prefix = "❌ "
+
+	var name_lbl = Label.new()
+	name_lbl.text = status_prefix + client_prefix + proj.get_display_title()
+	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	name_lbl.add_theme_font_size_override("font_size", 20)
+	if UITheme: UITheme.apply_font(name_lbl, "bold")
+	header_hbox.add_child(name_lbl)
+
+	var category_badge = ProjectCardHelpers.create_category_badge(proj.category, self)
+	header_hbox.add_child(category_badge)
+
+	return header_hbox
+
+func _create_draft_warning_bar() -> PanelContainer:
+	var bar = PanelContainer.new()
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(COLOR_WARNING.r, COLOR_WARNING.g, COLOR_WARNING.b, 0.12)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = COLOR_WARNING
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_right = 12
+	style.corner_radius_bottom_left = 12
+	bar.add_theme_stylebox_override("panel", style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	bar.add_child(margin)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 3)
+	margin.add_child(vbox)
+
+	var title_lbl = Label.new()
+	title_lbl.text = tr("PROJ_LIST_DRAFT_WARN_TITLE")
+	title_lbl.add_theme_color_override("font_color", COLOR_WARNING)
+	if UITheme: UITheme.apply_font(title_lbl, "bold")
+	vbox.add_child(title_lbl)
+
+	var hint_lbl = Label.new()
+	hint_lbl.text = tr("PROJ_LIST_DRAFT_WARN_HINT")
+	hint_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	hint_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(hint_lbl, "regular")
+	vbox.add_child(hint_lbl)
+
+	return bar
+
+func _create_stages_section(proj: ProjectData, card: PanelContainer) -> Control:
+	var stages_vbox = VBoxContainer.new()
+	stages_vbox.add_theme_constant_override("separation", 4)
+	stages_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var stage_rows: Array = []
+	for i in range(proj.stages.size()):
+		var stage_data = _create_stage_row(proj.stages[i], i, proj)
+		stages_vbox.add_child(stage_data["row"])
+		stage_rows.append({
+			"row": stage_data["row"],
+			"scope_label": stage_data["scope_label"],
+			"status_label": stage_data["status_label"],
+			"stage_index": i
+		})
+
+	card.set_meta("stage_rows", stage_rows)
+	card.set_meta("project_ref", proj)
+	return stages_vbox
+
+func _create_stage_row(stage, stage_index: int, proj: ProjectData) -> Dictionary:
+	var row = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+
+	var specialist_lbl = Label.new()
+	specialist_lbl.text = tr("PROJ_SPECIALIST_LABEL")
+	specialist_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	specialist_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(specialist_lbl, "semibold")
+	row.add_child(specialist_lbl)
+
+	var role_lbl = Label.new()
+	var role_key = "ROLE_SHORT_" + str(stage.type)
+	var role_text = tr(role_key)
+	if role_text == role_key:
+		role_text = str(stage.type).to_upper()
+	role_lbl.text = role_text
+	role_lbl.add_theme_color_override("font_color", ProjectCardHelpers.get_role_color(stage.type))
+	role_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(role_lbl, "semibold")
+	row.add_child(role_lbl)
+
+	var assignee_lbl = Label.new()
+	var assignee_data = _format_stage_assignees(stage)
+	assignee_lbl.text = " (%s)" % assignee_data["text"]
+	assignee_lbl.add_theme_color_override("font_color", COLOR_GRAY if assignee_data["is_unassigned"] else COLOR_BLUE)
+	assignee_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(assignee_lbl, "regular")
+	row.add_child(assignee_lbl)
+
+	if proj.state == ProjectData.State.DRAFTING and assignee_data["is_unassigned"]:
+		var warn_lbl = Label.new()
+		warn_lbl.text = "⚠"
+		warn_lbl.add_theme_color_override("font_color", COLOR_WARNING)
+		if UITheme: UITheme.apply_font(warn_lbl, "bold")
+		row.add_child(warn_lbl)
+		ProjectCardHelpers.attach_tooltip(warn_lbl, self, tr("PROJ_LIST_DRAFT_STAGE_HINT"), COLOR_WARNING, "project_list_tooltip")
+
+	var scope_lbl = Label.new()
+	scope_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	scope_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(scope_lbl, "regular")
+	row.add_child(scope_lbl)
+
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(spacer)
+
+	var status_lbl = Label.new()
+	status_lbl.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(status_lbl, "semibold")
+	row.add_child(status_lbl)
+
+	_update_stage_row_labels(scope_lbl, status_lbl, proj, stage_index)
+
+	return {
+		"row": row,
+		"scope_label": scope_lbl,
+		"status_label": status_lbl,
+	}
+
+func _create_deadlines_section(proj: ProjectData) -> Control:
+	var deadlines_vbox = VBoxContainer.new()
+	deadlines_vbox.add_theme_constant_override("separation", 3)
+
+	var soft_row = HBoxContainer.new()
+	soft_row.add_theme_constant_override("separation", 6)
+	deadlines_vbox.add_child(soft_row)
+
+	var soft_days_left = maxi(0, proj.soft_deadline_day - GameTime.day)
+	var soft_lbl = Label.new()
+	soft_lbl.text = tr("PROJ_LIST_SOFT_INFO_V2") % [GameTime.get_date_short(proj.soft_deadline_day), soft_days_left, proj.soft_deadline_penalty_percent]
+	soft_lbl.add_theme_color_override("font_color", COLOR_SOFT_DEADLINE)
+	if UITheme: UITheme.apply_font(soft_lbl, "regular")
+	soft_row.add_child(soft_lbl)
+
+	var soft_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(soft_help, self, tr("PROJ_SOFT_DEADLINE_TOOLTIP") % proj.soft_deadline_penalty_percent, COLOR_SOFT_DEADLINE, "project_list_tooltip")
+	soft_row.add_child(soft_help)
+
+	var hard_row = HBoxContainer.new()
+	hard_row.add_theme_constant_override("separation", 6)
+	deadlines_vbox.add_child(hard_row)
+
+	var hard_days_left = maxi(0, proj.deadline_day - GameTime.day)
+	var hard_lbl = Label.new()
+	hard_lbl.text = tr("PROJ_LIST_HARD_INFO_V2") % [GameTime.get_date_short(proj.deadline_day), hard_days_left]
+	hard_lbl.add_theme_color_override("font_color", COLOR_HARD_DEADLINE)
+	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
+	hard_row.add_child(hard_lbl)
+
+	var hard_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(hard_help, self, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE, "project_list_tooltip")
+	hard_row.add_child(hard_help)
+
+	return deadlines_vbox
+
+func _create_budget_section(proj: ProjectData) -> Control:
+	var budget_vbox = VBoxContainer.new()
+	budget_vbox.add_theme_constant_override("separation", 6)
+	budget_vbox.alignment = BoxContainer.ALIGNMENT_END
 
 	var budget_lbl = Label.new()
-	
 	var current_payout = proj.budget
 	var is_penalty = false
 	var is_failed = false
@@ -432,17 +625,17 @@ func _create_card(proj) -> PanelContainer:
 		budget_lbl.add_theme_color_override("font_color", Color(0.9, 0.72, 0.04))
 	else:
 		budget_lbl.text = tr("PROJECT_BUDGET") % proj.budget
-		budget_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
+		budget_lbl.add_theme_color_override("font_color", COLOR_BUDGET_GREEN)
 
 	budget_lbl.add_theme_font_size_override("font_size", 20)
 	budget_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if UITheme: UITheme.apply_font(budget_lbl, "bold")
-	right_info.add_child(budget_lbl)
+	budget_vbox.add_child(budget_lbl)
 
 	var open_btn = Button.new()
 	open_btn.text = tr("UI_OPEN")
 	open_btn.custom_minimum_size = Vector2(180, 40)
-	open_btn.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+	open_btn.add_theme_color_override("font_color", COLOR_BLUE)
 	open_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
 	open_btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
 	open_btn.add_theme_stylebox_override("normal", btn_style)
@@ -450,32 +643,70 @@ func _create_card(proj) -> PanelContainer:
 	open_btn.add_theme_stylebox_override("pressed", btn_style_hover)
 	if UITheme: UITheme.apply_font(open_btn, "semibold")
 	open_btn.pressed.connect(_on_open_pressed.bind(proj))
-	right_info.add_child(open_btn)
+	budget_vbox.add_child(open_btn)
 
-	var deadlines_hbox = HBoxContainer.new()
-	deadlines_hbox.add_theme_constant_override("separation", 40)
-	vbox.add_child(deadlines_hbox)
+	return budget_vbox
 
-	var soft_days = proj.soft_deadline_day - GameTime.day
-	var hard_days = proj.deadline_day - GameTime.day
-	var soft_date = GameTime.get_date_short(proj.soft_deadline_day)
-	var hard_date = GameTime.get_date_short(proj.deadline_day)
+func _format_stage_assignees(stage) -> Dictionary:
+	var workers: Array = stage.get("workers", [])
+	var names: Array[String] = []
+	for worker in workers:
+		if worker is EmployeeData:
+			names.append(worker.get_display_name())
 
-	var soft_lbl = Label.new()
-	soft_lbl.text = tr("PROJ_LIST_SOFT_INFO") % [soft_date, soft_days, proj.soft_deadline_penalty_percent]
-	soft_lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.0, 1))
-	if UITheme: UITheme.apply_font(soft_lbl, "regular")
-	deadlines_hbox.add_child(soft_lbl)
+	if names.is_empty():
+		return {"text": tr("PROJ_LIST_NOT_ASSIGNED"), "is_unassigned": true}
+	if names.size() <= 3:
+		return {"text": ", ".join(names), "is_unassigned": false}
+	return {"text": "%s, %s%s" % [names[0], names[1], tr("PROJ_LIST_ASSIGNEE_MORE") % (names.size() - 2)], "is_unassigned": false}
 
-	var hard_lbl = Label.new()
-	hard_lbl.text = tr("PROJ_LIST_HARD_INFO") % [hard_date, hard_days]
-	hard_lbl.add_theme_color_override("font_color", Color(0.8980392, 0.22352941, 0.20784314, 1))
-	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
-	deadlines_hbox.add_child(hard_lbl)
+func _get_current_stage_name(proj: ProjectData) -> String:
+	for i in range(proj.stages.size()):
+		var stage = proj.stages[i]
+		if stage.get("is_completed", false):
+			continue
+		if i > 0 and not proj.stages[i - 1].get("is_completed", false):
+			continue
+		match stage.type:
+			"BA":
+				return tr("STAGE_BA")
+			"DEV":
+				return tr("STAGE_DEV")
+			"QA":
+				return tr("STAGE_QA")
+		return str(stage.type)
+	return "—"
 
-	call_deferred("_set_children_pass_filter", card)
+func _is_stage_active(proj: ProjectData, stage_index: int) -> bool:
+	if proj.state != ProjectData.State.IN_PROGRESS:
+		return false
+	var stage = proj.stages[stage_index]
+	if stage.get("is_completed", false):
+		return false
+	if stage_index == 0:
+		return true
+	return proj.stages[stage_index - 1].get("is_completed", false)
 
-	return card
+func _get_stage_status_data(proj: ProjectData, stage_index: int) -> Dictionary:
+	var stage = proj.stages[stage_index]
+	if stage.get("is_completed", false):
+		return {"text": tr("PROJ_LIST_STAGE_COMPLETED"), "color": COLOR_BUDGET_GREEN}
+	if _is_stage_active(proj, stage_index):
+		var pct = 0
+		if stage.amount > 0:
+			pct = int((float(stage.progress) / float(stage.amount)) * 100.0)
+		pct = clampi(pct, 0, 100)
+		return {"text": tr("PROJ_LIST_STAGE_IN_PROGRESS") % pct, "color": COLOR_BLUE}
+	return {"text": tr("PROJ_LIST_STAGE_NOT_STARTED"), "color": COLOR_GRAY}
+
+func _update_stage_row_labels(scope_label: Label, status_label: Label, proj: ProjectData, stage_index: int):
+	if stage_index < 0 or stage_index >= proj.stages.size():
+		return
+	var stage = proj.stages[stage_index]
+	scope_label.text = "%s %d / %d" % [tr("PROJ_SCOPE_LABEL"), int(stage.progress), int(stage.amount)]
+	var status_data = _get_stage_status_data(proj, stage_index)
+	status_label.text = status_data["text"]
+	status_label.add_theme_color_override("font_color", status_data["color"])
 
 func _create_support_card(proj: SupportProjectData) -> PanelContainer:
 	var card = PanelContainer.new()
@@ -560,8 +791,8 @@ func _create_support_card(proj: SupportProjectData) -> PanelContainer:
 	open_btn.text = tr("UI_OPEN")
 	open_btn.custom_minimum_size = Vector2(180, 40)
 	open_btn.add_theme_color_override("font_color", COLOR_BLUE)
-	open_btn.add_theme_color_override("font_hover_color", Color.WHITE)
-	open_btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	open_btn.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	open_btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
 	open_btn.add_theme_stylebox_override("normal", btn_style)
 	open_btn.add_theme_stylebox_override("hover", btn_style_hover)
 	open_btn.add_theme_stylebox_override("pressed", btn_style_hover)
@@ -578,37 +809,6 @@ func _on_open_pressed(proj):
 	emit_signal("project_opened", proj)
 	_on_close_pressed()
 
-func _get_current_stage_name(proj: ProjectData) -> String:
-	for i in range(proj.stages.size()):
-		var stage = proj.stages[i]
-		if stage.get("is_completed", false):
-			continue
-		var prev_ok = true
-		if i > 0:
-			prev_ok = proj.stages[i - 1].get("is_completed", false)
-		if prev_ok:
-			match stage.type:
-				"BA": return tr("STAGE_BA")
-				"DEV": return tr("STAGE_DEV")
-				"QA": return tr("STAGE_QA")
-			return stage.type
-	return "—"
-
-func _get_progress_text(proj: ProjectData) -> String:
-	for i in range(proj.stages.size()):
-		var stage = proj.stages[i]
-		if stage.get("is_completed", false):
-			continue
-		var prev_ok = true
-		if i > 0:
-			prev_ok = proj.stages[i - 1].get("is_completed", false)
-		if prev_ok:
-			var pct = 0.0
-			if stage.amount > 0:
-				pct = (float(stage.progress) / float(stage.amount)) * 100.0
-			return tr("PROJ_LIST_PROGRESS") % int(pct)
-	return ""
-
 # === ОБРАБОТКА ВВОДА (ESC) ===
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and visible:
@@ -621,9 +821,18 @@ func _process(_delta):
 	for child in cards_container.get_children():
 		if child == empty_label:
 			continue
-		if not child.has_meta("progress_label") or not child.has_meta("project_ref"):
+		if not child.has_meta("stage_rows") or not child.has_meta("project_ref"):
 			continue
 		var proj = child.get_meta("project_ref")
-		var lbl = child.get_meta("progress_label")
-		if proj is ProjectData and proj.state == ProjectData.State.IN_PROGRESS and is_instance_valid(lbl):
-			lbl.text = _get_progress_text(proj)
+		var stage_rows = child.get_meta("stage_rows")
+		if not (proj is ProjectData):
+			continue
+		if proj.state != ProjectData.State.IN_PROGRESS and proj.state != ProjectData.State.DRAFTING:
+			continue
+		for row_data in stage_rows:
+			var stage_index = row_data.get("stage_index", -1)
+			var scope_label = row_data.get("scope_label", null)
+			var status_label = row_data.get("status_label", null)
+			if stage_index < 0 or not is_instance_valid(scope_label) or not is_instance_valid(status_label):
+				continue
+			_update_stage_row_labels(scope_label, status_label, proj, stage_index)
