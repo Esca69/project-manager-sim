@@ -1,7 +1,7 @@
 extends Control
 
 signal project_opened(proj)
-const CardHelpers = preload("res://Scripts/project_card_helpers.gd")
+const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
@@ -390,10 +390,10 @@ func _create_card(proj) -> PanelContainer:
 
 	var is_active_layout = proj.state == ProjectData.State.DRAFTING or proj.state == ProjectData.State.IN_PROGRESS
 	if is_active_layout:
-		if proj.state == ProjectData.State.DRAFTING:
-			vbox.add_child(_create_draft_warning_bar())
 		vbox.add_child(_create_stages_section(proj, card))
 		vbox.add_child(_create_deadlines_section(proj))
+		if proj.state == ProjectData.State.DRAFTING:
+			vbox.add_child(_create_draft_inline_hint())
 
 	call_deferred("_set_children_pass_filter", card)
 
@@ -422,53 +422,18 @@ func _create_card_header(proj) -> Control:
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	header_hbox.add_child(name_lbl)
 
-	var category_badge = CardHelpers.create_category_badge(proj.category, self)
+	var category_badge = ProjectCardHelpers.create_category_badge(proj.category, self)
 	header_hbox.add_child(category_badge)
 
 	return header_hbox
 
-func _create_draft_warning_bar() -> PanelContainer:
-	var bar = PanelContainer.new()
-	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(COLOR_WARNING.r, COLOR_WARNING.g, COLOR_WARNING.b, 0.12)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = COLOR_WARNING
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	bar.add_theme_stylebox_override("panel", style)
-
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 15)
-	margin.add_theme_constant_override("margin_top", 10)
-	margin.add_theme_constant_override("margin_right", 15)
-	margin.add_theme_constant_override("margin_bottom", 10)
-	bar.add_child(margin)
-
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 3)
-	margin.add_child(vbox)
-
-	var title_lbl = Label.new()
-	title_lbl.text = tr("PROJ_LIST_DRAFT_WARN_TITLE")
-	title_lbl.add_theme_color_override("font_color", COLOR_WARNING)
-	if UITheme: UITheme.apply_font(title_lbl, "bold")
-	vbox.add_child(title_lbl)
-
+func _create_draft_inline_hint() -> Label:
 	var hint_lbl = Label.new()
 	hint_lbl.text = tr("PROJ_LIST_DRAFT_WARN_HINT")
 	hint_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	hint_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(hint_lbl, "regular")
-	vbox.add_child(hint_lbl)
-
-	return bar
+	return hint_lbl
 
 func _create_stages_section(proj: ProjectData, card: PanelContainer) -> Control:
 	var stages_vbox = VBoxContainer.new()
@@ -507,7 +472,7 @@ func _create_stage_row(stage, stage_index: int, proj: ProjectData) -> Dictionary
 	if role_text == role_key:
 		role_text = str(stage.type).to_upper()
 	role_lbl.text = role_text
-	role_lbl.add_theme_color_override("font_color", CardHelpers.get_role_color(stage.type))
+	role_lbl.add_theme_color_override("font_color", ProjectCardHelpers.get_role_color(stage.type))
 	role_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(role_lbl, "semibold")
 	row.add_child(role_lbl)
@@ -526,17 +491,13 @@ func _create_stage_row(stage, stage_index: int, proj: ProjectData) -> Dictionary
 		warn_lbl.add_theme_color_override("font_color", COLOR_WARNING)
 		if UITheme: UITheme.apply_font(warn_lbl, "bold")
 		row.add_child(warn_lbl)
-		CardHelpers.attach_tooltip(warn_lbl, self, tr("PROJ_LIST_DRAFT_STAGE_HINT"), COLOR_WARNING, "project_list_tooltip")
+		ProjectCardHelpers.attach_tooltip(warn_lbl, self, tr("PROJ_LIST_DRAFT_STAGE_HINT"), COLOR_WARNING, "project_list_tooltip")
 
 	var scope_lbl = Label.new()
 	scope_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	scope_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme: UITheme.apply_font(scope_lbl, "regular")
 	row.add_child(scope_lbl)
-
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(spacer)
 
 	var status_lbl = Label.new()
 	status_lbl.add_theme_font_size_override("font_size", 13)
@@ -552,40 +513,42 @@ func _create_stage_row(stage, stage_index: int, proj: ProjectData) -> Dictionary
 	}
 
 func _create_deadlines_section(proj: ProjectData) -> Control:
-	var deadlines_vbox = VBoxContainer.new()
-	deadlines_vbox.add_theme_constant_override("separation", 3)
+	var deadlines_hbox = HBoxContainer.new()
+	deadlines_hbox.add_theme_constant_override("separation", 40)
 
 	var soft_row = HBoxContainer.new()
 	soft_row.add_theme_constant_override("separation", 6)
-	deadlines_vbox.add_child(soft_row)
+	deadlines_hbox.add_child(soft_row)
 
 	var soft_days_left = maxi(0, proj.soft_deadline_day - GameTime.day)
 	var soft_lbl = Label.new()
 	soft_lbl.text = tr("PROJ_LIST_SOFT_INFO_V2") % [GameTime.get_date_short(proj.soft_deadline_day), soft_days_left, proj.soft_deadline_penalty_percent]
 	soft_lbl.add_theme_color_override("font_color", COLOR_SOFT_DEADLINE)
+	soft_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(soft_lbl, "regular")
 	soft_row.add_child(soft_lbl)
 
-	var soft_help = CardHelpers.create_help_button()
-	CardHelpers.attach_tooltip(soft_help, self, tr("PROJ_SOFT_DEADLINE_TOOLTIP") % proj.soft_deadline_penalty_percent, COLOR_SOFT_DEADLINE, "project_list_tooltip")
+	var soft_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(soft_help, self, tr("PROJ_SOFT_DEADLINE_TOOLTIP") % proj.soft_deadline_penalty_percent, COLOR_SOFT_DEADLINE, "project_list_tooltip")
 	soft_row.add_child(soft_help)
 
 	var hard_row = HBoxContainer.new()
 	hard_row.add_theme_constant_override("separation", 6)
-	deadlines_vbox.add_child(hard_row)
+	deadlines_hbox.add_child(hard_row)
 
 	var hard_days_left = maxi(0, proj.deadline_day - GameTime.day)
 	var hard_lbl = Label.new()
 	hard_lbl.text = tr("PROJ_LIST_HARD_INFO_V2") % [GameTime.get_date_short(proj.deadline_day), hard_days_left]
 	hard_lbl.add_theme_color_override("font_color", COLOR_HARD_DEADLINE)
+	hard_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(hard_lbl, "semibold")
 	hard_row.add_child(hard_lbl)
 
-	var hard_help = CardHelpers.create_help_button()
-	CardHelpers.attach_tooltip(hard_help, self, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE, "project_list_tooltip")
+	var hard_help = ProjectCardHelpers.create_help_button()
+	ProjectCardHelpers.attach_tooltip(hard_help, self, tr("PROJ_HARD_DEADLINE_TOOLTIP"), COLOR_HARD_DEADLINE, "project_list_tooltip")
 	hard_row.add_child(hard_help)
 
-	return deadlines_vbox
+	return deadlines_hbox
 
 func _create_budget_section(proj: ProjectData) -> Control:
 	var budget_vbox = VBoxContainer.new()
