@@ -1008,8 +1008,6 @@ func _get_skill_label_prefix() -> String:
 	var placeholder_idx = skill_label.find("%s")
 	if placeholder_idx >= 0:
 		skill_label = skill_label.substr(0, placeholder_idx)
-	else:
-		return skill_label.strip_edges() + " "
 	return skill_label.strip_edges() + " "
 
 func _get_role_color_for_employee(emp: EmployeeData) -> Color:
