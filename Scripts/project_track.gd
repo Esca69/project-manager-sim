@@ -603,31 +603,22 @@ func update_visuals_dynamic_offset(px_per_day: float, current_project_time: floa
 	var has_workers = stage_data.get("workers", []).size() > 0
 	var has_completed_names = stage_data.get("completed_worker_names", []).size() > 0
 
+	visual_bar.visible = false
 	if not has_workers and not has_completed_names:
-		visual_bar.visible = false
 		progress_bar.visible = false
 		return
-
-	visual_bar.visible = true
-	var plan_start = stage_data.get("plan_start", 0.0)
-	var plan_dur = stage_data.get("plan_duration", 0.0)
-	visual_bar.position.x = (start_offset + plan_start) * px_per_day
-	visual_bar.size.x = plan_dur * px_per_day
-	visual_bar.size.y = BAR_HEIGHT
-	visual_bar.position.y = (size.y - BAR_HEIGHT) / 2.0
-
-	var style = visual_bar.get_theme_stylebox("panel")
-	if style:
-		style = style.duplicate()
-		style.bg_color = color
-		visual_bar.add_theme_stylebox_override("panel", style)
-	visual_bar.modulate.a = 0.4
 
 	var act_start = stage_data.get("actual_start", -1.0)
 	var act_end = stage_data.get("actual_end", -1.0)
 
 	if act_start != -1.0:
 		progress_bar.visible = true
+		progress_bar.modulate = Color(1, 1, 1, 1)
+		var style = progress_bar.get_theme_stylebox("panel")
+		if style:
+			style = style.duplicate()
+			style.bg_color = color
+			progress_bar.add_theme_stylebox_override("panel", style)
 		var fact_height = BAR_HEIGHT * 0.6
 		progress_bar.size.y = fact_height
 		progress_bar.position.y = (size.y - fact_height) / 2.0
@@ -644,18 +635,9 @@ func update_visuals_dynamic_offset(px_per_day: float, current_project_time: floa
 	else:
 		progress_bar.visible = false
 
-func update_bar_preview(start_px, width_px, color):
-	visual_bar.visible = true
+func update_bar_preview(_start_px, _width_px, _color):
+	visual_bar.visible = false
 	progress_bar.visible = false
-	var style = visual_bar.get_theme_stylebox("panel")
-	if style:
-		style = style.duplicate()
-		style.bg_color = color
-		visual_bar.add_theme_stylebox_override("panel", style)
-	visual_bar.position.x = start_px
-	visual_bar.size.x = width_px
-	visual_bar.size.y = BAR_HEIGHT
-	visual_bar.position.y = (size.y - BAR_HEIGHT) / 2.0
 
 func update_progress(percent: float):
 	var current_val = int(stage_data.amount * percent)
