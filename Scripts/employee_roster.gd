@@ -35,6 +35,7 @@ const ROSTER_HEADER_FONT_SIZE: int = 18
 const ROSTER_BODY_FONT_SIZE: int = 14
 const ROSTER_META_FONT_SIZE: int = 12
 const ROSTER_LABEL_FONT_SIZE: int = 11
+const ROSTER_BODY_COLUMN_SEPARATION: int = 10
 const JOB_TITLE_TO_ROLE_CODE := {
 	"Business Analyst": "BA",
 	"Backend Developer": "DEV",
@@ -497,7 +498,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var body_hbox = HBoxContainer.new()
 	body_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	body_hbox.add_theme_constant_override("separation", 10)
+	body_hbox.add_theme_constant_override("separation", ROSTER_BODY_COLUMN_SEPARATION)
 	content_vbox.add_child(body_hbox)
 
 	var info_vbox = VBoxContainer.new()
@@ -505,12 +506,12 @@ func _create_card(npc_node) -> PanelContainer:
 	info_vbox.add_theme_constant_override("separation", 5)
 	body_hbox.add_child(info_vbox)
 
-	var skill_row = HBoxContainer.new()
-	skill_row.add_theme_constant_override("separation", 4)
-	info_vbox.add_child(skill_row)
-
 	var skill_value = _get_primary_skill_value(emp)
 	if skill_value > 0:
+		var skill_row = HBoxContainer.new()
+		skill_row.add_theme_constant_override("separation", 4)
+		info_vbox.add_child(skill_row)
+
 		var skill_prefix_lbl = Label.new()
 		skill_prefix_lbl.text = _get_skill_label_prefix()
 		skill_prefix_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
@@ -536,7 +537,7 @@ func _create_card(npc_node) -> PanelContainer:
 		var visible_count = PMData.get_visible_traits_count()
 		if visible_count >= emp.traits.size():
 			var traits_row = TraitUIHelper.create_traits_row(emp, self)
-			_apply_body_font_size_to_labels(traits_row)
+			_apply_body_font_size_to_trait_row(traits_row)
 			info_vbox.add_child(traits_row)
 		else:
 			var flow = HFlowContainer.new()
@@ -1011,7 +1012,7 @@ func _get_primary_skill_value(emp: EmployeeData) -> int:
 func _get_skill_label_prefix() -> String:
 	var skill_label = tr("ROSTER_SKILL")
 	var placeholder_idx = -1
-	for marker in ["%s", "%1", "{0}", "{}"]:
+	for marker in ["%s", "%1"]:
 		var idx = skill_label.find(marker)
 		if idx >= 0 and (placeholder_idx < 0 or idx < placeholder_idx):
 			placeholder_idx = idx
@@ -1025,12 +1026,13 @@ func _get_role_color_for_employee(emp: EmployeeData) -> Color:
 		return Color(0.17254902, 0.30980393, 0.5686275, 1)
 	return ProjectCardHelpers.get_role_color(role_code)
 
-func _apply_body_font_size_to_labels(node: Node) -> void:
-	for child in node.get_children():
-		if child is Label:
-			child.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
-			if UITheme: UITheme.apply_font(child, "regular")
-		_apply_body_font_size_to_labels(child)
+func _apply_body_font_size_to_trait_row(row: HFlowContainer) -> void:
+	for item in row.get_children():
+		if item is HBoxContainer:
+			for child in item.get_children():
+				if child is Label:
+					child.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
+					if UITheme: UITheme.apply_font(child, "regular")
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
