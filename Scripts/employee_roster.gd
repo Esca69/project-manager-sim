@@ -29,6 +29,7 @@ var _body_textures: Dictionary = {}
 
 const ROSTER_HAIR_OFFSET_X: float = 0.0
 const ROSTER_HAIR_OFFSET_Y: float = -8.0
+const ROSTER_SIDE_COLUMN_MIN_WIDTH: float = 250.0
 
 var _overlay: ColorRect
 
@@ -494,13 +495,7 @@ func _create_card(npc_node) -> PanelContainer:
 	info_vbox.add_theme_constant_override("separation", 5)
 	body_hbox.add_child(info_vbox)
 
-	var skill_text = ""
-	if emp.skill_business_analysis > 0:
-		skill_text = _get_localized_short_role_name("Business Analyst") + ": " + PMData.get_blurred_skill(emp.skill_business_analysis)
-	elif emp.skill_backend > 0:
-		skill_text = _get_localized_short_role_name("Backend Developer") + ": " + PMData.get_blurred_skill(emp.skill_backend)
-	elif emp.skill_qa > 0:
-		skill_text = _get_localized_short_role_name("QA Engineer") + ": " + PMData.get_blurred_skill(emp.skill_qa)
+	var skill_text = _get_primary_skill_text(emp)
 
 	var skills_lbl = Label.new()
 	skills_lbl.text = tr("ROSTER_SKILL") % skill_text
@@ -540,13 +535,13 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var stats_vbox = VBoxContainer.new()
 	stats_vbox.add_theme_constant_override("separation", 5)
-	stats_vbox.custom_minimum_size = Vector2(250, 0)
+	stats_vbox.custom_minimum_size = Vector2(ROSTER_SIDE_COLUMN_MIN_WIDTH, 0)
 	body_hbox.add_child(stats_vbox)
 
 	# === ПРАВАЯ КОЛОНКА ===
 	var right_vbox = VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 6)
-	right_vbox.custom_minimum_size = Vector2(250, 0)
+	right_vbox.custom_minimum_size = Vector2(ROSTER_SIDE_COLUMN_MIN_WIDTH, 0)
 	body_hbox.add_child(right_vbox)
 
 	var action_title_lbl = Label.new()
@@ -963,8 +958,7 @@ func _get_employee_role_code(job_title: String) -> String:
 func _get_localized_role_name(job_title: String) -> String:
 	var role_code = _get_employee_role_code(job_title)
 	if role_code == "":
-		var fallback_text = tr(job_title)
-		return fallback_text if fallback_text != job_title else job_title
+		return job_title
 
 	var role_key = "HR_ROLE_" + role_code
 	var role_text = tr(role_key)
@@ -978,6 +972,24 @@ func _get_localized_short_role_name(job_title: String) -> String:
 	var role_key = "ROLE_SHORT_" + role_code
 	var role_text = tr(role_key)
 	return role_text if role_text != role_key else _get_localized_role_name(job_title)
+
+func _get_primary_skill_text(emp: EmployeeData) -> String:
+	var skill_value := 0
+
+	match _get_employee_role_code(emp.job_title):
+		"BA":
+			skill_value = emp.skill_business_analysis
+		"DEV":
+			skill_value = emp.skill_backend
+		"QA":
+			skill_value = emp.skill_qa
+		_:
+			return ""
+
+	if skill_value <= 0:
+		return ""
+
+	return _get_localized_short_role_name(emp.job_title) + ": " + PMData.get_blurred_skill(skill_value)
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
