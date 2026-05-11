@@ -30,6 +30,12 @@ var _body_textures: Dictionary = {}
 const ROSTER_HAIR_OFFSET_X: float = 0.0
 const ROSTER_HAIR_OFFSET_Y: float = -8.0
 const ROSTER_SIDE_COLUMN_MIN_WIDTH: float = 250.0
+const JOB_TITLE_TO_ROLE_CODE := {
+	"Business Analyst": "BA",
+	"Backend Developer": "DEV",
+	"QA Engineer": "QA",
+	"Customer Support": "SUPPORT",
+}
 
 var _overlay: ColorRect
 
@@ -944,16 +950,7 @@ func _create_help_button() -> Button:
 	return btn
 
 func _get_employee_role_code(job_title: String) -> String:
-	match job_title:
-		"Business Analyst":
-			return "BA"
-		"Backend Developer":
-			return "DEV"
-		"QA Engineer":
-			return "QA"
-		"Customer Support":
-			return "SUPPORT"
-	return ""
+	return JOB_TITLE_TO_ROLE_CODE.get(job_title, "")
 
 func _get_localized_role_name(job_title: String) -> String:
 	var role_code = _get_employee_role_code(job_title)
@@ -983,6 +980,9 @@ func _get_primary_skill_text(emp: EmployeeData) -> String:
 			skill_value = emp.skill_backend
 		"QA":
 			skill_value = emp.skill_qa
+		"SUPPORT":
+			# Customer Support keeps the existing roster behavior: no skill points line here.
+			return ""
 		_:
 			return ""
 
