@@ -534,20 +534,25 @@ func _create_card(npc_node) -> PanelContainer:
 
 	if not emp.traits.is_empty():
 		var visible_count = PMData.get_visible_traits_count()
-		var flow = HFlowContainer.new()
-		flow.add_theme_constant_override("h_separation", 12)
-		flow.add_theme_constant_override("v_separation", 4)
+		if visible_count >= emp.traits.size():
+			var traits_row = TraitUIHelper.create_traits_row(emp, self)
+			_apply_body_font_size_to_labels(traits_row)
+			info_vbox.add_child(traits_row)
+		else:
+			var flow = HFlowContainer.new()
+			flow.add_theme_constant_override("h_separation", 12)
+			flow.add_theme_constant_override("v_separation", 4)
 
-		for t_idx in range(emp.traits.size()):
-			if t_idx < visible_count:
-				var trait_id = emp.traits[t_idx]
-				var item = _create_visible_trait(trait_id, emp)
-				flow.add_child(item)
-			else:
-				var item = _create_hidden_trait()
-				flow.add_child(item)
+			for t_idx in range(emp.traits.size()):
+				if t_idx < visible_count:
+					var trait_id = emp.traits[t_idx]
+					var item = _create_visible_trait(trait_id, emp)
+					flow.add_child(item)
+				else:
+					var item = _create_hidden_trait()
+					flow.add_child(item)
 
-		info_vbox.add_child(flow)
+			info_vbox.add_child(flow)
 
 	# === PERSONALITY ===
 	if not emp.personality.is_empty():
@@ -1005,7 +1010,11 @@ func _get_primary_skill_value(emp: EmployeeData) -> int:
 
 func _get_skill_label_prefix() -> String:
 	var skill_label = tr("ROSTER_SKILL")
-	var placeholder_idx = skill_label.find("%s")
+	var placeholder_idx = -1
+	for marker in ["%s", "%1", "{0}", "{}"]:
+		var idx = skill_label.find(marker)
+		if idx >= 0 and (placeholder_idx < 0 or idx < placeholder_idx):
+			placeholder_idx = idx
 	if placeholder_idx >= 0:
 		skill_label = skill_label.substr(0, placeholder_idx)
 	return skill_label.strip_edges() + " "
@@ -1014,9 +1023,14 @@ func _get_role_color_for_employee(emp: EmployeeData) -> Color:
 	var role_code = _get_employee_role_code(emp.job_title)
 	if role_code == "":
 		return Color(0.17254902, 0.30980393, 0.5686275, 1)
-	if not ProjectCardHelpers.has_method("get_role_color"):
-		return Color(0.17254902, 0.30980393, 0.5686275, 1)
 	return ProjectCardHelpers.get_role_color(role_code)
+
+func _apply_body_font_size_to_labels(node: Node) -> void:
+	for child in node.get_children():
+		if child is Label:
+			child.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
+			if UITheme: UITheme.apply_font(child, "regular")
+		_apply_body_font_size_to_labels(child)
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
