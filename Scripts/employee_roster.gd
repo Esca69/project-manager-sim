@@ -29,6 +29,13 @@ var _body_textures: Dictionary = {}
 
 const ROSTER_HAIR_OFFSET_X: float = 0.0
 const ROSTER_HAIR_OFFSET_Y: float = -8.0
+const ROSTER_SIDE_COLUMN_MIN_WIDTH: float = 250.0
+const JOB_TITLE_TO_ROLE_CODE := {
+	"Business Analyst": "BA",
+	"Backend Developer": "DEV",
+	"QA Engineer": "QA",
+	"Customer Support": "SUPPORT",
+}
 
 var _overlay: ColorRect
 
@@ -245,8 +252,12 @@ func _update_live_data():
 
 		if effect_lbl:
 			var effect_text = _get_event_effect_text(emp_data)
-			effect_lbl.text = effect_text
-			effect_lbl.visible = effect_text != ""
+			if effect_text == "":
+				effect_lbl.text = "—"
+				effect_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+			else:
+				effect_lbl.text = effect_text
+				effect_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 
 		# === MOOD SYSTEM: обновляем mood в реальном времени ===
 		if mood_lbl:
@@ -340,25 +351,33 @@ func _create_card(npc_node) -> PanelContainer:
 	var sprite_container = _create_employee_sprite(npc_node)
 	main_hbox.add_child(sprite_container)
 
-	var info_vbox = VBoxContainer.new()
-	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	info_vbox.add_theme_constant_override("separation", 3)
-	main_hbox.add_child(info_vbox)
+	var content_vbox = VBoxContainer.new()
+	content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_vbox.add_theme_constant_override("separation", 10)
+	main_hbox.add_child(content_vbox)
+
+	var header_hbox = HBoxContainer.new()
+	header_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_theme_constant_override("separation", 10)
+	content_vbox.add_child(header_hbox)
 
 	var name_lbl = Label.new()
 	# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо сырого employee_name
-	name_lbl.text = emp.get_gender_icon() + " " + emp.get_display_name() + "  —  " + tr(emp.job_title)
+	name_lbl.text = emp.get_gender_icon() + " " + emp.get_display_name() + "  —  " + _get_localized_role_name(emp.job_title)
+	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	name_lbl.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
-	info_vbox.add_child(name_lbl)
+	header_hbox.add_child(name_lbl)
 
 	var level_hbox = HBoxContainer.new()
-	level_hbox.add_theme_constant_override("separation", 10)
-	info_vbox.add_child(level_hbox)
+	level_hbox.add_theme_constant_override("separation", 8)
+	level_hbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header_hbox.add_child(level_hbox)
 
 	var grade = emp.get_grade_name()
 	var grade_panel = PanelContainer.new()
+	grade_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var grade_style = StyleBoxFlat.new()
 	grade_style.corner_radius_top_left = 10
 	grade_style.corner_radius_top_right = 10
@@ -411,6 +430,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	# Чип типа занятости
 	var type_badge = _create_employment_type_badge(emp)
+	type_badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	level_hbox.add_child(type_badge)
 
 	if emp.employee_level < EmployeeData.MAX_LEVEL:
@@ -459,16 +479,29 @@ func _create_card(npc_node) -> PanelContainer:
 		max_lbl.text = tr("ROSTER_MAX_LEVEL")
 		max_lbl.add_theme_font_size_override("font_size", 11)
 		max_lbl.add_theme_color_override("font_color", grade_color)
+		max_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")
 		level_hbox.add_child(max_lbl)
 
-	var skill_text = ""
-	if emp.skill_business_analysis > 0:
-		skill_text = "BA: " + PMData.get_blurred_skill(emp.skill_business_analysis)
-	elif emp.skill_backend > 0:
-		skill_text = "Backend: " + PMData.get_blurred_skill(emp.skill_backend)
-	elif emp.skill_qa > 0:
-		skill_text = "QA: " + PMData.get_blurred_skill(emp.skill_qa)
+	var salary_lbl = Label.new()
+	salary_lbl.text = tr("ROSTER_SALARY_VALUE") % emp.monthly_salary
+	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
+	salary_lbl.add_theme_font_size_override("font_size", 15)
+	salary_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if UITheme: UITheme.apply_font(salary_lbl, "bold")
+	header_hbox.add_child(salary_lbl)
+
+	var body_hbox = HBoxContainer.new()
+	body_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body_hbox.add_theme_constant_override("separation", 18)
+	content_vbox.add_child(body_hbox)
+
+	var info_vbox = VBoxContainer.new()
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.add_theme_constant_override("separation", 5)
+	body_hbox.add_child(info_vbox)
+
+	var skill_text = _get_primary_skill_text(emp)
 
 	var skills_lbl = Label.new()
 	skills_lbl.text = tr("ROSTER_SKILL") % skill_text
@@ -476,13 +509,6 @@ func _create_card(npc_node) -> PanelContainer:
 	skills_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(skills_lbl, "semibold")
 	info_vbox.add_child(skills_lbl)
-
-	var salary_lbl = Label.new()
-	salary_lbl.text = tr("ROSTER_SALARY") % emp.monthly_salary
-	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
-	salary_lbl.add_theme_font_size_override("font_size", 13)
-	if UITheme: UITheme.apply_font(salary_lbl, "bold")
-	info_vbox.add_child(salary_lbl)
 
 	if not emp.traits.is_empty():
 		var visible_count = PMData.get_visible_traits_count()
@@ -513,11 +539,23 @@ func _create_card(npc_node) -> PanelContainer:
 	# === RELATIONSHIP SYSTEM: Секция отношений ===
 	_add_relationships_to(info_vbox, emp)
 
+	var stats_vbox = VBoxContainer.new()
+	stats_vbox.add_theme_constant_override("separation", 5)
+	stats_vbox.custom_minimum_size = Vector2(ROSTER_SIDE_COLUMN_MIN_WIDTH, 0)
+	body_hbox.add_child(stats_vbox)
+
 	# === ПРАВАЯ КОЛОНКА ===
 	var right_vbox = VBoxContainer.new()
-	right_vbox.add_theme_constant_override("separation", 5)
-	right_vbox.custom_minimum_size = Vector2(250, 0)
-	main_hbox.add_child(right_vbox)
+	right_vbox.add_theme_constant_override("separation", 6)
+	right_vbox.custom_minimum_size = Vector2(ROSTER_SIDE_COLUMN_MIN_WIDTH, 0)
+	body_hbox.add_child(right_vbox)
+
+	var action_title_lbl = Label.new()
+	action_title_lbl.text = tr("ROSTER_CURRENT_ACTION_LABEL")
+	action_title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	action_title_lbl.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(action_title_lbl, "regular")
+	right_vbox.add_child(action_title_lbl)
 
 	var status_lbl = Label.new()
 	status_lbl.text = _get_status_text(npc_node)
@@ -527,19 +565,32 @@ func _create_card(npc_node) -> PanelContainer:
 	right_vbox.add_child(status_lbl)
 	card.set_meta("status_label", status_lbl)
 
+	var effect_text = _get_event_effect_text(emp)
+	var effect_title_lbl = Label.new()
+	effect_title_lbl.text = tr("ROSTER_STATUS_EFFECT_LABEL")
+	effect_title_lbl.tooltip_text = tr("ROSTER_STATUS_EFFECT_TOOLTIP")
+	effect_title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	effect_title_lbl.add_theme_font_size_override("font_size", 11)
+	if UITheme: UITheme.apply_font(effect_title_lbl, "regular")
+	right_vbox.add_child(effect_title_lbl)
+
 	var effect_lbl = Label.new()
+	effect_lbl.tooltip_text = tr("ROSTER_STATUS_EFFECT_TOOLTIP")
 	effect_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(effect_lbl, "semibold")
-	var effect_text = _get_event_effect_text(emp)
-	effect_lbl.text = effect_text
-	effect_lbl.visible = effect_text != ""
+	if effect_text == "":
+		effect_lbl.text = "—"
+		effect_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
+	else:
+		effect_lbl.text = effect_text
+		effect_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	right_vbox.add_child(effect_lbl)
 	card.set_meta("effect_label", effect_lbl)
 
 	# === MOOD SYSTEM: Настроение + "?" + мини-полоска ===
 	var mood_hbox = HBoxContainer.new()
 	mood_hbox.add_theme_constant_override("separation", 6)
-	right_vbox.add_child(mood_hbox)
+	stats_vbox.add_child(mood_hbox)
 
 	var mood_lbl = Label.new()
 	var mood_val = emp.mood
@@ -557,7 +608,7 @@ func _create_card(npc_node) -> PanelContainer:
 	loyalty_lbl.add_theme_color_override("font_color", _get_loyalty_color(emp.pm_loyalty))
 	loyalty_lbl.add_theme_font_size_override("font_size", 13)
 	if UITheme: UITheme.apply_font(loyalty_lbl, "semibold")
-	right_vbox.add_child(loyalty_lbl)
+	stats_vbox.add_child(loyalty_lbl)
 	card.set_meta("loyalty_label", loyalty_lbl)
 
 	# Кнопка "?" — breakdown настроения
@@ -668,13 +719,13 @@ func _create_card(npc_node) -> PanelContainer:
 		energy_lbl.add_theme_color_override("font_color", Color(0.9, 0.7, 0.1, 1))
 	else:
 		energy_lbl.add_theme_color_override("font_color", Color(0.85, 0.25, 0.2, 1))
-	right_vbox.add_child(energy_lbl)
+	stats_vbox.add_child(energy_lbl)
 	card.set_meta("energy_label", energy_lbl)
 
 	# === BURNOUT SYSTEM: Выгорание ===
 	var burnout_hbox = HBoxContainer.new()
 	burnout_hbox.add_theme_constant_override("separation", 6)
-	right_vbox.add_child(burnout_hbox)
+	stats_vbox.add_child(burnout_hbox)
 
 	var burnout_lbl = Label.new()
 	burnout_lbl.text = tr("BURNOUT_LABEL") % int(emp.burnout_level)
@@ -717,7 +768,7 @@ func _create_card(npc_node) -> PanelContainer:
 	# === ЭФФЕКТИВНОСТЬ + КНОПКА "?" ===
 	var eff_hbox = HBoxContainer.new()
 	eff_hbox.add_theme_constant_override("separation", 6)
-	right_vbox.add_child(eff_hbox)
+	stats_vbox.add_child(eff_hbox)
 
 	var eff_lbl = Label.new()
 	var eff_val = emp.get_efficiency_multiplier()
@@ -796,7 +847,7 @@ func _create_card(npc_node) -> PanelContainer:
 		ai_xp_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		ai_xp_lbl.add_theme_font_size_override("font_size", 11)
 		if UITheme: UITheme.apply_font(ai_xp_lbl, "regular")
-		right_vbox.add_child(ai_xp_lbl)
+		stats_vbox.add_child(ai_xp_lbl)
 		card.set_meta("ai_xp_label", ai_xp_lbl)
 
 	var spacer = Control.new()
@@ -897,6 +948,48 @@ func _create_help_button() -> Button:
 	btn.add_theme_stylebox_override("hover", hover_style)
 
 	return btn
+
+func _get_employee_role_code(job_title: String) -> String:
+	return JOB_TITLE_TO_ROLE_CODE.get(job_title, "")
+
+func _get_localized_role_name(job_title: String) -> String:
+	var role_code = _get_employee_role_code(job_title)
+	if role_code == "":
+		return job_title
+
+	var role_key = "HR_ROLE_" + role_code
+	var role_text = tr(role_key)
+	return role_text if role_text != role_key else job_title
+
+func _get_localized_short_role_name(job_title: String) -> String:
+	var role_code = _get_employee_role_code(job_title)
+	if role_code == "":
+		return _get_localized_role_name(job_title)
+
+	var role_key = "ROLE_SHORT_" + role_code
+	var role_text = tr(role_key)
+	return role_text if role_text != role_key else _get_localized_role_name(job_title)
+
+func _get_primary_skill_text(emp: EmployeeData) -> String:
+	var skill_value := 0
+
+	match _get_employee_role_code(emp.job_title):
+		"BA":
+			skill_value = emp.skill_business_analysis
+		"DEV":
+			skill_value = emp.skill_backend
+		"QA":
+			skill_value = emp.skill_qa
+		"SUPPORT":
+			# Customer Support keeps the existing roster behavior: no skill points line here.
+			return ""
+		_:
+			return ""
+
+	if skill_value <= 0:
+		return ""
+
+	return _get_localized_short_role_name(emp.job_title) + ": " + PMData.get_blurred_skill(skill_value)
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
