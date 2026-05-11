@@ -613,7 +613,7 @@ func update_visuals_dynamic_offset(px_per_day: float, current_project_time: floa
 
 	if act_start != -1.0:
 		progress_bar.visible = true
-		progress_bar.modulate = Color(1, 1, 1, 1)
+		progress_bar.modulate = Color.WHITE
 		var style = progress_bar.get_theme_stylebox("panel")
 		if style:
 			style = style.duplicate()
