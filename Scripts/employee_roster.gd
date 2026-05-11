@@ -488,11 +488,16 @@ func _create_card(npc_node) -> PanelContainer:
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")
 		level_hbox.add_child(max_lbl)
 
+	var header_spacer = Control.new()
+	header_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(header_spacer)
+
 	var salary_lbl = Label.new()
 	salary_lbl.text = tr("ROSTER_SALARY_VALUE") % emp.monthly_salary
 	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
 	salary_lbl.add_theme_font_size_override("font_size", ROSTER_HEADER_FONT_SIZE)
 	salary_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	salary_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if UITheme: UITheme.apply_font(salary_lbl, "bold")
 	header_hbox.add_child(salary_lbl)
 
@@ -502,7 +507,7 @@ func _create_card(npc_node) -> PanelContainer:
 	content_vbox.add_child(body_hbox)
 
 	var info_vbox = VBoxContainer.new()
-	info_vbox.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info_vbox.add_theme_constant_override("separation", 5)
 	body_hbox.add_child(info_vbox)
 
@@ -1080,7 +1085,7 @@ func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
 
 	var lbl = Label.new()
 	lbl.text = lbl_text
-	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	lbl.add_theme_color_override("font_color", text_color)
 	if UITheme: UITheme.apply_font(lbl, "semibold")
 	margin.add_child(lbl)
