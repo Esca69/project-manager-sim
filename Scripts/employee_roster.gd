@@ -495,7 +495,7 @@ func _create_card(npc_node) -> PanelContainer:
 	var salary_lbl = Label.new()
 	salary_lbl.text = tr("ROSTER_SALARY_VALUE") % emp.monthly_salary
 	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
-	salary_lbl.add_theme_font_size_override("font_size", ROSTER_HEADER_FONT_SIZE)
+	salary_lbl.add_theme_font_size_override("font_size", 22)
 	salary_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	salary_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if UITheme: UITheme.apply_font(salary_lbl, "bold")
