@@ -1008,11 +1008,15 @@ func _get_skill_label_prefix() -> String:
 	var placeholder_idx = skill_label.find("%s")
 	if placeholder_idx >= 0:
 		skill_label = skill_label.substr(0, placeholder_idx)
+	else:
+		return skill_label.strip_edges() + " "
 	return skill_label.strip_edges() + " "
 
 func _get_role_color_for_employee(emp: EmployeeData) -> Color:
 	var role_code = _get_employee_role_code(emp.job_title)
 	if role_code == "":
+		return Color(0.17254902, 0.30980393, 0.5686275, 1)
+	if not ProjectCardHelpers.has_method("get_role_color"):
 		return Color(0.17254902, 0.30980393, 0.5686275, 1)
 	return ProjectCardHelpers.get_role_color(role_code)
 
