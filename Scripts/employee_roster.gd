@@ -33,6 +33,8 @@ const ROSTER_HAIR_OFFSET_Y: float = -8.0
 const ROSTER_SIDE_COLUMN_MIN_WIDTH: float = 220.0
 const ROSTER_HEADER_FONT_SIZE: int = 18
 const ROSTER_BODY_FONT_SIZE: int = 14
+const ROSTER_META_FONT_SIZE: int = 12
+const ROSTER_LABEL_FONT_SIZE: int = 11
 const JOB_TITLE_TO_ROLE_CODE := {
 	"Business Analyst": "BA",
 	"Backend Developer": "DEV",
@@ -424,7 +426,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var grade_lbl = Label.new()
 	grade_lbl.text = tr("ROSTER_GRADE_LEVEL") % [grade, emp.employee_level]
-	grade_lbl.add_theme_font_size_override("font_size", 13)
+	grade_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	grade_lbl.add_theme_color_override("font_color", grade_color)
 	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
 	gm.add_child(grade_lbl)
@@ -447,7 +449,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 		var xp_lbl = Label.new()
 		xp_lbl.text = tr("UI_XP") % [xp_current, xp_needed]
-		xp_lbl.add_theme_font_size_override("font_size", 12)
+		xp_lbl.add_theme_font_size_override("font_size", ROSTER_META_FONT_SIZE)
 		xp_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		if UITheme: UITheme.apply_font(xp_lbl, "regular")
 		xp_vbox.add_child(xp_lbl)
@@ -479,7 +481,7 @@ func _create_card(npc_node) -> PanelContainer:
 	else:
 		var max_lbl = Label.new()
 		max_lbl.text = tr("ROSTER_MAX_LEVEL")
-		max_lbl.add_theme_font_size_override("font_size", 12)
+		max_lbl.add_theme_font_size_override("font_size", ROSTER_META_FONT_SIZE)
 		max_lbl.add_theme_color_override("font_color", grade_color)
 		max_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")
@@ -576,7 +578,7 @@ func _create_card(npc_node) -> PanelContainer:
 	var action_title_lbl = Label.new()
 	action_title_lbl.text = tr("ROSTER_CURRENT_ACTION_LABEL")
 	action_title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
-	action_title_lbl.add_theme_font_size_override("font_size", 11)
+	action_title_lbl.add_theme_font_size_override("font_size", ROSTER_LABEL_FONT_SIZE)
 	if UITheme: UITheme.apply_font(action_title_lbl, "regular")
 	action_row.add_child(action_title_lbl)
 
@@ -597,7 +599,7 @@ func _create_card(npc_node) -> PanelContainer:
 	effect_title_lbl.text = tr("ROSTER_STATUS_EFFECT_LABEL")
 	effect_title_lbl.tooltip_text = tr("ROSTER_STATUS_EFFECT_TOOLTIP")
 	effect_title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
-	effect_title_lbl.add_theme_font_size_override("font_size", 11)
+	effect_title_lbl.add_theme_font_size_override("font_size", ROSTER_LABEL_FONT_SIZE)
 	if UITheme: UITheme.apply_font(effect_title_lbl, "regular")
 	effect_row.add_child(effect_title_lbl)
 
@@ -987,22 +989,6 @@ func _get_localized_role_name(job_title: String) -> String:
 	var role_key = "HR_ROLE_" + role_code
 	var role_text = tr(role_key)
 	return role_text if role_text != role_key else job_title
-
-func _get_localized_short_role_name(job_title: String) -> String:
-	var role_code = _get_employee_role_code(job_title)
-	if role_code == "":
-		return _get_localized_role_name(job_title)
-
-	var role_key = "ROLE_SHORT_" + role_code
-	var role_text = tr(role_key)
-	return role_text if role_text != role_key else _get_localized_role_name(job_title)
-
-func _get_primary_skill_text(emp: EmployeeData) -> String:
-	var skill_value := _get_primary_skill_value(emp)
-	if skill_value <= 0:
-		return ""
-
-	return _get_localized_role_name(emp.job_title) + ": " + PMData.get_blurred_skill(skill_value)
 
 func _get_primary_skill_value(emp: EmployeeData) -> int:
 	match _get_employee_role_code(emp.job_title):
