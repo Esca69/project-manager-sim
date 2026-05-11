@@ -1,6 +1,7 @@
 extends Control
 
 signal employee_fired(emp_data: EmployeeData)
+const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
 
 @onready var cards_container = $Window/MainVBox/CardsMargin/ScrollContainer/CardsContainer
 @onready var close_btn = find_child("CloseButton", true, false)
@@ -29,7 +30,9 @@ var _body_textures: Dictionary = {}
 
 const ROSTER_HAIR_OFFSET_X: float = 0.0
 const ROSTER_HAIR_OFFSET_Y: float = -8.0
-const ROSTER_SIDE_COLUMN_MIN_WIDTH: float = 250.0
+const ROSTER_SIDE_COLUMN_MIN_WIDTH: float = 220.0
+const ROSTER_HEADER_FONT_SIZE: int = 18
+const ROSTER_BODY_FONT_SIZE: int = 14
 const JOB_TITLE_TO_ROLE_CODE := {
 	"Business Analyst": "BA",
 	"Backend Developer": "DEV",
@@ -364,9 +367,8 @@ func _create_card(npc_node) -> PanelContainer:
 	var name_lbl = Label.new()
 	# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо сырого employee_name
 	name_lbl.text = emp.get_gender_icon() + " " + emp.get_display_name() + "  —  " + _get_localized_role_name(emp.job_title)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	name_lbl.add_theme_font_size_override("font_size", 16)
+	name_lbl.add_theme_font_size_override("font_size", ROSTER_HEADER_FONT_SIZE)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
 	header_hbox.add_child(name_lbl)
 
@@ -422,7 +424,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var grade_lbl = Label.new()
 	grade_lbl.text = tr("ROSTER_GRADE_LEVEL") % [grade, emp.employee_level]
-	grade_lbl.add_theme_font_size_override("font_size", 12)
+	grade_lbl.add_theme_font_size_override("font_size", 13)
 	grade_lbl.add_theme_color_override("font_color", grade_color)
 	if UITheme: UITheme.apply_font(grade_lbl, "semibold")
 	gm.add_child(grade_lbl)
@@ -445,7 +447,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 		var xp_lbl = Label.new()
 		xp_lbl.text = tr("UI_XP") % [xp_current, xp_needed]
-		xp_lbl.add_theme_font_size_override("font_size", 11)
+		xp_lbl.add_theme_font_size_override("font_size", 12)
 		xp_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		if UITheme: UITheme.apply_font(xp_lbl, "regular")
 		xp_vbox.add_child(xp_lbl)
@@ -477,7 +479,7 @@ func _create_card(npc_node) -> PanelContainer:
 	else:
 		var max_lbl = Label.new()
 		max_lbl.text = tr("ROSTER_MAX_LEVEL")
-		max_lbl.add_theme_font_size_override("font_size", 11)
+		max_lbl.add_theme_font_size_override("font_size", 12)
 		max_lbl.add_theme_color_override("font_color", grade_color)
 		max_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		if UITheme: UITheme.apply_font(max_lbl, "semibold")
@@ -486,51 +488,64 @@ func _create_card(npc_node) -> PanelContainer:
 	var salary_lbl = Label.new()
 	salary_lbl.text = tr("ROSTER_SALARY_VALUE") % emp.monthly_salary
 	salary_lbl.add_theme_color_override("font_color", Color(0.29803923, 0.6862745, 0.3137255, 1))
-	salary_lbl.add_theme_font_size_override("font_size", 15)
+	salary_lbl.add_theme_font_size_override("font_size", ROSTER_HEADER_FONT_SIZE)
 	salary_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if UITheme: UITheme.apply_font(salary_lbl, "bold")
 	header_hbox.add_child(salary_lbl)
 
 	var body_hbox = HBoxContainer.new()
 	body_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	body_hbox.add_theme_constant_override("separation", 18)
+	body_hbox.add_theme_constant_override("separation", 10)
 	content_vbox.add_child(body_hbox)
 
 	var info_vbox = VBoxContainer.new()
-	info_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_vbox.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	info_vbox.add_theme_constant_override("separation", 5)
 	body_hbox.add_child(info_vbox)
 
-	var skill_text = _get_primary_skill_text(emp)
+	var skill_row = HBoxContainer.new()
+	skill_row.add_theme_constant_override("separation", 4)
+	info_vbox.add_child(skill_row)
 
-	var skills_lbl = Label.new()
-	skills_lbl.text = tr("ROSTER_SKILL") % skill_text
-	skills_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	skills_lbl.add_theme_font_size_override("font_size", 13)
-	if UITheme: UITheme.apply_font(skills_lbl, "semibold")
-	info_vbox.add_child(skills_lbl)
+	var skill_value = _get_primary_skill_value(emp)
+	if skill_value > 0:
+		var skill_prefix_lbl = Label.new()
+		skill_prefix_lbl.text = tr("ROSTER_SKILL") % ""
+		skill_prefix_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		skill_prefix_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
+		if UITheme: UITheme.apply_font(skill_prefix_lbl, "semibold")
+		skill_row.add_child(skill_prefix_lbl)
+
+		var skill_role_lbl = Label.new()
+		skill_role_lbl.text = _get_localized_role_name(emp.job_title)
+		skill_role_lbl.add_theme_color_override("font_color", _get_role_color_for_employee(emp))
+		skill_role_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
+		if UITheme: UITheme.apply_font(skill_role_lbl, "semibold")
+		skill_row.add_child(skill_role_lbl)
+
+		var skill_value_lbl = Label.new()
+		skill_value_lbl.text = ": " + PMData.get_blurred_skill(skill_value)
+		skill_value_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
+		skill_value_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
+		if UITheme: UITheme.apply_font(skill_value_lbl, "semibold")
+		skill_row.add_child(skill_value_lbl)
 
 	if not emp.traits.is_empty():
 		var visible_count = PMData.get_visible_traits_count()
+		var flow = HFlowContainer.new()
+		flow.add_theme_constant_override("h_separation", 12)
+		flow.add_theme_constant_override("v_separation", 4)
 
-		if visible_count >= emp.traits.size():
-			var traits_row = TraitUIHelper.create_traits_row(emp, self)
-			info_vbox.add_child(traits_row)
-		else:
-			var flow = HFlowContainer.new()
-			flow.add_theme_constant_override("h_separation", 12)
-			flow.add_theme_constant_override("v_separation", 4)
+		for t_idx in range(emp.traits.size()):
+			if t_idx < visible_count:
+				var trait_id = emp.traits[t_idx]
+				var item = _create_visible_trait(trait_id, emp)
+				flow.add_child(item)
+			else:
+				var item = _create_hidden_trait()
+				flow.add_child(item)
 
-			for t_idx in range(emp.traits.size()):
-				if t_idx < visible_count:
-					var trait_id = emp.traits[t_idx]
-					var item = _create_visible_trait(trait_id, emp)
-					flow.add_child(item)
-				else:
-					var item = _create_hidden_trait()
-					flow.add_child(item)
-
-			info_vbox.add_child(flow)
+		info_vbox.add_child(flow)
 
 	# === PERSONALITY ===
 	if not emp.personality.is_empty():
@@ -544,26 +559,38 @@ func _create_card(npc_node) -> PanelContainer:
 	stats_vbox.custom_minimum_size = Vector2(ROSTER_SIDE_COLUMN_MIN_WIDTH, 0)
 	body_hbox.add_child(stats_vbox)
 
+	var body_spacer = Control.new()
+	body_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body_hbox.add_child(body_spacer)
+
 	# === ПРАВАЯ КОЛОНКА ===
 	var right_vbox = VBoxContainer.new()
 	right_vbox.add_theme_constant_override("separation", 6)
 	right_vbox.custom_minimum_size = Vector2(ROSTER_SIDE_COLUMN_MIN_WIDTH, 0)
 	body_hbox.add_child(right_vbox)
 
+	var action_row = HBoxContainer.new()
+	action_row.add_theme_constant_override("separation", 6)
+	right_vbox.add_child(action_row)
+
 	var action_title_lbl = Label.new()
 	action_title_lbl.text = tr("ROSTER_CURRENT_ACTION_LABEL")
 	action_title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	action_title_lbl.add_theme_font_size_override("font_size", 11)
 	if UITheme: UITheme.apply_font(action_title_lbl, "regular")
-	right_vbox.add_child(action_title_lbl)
+	action_row.add_child(action_title_lbl)
 
 	var status_lbl = Label.new()
 	status_lbl.text = _get_status_text(npc_node)
 	status_lbl.add_theme_color_override("font_color", _get_status_color(npc_node))
-	status_lbl.add_theme_font_size_override("font_size", 13)
+	status_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(status_lbl, "semibold")
-	right_vbox.add_child(status_lbl)
+	action_row.add_child(status_lbl)
 	card.set_meta("status_label", status_lbl)
+
+	var effect_row = HBoxContainer.new()
+	effect_row.add_theme_constant_override("separation", 6)
+	right_vbox.add_child(effect_row)
 
 	var effect_text = _get_event_effect_text(emp)
 	var effect_title_lbl = Label.new()
@@ -572,11 +599,11 @@ func _create_card(npc_node) -> PanelContainer:
 	effect_title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	effect_title_lbl.add_theme_font_size_override("font_size", 11)
 	if UITheme: UITheme.apply_font(effect_title_lbl, "regular")
-	right_vbox.add_child(effect_title_lbl)
+	effect_row.add_child(effect_title_lbl)
 
 	var effect_lbl = Label.new()
 	effect_lbl.tooltip_text = tr("ROSTER_STATUS_EFFECT_TOOLTIP")
-	effect_lbl.add_theme_font_size_override("font_size", 13)
+	effect_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(effect_lbl, "semibold")
 	if effect_text == "":
 		effect_lbl.text = "—"
@@ -584,7 +611,7 @@ func _create_card(npc_node) -> PanelContainer:
 	else:
 		effect_lbl.text = effect_text
 		effect_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	right_vbox.add_child(effect_lbl)
+	effect_row.add_child(effect_lbl)
 	card.set_meta("effect_label", effect_lbl)
 
 	# === MOOD SYSTEM: Настроение + "?" + мини-полоска ===
@@ -597,7 +624,7 @@ func _create_card(npc_node) -> PanelContainer:
 	var zone_name = emp.get_mood_zone_name()
 	mood_lbl.text = tr("ROSTER_MOOD") % [int(mood_val), zone_name]
 	mood_lbl.add_theme_color_override("font_color", _get_mood_color(mood_val))
-	mood_lbl.add_theme_font_size_override("font_size", 13)
+	mood_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(mood_lbl, "semibold")
 	mood_hbox.add_child(mood_lbl)
 	card.set_meta("mood_label", mood_lbl)
@@ -606,7 +633,7 @@ func _create_card(npc_node) -> PanelContainer:
 	var loyalty_level = emp.get_pm_loyalty_level()
 	loyalty_lbl.text = tr("ROSTER_LOYALTY") % [int(emp.pm_loyalty), tr(loyalty_level.name)]
 	loyalty_lbl.add_theme_color_override("font_color", _get_loyalty_color(emp.pm_loyalty))
-	loyalty_lbl.add_theme_font_size_override("font_size", 13)
+	loyalty_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(loyalty_lbl, "semibold")
 	stats_vbox.add_child(loyalty_lbl)
 	card.set_meta("loyalty_label", loyalty_lbl)
@@ -711,7 +738,7 @@ func _create_card(npc_node) -> PanelContainer:
 	var energy_lbl = Label.new()
 	var energy_pct = int(emp.current_energy)
 	energy_lbl.text = tr("ROSTER_ENERGY") % energy_pct
-	energy_lbl.add_theme_font_size_override("font_size", 13)
+	energy_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(energy_lbl, "semibold")
 	if energy_pct >= 70:
 		energy_lbl.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
@@ -729,7 +756,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var burnout_lbl = Label.new()
 	burnout_lbl.text = tr("BURNOUT_LABEL") % int(emp.burnout_level)
-	burnout_lbl.add_theme_font_size_override("font_size", 13)
+	burnout_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(burnout_lbl, "semibold")
 	burnout_lbl.add_theme_color_override("font_color", _get_burnout_color(emp.burnout_level))
 	burnout_hbox.add_child(burnout_lbl)
@@ -778,7 +805,7 @@ func _create_card(npc_node) -> PanelContainer:
 	else:
 		eff_lbl.text = tr("ROSTER_EFFICIENCY") % eff_val
 		eff_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
-	eff_lbl.add_theme_font_size_override("font_size", 13)
+	eff_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(eff_lbl, "regular")
 	eff_hbox.add_child(eff_lbl)
 	card.set_meta("eff_label", eff_lbl)
@@ -971,25 +998,28 @@ func _get_localized_short_role_name(job_title: String) -> String:
 	return role_text if role_text != role_key else _get_localized_role_name(job_title)
 
 func _get_primary_skill_text(emp: EmployeeData) -> String:
-	var skill_value := 0
-
-	match _get_employee_role_code(emp.job_title):
-		"BA":
-			skill_value = emp.skill_business_analysis
-		"DEV":
-			skill_value = emp.skill_backend
-		"QA":
-			skill_value = emp.skill_qa
-		"SUPPORT":
-			# Customer Support keeps the existing roster behavior: no skill points line here.
-			return ""
-		_:
-			return ""
-
+	var skill_value := _get_primary_skill_value(emp)
 	if skill_value <= 0:
 		return ""
 
-	return _get_localized_short_role_name(emp.job_title) + ": " + PMData.get_blurred_skill(skill_value)
+	return _get_localized_role_name(emp.job_title) + ": " + PMData.get_blurred_skill(skill_value)
+
+func _get_primary_skill_value(emp: EmployeeData) -> int:
+	match _get_employee_role_code(emp.job_title):
+		"BA":
+			return emp.skill_business_analysis
+		"DEV":
+			return emp.skill_backend
+		"QA":
+			return emp.skill_qa
+		_:
+			return 0
+
+func _get_role_color_for_employee(emp: EmployeeData) -> Color:
+	var role_code = _get_employee_role_code(emp.job_title)
+	if role_code == "":
+		return Color(0.17254902, 0.30980393, 0.5686275, 1)
+	return ProjectCardHelpers.get_role_color(role_code)
 
 # === ЧИП ТИПА ЗАНЯТОСТИ ===
 func _create_employment_type_badge(emp: EmployeeData) -> PanelContainer:
@@ -1105,7 +1135,7 @@ func _create_personality_item(tag_id: String, emp: EmployeeData) -> HBoxContaine
 	var lbl = Label.new()
 	lbl.text = tr(name_text)
 	lbl.add_theme_color_override("font_color", color)
-	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(lbl, "regular")
 	hbox.add_child(lbl)
 	
@@ -1175,7 +1205,7 @@ func _add_relationships_to(card_vbox: VBoxContainer, emp: EmployeeData):
 
 	var header_lbl = Label.new()
 	header_lbl.text = tr("ROSTER_RELATIONSHIPS")
-	header_lbl.add_theme_font_size_override("font_size", 13)
+	header_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	header_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	if UITheme: UITheme.apply_font(header_lbl, "semibold")
 	hbox.add_child(header_lbl)
@@ -1424,7 +1454,7 @@ func _create_visible_trait(trait_id: String, emp: EmployeeData) -> HBoxContainer
 	var lbl = Label.new()
 	lbl.text = tr(name_text)
 	lbl.add_theme_color_override("font_color", color)
-	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(lbl, "regular")
 	hbox.add_child(lbl)
 
@@ -1490,7 +1520,7 @@ func _create_hidden_trait() -> HBoxContainer:
 	var lbl = Label.new()
 	lbl.text = "???"
 	lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
-	lbl.add_theme_font_size_override("font_size", 13)
+	lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 	if UITheme: UITheme.apply_font(lbl, "regular")
 	hbox.add_child(lbl)
 
