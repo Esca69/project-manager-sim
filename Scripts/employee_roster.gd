@@ -368,7 +368,7 @@ func _create_card(npc_node) -> PanelContainer:
 
 	var name_lbl = Label.new()
 	# ИСПРАВЛЕНИЕ: Используем get_display_name() вместо сырого employee_name
-	name_lbl.text = emp.get_gender_icon() + " " + emp.get_display_name() + "  —  " + _get_localized_role_name(emp.job_title)
+	name_lbl.text = emp.get_gender_icon() + " " + emp.get_display_name() + " — " + _get_localized_role_name(emp.job_title)
 	name_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 	name_lbl.add_theme_font_size_override("font_size", ROSTER_HEADER_FONT_SIZE)
 	if UITheme: UITheme.apply_font(name_lbl, "bold")
@@ -512,7 +512,7 @@ func _create_card(npc_node) -> PanelContainer:
 	var skill_value = _get_primary_skill_value(emp)
 	if skill_value > 0:
 		var skill_prefix_lbl = Label.new()
-		skill_prefix_lbl.text = tr("ROSTER_SKILL") % ""
+		skill_prefix_lbl.text = _get_skill_label_prefix()
 		skill_prefix_lbl.add_theme_color_override("font_color", Color(0.17254902, 0.30980393, 0.5686275, 1))
 		skill_prefix_lbl.add_theme_font_size_override("font_size", ROSTER_BODY_FONT_SIZE)
 		if UITheme: UITheme.apply_font(skill_prefix_lbl, "semibold")
@@ -998,8 +998,17 @@ func _get_primary_skill_value(emp: EmployeeData) -> int:
 			return emp.skill_backend
 		"QA":
 			return emp.skill_qa
+		"SUPPORT":
+			return 0
 		_:
 			return 0
+
+func _get_skill_label_prefix() -> String:
+	var skill_label = tr("ROSTER_SKILL")
+	var placeholder_idx = skill_label.find("%s")
+	if placeholder_idx >= 0:
+		skill_label = skill_label.substr(0, placeholder_idx)
+	return skill_label.strip_edges() + " "
 
 func _get_role_color_for_employee(emp: EmployeeData) -> Color:
 	var role_code = _get_employee_role_code(emp.job_title)
