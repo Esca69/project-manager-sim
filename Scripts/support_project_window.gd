@@ -4,6 +4,8 @@ signal closed
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
+const TICKET_COLUMN_WIDTH = 340
+const TICKET_COLUMNS_SEPARATION = 12
 
 var _overlay: ColorRect
 var _window: PanelContainer
@@ -160,7 +162,7 @@ func _build_ui():
 	var columns_row = HBoxContainer.new()
 	columns_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	columns_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	columns_row.add_theme_constant_override("separation", 12)
+	columns_row.add_theme_constant_override("separation", TICKET_COLUMNS_SEPARATION)
 	body.add_child(columns_row)
 
 	_create_ticket_column(columns_row, "todo", "SUPPORT_COLUMN_TODO")
@@ -404,7 +406,7 @@ func _rebuild():
 
 func _create_ticket_column(parent: HBoxContainer, column_id: String, title_key: String):
 	var column = VBoxContainer.new()
-	column.custom_minimum_size = Vector2(340, 0)
+	column.custom_minimum_size = Vector2(TICKET_COLUMN_WIDTH, 0)
 	column.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 8)
