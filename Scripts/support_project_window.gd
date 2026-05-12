@@ -437,8 +437,9 @@ func _update_ticket_column_headers(column_counts: Dictionary):
 		if label == null:
 			continue
 		var title_key: String = header.get("title_key", "")
-		var count: int = int(column_counts.get(column_id, 0))
-		label.text = _tr_format_safe("SUPPORT_COLUMN_TITLE_COUNT", [tr(title_key), count], "%s (%d)" % [tr(title_key), count])
+		var title_text = tr(title_key)
+		var count: int = column_counts.get(column_id, 0)
+		label.text = _tr_format_safe("SUPPORT_COLUMN_TITLE_COUNT", [title_text, count], "%s (%d)" % [title_text, count])
 
 func _get_ticket_column_id(ticket: SupportTicketData) -> String:
 	if ticket.is_completed:
