@@ -11,7 +11,7 @@ signal worker_removed(track_index, worker_index)
 @onready var progress_bar = $Layout/GanttArea/ProgressBar
 @onready var gantt_area = $Layout/GanttArea
 
-const BAR_HEIGHT = 24.0
+const BAR_HEIGHT = 32.0
 const BUTTON_HEIGHT = 30.0
 const BASE_TRACK_HEIGHT = 60.0
 const AVG_PROGRESS_DAYS = 7
@@ -619,7 +619,7 @@ func update_visuals_dynamic_offset(px_per_day: float, current_project_time: floa
 			style = style.duplicate()
 			style.bg_color = color
 			progress_bar.add_theme_stylebox_override("panel", style)
-		var fact_height = BAR_HEIGHT * 0.6
+		var fact_height = BAR_HEIGHT * 1
 		progress_bar.size.y = fact_height
 		progress_bar.position.y = (size.y - fact_height) / 2.0
 		progress_bar.position.x = (start_offset + act_start) * px_per_day

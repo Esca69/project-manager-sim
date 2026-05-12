@@ -763,6 +763,7 @@ func _create_card(data, index: int) -> PanelContainer:
 		select_btn.text = tr("PROJ_SEL_BTN_SELECT")
 		
 	select_btn.custom_minimum_size = Vector2(180, 40)
+	select_btn.size_flags_horizontal = Control.SIZE_SHRINK_END # <--- ИСПРАВЛЕНИЕ ЗДЕСЬ
 	select_btn.disabled = btn_blocked
 
 	if btn_blocked:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=3 uid="uid://kr52uj1nuu18"]
+[gd_scene load_steps=55 format=3 uid="uid://kr52uj1nuu18"]
 
 [ext_resource type="Script" uid="uid://8l1llj5ucpfe" path="res://Scripts/office.gd" id="1_2vylc"]
 [ext_resource type="Texture2D" uid="uid://dym73u2kmpcvt" path="res://Sprites/new office/new_office_shadow.png" id="2_igjay"]
@@ -18,10 +18,8 @@
 [ext_resource type="Texture2D" uid="uid://dyma46sdd5epu" path="res://Sprites/Office/HR.png" id="14_lsk72"]
 [ext_resource type="Texture2D" uid="uid://bo23r50hc6iec" path="res://Sprites/Office/hrplate.png" id="14_s31ab"]
 [ext_resource type="PackedScene" uid="uid://dbkt45r0pwr26" path="res://Scenes/Mebel/tumbochka.tscn" id="16_ari0y"]
-[ext_resource type="PackedScene" uid="uid://ss2qipw67vmd" path="res://Scenes/Mebel/sofa.tscn" id="17_oqaoe"]
 [ext_resource type="PackedScene" uid="uid://cpot20or6loas" path="res://Scenes/Mebel/fridge.tscn" id="19_2btma"]
 [ext_resource type="PackedScene" uid="uid://37g45wjt4sq4" path="res://Scenes/Mebel/kitchen.tscn" id="20_2btma"]
-[ext_resource type="PackedScene" uid="uid://dguf0rohhwl1p" path="res://Scenes/Mebel/lamp.tscn" id="21_2uc8b"]
 [ext_resource type="PackedScene" uid="uid://bmmnhia48sjd" path="res://Scenes/Mebel/foodtable.tscn" id="21_8yipd"]
 [ext_resource type="Texture2D" uid="uid://defopj84yd54i" path="res://Sprites/Office/lunchroom_sign.png" id="22_ss1ob"]
 [ext_resource type="PackedScene" uid="uid://becgae6wunow2" path="res://Scenes/Mebel/Sofa_back.tscn" id="23_ss1ob"]
@@ -392,12 +390,6 @@ position = Vector2(400, 354)
 
 [node name="Tumbochka3" parent="WorldObjects" groups=["desk"] instance=ExtResource("16_ari0y")]
 position = Vector2(407, 871)
-
-[node name="Sofa" parent="WorldObjects" groups=["desk"] instance=ExtResource("17_oqaoe")]
-position = Vector2(1659, 350)
-
-[node name="Lampa" parent="WorldObjects" groups=["desk"] instance=ExtResource("21_2uc8b")]
-position = Vector2(1774, 297)
 
 [node name="Fridge" parent="WorldObjects" groups=["desk"] instance=ExtResource("19_2btma")]
 position = Vector2(963, -910)
