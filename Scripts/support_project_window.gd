@@ -161,7 +161,7 @@ func _build_ui():
 
 	var columns_row = HBoxContainer.new()
 	columns_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	columns_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	columns_row.alignment = BoxContainer.ALIGNMENT_BEGIN
 	columns_row.add_theme_constant_override("separation", TICKET_COLUMNS_SEPARATION)
 	body.add_child(columns_row)
 
@@ -316,9 +316,8 @@ func _rebuild():
 	for c in _top_vbox.get_children():
 		c.queue_free()
 	for column_list in _ticket_column_lists.values():
-		if column_list is VBoxContainer:
-			for c in column_list.get_children():
-				c.queue_free()
+		for c in column_list.get_children():
+			c.queue_free()
 	_ticket_progress_labels.clear()
 
 	var title_lbl: Label = _window.find_child("TitleLabel", true, false)
@@ -407,7 +406,7 @@ func _rebuild():
 func _create_ticket_column(parent: HBoxContainer, column_id: String, title_key: String):
 	var column = VBoxContainer.new()
 	column.custom_minimum_size = Vector2(TICKET_COLUMN_WIDTH, 0)
-	column.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	column.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 8)
 	parent.add_child(column)
