@@ -1498,6 +1498,11 @@ SUPPORT_DAILY_RATE_LABEL,Ставка: $%d/день,Rate: $%d/day
 SUPPORT_STATUS_TICKETS,Тикетов: %d открыто / %d просрочено,Tickets: %d open / %d overdue
 SUPPORT_DURATION_INFO,Срок: %d раб. дн. | Осталось: %d,Duration: %d work days | %d left
 SUPPORT_WEEKLY_RATE,~$%d/нед.,~$%d/wk
+SUPPORT_COLUMN_TITLE_COUNT,%s (%d),%s (%d)
+SUPPORT_COLUMN_TODO,К ВЫПОЛНЕНИЮ,TO DO
+SUPPORT_COLUMN_IN_PROGRESS,В РАБОТЕ,IN PROGRESS
+SUPPORT_COLUMN_DONE,ГОТОВО,DONE
+SUPPORT_COLUMN_OVERDUE,ПРОСРОЧЕНО,OVERDUE
 TICKET_DEADLINE,Дедлайн: %s (через %d дн.),Deadline: %s (%d days left)
 TICKET_OVERDUE,⚠️ Просрочен!,⚠️ Overdue!
 TICKET_COMPLETED,✅ Выполнен,✅ Completed

@@ -4,11 +4,14 @@ signal closed
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
+const TICKET_COLUMN_WIDTH = 340
+const TICKET_COLUMNS_SEPARATION = 12
 
 var _overlay: ColorRect
 var _window: PanelContainer
 var _top_vbox: VBoxContainer
-var _tickets_vbox: VBoxContainer
+var _ticket_column_lists: Dictionary = {}
+var _ticket_column_headers: Dictionary = {}
 
 var _project: SupportProjectData = null
 var _was_paused: bool = false
@@ -156,14 +159,16 @@ func _build_ui():
 	body.add_child(_top_vbox)
 	body.add_child(HSeparator.new())
 
-	var scroll = ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	body.add_child(scroll)
+	var columns_row = HBoxContainer.new()
+	columns_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	columns_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	columns_row.add_theme_constant_override("separation", TICKET_COLUMNS_SEPARATION)
+	body.add_child(columns_row)
 
-	_tickets_vbox = VBoxContainer.new()
-	_tickets_vbox.add_theme_constant_override("separation", 8)
-	scroll.add_child(_tickets_vbox)
+	_create_ticket_column(columns_row, "todo", "SUPPORT_COLUMN_TODO")
+	_create_ticket_column(columns_row, "in_progress", "SUPPORT_COLUMN_IN_PROGRESS")
+	_create_ticket_column(columns_row, "done", "SUPPORT_COLUMN_DONE")
+	_create_ticket_column(columns_row, "overdue", "SUPPORT_COLUMN_OVERDUE")
 
 	_build_assignment_popup()
 
@@ -310,8 +315,9 @@ func _rebuild():
 
 	for c in _top_vbox.get_children():
 		c.queue_free()
-	for c in _tickets_vbox.get_children():
-		c.queue_free()
+	for column_list in _ticket_column_lists.values():
+		for c in column_list.get_children():
+			c.queue_free()
 	_ticket_progress_labels.clear()
 
 	var title_lbl: Label = _window.find_child("TitleLabel", true, false)
@@ -380,11 +386,69 @@ func _rebuild():
 	_top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_STATUS_TICKETS", [open_count, overdue_count], "Tickets: %d open / %d overdue" % [open_count, overdue_count]), COLOR_BLUE, false))
 	_top_vbox.add_child(_info_label(_tr_format_safe("SUPPORT_WEEKLY_RATE", eff_rate * 5, "~$%d/wk" % (eff_rate * 5)), Color(0.2, 0.6, 0.2, 1), true))
 
+	var column_counts := {
+		"todo": 0,
+		"in_progress": 0,
+		"done": 0,
+		"overdue": 0,
+	}
 	var sorted_tickets = _project.tickets.duplicate()
 	sorted_tickets.sort_custom(func(a, b): return _ticket_sort_key(a) < _ticket_sort_key(b))
 	for ticket in sorted_tickets:
 		if ticket is SupportTicketData:
-			_tickets_vbox.add_child(_create_ticket_card(ticket))
+			var column_id = _get_ticket_column_id(ticket)
+			column_counts[column_id] += 1
+			var column_list: VBoxContainer = _ticket_column_lists.get(column_id, null)
+			if column_list != null:
+				column_list.add_child(_create_ticket_card(ticket))
+	_update_ticket_column_headers(column_counts)
+
+func _create_ticket_column(parent: HBoxContainer, column_id: String, title_key: String):
+	var column = VBoxContainer.new()
+	column.custom_minimum_size = Vector2(TICKET_COLUMN_WIDTH, 0)
+	column.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	column.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation", 8)
+	parent.add_child(column)
+
+	var title_lbl = Label.new()
+	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.add_theme_color_override("font_color", COLOR_BLUE)
+	if UITheme:
+		UITheme.apply_font(title_lbl, "bold")
+	column.add_child(title_lbl)
+
+	var scroll = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	column.add_child(scroll)
+
+	var tickets_vbox = VBoxContainer.new()
+	tickets_vbox.add_theme_constant_override("separation", 8)
+	scroll.add_child(tickets_vbox)
+
+	_ticket_column_lists[column_id] = tickets_vbox
+	_ticket_column_headers[column_id] = {"label": title_lbl, "title_key": title_key}
+
+func _update_ticket_column_headers(column_counts: Dictionary):
+	for column_id in _ticket_column_headers.keys():
+		var header = _ticket_column_headers[column_id]
+		var label: Label = header.get("label", null)
+		if label == null:
+			continue
+		var title_key: String = header.get("title_key", "")
+		var title_text = tr(title_key)
+		var count: int = column_counts.get(column_id, 0)
+		label.text = _tr_format_safe("SUPPORT_COLUMN_TITLE_COUNT", [title_text, count], "%s (%d)" % [title_text, count])
+
+func _get_ticket_column_id(ticket: SupportTicketData) -> String:
+	if ticket.is_completed:
+		return "done"
+	if ticket.is_overdue:
+		return "overdue"
+	if ticket.assigned_worker == null:
+		return "todo"
+	return "in_progress"
 
 func _info_label(text: String, color: Color, bold: bool) -> Label:
 	var lbl = Label.new()
@@ -471,7 +535,7 @@ func _create_ticket_card(ticket: SupportTicketData) -> PanelContainer:
 		worker_name = "👤 " + ticket.assigned_worker.get_display_name()
 	root.add_child(_info_label(worker_name, Color(0.3, 0.3, 0.3, 1), false))
 
-	if not ticket.is_completed:
+	if not ticket.is_completed and not ticket.is_overdue:
 		var btn = Button.new()
 		btn.text = tr("TICKET_ASSIGN")
 		btn.custom_minimum_size = Vector2(180, 34)
