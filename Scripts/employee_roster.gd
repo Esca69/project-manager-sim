@@ -1769,19 +1769,6 @@ func _get_event_effect_text(emp_data: EmployeeData) -> String:
 		return tr("ROSTER_STATUS_DEBUFF")
 	return ""
 
-func _get_working_project_name(emp_data: EmployeeData) -> String:
-	for project in ProjectManager.active_projects:
-		if project.state != ProjectData.State.IN_PROGRESS:
-			continue
-		for stage in project.stages:
-			if stage.get("is_completed", false):
-				continue
-			for worker in stage.workers:
-				if worker == emp_data:
-					# ИСПРАВЛЕНИЕ: Используем get_display_title
-					return project.get_display_title()
-	return "?"
-
 func _find_npc_node(emp_data: EmployeeData):
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if npc.data == emp_data:
