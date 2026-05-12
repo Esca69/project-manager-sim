@@ -764,20 +764,6 @@ func _on_time_tick(_hour, _minute):
 	if GameTime and GameTime.is_night_skip:
 		return
 
-	if _hour == 17 and _minute == 0:
-		var old_loyalty = data.pm_loyalty
-		if data.pm_loyalty > 50.0:
-			data.pm_loyalty -= 0.5
-			if absf(data.pm_loyalty - 50.0) < 0.5:
-				data.pm_loyalty = 50.0
-		elif data.pm_loyalty < 50.0:
-			data.pm_loyalty += 0.5
-			if absf(data.pm_loyalty - 50.0) < 0.5:
-				data.pm_loyalty = 50.0
-		data.pm_loyalty = clampf(data.pm_loyalty, 0.0, 100.0)
-		if old_loyalty != data.pm_loyalty:
-			data.recalculate_mood()
-
 	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
 		return
 
