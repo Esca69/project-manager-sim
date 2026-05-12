@@ -1688,9 +1688,7 @@ func _get_status_text(npc_node) -> String:
 	match state:
 		0: return tr("ROSTER_STATUS_IDLE")
 		1: return tr("ROSTER_STATUS_MOVING")
-		2:
-			var proj_name = _get_working_project_name(npc_node.data)
-			return tr("ROSTER_STATUS_WORKING") % proj_name
+		2: return tr("ROSTER_STATUS_WORKING")
 		3: return tr("ROSTER_STATUS_GOING_HOME")
 		4: return tr("ROSTER_STATUS_HOME")
 		5: return tr("ROSTER_STATUS_GOING_COFFEE")
