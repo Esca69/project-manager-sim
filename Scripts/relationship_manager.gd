@@ -261,14 +261,7 @@ func can_chat(employee_name: String) -> bool:
 # === ЗАТУХАНИЕ (DECAY) — вызывается раз в день ===
 
 func apply_daily_decay():
-	for key in relationships.keys():
-		var val = relationships[key]
-		if abs(val) <= DECAY_NEUTRAL_ZONE:
-			continue  # Не затухает рядом с нулём
-		if val > 0:
-			relationships[key] = maxi(val - DECAY_AMOUNT, 0)
-		else:
-			relationships[key] = mini(val + DECAY_AMOUNT, 0)
+	pass  # Decay disabled: relationships no longer drift toward neutral
 
 # === ПОДКЛЮЧЕНИЕ К GAMETIME ===
 
