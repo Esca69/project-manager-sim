@@ -346,7 +346,7 @@ ROSTER_SALARY_VALUE,%d $/мес,$%d/mo
 ROSTER_HIDDEN_TRAIT_TOOLTIP,Неизвестное качество сотрудника.\nИзучите навык «Чтение людей» в дереве навыков PM.,Unknown employee trait.\nLearn the 'Read People' skill in the PM skill tree.
 ROSTER_STATUS_IDLE,💤 Простаивает,💤 Idle
 ROSTER_STATUS_MOVING,🚶 Идёт к столу,🚶 Going to desk
-ROSTER_STATUS_WORKING,🔧 Работает (%s),🔧 Working (%s)
+ROSTER_STATUS_WORKING,🔧 Работает,🔧 Working
 ROSTER_STATUS_GOING_HOME,🏠 Идёт домой,🏠 Going home
 ROSTER_STATUS_HOME,🏠 Дома,🏠 At home
 ROSTER_STATUS_GOING_COFFEE,☕ Идёт за кофе,☕ Getting coffee

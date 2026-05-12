@@ -1688,9 +1688,7 @@ func _get_status_text(npc_node) -> String:
 	match state:
 		0: return tr("ROSTER_STATUS_IDLE")
 		1: return tr("ROSTER_STATUS_MOVING")
-		2:
-			var proj_name = _get_working_project_name(npc_node.data)
-			return tr("ROSTER_STATUS_WORKING") % proj_name
+		2: return tr("ROSTER_STATUS_WORKING")
 		3: return tr("ROSTER_STATUS_GOING_HOME")
 		4: return tr("ROSTER_STATUS_HOME")
 		5: return tr("ROSTER_STATUS_GOING_COFFEE")
@@ -1770,19 +1768,6 @@ func _get_event_effect_text(emp_data: EmployeeData) -> String:
 	elif emoji == "😤":
 		return tr("ROSTER_STATUS_DEBUFF")
 	return ""
-
-func _get_working_project_name(emp_data: EmployeeData) -> String:
-	for project in ProjectManager.active_projects:
-		if project.state != ProjectData.State.IN_PROGRESS:
-			continue
-		for stage in project.stages:
-			if stage.get("is_completed", false):
-				continue
-			for worker in stage.workers:
-				if worker == emp_data:
-					# ИСПРАВЛЕНИЕ: Используем get_display_title
-					return project.get_display_title()
-	return "?"
 
 func _find_npc_node(emp_data: EmployeeData):
 	for npc in get_tree().get_nodes_in_group("npc"):
