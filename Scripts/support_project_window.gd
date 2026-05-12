@@ -442,7 +442,7 @@ func _update_ticket_column_headers(column_counts: Dictionary):
 func _get_ticket_column_id(ticket: SupportTicketData) -> String:
 	if ticket.is_completed:
 		return "done"
-	if ticket.is_overdue and not ticket.is_completed:
+	if ticket.is_overdue:
 		return "overdue"
 	if ticket.assigned_worker == null:
 		return "todo"
