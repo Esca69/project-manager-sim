@@ -1176,7 +1176,7 @@ func _rebuild_office_dev():
 		1500, 10,
 		kitchen_bought,
 		func():
-			var ok = GameState.buy_upgrade("kitchen", 5000, 10)
+			var ok = GameState.buy_upgrade("kitchen", 1800, 10)
 			if ok:
 				EventLog.add(tr("LOG_UPGRADE_PURCHASED") % tr("UPG_KITCHEN_TITLE"), EventLog.LogType.PROGRESS)
 				_rebuild_office_dev()
