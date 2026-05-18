@@ -155,6 +155,156 @@ Projects are taken from the boss when he is in the office in his room.
 Проекты берутся у босса, когда он находится в офисе в своём кабинете.
 
 [i]Подсказка: берите проекты от клиентов с высокой лояльностью для большего бюджета.[/i]"
+ENCYCLOPEDIA_TOPIC_CLASSIC_PROJECT_TITLE,Classic Project,Классический проект
+ENCYCLOPEDIA_TOPIC_CLASSIC_PROJECT_BODY,"Classic Project is your entry point into the world of Project Manager SIM.
+
+[b]Project Categories[/b]
+• [color=#2C4F91][b]Micro[/b][/color] — 1 stage
+• [color=#2C4F91][b]Simple[/b][/color] — 2 stages
+• [color=#2C4F91][b]Easy[/b][/color] — 3 stages: BA → DEV → QA
+
+[b]Stage Order[/b]
+Stages are sequential — the next stage does not start until the previous one is complete:
+• BA must complete before DEV starts
+• DEV must complete before QA starts
+
+[b]Assigning Employees[/b]
+Assign employees to the [b]current active stage[/b].
+Progress depends on [color=#2C4F91][b]employee skill × efficiency[/b][/color].
+
+[b]Progress Points[/b]
+Each stage has a [b]progress[/b] counter that fills up over time.
+While an assigned employee is in the [b]Working[/b] state, they add progress every second using the formula: [color=#2C4F91][b]skill × efficiency ÷ 60[/b][/color].
+When progress reaches the stage's required amount — the stage is complete.
+
+[i]Tip: Assign the employee with the highest relevant skill to the current active stage.[/i]","Классический проект — это ваш старт в мире Project Manager SIM.
+
+[b]Категории проектов[/b]
+• [color=#2C4F91][b]Micro[/b][/color] — 1 этап
+• [color=#2C4F91][b]Simple[/b][/color] — 2 этапа
+• [color=#2C4F91][b]Easy[/b][/color] — 3 этапа: BA → DEV → QA
+
+[b]Порядок этапов[/b]
+Этапы идут последовательно — следующий не начнётся, пока не завершён предыдущий:
+• BA должен завершиться до начала DEV
+• DEV должен завершиться до начала QA
+
+[b]Назначение сотрудников[/b]
+Назначайте сотрудников на [b]текущий активный этап[/b].
+Прогресс зависит от [color=#2C4F91][b]навыка сотрудника × эффективность[/b][/color].
+
+[b]Очки прогресса[/b]
+У каждого этапа есть счётчик [b]прогресса[/b], который заполняется со временем.
+Пока назначенный сотрудник находится в состоянии [b]Working[/b], он каждую секунду добавляет прогресс по формуле: [color=#2C4F91][b]навык × эффективность ÷ 60[/b][/color].
+Когда прогресс достигает нужного значения — этап завершён.
+
+[i]Подсказка: назначайте сотрудника с наибольшим профильным навыком на текущий активный этап.[/i]"
+ENCYCLOPEDIA_TOPIC_SUPPORT_PROJECT_TITLE,Support Project,Проект поддержки
+ENCYCLOPEDIA_TOPIC_SUPPORT_PROJECT_BODY,"A Support Project is a long-term service contract with a client. Instead of completing stages, you maintain a continuous flow of support tickets.
+
+[b]How It Works[/b]
+Assign one [color=#2C4F91][b]Customer Support[/b][/color] specialist to the contract.
+Tickets arrive throughout the working day and must be resolved before their deadline.
+
+[b]Ticket Volume by Grade[/b]
+• [b]Junior[/b] — 1–4 tickets/day (escalates minor issues)
+• [b]Middle[/b] — 0–3 tickets/day
+• [color=#2C4F91][b]Senior[/b][/color] — 0–2 tickets/day (filters requests at the source)
+
+[b]Unattended Tickets[/b]
+If a ticket arrives while the assigned employee is [b]not Working[/b] (e.g. on break, sick, or absent), the ticket's work amount is [color=#2C4F91][b]×2[/b][/color].
+
+[b]SLA Levels[/b]
+• [color=#2C4F91][b]Strict[/b][/color] — deadline: 2 days, rate ×1.2, contract ends after [b]3[/b] overdue tickets
+• [b]Medium[/b] — deadline: 3 days, rate ×1.0, contract ends after [b]5[/b] overdue tickets
+• [b]Easy[/b] — deadline: 4 days, rate ×0.8, contract ends after [b]9[/b] overdue tickets
+
+[b]Payment[/b]
+You receive a weekly payout: [color=#2C4F91][b]daily rate × worked days × SLA multiplier[/b][/color].
+Each overdue ticket applies a [b]-10% penalty[/b] to that week's payout (up to -100%).
+
+[b]Contract Termination[/b]
+If the overdue ticket limit is exceeded, the contract is terminated and you lose [color=#2C4F91][b]reputation points[/b][/color].
+
+[i]Tip: A Senior support specialist generates fewer tickets — ideal for strict SLA contracts.[/i]","Проект поддержки — это долгосрочный сервисный контракт с клиентом. Вместо этапов вы поддерживаете непрерывный поток тикетов поддержки.
+
+[b]Как это работает[/b]
+Назначьте одного специалиста [color=#2C4F91][b]Customer Support[/b][/color] на контракт.
+В течение рабочего дня поступают тикеты, которые нужно закрыть до их дедлайна.
+
+[b]Количество тикетов по грейду[/b]
+• [b]Junior[/b] — 1–4 тикета/день (эскалирует мелкие проблемы)
+• [b]Middle[/b] — 0–3 тикета/день
+• [color=#2C4F91][b]Senior[/b][/color] — 0–2 тикета/день (фильтрует запросы на входе)
+
+[b]Безнадзорные тикеты[/b]
+Если тикет поступает, когда сотрудник [b]не работает[/b] (перерыв, болезнь, отсутствие), объём работы по тикету увеличивается [color=#2C4F91][b]×2[/b][/color].
+
+[b]Уровни SLA[/b]
+• [color=#2C4F91][b]Strict[/b][/color] — дедлайн: 2 дня, ставка ×1.2, расторжение после [b]3[/b] просроченных тикетов
+• [b]Medium[/b] — дедлайн: 3 дня, ставка ×1.0, расторжение после [b]5[/b] просроченных тикетов
+• [b]Easy[/b] — дедлайн: 4 дня, ставка ×0.8, расторжение после [b]9[/b] просроченных тикетов
+
+[b]Выплата[/b]
+Еженедельная выплата: [color=#2C4F91][b]дневная ставка × отработанные дни × множитель SLA[/b][/color].
+Каждый просроченный тикет даёт штраф [b]-10%[/b] к выплате за неделю (максимум -100%).
+
+[b]Расторжение контракта[/b]
+При превышении лимита просроченных тикетов контракт расторгается и вы теряете [color=#2C4F91][b]очки репутации[/b][/color].
+
+[i]Подсказка: Senior-специалист генерирует меньше тикетов — идеален для контрактов со строгим SLA.[/i]"
+ENCYCLOPEDIA_TOPIC_PROGRESS_POINTS_TITLE,Progress Points,Очки прогресса
+ENCYCLOPEDIA_TOPIC_PROGRESS_POINTS_BODY,"Progress Points are a numeric indicator showing how much work has been done on a project stage.
+
+[b]How It Works[/b]
+Each stage has a [b]progress[/b] value and a required [b]amount[/b].
+The stage completes when [color=#2C4F91][b]progress ≥ amount[/b][/color].
+
+[b]How Progress Accumulates[/b]
+While an employee assigned to the active stage is in the [b]Working[/b] state, they add progress every second:
+[color=#2C4F91][b]progress/sec = skill × efficiency ÷ 60[/b][/color]
+
+• [b]skill[/b] — the employee's relevant skill (BA, DEV, or QA)
+• [b]efficiency[/b] — the combined efficiency multiplier (mood, energy, traits, etc.)
+
+Multiple employees on the same stage contribute simultaneously.
+
+[b]Monitoring[/b]
+The project window shows [b]progress / amount[/b] for each stage in real time.
+The [b]Ø Progress/day[/b] column shows the average progress added per day over the last 7 days.
+
+[b]On Completion[/b]
+When a stage is complete:
+• All assigned employees receive [color=#2C4F91][b]XP[/b][/color]
+• Each employee gets [b]+5 mood[/b] for 8 hours
+• The next stage becomes active
+
+[i]Tip: Efficiency has a direct impact on progress speed — keep your employees in Good or Happy mood zones.[/i]","Очки прогресса — это числовой показатель, отражающий объём выполненной работы по этапу проекта.
+
+[b]Как это работает[/b]
+У каждого этапа есть текущий [b]прогресс[/b] и необходимое значение [b]amount[/b].
+Этап завершается, когда [color=#2C4F91][b]прогресс ≥ amount[/b][/color].
+
+[b]Как накапливается прогресс[/b]
+Пока назначенный на активный этап сотрудник находится в состоянии [b]Working[/b], он каждую секунду добавляет прогресс:
+[color=#2C4F91][b]прогресс/сек = навык × эффективность ÷ 60[/b][/color]
+
+• [b]навык[/b] — профильный навык сотрудника (BA, DEV или QA)
+• [b]эффективность[/b] — итоговый множитель эффективности (настроение, энергия, трейты и др.)
+
+Несколько сотрудников на одном этапе вносят прогресс одновременно.
+
+[b]Мониторинг[/b]
+В окне проекта для каждого этапа отображается [b]прогресс / amount[/b] в реальном времени.
+Колонка [b]Ø Прогресс/день[/b] показывает среднее значение прогресса за последние 7 дней.
+
+[b]При завершении этапа[/b]
+Когда этап завершён:
+• Все назначенные сотрудники получают [color=#2C4F91][b]XP[/b][/color]
+• Каждый сотрудник получает [b]+5 настроения[/b] на 8 часов
+• Следующий этап становится активным
+
+[i]Подсказка: эффективность напрямую влияет на скорость прогресса — держите сотрудников в зонах Good или Happy.[/i]"
 ENCYCLOPEDIA_TOPIC_DEADLINES_TITLE,Soft & Hard Deadlines,Дедлайны
 ENCYCLOPEDIA_TOPIC_DEADLINES_BODY,"[b]Soft Deadline[/b]
 Missing the soft deadline causes a penalty of [color=#2C4F91][b]10–30% of the budget[/b][/color].
@@ -179,42 +329,6 @@ Deadlines are counted in [b]working days[/b] — weekends are not counted.
 Дедлайны считаются в [b]рабочих днях[/b] — выходные не учитываются.
 
 [i]Подсказка: всегда старайтесь завершить проект до мягкого дедлайна для максимального дохода.[/i]"
-ENCYCLOPEDIA_TOPIC_PROJECT_MGMT_TITLE,Project Management,Управление проектами
-ENCYCLOPEDIA_TOPIC_PROJECT_MGMT_BODY,"[b]Opening a Project[/b]
-Click the [b]computer[/b] or use the [b]Projects[/b] tab to open the project management window.
-Select a project to see its stages and assigned employees.
-
-[b]Assigning Employees[/b]
-• Assign employees to the [b]current active stage[/b]
-• Progress is based on [color=#2C4F91][b]employee skill × efficiency[/b][/color]
-
-[b]Stage Order[/b]
-Stages are sequential:
-• BA must complete before DEV starts
-• DEV must complete before QA starts
-
-[b]Monitoring Progress[/b]
-Watch the progress bar for each stage.
-Green = in progress. Completed stages turn blue.
-
-[i]Tip: Assign your highest-skill employee to the current stage for fastest completion.[/i]","[b]Открытие проекта[/b]
-Нажмите на [b]компьютер[/b] или используйте вкладку [b]Проекты[/b].
-Выберите проект для просмотра этапов и назначенных сотрудников.
-
-[b]Назначение сотрудников[/b]
-• Назначайте сотрудников на [b]текущий активный этап[/b]
-• Прогресс зависит от [color=#2C4F91][b]навыка сотрудника × эффективность[/b][/color]
-
-[b]Порядок этапов[/b]
-Этапы идут последовательно:
-• BA должен завершиться до начала DEV
-• DEV должен завершиться до начала QA
-
-[b]Наблюдение за прогрессом[/b]
-Следите за полосой прогресса каждого этапа.
-Зелёный = в процессе. Завершённые этапы становятся синими.
-
-[i]Подсказка: назначайте сотрудника с наибольшим навыком на текущий этап.[/i]"
 ENCYCLOPEDIA_TOPIC_CRUNCH_TITLE,Crunch Time,Crunch Time
 ENCYCLOPEDIA_TOPIC_CRUNCH_BODY,"[b]What is Crunch?[/b]
 Crunch mode makes employees work until [color=#2C4F91][b]20:00[/b][/color] instead of 18:00, skipping lunch and breaks.
