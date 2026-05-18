@@ -703,6 +703,80 @@ Rested employees return with improved mood and energy.
 Отдохнувший сотрудник возвращается с улучшенным настроением и энергией.
 
 [i]Подсказка: одобряйте отпуска в спокойные периоды, когда сотрудник не критичен для текущих проектов.[/i]"
+ENCYCLOPEDIA_TOPIC_EMPLOYEE_INTERACTIONS_TITLE,Employee Interactions,Взаимодействие с сотрудниками
+ENCYCLOPEDIA_TOPIC_EMPLOYEE_INTERACTIONS_BODY,"You can interact directly with any employee by walking up to them and pressing [color=#2C4F91][b]E[/b][/color] (when they are not at their desk), or by clicking the interaction button in the [b]Employees[/b] panel.
+
+[b]Available Actions[/b]
+
+[b]Feedback[/b] (requires PM skill: Feedback Tools)
+• 👏 [b]Praise[/b] — [color=#2C4F91][b]+5 mood[/b][/color] for 24h, [b]+2 PM Loyalty[/b]. Cooldown: 3 days.
+• ⚠️ [b]Reprimand[/b] — [b]-5 mood[/b], [color=#2C4F91][b]-7 PM Loyalty[/b][/color], [b]+10% efficiency[/b] for 1 day (temporary stress boost). Cooldown: 3 days.
+
+[b]HR Tools[/b] (requires PM skill: HR Tools)
+• 📚 [b]Training[/b] — send the employee to training for [b]-$800[/b]. Grants [b]+8 PM Loyalty[/b]. Contractors only.
+• 🏖️ [b]Paid Day Off[/b] — send home for the day. [color=#2C4F91][b]+8 mood[/b][/color] for 2 days, [b]-1% burnout[/b], [b]+5 PM Loyalty[/b]. Must be used before 11:00.
+• 💵 [b]Bonus[/b] — pay [b]25% of monthly salary[/b] as a bonus. [color=#2C4F91][b]+15 mood[/b][/color] for 5 days, [b]+10 PM Loyalty[/b].
+• 💰 [b]Unpaid Leave[/b] — send on unpaid leave. [color=#2C4F91][b]-15 PM Loyalty[/b][/color].
+
+[i]Tip: Praise and bonuses are the most effective tools for building long-term loyalty.[/i]","Вы можете взаимодействовать с любым сотрудником напрямую — подойдите к нему и нажмите [color=#2C4F91][b]E[/b][/color] (когда он не за столом), или нажмите кнопку взаимодействия в панели [b]Сотрудники[/b].
+
+[b]Доступные действия[/b]
+
+[b]Обратная связь[/b] (требует навык PM: Feedback Tools)
+• 👏 [b]Похвала[/b] — [color=#2C4F91][b]+5 настроения[/b][/color] на 24ч, [b]+2 лояльности к PM[/b]. Кулдаун: 3 дня.
+• ⚠️ [b]Выговор[/b] — [b]-5 настроения[/b], [color=#2C4F91][b]-7 лояльности к PM[/b][/color], [b]+10% эффективности[/b] на 1 день (временный стрессовый бонус). Кулдаун: 3 дня.
+
+[b]HR-инструменты[/b] (требует навык PM: HR Tools)
+• 📚 [b]Обучение[/b] — отправить сотрудника на обучение за [b]-$800[/b]. Даёт [b]+8 лояльности к PM[/b]. Только для контракторов.
+• 🏖️ [b]Оплачиваемый отгул[/b] — отправить домой на день. [color=#2C4F91][b]+8 настроения[/b][/color] на 2 дня, [b]-1% выгорания[/b], [b]+5 лояльности к PM[/b]. Доступно только до 11:00.
+• 💵 [b]Премия[/b] — выплатить [b]25% месячной зарплаты[/b] в виде бонуса. [color=#2C4F91][b]+15 настроения[/b][/color] на 5 дней, [b]+10 лояльности к PM[/b].
+• 💰 [b]Неоплачиваемый отпуск[/b] — отправить в неоплачиваемый отпуск. [color=#2C4F91][b]-15 лояльности к PM[/b][/color].
+
+[i]Подсказка: похвала и премии — наиболее эффективные инструменты для построения долгосрочной лояльности.[/i]"
+ENCYCLOPEDIA_TOPIC_PM_LOYALTY_TITLE,PM Loyalty,Лояльность к PM
+ENCYCLOPEDIA_TOPIC_PM_LOYALTY_BODY,"PM Loyalty reflects how each employee personally feels about you as a manager. It directly affects their mood and efficiency.
+
+[b]Loyalty Levels[/b]
+• [color=#2C4F91][b]Devoted[/b][/color] (90–100): [b]+15 mood[/b], [b]+15% efficiency[/b]
+• [b]Respect[/b] (75–89): +10 mood, +10% efficiency
+• [b]Trust[/b] (65–74): +5 mood, +5% efficiency
+• [b]Neutral[/b] (36–64): no bonus or penalty
+• [b]Discontent[/b] (25–35): -5 mood, -5% efficiency
+• [b]Resentment[/b] (10–24): -10 mood, -10% efficiency
+• [color=#2C4F91][b]Hostile[/b][/color] (0–9): [b]-15 mood[/b], [b]-15% efficiency[/b]
+
+[b]How to Gain Loyalty[/b]
+Loyalty increases through positive management actions: praising the employee, granting a paid day off, approving a salary raise, sending to training, or paying a bonus.
+
+[b]How to Lose Loyalty[/b]
+Loyalty decreases from negative actions: issuing a reprimand, denying a raise, sending on unpaid leave, or ignoring an employee's requests for too long.
+
+[b]Trait Modifiers[/b]
+• [b]Teacher's Pet[/b] — positive loyalty changes are [color=#2C4F91][b]×1.5[/b][/color]
+• [b]Rebel[/b] — negative changes are [b]×0.7[/b] (more resistant to penalties); praise gives only [b]×0.5[/b]
+
+[i]Tip: Keep loyalty above 65 (Trust level) to get a permanent efficiency bonus from every employee.[/i]","PM Loyalty отражает то, как каждый сотрудник лично относится к вам как к менеджеру. Она напрямую влияет на его настроение и эффективность.
+
+[b]Уровни лояльности[/b]
+• [color=#2C4F91][b]Devoted[/b][/color] (90–100): [b]+15 настроения[/b], [b]+15% эффективности[/b]
+• [b]Respect[/b] (75–89): +10 настроения, +10% эффективности
+• [b]Trust[/b] (65–74): +5 настроения, +5% эффективности
+• [b]Neutral[/b] (36–64): без бонуса и штрафа
+• [b]Discontent[/b] (25–35): -5 настроения, -5% эффективности
+• [b]Resentment[/b] (10–24): -10 настроения, -10% эффективности
+• [color=#2C4F91][b]Hostile[/b][/color] (0–9): [b]-15 настроения[/b], [b]-15% эффективности[/b]
+
+[b]Как получить лояльность[/b]
+Лояльность растёт от позитивных управленческих действий: похвала, оплачиваемый отгул, одобрение повышения зарплаты, обучение, выплата премии.
+
+[b]Как потерять лояльность[/b]
+Лояльность снижается от негативных действий: выговор, отказ в повышении, неоплачиваемый отпуск, игнорирование запросов сотрудника слишком долго.
+
+[b]Влияние трейтов[/b]
+• [b]Teacher's Pet[/b] — позитивные изменения лояльности [color=#2C4F91][b]×1.5[/b][/color]
+• [b]Rebel[/b] — негативные изменения [b]×0.7[/b] (устойчивее к штрафам); похвала даёт лишь [b]×0.5[/b]
+
+[i]Подсказка: держите лояльность выше 65 (уровень Trust) — это постоянный бонус эффективности от каждого сотрудника.[/i]"
 ENCYCLOPEDIA_TOPIC_CLIENTS_TITLE,Clients,Клиенты
 ENCYCLOPEDIA_TOPIC_CLIENTS_BODY,"[b]The 5 Clients[/b]
 • 🚀 [b]NovoTech[/b]
@@ -1123,87 +1197,3 @@ Access upgrades via the [b]Boss[/b] tab.
 Доступ к улучшениям через вкладку [b]Босс[/b].
 
 [i]Подсказка: нанимайте HR-специалиста как можно раньше — это освобождает время PM от поиска кандидатов.[/i]"
-ENCYCLOPEDIA_TOPIC_EVENTS_TITLE,Random Events,Ивенты
-ENCYCLOPEDIA_TOPIC_EVENTS_BODY,"[b]Illness[/b]
-• Chance: [color=#2C4F91][b]25%[/b][/color] each morning
-• Cooldowns: 7 days global / 20 days per employee
-• No illness in the [b]first 7 days[/b]
-• Choice: [b]Express treatment[/b] ($300–500) or [b]sick leave[/b] (2–3 days off)
-
-[b]Day Off Request[/b]
-• Chance: ~66% per day
-• Cooldown: 5 days
-• [b]Approve[/b]: +10% efficiency next day, +6 mood
-• [b]Deny[/b]: -20% efficiency today, -10 mood
-
-[b]Headhunting[/b]
-• Chance: [color=#2C4F91][b]10%[/b][/color] per day
-• Cooldown: 15 days
-• Competitors try to poach your employee
-• Respond promptly to prevent losing them
-
-[i]Tip: Always approve day-off requests for low-mood employees — the next-day efficiency bonus is worth it.[/i]","[b]Болезнь[/b]
-• Шанс: [color=#2C4F91][b]25%[/b][/color] каждое утро
-• Кулдаун: 7 дней глобально / 20 дней на сотрудника
-• Без болезней в [b]первые 7 дней[/b]
-• Выбор: [b]экспресс-лечение[/b] ($300–500) или [b]больничный[/b] (2–3 дня)
-
-[b]Отгул[/b]
-• Шанс: ~66% в день
-• Кулдаун: 5 дней
-• [b]Одобрить[/b]: +10% эффективность завтра, +6 настроения
-• [b]Отклонить[/b]: -20% эффективность сегодня, -10 настроения
-
-[b]Хантинг[/b]
-• Шанс: [color=#2C4F91][b]10%[/b][/color] в день
-• Кулдаун: 15 дней
-• Конкуренты переманивают вашего сотрудника
-• Реагируйте быстро, чтобы не потерять его
-
-[i]Подсказка: всегда одобряйте отгулы для сотрудников с низким настроением — бонус эффективности на следующий день того стоит.[/i]"
-ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS_TITLE,Project Events,Проектные ивенты
-ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS_BODY,"[b]Scope Expansion[/b]
-• Chance: [color=#2C4F91][b]12%[/b][/color] per day
-• Client asks to add features
-• [b]Accept[/b]: more work + more budget
-• [b]Decline[/b]: -1 client loyalty
-
-[b]Client Review[/b]
-• Chance: [color=#2C4F91][b]25%[/b][/color] per day (after on-time completion)
-• [b]Ask for review[/b]: +2 loyalty
-• [b]Ask for bonus[/b]: +10% of budget as income
-
-[b]Contract Cancellation[/b]
-• Chance: [color=#2C4F91][b]5%[/b][/color] per day (if project progress < 40%)
-• Client cancels the project
-• You receive [b]30% of budget[/b] as a cancellation fee
-
-[b]Junior Mistake[/b]
-• Chance: [color=#2C4F91][b]10%[/b][/color] per day
-• A Junior employee makes an error
-• [b]Reprimand[/b]: ×0.5 extra work, -10 mood
-• [b]Help[/b]: ×2 extra work, +5 mood, ×1.5 XP
-
-[i]Tip: Always help Junior mistakes — the XP bonus helps them level up faster, and the mood boost is valuable.[/i]","[b]Расширение скоупа[/b]
-• Шанс: [color=#2C4F91][b]12%[/b][/color] в день
-• Клиент просит добавить функционал
-• [b]Принять[/b]: больше работы + больше бюджет
-• [b]Отклонить[/b]: -1 лояльность клиента
-
-[b]Отзыв клиента[/b]
-• Шанс: [color=#2C4F91][b]25%[/b][/color] в день (после завершения вовремя)
-• [b]Попросить отзыв[/b]: +2 лояльности
-• [b]Попросить бонус[/b]: +10% бюджета как доход
-
-[b]Отмена контракта[/b]
-• Шанс: [color=#2C4F91][b]5%[/b][/color] в день (прогресс проекта < 40%)
-• Клиент отменяет проект
-• Вы получаете [b]30% бюджета[/b] как неустойку
-
-[b]Ошибка джуниора[/b]
-• Шанс: [color=#2C4F91][b]10%[/b][/color] в день
-• Junior допускает ошибку
-• [b]Отчитать[/b]: ×0.5 доп.работы, -10 настроения
-• [b]Помочь[/b]: ×2 доп.работы, +5 настроения, ×1.5 XP
-
-[i]Подсказка: всегда помогайте джуниорам с ошибками — бонус XP ускоряет их рост, а бонус настроения ценен.[/i]"
