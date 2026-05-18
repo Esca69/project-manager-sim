@@ -1,16 +1,16 @@
-"keys","en","ru"
-"BOTTOMBAR_ENCYCLOPEDIA","❓ Help","❓ Справка"
-"ENCYCLOPEDIA_TITLE","📖 Encyclopedia","📖 Энциклопедия"
-"ENCYCLOPEDIA_CAT_BASICS","🎮 BASICS","🎮 ОСНОВЫ"
-"ENCYCLOPEDIA_CAT_PROJECTS","📋 PROJECTS","📋 ПРОЕКТЫ"
-"ENCYCLOPEDIA_CAT_EMPLOYEES","👥 EMPLOYEES","👥 СОТРУДНИКИ"
-"ENCYCLOPEDIA_CAT_CLIENTS","🤝 CLIENTS","🤝 КЛИЕНТЫ"
-"ENCYCLOPEDIA_CAT_BOSS","👔 BOSS","👔 БОСС"
-"ENCYCLOPEDIA_CAT_FINANCE","💰 FINANCES","💰 ФИНАНСЫ"
-"ENCYCLOPEDIA_CAT_PM_SKILLS","🧠 PM SKILLS","🧠 НАВЫКИ PM"
-"ENCYCLOPEDIA_CAT_OFFICE","🏢 OFFICE","🏢 ОФИС"
-"ENCYCLOPEDIA_TOPIC_CONTROLS_TITLE","Camera Controls","Управление камерой"
-"ENCYCLOPEDIA_TOPIC_CONTROLS_BODY","[b]Camera Movement[/b]
+keys,en,ru
+BOTTOMBAR_ENCYCLOPEDIA,❓ Help,❓ Справка
+ENCYCLOPEDIA_TITLE,📖 Encyclopedia,📖 Энциклопедия
+ENCYCLOPEDIA_CAT_BASICS,🎮 BASICS,🎮 ОСНОВЫ
+ENCYCLOPEDIA_CAT_PROJECTS,📋 PROJECTS,📋 ПРОЕКТЫ
+ENCYCLOPEDIA_CAT_EMPLOYEES,👥 EMPLOYEES,👥 СОТРУДНИКИ
+ENCYCLOPEDIA_CAT_CLIENTS,🤝 CLIENTS,🤝 КЛИЕНТЫ
+ENCYCLOPEDIA_CAT_BOSS,👔 BOSS,👔 БОСС
+ENCYCLOPEDIA_CAT_FINANCE,💰 FINANCES,💰 ФИНАНСЫ
+ENCYCLOPEDIA_CAT_PM_SKILLS,🧠 PM SKILLS,🧠 НАВЫКИ PM
+ENCYCLOPEDIA_CAT_OFFICE,🏢 OFFICE,🏢 ОФИС
+ENCYCLOPEDIA_TOPIC_CONTROLS_TITLE,Camera Controls,Управление камерой
+ENCYCLOPEDIA_TOPIC_CONTROLS_BODY,"[b]Camera Movement[/b]
 Move the PM character using [color=#2C4F91][b]WASD[/b][/color] or [color=#2C4F91][b]Arrow Keys[/b][/color].
 
 [b]Zoom[/b]
@@ -18,7 +18,7 @@ Use the [color=#2C4F91][b]Mouse Wheel[/b][/color] to zoom in and out.
 At close zoom you can see employee names, mood icons, and status indicators.
 
 [b]Free Camera[/b]
-During long actions (boss discussion, candidate search) the camera moves freely while the action runs in the background.
+During long actions (candidate search) the camera moves freely while the action runs in the background.
 
 [i]Tip: Zoom in close to an employee to see their detailed status.[/i]","[b]Перемещение[/b]
 Двигайте PM с помощью [color=#2C4F91][b]WASD[/b][/color] или [color=#2C4F91][b]стрелок[/b][/color].
@@ -28,11 +28,11 @@ During long actions (boss discussion, candidate search) the camera moves freely 
 При близком зуме видны имена сотрудников, иконки настроения и статуса.
 
 [b]Свободная камера[/b]
-Во время длительных действий (разговор с боссом, поиск кандидата) камера свободна, пока действие выполняется в фоне.
+Во время длительных действий (поиск кандидата) камера свободна, пока действие выполняется в фоне.
 
 [i]Подсказка: приблизьтесь к сотруднику для просмотра его статуса.[/i]"
-"ENCYCLOPEDIA_TOPIC_TIME_TITLE","Time & Speed","Время и скорость"
-"ENCYCLOPEDIA_TOPIC_TIME_BODY","[b]Working Hours[/b]
+ENCYCLOPEDIA_TOPIC_TIME_TITLE,Time & Speed,Время и скорость
+ENCYCLOPEDIA_TOPIC_TIME_BODY,"[b]Working Hours[/b]
 The working day runs from [color=#2C4F91][b]9:00 to 18:00[/b][/color].
 The [b]End Day[/b] button appears at 18:00.
 The day ends automatically at [color=#2C4F91][b]21:00[/b][/color].
@@ -69,8 +69,8 @@ After the work day ends, time automatically advances to the next working day.
 • [color=#2C4F91][b]30 дней[/b][/color] в месяце
 • [color=#2C4F91][b]7 дней[/b][/color] в неделе
 • Выходные: [b]дни 6 и 7[/b] (суббота и воскресенье) — сотрудники не работают"
-"ENCYCLOPEDIA_TOPIC_UI_TITLE","Interface","Интерфейс"
-"ENCYCLOPEDIA_TOPIC_UI_BODY","[b]Top Bar[/b]
+ENCYCLOPEDIA_TOPIC_UI_TITLE,Interface,Интерфейс
+ENCYCLOPEDIA_TOPIC_UI_BODY,"[b]Top Bar[/b]
 • [color=#2C4F91][b]Time[/b][/color] — current in-game time and date
 • [color=#2C4F91][b]Balance[/b][/color] — company funds
 • [b]PM Level[/b] — your experience and level
@@ -113,8 +113,8 @@ All important game events appear in the event log on the right side of the scree
 Все важные события отображаются в журнале событий справа.
 
 [i]Подсказка: нажмите кнопку вкладки ещё раз, чтобы закрыть панель, или используйте клавишу Escape.[/i]"
-"ENCYCLOPEDIA_TOPIC_PROJECTS_TITLE","Projects","Проекты"
-"ENCYCLOPEDIA_TOPIC_PROJECTS_BODY","[b]Project Categories[/b]
+ENCYCLOPEDIA_TOPIC_PROJECTS_TITLE,Projects,Проекты
+ENCYCLOPEDIA_TOPIC_PROJECTS_BODY,"[b]Project Categories[/b]
 • [color=#2C4F91][b]Micro[/b][/color] — 1 stage
 • [color=#2C4F91][b]Simple[/b][/color] — 2 stages
 • [color=#2C4F91][b]Easy[/b][/color] — 3 stages: BA → DEV → QA
@@ -145,8 +145,8 @@ Projects are taken from the boss when he is in the office.
 Проекты берутся у босса, когда он находится в офисе в своём кабинете.
 
 [i]Подсказка: берите проекты от клиентов с высокой лояльностью для большего бюджета.[/i]"
-"ENCYCLOPEDIA_TOPIC_DEADLINES_TITLE","Soft & Hard Deadlines","Дедлайны"
-"ENCYCLOPEDIA_TOPIC_DEADLINES_BODY","[b]Soft Deadline[/b]
+ENCYCLOPEDIA_TOPIC_DEADLINES_TITLE,Soft & Hard Deadlines,Дедлайны
+ENCYCLOPEDIA_TOPIC_DEADLINES_BODY,"[b]Soft Deadline[/b]
 Missing the soft deadline causes a penalty of [color=#2C4F91][b]10–30% of the budget[/b][/color].
 You still receive partial payment.
 
@@ -169,8 +169,8 @@ Deadlines are counted in [b]working days[/b] — weekends are not counted.
 Дедлайны считаются в [b]рабочих днях[/b] — выходные не учитываются.
 
 [i]Подсказка: всегда старайтесь завершить проект до мягкого дедлайна для максимального дохода.[/i]"
-"ENCYCLOPEDIA_TOPIC_PROJECT_MGMT_TITLE","Project Management","Управление проектами"
-"ENCYCLOPEDIA_TOPIC_PROJECT_MGMT_BODY","[b]Opening a Project[/b]
+ENCYCLOPEDIA_TOPIC_PROJECT_MGMT_TITLE,Project Management,Управление проектами
+ENCYCLOPEDIA_TOPIC_PROJECT_MGMT_BODY,"[b]Opening a Project[/b]
 Click the [b]computer[/b] or use the [b]Projects[/b] tab to open the project management window.
 Select a project to see its stages and assigned employees.
 
@@ -205,8 +205,8 @@ Green = in progress. Completed stages turn blue.
 Зелёный = в процессе. Завершённые этапы становятся синими.
 
 [i]Подсказка: назначайте сотрудника с наибольшим навыком на текущий этап.[/i]"
-"ENCYCLOPEDIA_TOPIC_CRUNCH_TITLE","Crunch Time","Crunch Time"
-"ENCYCLOPEDIA_TOPIC_CRUNCH_BODY","[b]What is Crunch?[/b]
+ENCYCLOPEDIA_TOPIC_CRUNCH_TITLE,Crunch Time,Crunch Time
+ENCYCLOPEDIA_TOPIC_CRUNCH_BODY,"[b]What is Crunch?[/b]
 Crunch mode makes employees work until [color=#2C4F91][b]20:00[/b][/color] instead of 18:00, skipping lunch and breaks.
 
 [b]How to Activate[/b]
@@ -233,8 +233,8 @@ Employees with the [b]Workaholic[/b] trait are [color=#2C4F91][b]immune to the e
 Сотрудники с трейтом [b]Workaholic[/b] [color=#2C4F91][b]иммунны к штрафу эффективности[/b][/color].
 
 [i]Подсказка: используйте кранч редко — только при срочных проектах близко к хард-дедлайну.[/i]"
-"ENCYCLOPEDIA_TOPIC_EMPLOYEES_TITLE","Employees","Сотрудники"
-"ENCYCLOPEDIA_TOPIC_EMPLOYEES_BODY","[b]Roles[/b]
+ENCYCLOPEDIA_TOPIC_EMPLOYEES_TITLE,Employees,Сотрудники
+ENCYCLOPEDIA_TOPIC_EMPLOYEES_BODY,"[b]Roles[/b]
 • [color=#2C4F91][b]Business Analyst (BA)[/b][/color]
 • [color=#2C4F91][b]Backend Developer (DEV)[/b][/color]
 • [color=#2C4F91][b]QA Engineer (QA)[/b][/color]
@@ -273,8 +273,8 @@ Assigning to a new project causes [b]-20% adaptation penalty[/b] for 1 day.
 Назначение на новый проект даёт [b]-20% штраф адаптации[/b] на 1 день.
 
 [i]Подсказка: инвестируйте в развитие контракторов — они становятся сильнее со временем.[/i]"
-"ENCYCLOPEDIA_TOPIC_MOOD_TITLE","Mood","Настроение"
-"ENCYCLOPEDIA_TOPIC_MOOD_BODY","[b]Base Value[/b]
+ENCYCLOPEDIA_TOPIC_MOOD_TITLE,Mood,Настроение
+ENCYCLOPEDIA_TOPIC_MOOD_BODY,"[b]Base Value[/b]
 Mood starts at [color=#2C4F91][b]50[/b][/color] for all employees.
 
 [b]Mood Zones & Efficiency[/b]
@@ -319,8 +319,8 @@ Traits, having an assignment, energy level, PM motivation.
 • Корпоративный психолог: [b]+3 настроения[/b] всем
 
 [i]Подсказка: держите настроение сотрудников выше 60 для зоны Good.[/i]"
-"ENCYCLOPEDIA_TOPIC_EFFICIENCY_TITLE","Efficiency","Эффективность"
-"ENCYCLOPEDIA_TOPIC_EFFICIENCY_BODY","[b]Efficiency Formula[/b]
+ENCYCLOPEDIA_TOPIC_EFFICIENCY_TITLE,Efficiency,Эффективность
+ENCYCLOPEDIA_TOPIC_EFFICIENCY_BODY,"[b]Efficiency Formula[/b]
 Efficiency = [color=#2C4F91]Mood × Energy × (1 + Traits) × (1 + Motivation) × (1 + Events) × (1 + Aura) × (1 + Neighbors) × (1 + Adaptation) × (1 + Crunch) × (1 + Burnout)[/color]
 
 [b]Energy Thresholds[/b]
@@ -365,8 +365,8 @@ Desk neighbors affect each other:
 • [b]Nemesis[/b]: [color=#2C4F91][b]-8%[/b][/color]
 
 [i]Подсказка: сажайте пару Besties рядом для значительного бонуса эффективности.[/i]"
-"ENCYCLOPEDIA_TOPIC_TRAITS_TITLE","Traits","Трейты"
-"ENCYCLOPEDIA_TOPIC_TRAITS_BODY","[b]Overview[/b]
+ENCYCLOPEDIA_TOPIC_TRAITS_TITLE,Traits,Трейты
+ENCYCLOPEDIA_TOPIC_TRAITS_BODY,"[b]Overview[/b]
 Each employee can have up to [color=#2C4F91][b]5 traits[/b][/color].
 There is a [b]25% chance[/b] to gain a new trait on level-up.
 
@@ -405,8 +405,8 @@ Toilet Lover, Coffee Lover, Slowpoke, Expensive, Pessimist, Sleepyhead, Sickly, 
 Навык PM [b]«Читать трейты»[/b] позволяет видеть трейты сотрудников до найма.
 
 [i]Подсказка: Workaholic — иммунитет к штрафу кранча, отличный вариант для напряжённых дедлайнов.[/i]"
-"ENCYCLOPEDIA_TOPIC_PERSONALITY_TITLE","Personalities","Личности"
-"ENCYCLOPEDIA_TOPIC_PERSONALITY_BODY","[b]Social Battery[/b] (one per employee)
+ENCYCLOPEDIA_TOPIC_PERSONALITY_TITLE,Personalities,Личности
+ENCYCLOPEDIA_TOPIC_PERSONALITY_BODY,"[b]Social Battery[/b] (one per employee)
 • [b]Extrovert[/b] — gains energy from social interaction
 • [b]Introvert[/b] — drained by social interaction
 • [b]Toxic[/b] — negatively affects others
@@ -441,8 +441,8 @@ Smelly, Sexist, Man Hater, Flirt, Food Thief, Loud
 Конфликты дают [b]-4 к отношениям[/b].
 
 [i]Подсказка: учитывайте личности при планировании рассадки, чтобы избежать конфликтов.[/i]"
-"ENCYCLOPEDIA_TOPIC_BURNOUT_TITLE","Burnout","Выгорание"
-"ENCYCLOPEDIA_TOPIC_BURNOUT_BODY","[b]What is Burnout?[/b]
+ENCYCLOPEDIA_TOPIC_BURNOUT_TITLE,Burnout,Выгорание
+ENCYCLOPEDIA_TOPIC_BURNOUT_BODY,"[b]What is Burnout?[/b]
 Burnout accumulates when an employee's mood stays below [color=#2C4F91][b]40%[/b][/color] for [b]4+ hours[/b].
 
 [b]Accumulation[/b]
@@ -473,8 +473,8 @@ Use office services (psychologist, kitchen) and timely approvals of vacation req
 Используйте офисные сервисы (психолог, кухня) и своевременно одобряйте отпуска.
 
 [i]Подсказка: решайте проблему низкого настроения быстро — выгорание сложно уменьшить после накопления.[/i]"
-"ENCYCLOPEDIA_TOPIC_RELATIONSHIPS_TITLE","Relationships","Отношения"
-"ENCYCLOPEDIA_TOPIC_RELATIONSHIPS_BODY","[b]Relationship Scale[/b]
+ENCYCLOPEDIA_TOPIC_RELATIONSHIPS_TITLE,Relationships,Отношения
+ENCYCLOPEDIA_TOPIC_RELATIONSHIPS_BODY,"[b]Relationship Scale[/b]
 Range: [color=#2C4F91][b]-100 to +100[/b][/color]
 
 [b]Relationship Levels[/b]
@@ -523,8 +523,8 @@ Relationships move [b]1 point toward neutral[/b] per day.
 • [color=#2C4F91][b]Nemesis[/b][/color]: -8%
 
 [i]Подсказка: проверяйте уровни отношений на панели сотрудников и оптимизируйте рассадку.[/i]"
-"ENCYCLOPEDIA_TOPIC_HIRING_TITLE","Hiring","Найм"
-"ENCYCLOPEDIA_TOPIC_HIRING_BODY","[b]How to Hire[/b]
+ENCYCLOPEDIA_TOPIC_HIRING_TITLE,Hiring,Найм
+ENCYCLOPEDIA_TOPIC_HIRING_BODY,"[b]How to Hire[/b]
 Walk to the [b]HR desk[/b] or respond to a hiring event.
 Choose a role: [b]BA / DEV / QA[/b].
 Search takes [color=#2C4F91][b]2 hours[/b][/color] (reduced by PM skills).
@@ -557,8 +557,8 @@ PM skill can increase this to [b]3[/b] or [b]5[/b].
 [b]Фрилансеры[/b] — временные, уходят через определённый период.
 
 [i]Подсказка: нанимайте контракторов для постоянных ролей, фрилансеров — для краткосрочных загрузок.[/i]"
-"ENCYCLOPEDIA_TOPIC_RAISES_TITLE","Salary Raises","Повышение зарплаты"
-"ENCYCLOPEDIA_TOPIC_RAISES_BODY","[b]When Raises Happen[/b]
+ENCYCLOPEDIA_TOPIC_RAISES_TITLE,Salary Raises,Повышение зарплаты
+ENCYCLOPEDIA_TOPIC_RAISES_BODY,"[b]When Raises Happen[/b]
 An employee requests a raise when they [color=#2C4F91][b]change grade[/b][/color] (e.g., Junior → Middle).
 
 [b]Raise Amounts[/b]
@@ -583,8 +583,8 @@ An employee requests a raise when they [color=#2C4F91][b]change grade[/b][/color
 • [b]Игнорировать[/b] → сотрудник может уйти
 
 [i]Подсказка: планируйте бюджет на повышения при росте сотрудников — отказ сильно бьёт по моральному духу.[/i]"
-"ENCYCLOPEDIA_TOPIC_VACATIONS_TITLE","Vacations","Отпуска"
-"ENCYCLOPEDIA_TOPIC_VACATIONS_BODY","[b]When Vacations Occur[/b]
+ENCYCLOPEDIA_TOPIC_VACATIONS_TITLE,Vacations,Отпуска
+ENCYCLOPEDIA_TOPIC_VACATIONS_BODY,"[b]When Vacations Occur[/b]
 Contractors request vacation every [color=#2C4F91][b]20–25 working days[/b][/color].
 
 [b]Your Response[/b]
@@ -605,8 +605,8 @@ Rested employees return with improved mood and energy.
 Отдохнувший сотрудник возвращается с улучшенным настроением и энергией.
 
 [i]Подсказка: одобряйте отпуска в спокойные периоды, когда сотрудник не критичен для текущих проектов.[/i]"
-"ENCYCLOPEDIA_TOPIC_CLIENTS_TITLE","Clients","Клиенты"
-"ENCYCLOPEDIA_TOPIC_CLIENTS_BODY","[b]The 5 Clients[/b]
+ENCYCLOPEDIA_TOPIC_CLIENTS_TITLE,Clients,Клиенты
+ENCYCLOPEDIA_TOPIC_CLIENTS_BODY,"[b]The 5 Clients[/b]
 • 🚀 [b]NovoTech[/b]
 • 🍕 [b]FoodPlus[/b]
 • 🏦 [b]FinanceGroup[/b]
@@ -635,8 +635,8 @@ Higher loyalty means [color=#2C4F91][b]larger project budgets[/b][/color] and ac
 Высокая лояльность даёт [color=#2C4F91][b]большие бюджеты проектов[/b][/color] и доступ к более сложным типам.
 
 [i]Подсказка: сосредоточьтесь на построении лояльности с 2–3 клиентами, а не распыляйтесь на всех пятерых.[/i]"
-"ENCYCLOPEDIA_TOPIC_LOYALTY_TITLE","Client Loyalty","Лояльность клиентов"
-"ENCYCLOPEDIA_TOPIC_LOYALTY_BODY","[b]How Loyalty Changes[/b]
+ENCYCLOPEDIA_TOPIC_LOYALTY_TITLE,Client Loyalty,Лояльность клиентов
+ENCYCLOPEDIA_TOPIC_LOYALTY_BODY,"[b]How Loyalty Changes[/b]
 • Project finished on time (before soft deadline): [color=#2C4F91][b]+3 loyalty[/b][/color]
 • Project finished late (between soft and hard): [b]+1 loyalty[/b]
 • Project failed: [color=#2C4F91][b]-5 loyalty[/b][/color]
@@ -665,8 +665,8 @@ Higher loyalty means [color=#2C4F91][b]larger project budgets[/b][/color] and ac
 • [color=#2C4F91][b]70[/b][/color]: +20% к бюджету (максимум)
 
 [i]Подсказка: никогда не проваливайте проект клиента, с которым строите лояльность — штраф -5 очень болезненный.[/i]"
-"ENCYCLOPEDIA_TOPIC_BOSS_TRUST_TITLE","Boss Trust Points","Очки доверия босса"
-"ENCYCLOPEDIA_TOPIC_BOSS_TRUST_BODY","[b]Trust Scale[/b]
+ENCYCLOPEDIA_TOPIC_BOSS_TRUST_TITLE,Boss Trust Points,Очки доверия босса
+ENCYCLOPEDIA_TOPIC_BOSS_TRUST_BODY,"[b]Trust Scale[/b]
 Range: [color=#2C4F91][b]-30 to 100[/b][/color]
 If trust reaches [color=#2C4F91][b]-30[/b][/color] → [b]Game Over[/b]
 
@@ -707,8 +707,8 @@ Trust points are spent on:
 • Повышение тира партнёрства
 
 [i]Подсказка: всегда выполняйте хотя бы обязательные квесты босса, чтобы не потерять доверие.[/i]"
-"ENCYCLOPEDIA_TOPIC_BOSS_QUESTS_TITLE","Boss Quests","Квесты босса"
-"ENCYCLOPEDIA_TOPIC_BOSS_QUESTS_BODY","[b]Monthly Quests[/b]
+ENCYCLOPEDIA_TOPIC_BOSS_QUESTS_TITLE,Boss Quests,Квесты босса
+ENCYCLOPEDIA_TOPIC_BOSS_QUESTS_BODY,"[b]Monthly Quests[/b]
 Each month the boss gives [color=#2C4F91][b]4 goals[/b][/color]:
 • [b]2 mandatory[/b]: company profit and projects completed
 • [b]2 random[/b]: hiring, loyalty, no failures, expense limit, PM level, employee level-ups
@@ -737,8 +737,8 @@ Open the [b]Boss[/b] tab to see current monthly quests and your progress.
 Откройте вкладку [b]Босс[/b] для просмотра текущих квестов и прогресса.
 
 [i]Подсказка: сосредоточьтесь сначала на обязательных квестах — они всегда достижимы при хорошем планировании.[/i]"
-"ENCYCLOPEDIA_TOPIC_BOSS_EVENTS_TITLE","Boss Events","Ивенты босса"
-"ENCYCLOPEDIA_TOPIC_BOSS_EVENTS_BODY","[b]When Events Occur[/b]
+ENCYCLOPEDIA_TOPIC_BOSS_EVENTS_TITLE,Boss Events,Ивенты босса
+ENCYCLOPEDIA_TOPIC_BOSS_EVENTS_BODY,"[b]When Events Occur[/b]
 Generated randomly at [b]10:09[/b] each day with a [color=#2C4F91][b]40% chance[/b][/color].
 Cooldown: [b]7 days[/b] between events.
 
@@ -777,8 +777,8 @@ Events last [color=#2C4F91][b]7–14 working days[/b][/color].
 Ивенты длятся [color=#2C4F91][b]7–14 рабочих дней[/b][/color].
 
 [i]Подсказка: принятие ивентов босса быстрее строит доверие — отклоняйте только если ивент действительно вреден для команды.[/i]"
-"ENCYCLOPEDIA_TOPIC_FINANCE_TITLE","Company Finances","Финансы компании"
-"ENCYCLOPEDIA_TOPIC_FINANCE_BODY","[b]Starting Balance[/b]
+ENCYCLOPEDIA_TOPIC_FINANCE_TITLE,Company Finances,Финансы компании
+ENCYCLOPEDIA_TOPIC_FINANCE_BODY,"[b]Starting Balance[/b]
 Company starts with [color=#2C4F91][b]$10,000[/b][/color].
 
 [b]Income[/b]
@@ -821,8 +821,8 @@ View detailed financial history in the [b]Reports[/b] tab.
 Просмотр подробной истории в вкладке [b]Отчёты[/b].
 
 [i]Подсказка: следите за ежедневными расходами — плата за сервисы быстро накапливается при большой команде.[/i]"
-"ENCYCLOPEDIA_TOPIC_PM_LIFE_TITLE","PM Personal Life","Личная жизнь PM"
-"ENCYCLOPEDIA_TOPIC_PM_LIFE_BODY","[b]Personal Balance[/b]
+ENCYCLOPEDIA_TOPIC_PM_LIFE_TITLE,PM Personal Life,Личная жизнь PM
+ENCYCLOPEDIA_TOPIC_PM_LIFE_BODY,"[b]Personal Balance[/b]
 You have a separate [color=#2C4F91][b]personal savings balance[/b][/color] distinct from the company balance.
 
 [b]PM Salary[/b]
@@ -855,8 +855,8 @@ View your personal balance in the [b]My Life[/b] tab.
 Просматривайте личный баланс во вкладке [b]Моя жизнь[/b].
 
 [i]Подсказка: повышайте тир партнёрства как можно раньше для максимизации дохода от дивидендов.[/i]"
-"ENCYCLOPEDIA_TOPIC_PARTNERSHIP_TITLE","Partnership & Dividends","Партнёрство и дивиденды"
-"ENCYCLOPEDIA_TOPIC_PARTNERSHIP_BODY","[b]Partnership Tiers[/b]
+ENCYCLOPEDIA_TOPIC_PARTNERSHIP_TITLE,Partnership & Dividends,Партнёрство и дивиденды
+ENCYCLOPEDIA_TOPIC_PARTNERSHIP_BODY,"[b]Partnership Tiers[/b]
 • [b]None[/b]: 0% of profits
 • [b]Junior Partner[/b]: [color=#2C4F91][b]1%[/b][/color] of profits
 • [b]Partner[/b]: [color=#2C4F91][b]5%[/b][/color] of profits
@@ -883,8 +883,8 @@ Access the upgrade in the [b]Boss[/b] tab.
 Доступ к улучшению во вкладке [b]Босс[/b].
 
 [i]Подсказка: Старший партнёр с 10% — самый быстрый путь к накоплению $300k для победы.[/i]"
-"ENCYCLOPEDIA_TOPIC_PM_SKILLS_TITLE","PM Skills","Навыки PM"
-"ENCYCLOPEDIA_TOPIC_PM_SKILLS_BODY","[b]Skill Points[/b]
+ENCYCLOPEDIA_TOPIC_PM_SKILLS_TITLE,PM Skills,Навыки PM
+ENCYCLOPEDIA_TOPIC_PM_SKILLS_BODY,"[b]Skill Points[/b]
 Earned when reaching XP thresholds.
 Each threshold grants [color=#2C4F91][b]+3 skill points[/b][/color].
 
@@ -953,8 +953,8 @@ Each threshold grants [color=#2C4F91][b]+3 skill points[/b][/color].
 • Скорость передвижения PM
 
 [i]Подсказка: в первую очередь увеличьте лимит проектов для максимизации доходов.[/i]"
-"ENCYCLOPEDIA_TOPIC_PM_XP_TITLE","PM Experience","Опыт PM"
-"ENCYCLOPEDIA_TOPIC_PM_XP_BODY","[b]Earning XP[/b]
+ENCYCLOPEDIA_TOPIC_PM_XP_TITLE,PM Experience,Опыт PM
+ENCYCLOPEDIA_TOPIC_PM_XP_BODY,"[b]Earning XP[/b]
 • Taking a project: [color=#2C4F91][b]+5 XP[/b][/color]
 • Completing a project: [color=#2C4F91][b]+30 XP[/b][/color]
 • Failed project: [b]+10 XP[/b] (you still learn from failure!)
@@ -979,8 +979,8 @@ Current level and XP progress are shown in the [b]top bar[/b].
 Текущий уровень и прогресс XP отображаются в [b]верхней панели[/b].
 
 [i]Подсказка: быстрое завершение проектов — самый быстрый способ повысить уровень — каждый завершённый проект стоит в 6 раз больше взятия.[/i]"
-"ENCYCLOPEDIA_TOPIC_UPGRADES_TITLE","Office Upgrades","Улучшения офиса"
-"ENCYCLOPEDIA_TOPIC_UPGRADES_BODY","[b]One-Time Upgrades[/b]
+ENCYCLOPEDIA_TOPIC_UPGRADES_TITLE,Office Upgrades,Улучшения офиса
+ENCYCLOPEDIA_TOPIC_UPGRADES_BODY,"[b]One-Time Upgrades[/b]
 • [b]Coffee Machine[/b] — boosts Coffee Lovers; prevents mood penalty
 • [b]Kitchen[/b] — improves energy recovery
 • [b]Ergonomic Furniture[/b] — reduces energy drain
@@ -1025,8 +1025,8 @@ Access upgrades via the [b]Boss[/b] tab.
 Доступ к улучшениям через вкладку [b]Босс[/b].
 
 [i]Подсказка: нанимайте HR-специалиста как можно раньше — это освобождает время PM от поиска кандидатов.[/i]"
-"ENCYCLOPEDIA_TOPIC_EVENTS_TITLE","Random Events","Ивенты"
-"ENCYCLOPEDIA_TOPIC_EVENTS_BODY","[b]Illness[/b]
+ENCYCLOPEDIA_TOPIC_EVENTS_TITLE,Random Events,Ивенты
+ENCYCLOPEDIA_TOPIC_EVENTS_BODY,"[b]Illness[/b]
 • Chance: [color=#2C4F91][b]25%[/b][/color] each morning
 • Cooldowns: 7 days global / 20 days per employee
 • No illness in the [b]first 7 days[/b]
@@ -1063,8 +1063,8 @@ Access upgrades via the [b]Boss[/b] tab.
 • Реагируйте быстро, чтобы не потерять его
 
 [i]Подсказка: всегда одобряйте отгулы для сотрудников с низким настроением — бонус эффективности на следующий день того стоит.[/i]"
-"ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS_TITLE","Project Events","Проектные ивенты"
-"ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS_BODY","[b]Scope Expansion[/b]
+ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS_TITLE,Project Events,Проектные ивенты
+ENCYCLOPEDIA_TOPIC_PROJECT_EVENTS_BODY,"[b]Scope Expansion[/b]
 • Chance: [color=#2C4F91][b]12%[/b][/color] per day
 • Client asks to add features
 • [b]Accept[/b]: more work + more budget
