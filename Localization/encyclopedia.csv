@@ -70,32 +70,38 @@ After the work day ends, time automatically advances to the next working day.
 • [color=#2C4F91][b]7 дней[/b][/color] в неделе
 • Выходные: [b]дни 6 и 7[/b] (суббота и воскресенье) — сотрудники не работают"
 ENCYCLOPEDIA_TOPIC_UI_TITLE,Interface,Интерфейс
-ENCYCLOPEDIA_TOPIC_UI_BODY,"[b]Top Bar[/b]
-• [color=#2C4F91][b]Time[/b][/color] — current in-game time and date
-• [color=#2C4F91][b]Balance[/b][/color] — company funds
-• [b]PM Level[/b] — your experience and level
-• [b]Boss Trust[/b] — trust points with the boss
-• [b]Speed controls[/b] — pause and time multipliers
+ENCYCLOPEDIA_TOPIC_UI_BODY,"[b]Top Bar[/b] 
+• [color=#2C4F91][b]Time[/b][/color] — current in-game time and date 
+• [color=#2C4F91][b]Balance[/b][/color] — company funds 
+• [b]PM Level[/b] — your experience and level 
+• [b]Skill Points[/b] — number of available skill points 
+• [b]Reputation Points[/b] — reputation points with clients 
+• [b]Boss Trust[/b] — trust points with the boss 
+• [b]Your Personal Balance[/b] — amount of money you have accumulated 
+• [b]Speed Controls[/b] — pause and time multipliers 
 
-[b]Bottom Bar[/b]
-Tabs for accessing main panels:
-• [b]Employees[/b] — roster, stats, assignments
-• [b]Clients[/b] — client list and loyalty
-• [b]PM Skills[/b] — skill tree for the PM
-• [b]Boss[/b] — boss quests and relationship
-• [b]My Life[/b] — personal balance and partnership
-• [b]Reports[/b] — financial and people reports
-• [b]Projects[/b] — active project list (requires upgrade)
-• [b]Help[/b] — this encyclopedia
+[b]Bottom Bar[/b] 
+Tabs for accessing main panels: 
+• [b]Employees[/b] — roster, stats, assignments 
+• [b]Clients[/b] — client list and loyalty 
+• [b]PM Skills[/b] — skill tree 
+• [b]Boss[/b] — boss quests and relationship 
+• [b]My Life[/b] — personal balance and partnership 
+• [b]Reports[/b] — financial and people reports 
+• [b]Projects[/b] — active project list (requires upgrade) 
+• [b]Help[/b] — this encyclopedia 
 
-[b]Event Log[/b]
-All important game events appear in the event log on the right side of the screen.
+[b]Event Log[/b] 
+All important game events appear in the event log on the right. 
 
 [i]Tip: Click a tab button again to close that panel, or use the Escape key.[/i]","[b]Верхняя панель[/b]
 • [color=#2C4F91][b]Время[/b][/color] — текущее игровое время и дата
 • [color=#2C4F91][b]Баланс[/b][/color] — средства компании
 • [b]Уровень PM[/b] — ваш опыт и уровень
+• [b]Очки навыков[/b] — количество свободных очков навыков
+• [b]Очки репутации[/b] — количество очков репутации с клиентами
 • [b]Доверие босса[/b] — очки доверия с боссом
+• [b]Ваш личный счёт[/b] — количество накопленных вами денег
 • [b]Управление скоростью[/b] — пауза и множители времени
 
 [b]Нижняя панель[/b]
@@ -114,25 +120,29 @@ All important game events appear in the event log on the right side of the scree
 
 [i]Подсказка: нажмите кнопку вкладки ещё раз, чтобы закрыть панель, или используйте клавишу Escape.[/i]"
 ENCYCLOPEDIA_TOPIC_PROJECTS_TITLE,Projects,Проекты
-ENCYCLOPEDIA_TOPIC_PROJECTS_BODY,"[b]Project Categories[/b]
-• [color=#2C4F91][b]Micro[/b][/color] — 1 stage
-• [color=#2C4F91][b]Simple[/b][/color] — 2 stages
-• [color=#2C4F91][b]Easy[/b][/color] — 3 stages: BA → DEV → QA
+ENCYCLOPEDIA_TOPIC_PROJECTS_BODY,"Projects are the core entity of the game. Your main goal is to take projects from the boss, complete them, and earn money for the company. 
 
-[b]Clients[/b]
-Each project belongs to one of 5 clients. The budget depends on complexity and the client's loyalty bonus.
+Every Monday the boss brings a new pool of projects for the week. At the start of each new week, old projects disappear from the list and new ones appear. The number of projects available from the boss depends on your global reputation points (see the ""Clients"" tab). 
 
-[b]Active Project Limit[/b]
-You can have [color=#2C4F91][b]3 active projects[/b][/color] at once.
-PM skills can increase this to [b]5[/b] or [b]7[/b].
+There are currently 2 types of projects in the game: the classic project (sequential) and the support project. 
 
-[b]Starting a Project[/b]
-Projects are taken from the boss when he is in the office.
 
-[i]Tip: Take projects from clients with high loyalty to earn larger budgets.[/i]","[b]Категории проектов[/b]
-• [color=#2C4F91][b]Micro[/b][/color] — 1 этап
-• [color=#2C4F91][b]Simple[/b][/color] — 2 этапа
-• [color=#2C4F91][b]Easy[/b][/color] — 3 этапа: BA → DEV → QA
+[b]Clients[/b] 
+Each project belongs to one of 5 clients. The budget depends on complexity and the client's loyalty bonus. 
+
+[b]Active Project Limit[/b] 
+You can have [color=#2C4F91][b]3 active projects[/b][/color] at once. 
+PM skills can increase this to [b]5[/b] or [b]7[/b]. 
+
+[b]Starting a Project[/b] 
+Projects are taken from the boss when he is in the office in his room. 
+
+[i]Tip: Take projects from clients with high loyalty to earn larger budgets.[/i]","Проекты - основаная сущность игры. Ваша основная задача брать проекты у босса, выполнять их и зарабатывать деньги для компании. 
+
+Каждый понедельник босс приносит новый пул проектов на неделю. В начале новой недели старые проекты из списка пропадают, новые появляются. Количество проектов доступных у босса зависит от очков глобальной репутации (смотри таб ""Клиенты"")
+
+Сейчас в игре 2 типа проектов. Классический проект (последовательный) и проект поддержки. 
+
 
 [b]Клиенты[/b]
 Каждый проект принадлежит одному из 5 клиентов. Бюджет зависит от сложности и бонуса лояльности клиента.
@@ -238,6 +248,7 @@ ENCYCLOPEDIA_TOPIC_EMPLOYEES_BODY,"[b]Roles[/b]
 • [color=#2C4F91][b]Business Analyst (BA)[/b][/color]
 • [color=#2C4F91][b]Backend Developer (DEV)[/b][/color]
 • [color=#2C4F91][b]QA Engineer (QA)[/b][/color]
+• [color=#2C4F91][b]Customer support (QA)[/b][/color] 
 
 [b]Grades[/b]
 • [b]Junior[/b] — levels 0–2
@@ -257,6 +268,7 @@ Assigning to a new project causes [b]-20% adaptation penalty[/b] for 1 day.
 • [color=#2C4F91][b]Business Analyst (BA)[/b][/color]
 • [color=#2C4F91][b]Backend Developer (DEV)[/b][/color]
 • [color=#2C4F91][b]QA Engineer (QA)[/b][/color]
+• [color=#2C4F91][b]Customer support (QA)[/b][/color] 
 
 [b]Грейды[/b]
 • [b]Junior[/b] — уровни 0–2
@@ -320,27 +332,27 @@ Traits, having an assignment, energy level, PM motivation.
 
 [i]Подсказка: держите настроение сотрудников выше 60 для зоны Good.[/i]"
 ENCYCLOPEDIA_TOPIC_EFFICIENCY_TITLE,Efficiency,Эффективность
-ENCYCLOPEDIA_TOPIC_EFFICIENCY_BODY,"[b]Efficiency Formula[/b]
-Efficiency = [color=#2C4F91]Mood × Energy × (1 + Traits) × (1 + Motivation) × (1 + Events) × (1 + Aura) × (1 + Neighbors) × (1 + Adaptation) × (1 + Crunch) × (1 + Burnout)[/color]
+ENCYCLOPEDIA_TOPIC_EFFICIENCY_BODY,"[b]Efficiency Formula[/b] 
+Efficiency = [color=#2C4F91]Mood × Energy × (1 + Traits) × (1 + Motivation) × (1 + Events) × (1 + Aura) × (1 + Neighbors) × (1 + Adaptation) × (1 + Crunch) × (1 + Burnout)[/color] 
 
-[b]Energy Thresholds[/b]
-• ≥ 70%: [b]×1.0[/b]
-• ≥ 50%: [b]×0.85[/b]
-• ≥ 30%: [b]×0.65[/b]
-• < 30%: [b]×0.4[/b]
+[b]Energy Thresholds[/b] 
+• ≥ 70%: [b]×1.0[/b] 
+• ≥ 50%: [b]×0.85[/b] 
+• ≥ 30%: [b]×0.65[/b] 
+• < 30%: [b]×0.4[/b] 
 
-[b]PM Motivation[/b]
-Use the [b]""Motivate""[/b] PM skill to give a temporary efficiency bonus.
+[b]PM Motivation[/b] 
+Use the PM skill [b]""Motivate""[/b] to give a temporary efficiency bonus. 
 
-[b]PM Aura[/b]
-The [b]""I'm Watching You""[/b] PM skill grants a bonus to nearby employees.
+[b]PM Aura[/b] 
+Move closer to working employees — you grant a 20% efficiency bonus when watching over them. 
 
-[b]Neighbor Bonus[/b]
-Desk neighbors affect each other:
-• [color=#2C4F91][b]Besties[/b][/color]: [b]+8%[/b]
-• [b]Friendly[/b]: +4%
-• [b]Dislike[/b]: -4%
-• [b]Nemesis[/b]: [color=#2C4F91][b]-8%[/b][/color]
+[b]Neighbor Bonus[/b] 
+Desk neighbors affect each other: 
+• [color=#2C4F91][b]Besties[/b][/color]: [b]+8%[/b] 
+• [b]Friendly[/b]: +4% 
+• [b]Dislike[/b]: -4% 
+• [b]Nemesis[/b]: [color=#2C4F91][b]-8%[/b][/color] 
 
 [i]Tip: Pair Besties as desk neighbors for a significant efficiency boost.[/i]","[b]Формула эффективности[/b]
 Эффективность = [color=#2C4F91]Настроение × Энергия × (1 + Трейты) × (1 + Мотивация) × (1 + Ивенты) × (1 + Аура) × (1 + Соседи) × (1 + Адаптация) × (1 + Кранч) × (1 + Выгорание)[/color]
@@ -355,7 +367,7 @@ Desk neighbors affect each other:
 Используйте навык PM [b]«Мотивировать»[/b] для временного бонуса эффективности.
 
 [b]Аура PM[/b]
-Навык PM [b]«I'm Watching You»[/b] даёт бонус ближайшим сотрудникам.
+Подойдите ближе к работащим сотрудникам - вы дадите бонус 20% эффективности, когда наблюдаете за ними. 
 
 [b]Бонус соседства[/b]
 Соседи по столу влияют друг на друга:
@@ -370,11 +382,6 @@ ENCYCLOPEDIA_TOPIC_TRAITS_BODY,"[b]Overview[/b]
 Each employee can have up to [color=#2C4F91][b]5 traits[/b][/color].
 There is a [b]25% chance[/b] to gain a new trait on level-up.
 
-[b]Positive Traits[/b]
-Fast Learner, Energizer, Early Bird, Cheap Hire, Optimist, Athletic, Workaholic, Ambitious, Iron Immunity, Teacher's Pet
-
-[b]Negative Traits[/b]
-Toilet Lover, Coffee Lover, Slowpoke, Expensive, Pessimist, Sleepyhead, Sickly, Rebel, Fragile
 
 [b]Conflicting Pairs[/b]
 Some traits cannot coexist:
@@ -388,12 +395,6 @@ The PM skill [b]""Read Traits""[/b] lets you see employee traits before hiring.
 [i]Tip: Workaholics are immune to crunch penalties — great for deadline crunches.[/i]","[b]Общее[/b]
 У каждого сотрудника может быть до [color=#2C4F91][b]5 трейтов[/b][/color].
 При левел-апе — [b]25% шанс[/b] получить новый трейт.
-
-[b]Позитивные трейты[/b]
-Fast Learner, Energizer, Early Bird, Cheap Hire, Optimist, Athletic, Workaholic, Ambitious, Iron Immunity, Teacher's Pet
-
-[b]Негативные трейты[/b]
-Toilet Lover, Coffee Lover, Slowpoke, Expensive, Pessimist, Sleepyhead, Sickly, Rebel, Fragile
 
 [b]Конфликтующие пары[/b]
 Некоторые трейты не могут сосуществовать:
@@ -412,11 +413,6 @@ ENCYCLOPEDIA_TOPIC_PERSONALITY_BODY,"[b]Social Battery[/b] (one per employee)
 • [b]Toxic[/b] — negatively affects others
 • [b]Ambivert[/b] — balanced
 
-[b]Interests[/b] (0–2 per employee)
-Geek, Jock, Finance Bro, Parent, Informal, Furry, Biohacker, Astrologer, Pet Lover
-
-[b]Irritants[/b] (0–1 per employee)
-Smelly, Sexist, Man Hater, Flirt, Food Thief, Loud
 
 [b]Impact[/b]
 Personalities affect [color=#2C4F91][b]relationship dynamics[/b][/color] between employees and their reactions to boss events.
@@ -428,12 +424,6 @@ Conflicts give [b]-4 relationship[/b].
 • [b]Introvert[/b] — устаёт от общения
 • [b]Toxic[/b] — негативно влияет на других
 • [b]Ambivert[/b] — сбалансированный
-
-[b]Интересы[/b] (0–2 у сотрудника)
-Geek, Jock, Finance Bro, Parent, Informal, Furry, Biohacker, Astrologer, Pet Lover
-
-[b]Раздражители[/b] (0–1 у сотрудника)
-Smelly, Sexist, Man Hater, Flirt, Food Thief, Loud
 
 [b]Влияние[/b]
 Личности влияют на [color=#2C4F91][b]динамику отношений[/b][/color] между сотрудниками и на реакцию на ивенты босса.
@@ -451,7 +441,7 @@ Maximum burnout: [color=#2C4F91][b]100%[/b][/color].
 
 [b]Effect[/b]
 [color=#2C4F91][b]1% burnout = -1% efficiency[/b][/color]
-At 100% burnout, efficiency is severely impacted.
+
 
 [b]Prevention[/b]
 Keep employee mood above 40 to prevent burnout accumulation.
@@ -466,7 +456,7 @@ Use office services (psychologist, kitchen) and timely approvals of vacation req
 
 [b]Эффект[/b]
 [color=#2C4F91][b]1% выгорания = -1% эффективность[/b][/color]
-При 100% выгорании эффективность резко падает.
+
 
 [b]Профилактика[/b]
 Держите настроение сотрудников выше 40.
@@ -489,9 +479,6 @@ Employees chat during the day (up to [b]3 chats/day[/b]).
 Shared interests: [b]+3 per matching tag[/b]
 Conflicts (e.g., sexist → female, toxic → introvert): [b]-4[/b]
 
-[b]Decay[/b]
-Relationships move [b]1 point toward neutral[/b] per day.
-
 [b]Desk Neighbor Bonuses[/b]
 • [color=#2C4F91][b]Besties[/b][/color]: +8% efficiency
 • Friendly: +4%
@@ -512,9 +499,6 @@ Relationships move [b]1 point toward neutral[/b] per day.
 Сотрудники общаются в течение дня (до [b]3 чатов/день[/b]).
 Общие интересы: [b]+3 за каждый совпадающий тег[/b]
 Конфликты (например, sexist → женщина, toxic → introvert): [b]-4[/b]
-
-[b]Затухание[/b]
-Отношения смещаются [b]на 1 очко к нулю[/b] в день.
 
 [b]Бонусы соседства[/b]
 • [color=#2C4F91][b]Besties[/b][/color]: +8% эффективность
