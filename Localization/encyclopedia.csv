@@ -779,64 +779,124 @@ Loyalty decreases from negative actions: issuing a reprimand, denying a raise, s
 [i]Подсказка: держите лояльность выше 65 (уровень Trust) — это постоянный бонус эффективности от каждого сотрудника.[/i]"
 ENCYCLOPEDIA_TOPIC_CLIENTS_TITLE,Clients,Клиенты
 ENCYCLOPEDIA_TOPIC_CLIENTS_BODY,"[b]The 5 Clients[/b]
-• 🚀 [b]NovoTech[/b]
-• 🍕 [b]FoodPlus[/b]
-• 🏦 [b]FinanceGroup[/b]
-• 📺 [b]MediaLine[/b]
-• 🏗 [b]BuildMaster[/b]
+• 🚀 [b]НовоТех (NovoTech)[/b]
+• 🍕 [b]ЕдаПлюс (EdaPlus)[/b]
+• 🏦 [b]ФинансГрупп (FinansGroup)[/b]
+• 📺 [b]МедиаЛайн (MediaLine)[/b]
+• 🏗 [b]СтройМастер (StroyMaster)[/b]
 
-[b]Client Role[/b]
-Each client generates projects for you to take.
-Every client has their own [color=#2C4F91][b]loyalty level[/b][/color] and project history.
+[b]What Clients Give You[/b]
+Each client provides projects through the boss. The more you develop a client relationship, the better the projects they offer.
 
-[b]Budget Bonus[/b]
-Higher loyalty means [color=#2C4F91][b]larger project budgets[/b][/color] and access to more complex project types.
+[b]Client Card[/b]
+In the [b]Clients[/b] tab you can see each client's card showing:
+• Total projects completed
+• Current budget bonus (if any)
+• Unlocked project types (Simple, Easy, Support)
 
-[i]Tip: Focus on building loyalty with 2–3 clients rather than spreading thin across all five.[/i]","[b]5 клиентов[/b]
+[b]Developing a Client[/b]
+Press [b]Develop[/b] on a client's card to open the upgrade shop.
+Upgrades are purchased with [color=#2C4F91][b]Reputation Points[/b][/color].
+• [b]Simple Contract[/b] — unlocks Simple projects (2 stages) — [b]10 RP[/b]
+• [b]Easy Contract[/b] — unlocks Easy projects (3 stages) — [b]20 RP[/b] (requires Simple)
+• [b]Support Contract[/b] — unlocks Support projects — [b]15 RP[/b]
+• [b]Budget Rate ×6[/b] — each level adds [b]+5% to project budgets[/b] — [b]5 RP[/b] per level
+
+[i]Tip: Develop 2–3 clients deeply rather than spreading upgrades across all five.[/i]","[b]5 клиентов[/b]
 • 🚀 [b]НовоТех[/b]
 • 🍕 [b]ЕдаПлюс[/b]
 • 🏦 [b]ФинансГрупп[/b]
 • 📺 [b]МедиаЛайн[/b]
 • 🏗 [b]СтройМастер[/b]
 
-[b]Роль клиентов[/b]
-Каждый клиент генерирует проекты для вас.
-У каждого клиента своя [color=#2C4F91][b]лояльность[/b][/color] и история проектов.
+[b]Что дают клиенты[/b]
+Каждый клиент поставляет проекты через босса. Чем больше вы развиваете отношения с клиентом, тем лучше проекты он предлагает.
 
-[b]Бонус к бюджету[/b]
-Высокая лояльность даёт [color=#2C4F91][b]большие бюджеты проектов[/b][/color] и доступ к более сложным типам.
+[b]Карточка клиента[/b]
+Во вкладке [b]Клиенты[/b] видна карточка каждого клиента:
+• Всего сданных проектов
+• Текущий бонус к бюджету (если есть)
+• Разблокированные типы проектов (Simple, Easy, Support)
 
-[i]Подсказка: сосредоточьтесь на построении лояльности с 2–3 клиентами, а не распыляйтесь на всех пятерых.[/i]"
-ENCYCLOPEDIA_TOPIC_LOYALTY_TITLE,Client Loyalty,Лояльность клиентов
-ENCYCLOPEDIA_TOPIC_LOYALTY_BODY,"[b]How Loyalty Changes[/b]
-• Project finished on time (before soft deadline): [color=#2C4F91][b]+3 loyalty[/b][/color]
-• Project finished late (between soft and hard): [b]+1 loyalty[/b]
-• Project failed: [color=#2C4F91][b]-5 loyalty[/b][/color]
+[b]Развитие клиента[/b]
+Нажмите [b]Развить[/b] на карточке клиента, чтобы открыть магазин улучшений.
+Улучшения покупаются за [color=#2C4F91][b]Очки репутации[/b][/color].
+• [b]Контракт Simple[/b] — разблокирует Simple-проекты (2 этапа) — [b]10 ОР[/b]
+• [b]Контракт Easy[/b] — разблокирует Easy-проекты (3 этапа) — [b]20 ОР[/b] (нужен Simple)
+• [b]Контракт поддержки[/b] — разблокирует проекты поддержки — [b]15 ОР[/b]
+• [b]Ставка бюджета ×6[/b] — каждый уровень добавляет [b]+5% к бюджету[/b] — [b]5 ОР[/b] за уровень
 
-[b]Loyalty Milestones[/b]
-• [b]0[/b]: Micro projects only
-• [b]5[/b]: +5% budget bonus
-• [b]12[/b]: Simple projects unlocked
-• [b]22[/b]: +10% budget bonus
-• [b]35[/b]: Easy projects unlocked
-• [b]50[/b]: +15% budget bonus
-• [color=#2C4F91][b]70[/b][/color]: +20% budget bonus (maximum)
+[i]Подсказка: лучше глубоко развить 2–3 клиентов, чем распылять улучшения на всех пятерых.[/i]"
+ENCYCLOPEDIA_TOPIC_LOYALTY_TITLE,Reputation Points,Очки репутации
+ENCYCLOPEDIA_TOPIC_LOYALTY_BODY,"Reputation Points (RP) are the [color=#2C4F91][b]spendable currency[/b][/color] earned by completing projects. Use them to develop clients in the upgrade shop.
 
-[i]Tip: Never fail a project for a client you're trying to build loyalty with — the -5 penalty is harsh.[/i]","[b]Как меняется лояльность[/b]
-• Проект вовремя (до мягкого дедлайна): [color=#2C4F91][b]+3 лояльности[/b][/color]
-• Проект с опозданием (между мягким и жёстким): [b]+1 лояльности[/b]
-• Провал проекта: [color=#2C4F91][b]-5 лояльности[/b][/color]
+[b]Earning Reputation Points[/b]
+• Project completed [b]on time[/b] (before soft deadline): [color=#2C4F91][b]+3 RP[/b][/color]
+• Project completed [b]late[/b] (after soft, before hard deadline): [b]+1 RP[/b]
+• Support contract [b]terminated[/b] due to overdue tickets: [b]-10 RP[/b]
 
-[b]Пороги лояльности[/b]
-• [b]0[/b]: только Micro проекты
-• [b]5[/b]: +5% к бюджету
-• [b]12[/b]: разблокированы Simple проекты
-• [b]22[/b]: +10% к бюджету
-• [b]35[/b]: разблокированы Easy проекты
-• [b]50[/b]: +15% к бюджету
-• [color=#2C4F91][b]70[/b][/color]: +20% к бюджету (максимум)
+[b]Spending Reputation Points[/b]
+Open the [b]Develop[/b] shop on any client card:
+• [b]Simple Contract[/b]: [color=#2C4F91][b]10 RP[/b][/color]
+• [b]Support Contract[/b]: [color=#2C4F91][b]15 RP[/b][/color]
+• [b]Easy Contract[/b]: [color=#2C4F91][b]20 RP[/b][/color]
+• [b]Budget Rate upgrade[/b] (up to ×6): [b]5 RP[/b] per level (+5% budget per level)
 
-[i]Подсказка: никогда не проваливайте проект клиента, с которым строите лояльность — штраф -5 очень болезненный.[/i]"
+[b]Viewing Your Points[/b]
+Your current RP total is shown at the top of the [b]Clients[/b] panel.
+
+[i]Tip: Always finish projects before the soft deadline — the difference between +3 RP and +1 RP adds up quickly.[/i]","Очки репутации (ОР) — [color=#2C4F91][b]тратимая валюта[/b][/color], которую вы зарабатываете за выполнение проектов. Тратьте их на развитие клиентов в магазине улучшений.
+
+[b]Получение очков репутации[/b]
+• Проект сдан [b]вовремя[/b] (до мягкого дедлайна): [color=#2C4F91][b]+3 ОР[/b][/color]
+• Проект сдан [b]с задержкой[/b] (после мягкого, до жёсткого): [b]+1 ОР[/b]
+• Контракт поддержки [b]расторгнут[/b] из-за просроченных тикетов: [b]-10 ОР[/b]
+
+[b]Трата очков репутации[/b]
+Откройте магазин [b]Развить[/b] на карточке любого клиента:
+• [b]Контракт Simple[/b]: [color=#2C4F91][b]10 ОР[/b][/color]
+• [b]Контракт поддержки[/b]: [color=#2C4F91][b]15 ОР[/b][/color]
+• [b]Контракт Easy[/b]: [color=#2C4F91][b]20 ОР[/b][/color]
+• [b]Повышение ставки бюджета[/b] (до ×6): [b]5 ОР[/b] за уровень (+5% к бюджету за уровень)
+
+[b]Просмотр очков[/b]
+Текущее количество ОР отображается в верхней части панели [b]Клиенты[/b].
+
+[i]Подсказка: всегда сдавайте проекты до мягкого дедлайна — разница между +3 ОР и +1 ОР быстро накапливается.[/i]"
+ENCYCLOPEDIA_TOPIC_GLOBAL_REPUTATION_TITLE,Global Reputation,Глобальная репутация
+ENCYCLOPEDIA_TOPIC_GLOBAL_REPUTATION_BODY,"Global Reputation (GR) is a [color=#2C4F91][b]permanent, non-spendable metric[/b][/color] that reflects the overall success of your company. Unlike Reputation Points, it never decreases.
+
+[b]Earning Global Reputation[/b]
+• Any project completed (on time or with soft deadline penalty): [color=#2C4F91][b]+3 GR[/b][/color]
+
+[b]Effect: Weekly Project Offers[/b]
+Global Reputation determines how many project proposals the boss puts up for selection each week:
+• [b]0–4 GR[/b]: [color=#2C4F91][b]5 proposals/week[/b][/color]
+• [b]5–14 GR[/b]: [b]7 proposals/week[/b]
+• [b]15–29 GR[/b]: [b]9 proposals/week[/b]
+• [b]30–49 GR[/b]: [b]11 proposals/week[/b]
+• [color=#2C4F91][b]50+ GR[/b][/color]: [color=#2C4F91][b]13 proposals/week[/b][/color]
+
+[b]Viewing Global Reputation[/b]
+Your current GR is shown at the top of the [b]Clients[/b] panel alongside Reputation Points.
+
+[i]Tip: More proposals per week means more choice — grow your Global Reputation to always have good projects available.[/i]","Глобальная репутация (ГР) — [color=#2C4F91][b]постоянная нетратимая метрика[/b][/color], отражающая общий успех вашей компании. В отличие от очков репутации, она никогда не снижается.
+
+[b]Получение глобальной репутации[/b]
+• Любой завершённый проект (вовремя или с нарушением мягкого дедлайна): [color=#2C4F91][b]+3 ГР[/b][/color]
+
+[b]Эффект: предложения проектов в неделю[/b]
+Глобальная репутация определяет, сколько предложений проектов босс выставляет на выбор каждую неделю:
+• [b]0–4 ГР[/b]: [color=#2C4F91][b]5 предложений/неделю[/b][/color]
+• [b]5–14 ГР[/b]: [b]7 предложений/неделю[/b]
+• [b]15–29 ГР[/b]: [b]9 предложений/неделю[/b]
+• [b]30–49 ГР[/b]: [b]11 предложений/неделю[/b]
+• [color=#2C4F91][b]50+ ГР[/b][/color]: [color=#2C4F91][b]13 предложений/неделю[/b][/color]
+
+[b]Просмотр глобальной репутации[/b]
+Текущее значение ГР отображается в верхней части панели [b]Клиенты[/b] рядом с очками репутации.
+
+[i]Подсказка: больше предложений в неделю — больше выбора. Наращивайте глобальную репутацию, чтобы всегда иметь хорошие проекты.[/i]"
 ENCYCLOPEDIA_TOPIC_BOSS_TRUST_TITLE,Boss Trust Points,Очки доверия босса
 ENCYCLOPEDIA_TOPIC_BOSS_TRUST_BODY,"[b]Trust Scale[/b]
 Range: [color=#2C4F91][b]-30 to 100[/b][/color]
