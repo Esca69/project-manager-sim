@@ -473,6 +473,10 @@ func _update_crunch_btn():
 	var is_work_time = not GameTime.is_weekend() and GameTime.hour >= GameTime.START_HOUR and GameTime.hour < 20
 	var should_show = is_in_progress and is_work_time
 
+	# Скрываем кнопку кранча во время туториала (день 1)
+	if TutorialManager.is_active():
+		should_show = false
+
 	_crunch_btn.visible = should_show
 	if _crunch_help_btn:
 		_crunch_help_btn.visible = should_show
@@ -484,6 +488,11 @@ func _update_crunch_btn():
 		else:
 			_crunch_btn.text = tr("CRUNCH_TIME_BUTTON")
 			_crunch_btn.disabled = false
+	else:
+		# Гарантируем, что скрытая кнопка некликабельна
+		_crunch_btn.disabled = true
+		if _crunch_help_btn:
+			_crunch_help_btn.disabled = true
 
 # === CRUNCH TIME: Активация кранча (только включить, выключить нельзя) ===
 func _on_crunch_pressed():
