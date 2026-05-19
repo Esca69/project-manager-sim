@@ -1269,9 +1269,9 @@ BOSS_PANEL_OBJ_COMPLETED,✅ Выполнено,✅ Completed
 BOSS_PANEL_OBJ_FAILED,❌ Не выполнено,❌ Not completed
 BOSS_PANEL_QUEST_TRUST_TOTAL,Итого доверие за месяц: %+d 🤝,Total trust for month: %+d 🤝
 BOSS_PANEL_NO_QUEST_HISTORY,Нет данных за этот месяц,No data for this month
-PLAYTEST_DAYS_LEFT,🎮 Плейтест: %d дн.,🎮 Playtest: %d days
-PLAYTEST_END_TITLE,Плейтест завершён!,Playtest Complete!
-PLAYTEST_END_TEXT,"Спасибо за участие в плейтесте! Ваше мнение очень важно для нас.\n\nПожалуйста, оставьте обратную связь и добавьте игру в список желаемого в Steam!",Thank you for playing the Playtest! Your feedback means a lot to us.\n\nPlease leave your feedback and add the game to your Steam Wishlist!
+PLAYTEST_DAYS_LEFT,🎮 Демо: %d дн.,🎮 Demo: %d days
+PLAYTEST_END_TITLE,Демо завершено!,Demo Complete!
+PLAYTEST_END_TEXT,"Спасибо за участие в демо! Ваше мнение очень важно для нас.\n\nПожалуйста, оставьте обратную связь и добавьте игру в список желаемого в Steam!",Thank you for playing the Demo! Your feedback means a lot to us.\n\nPlease leave your feedback and add the game to your Steam Wishlist!
 PLAYTEST_BTN_FEEDBACK,Фидбек,Feedback
 PLAYTEST_BTN_WISHLIST,Вишлист,Wishlist
 PLAYTEST_BTN_MAIN_MENU,Главное меню,Main Menu
@@ -1366,7 +1366,7 @@ TOOLTIP_COMPANY_BUDGET,Бюджет компании. Из него оплачи
 TOOLTIP_PM_LEVEL,Ваш уровень PM. Растёт за XP от проектов. Каждый уровень даёт очки навыков,Your PM level. Grows from project XP. Each level grants skill points
 TOOLTIP_BOSS_TRUST,Доверие босса. Растёт за успешные проекты и задания. Тратится на улучшения офиса и повышение ЗП. При -30 — увольнение!,Boss trust. Grows from successful projects and quests. Spent on office upgrades and salary raises. At -30 — you're fired!
 TOOLTIP_PERSONAL_BALANCE,Ваш личный счёт. Зарплата + дивиденды. Копите на мечту!,Your personal balance. Salary + dividends. Save for your dream!
-TOOLTIP_PLAYTEST_DAYS,Оставшиеся дни плейтеста,Remaining playtest days
+TOOLTIP_PLAYTEST_DAYS,Оставшиеся дни демо,Remaining demo days
 TOOLTIP_TIME,Текущая дата и время в игре,Current in-game date and time
 UI_SKILL_POINTS_SHORT,🧠 %d,🧠 %d
 TOOLTIP_SKILL_POINTS,"Очки навыков PM. Получаете при повышении уровня, тратите в дереве навыков","PM skill points. Earned on level up, spent in skill tree"
