@@ -1116,75 +1116,47 @@ Access the upgrade in the [b]Boss[/b] tab.
 
 [i]Подсказка: Старший партнёр с 10% — самый быстрый путь к накоплению $300k для победы.[/i]"
 ENCYCLOPEDIA_TOPIC_PM_SKILLS_TITLE,PM Skills,Навыки PM
-ENCYCLOPEDIA_TOPIC_PM_SKILLS_BODY,"[b]Skill Points[/b]
-Earned when reaching XP thresholds.
-Each threshold grants [color=#2C4F91][b]+3 skill points[/b][/color].
+ENCYCLOPEDIA_TOPIC_PM_SKILLS_BODY,"[b]PM Skills[/b] allow you to become a more effective Project Manager. As you earn [color=#2C4F91][b]XP[/b][/color], you reach thresholds that each reward [color=#2C4F91][b]+2 skill points[/b][/color]. Spend them in the [b]Skill Tree[/b] to unlock new abilities.
 
-[b]Skill Categories[/b]
+[b]📋 Projects[/b]
+Better project estimation, increased active project limit (up to 7), and crisis management tools.
 
-[b]Projects[/b]
-• Deadline estimation
-• Budget estimation
-• Increase active project limit (3 → 5 → 7)
-• Faster boss discussion
-• Crisis management
+[b]👥 People[/b]
+Read candidate traits, skills, mood, and efficiency. More candidates in HR search, faster hiring.
 
-[b]People[/b]
-• Read employee traits
-• Read employee skills
-• Read employee mood
-• Read employee efficiency
-• More hiring candidates (2 → 3 → 5)
-• Faster HR search
+[b]📊 Analytics[/b]
+Unlock daily reports, the finance tab, and the people tab — always know where the company stands.
 
-[b]Analytics[/b]
-• Daily report
-• Financial report
-• People report
+[b]⚡ Active[/b]
+Real-time skills: motivate employees, keep them focused, boost team spirit.
 
-[b]Active Skills[/b]
-• Motivate employees
-• Toilet ban
-• ""Work is Fun""
+[b]🏢 Management[/b]
+Unlock workstation upgrades (one-time and subscriptions), employee feedback, and HR tools.
 
-[b]Passive Skills[/b]
-• PM movement speed
+[b]🛡 Passive[/b]
+Movement speed upgrades for faster navigation around the office.
 
-[i]Tip: Prioritize project limit increase early to maximize revenue potential.[/i]","[b]Очки навыков[/b]
-Получаются при достижении порогов XP.
-Каждый порог даёт [color=#2C4F91][b]+3 очка навыков[/b][/color].
+[i]Tip: Invest in Projects and People early — a bigger project limit and better hiring make everything easier.[/i]","[b]Навыки PM[/b] помогут стать более эффективным проект-менеджером. За [color=#2C4F91][b]XP[/b][/color] вы достигаете порогов, каждый из которых даёт [color=#2C4F91][b]+2 очка навыков[/b][/color]. Тратьте их в [b]дереве навыков[/b] для открытия новых возможностей.
 
-[b]Категории навыков[/b]
+[b]📋 Проекты[/b]
+Улучшение оценки проектов, увеличение лимита активных проектов (до 7) и инструменты кризис-менеджмента.
 
-[b]Проекты[/b]
-• Оценка сроков
-• Оценка бюджета
-• Увеличение лимита проектов (3 → 5 → 7)
-• Ускорение обсуждения с боссом
-• Кризис-менеджмент
+[b]👥 Люди[/b]
+Читайте трейты, навыки, настроение и эффективность кандидатов. Больше кандидатов в HR-поиске, быстрее найм.
 
-[b]Люди[/b]
-• Чтение трейтов сотрудников
-• Чтение навыков сотрудников
-• Чтение настроения
-• Чтение эффективности
-• Больше кандидатов при найме (2 → 3 → 5)
-• Ускорение поиска HR
+[b]📊 Аналитика[/b]
+Разблокируйте ежедневные отчёты, вкладку финансов и вкладку сотрудников — всегда держите руку на пульсе.
 
-[b]Аналитика[/b]
-• Дневной отчёт
-• Финансовый отчёт
-• Отчёт по людям
+[b]⚡ Активные[/b]
+Навыки в реальном времени: мотивируйте сотрудников, удерживайте их фокус, поднимайте командный дух.
 
-[b]Активные[/b]
-• Мотивировать сотрудников
-• Запрет туалета
-• «Работа — это весело»
+[b]🏢 Управление[/b]
+Разблокирует улучшения рабочих мест (разовые и подписки), обратную связь с сотрудниками и HR-инструменты.
 
-[b]Пассивные[/b]
-• Скорость передвижения PM
+[b]🛡 Пассивные[/b]
+Ускорение передвижения PM по офису.
 
-[i]Подсказка: в первую очередь увеличьте лимит проектов для максимизации доходов.[/i]"
+[i]Подсказка: вкладывайте в «Проекты» и «Люди» с самого начала — больше проектов и лучший найм упрощают всё остальное.[/i]"
 ENCYCLOPEDIA_TOPIC_PM_XP_TITLE,PM Experience,Опыт PM
 ENCYCLOPEDIA_TOPIC_PM_XP_BODY,"[b]Earning XP[/b]
 • Taking a project: [color=#2C4F91][b]+5 XP[/b][/color]
@@ -1257,3 +1229,51 @@ Access upgrades via the [b]Boss[/b] tab.
 Доступ к улучшениям через вкладку [b]Босс[/b].
 
 [i]Подсказка: нанимайте HR-специалиста как можно раньше — это освобождает время PM от поиска кандидатов.[/i]"
+ENCYCLOPEDIA_TOPIC_DESK_UPGRADES_TITLE,Workstation Upgrades,Улучшения рабочих мест
+ENCYCLOPEDIA_TOPIC_DESK_UPGRADES_BODY,"[b]Workstation Upgrades[/b] let you enhance individual employee desks to boost their performance and mood.
+
+[b]One-Time Upgrades[/b]
+Pay once — active forever.
+• [b]🖥️ Second Monitor[/b] — $250 — [color=#2C4F91][b]+10% efficiency[/b][/color] (all roles)
+• [b]🌱 Desk Plant[/b] — $100 — [color=#2C4F91][b]+3 mood[/b][/color] (all roles)
+
+[b]Subscriptions[/b]
+Pay a daily fee while active. Can be paused at any time.
+• [b]📊 BA Software[/b] — $10/day — [color=#2C4F91][b]+10% efficiency[/b][/color] (Business Analyst only)
+• [b]💻 Dev Software[/b] — $15/day — [color=#2C4F91][b]+10% efficiency[/b][/color] (Backend Developer only)
+• [b]🧪 QA Software[/b] — $7/day — [color=#2C4F91][b]+10% efficiency[/b][/color] (QA Engineer only)
+• [b]🤖 AI Subscription[/b] — $25/day — [color=#2C4F91][b]+15% efficiency[/b][/color], but [b]×0.5 XP gain[/b] (all roles)
+
+[b]Unlock Requirements[/b]
+One-time upgrades require the [b]Management → Desk One-Time[/b] PM skill.
+Subscriptions require the [b]Management → Desk Subscriptions[/b] PM skill.
+
+[b]How to Access[/b]
+Click on a desk → Desk Panel → [b]Upgrades[/b] tab.
+
+[b]⚠️ AI Subscription[/b]: gives the largest efficiency boost, but the employee relies on AI and grows [b]twice as slow[/b].
+
+[i]Tip: Specialized software (BA/Dev/QA) gives a clean efficiency boost with no downsides — a great early investment.[/i]","[b]Улучшения рабочих мест[/b] позволяют прокачать отдельные столы сотрудников, повышая их эффективность и настроение.
+
+[b]Разовые улучшения[/b]
+Оплачиваются один раз — работают постоянно.
+• [b]🖥️ Второй монитор[/b] — $250 — [color=#2C4F91][b]+10% эффективности[/b][/color] (все роли)
+• [b]🌱 Растение на стол[/b] — $100 — [color=#2C4F91][b]+3 к настроению[/b][/color] (все роли)
+
+[b]Подписки[/b]
+Ежедневная плата снимается пока подписка активна. Можно приостановить в любой момент.
+• [b]📊 ПО для BA[/b] — $10/день — [color=#2C4F91][b]+10% эффективности[/b][/color] (только Business Analyst)
+• [b]💻 ПО для разработки[/b] — $15/день — [color=#2C4F91][b]+10% эффективности[/b][/color] (только Backend Developer)
+• [b]🧪 ПО для QA[/b] — $7/день — [color=#2C4F91][b]+10% эффективности[/b][/color] (только QA Engineer)
+• [b]🤖 AI-подписка[/b] — $25/день — [color=#2C4F91][b]+15% эффективности[/b][/color], но [b]×0.5 получения XP[/b] (все роли)
+
+[b]Разблокировка[/b]
+Разовые улучшения — навык PM [b]Управление → Разовые улучшения столов[/b].
+Подписки — навык PM [b]Управление → Подписки для столов[/b].
+
+[b]Как получить доступ[/b]
+Нажмите на стол → Панель стола → вкладка [b]Улучшения[/b].
+
+[b]⚠️ AI-подписка[/b]: даёт наибольший прирост эффективности, но сотрудник использует ИИ и растёт [b]вдвое медленнее[/b].
+
+[i]Подсказка: специализированное ПО (BA/Dev/QA) даёт чистый прирост эффективности без штрафов — отличная ранняя инвестиция.[/i]"

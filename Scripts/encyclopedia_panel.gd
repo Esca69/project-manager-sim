@@ -63,6 +63,7 @@ var _categories_data: Array = [
 	]},
 	{"key": "ENCYCLOPEDIA_CAT_OFFICE", "topics": [
 		"ENCYCLOPEDIA_TOPIC_UPGRADES",
+		"ENCYCLOPEDIA_TOPIC_DESK_UPGRADES",
 	]},
 ]
 
