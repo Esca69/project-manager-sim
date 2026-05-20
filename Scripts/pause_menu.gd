@@ -12,7 +12,7 @@ const COLOR_DANGER_HOVER = Color(0.95, 0.35, 0.35, 1)
 const COLOR_TEXT_DARK = Color(0.15, 0.15, 0.2, 1)
 const COLOR_TEXT_MUTED = Color(0.45, 0.45, 0.55, 1)
 
-const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc0JJVKE4665icJ70x1Ja4zuT2KmqCOHURLNbHD2nMHHXE98A/viewform?usp=dialog"
+const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScJEYPwfORRPnHlUCbXGVaSmexOCftMgsQkWQtM8NW6lCPpJw/viewform?usp=dialog"
 
 var _is_open: bool = false
 var _dim: ColorRect

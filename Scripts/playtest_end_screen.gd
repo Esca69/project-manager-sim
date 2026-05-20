@@ -14,7 +14,7 @@ const COLOR_GRAY    = Color(0.5, 0.5, 0.5, 1)
 const COLOR_DARK    = Color(0.2, 0.2, 0.2, 1)
 const COLOR_BORDER  = Color(0, 0, 0, 1)
 
-const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc0JJVKE4665icJ70x1Ja4zuT2KmqCOHURLNbHD2nMHHXE98A/viewform?usp=dialog"
+const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScJEYPwfORRPnHlUCbXGVaSmexOCftMgsQkWQtM8NW6lCPpJw/viewform?usp=dialog"
 const WISHLIST_URL = "https://store.steampowered.com/app/4454610/Project_manager_SIM/"
 
 var _overlay: ColorRect

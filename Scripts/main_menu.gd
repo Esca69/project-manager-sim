@@ -18,7 +18,7 @@ const COLOR_BG = Color(0.94, 0.95, 0.97, 1)
 const COLOR_CARD_BG = Color(1, 1, 1, 1)
 const COLOR_CARD_BORDER = Color(0.878, 0.878, 0.878, 1)
 
-const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc0JJVKE4665icJ70x1Ja4zuT2KmqCOHURLNbHD2nMHHXE98A/viewform?usp=dialog"
+const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLScJEYPwfORRPnHlUCbXGVaSmexOCftMgsQkWQtM8NW6lCPpJw/viewform?usp=dialog"
 
 # Ноды
 var _bg: ColorRect
