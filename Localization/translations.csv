@@ -71,7 +71,7 @@ SKILL_HR_SEARCH_SPEED_2_DESC,Поиск кандидатов занимает 1 
 SKILL_DAILY_REPORT_NAME,📋 Дневной отчёт,📋 Daily Report
 SKILL_DAILY_REPORT_DESC,Открывает полную детализацию дневного отчёта: расходы; аналитика проектов и продуктивность сотрудников,Unlocks full day report details: expenses; project analytics and employee productivity
 SKILL_MOTIVATE_NAME,🔥 Мотивировать,🔥 Motivate
-SKILL_MOTIVATE_DESC,Активный навык (Q): все сотрудники рядом получают +20% скорости работы на 2 часа. Перезарядка: 4 часа,Active skill (Q): nearby employees get +20% work speed for 2 hours. Cooldown: 4 hours
+SKILL_MOTIVATE_DESC,Активный навык (Q): все сотрудники рядом получают +20% скорости работы на 2 часа. Перезарядка: 8 часов,Active skill (Q): nearby employees get +20% work speed for 2 hours. Cooldown: 8 hours
 SKILL_NO_TOILET_NAME,🚽 Не сейчас!,🚽 Not Now!
 SKILL_NO_TOILET_DESC,Активный навык (R): сотрудники рядом не уходят в туалет 4 часа. Перезарядка: 8 часов,Active skill (R): nearby employees won't take toilet breaks for 4 hours. Cooldown: 8 hours
 SKILL_CATEGORY_PROJECTS,Проекты,Projects

@@ -1173,7 +1173,7 @@ func _rebuild_office_dev():
 		"🍽️",
 		tr("UPG_KITCHEN_TITLE"),
 		tr("UPG_KITCHEN_DESC"),
-		1500, 10,
+		1800, 10,
 		kitchen_bought,
 		func():
 			var ok = GameState.buy_upgrade("kitchen", 1800, 10)
@@ -1182,7 +1182,7 @@ func _rebuild_office_dev():
 				_rebuild_office_dev()
 			else:
 				var bm = get_node_or_null("/root/BossManager")
-				if GameState.company_balance < 5000:
+				if GameState.company_balance < 1800:
 					EventLog.add(tr("TXT_NOT_ENOUGH_MONEY"), EventLog.LogType.ALERT)
 				elif bm and bm.boss_trust < 10:
 					EventLog.add(tr("TXT_NOT_ENOUGH_TRUST"), EventLog.LogType.ALERT)
@@ -1563,5 +1563,10 @@ func _make_upgrade_card(icon_text: String, title: String, description: String, c
 
 func _format_money(amount: int) -> String:
 	if amount >= 1000:
-		return "%d,000" % (amount / 1000)
+		var thousands = amount / 1000
+		var remainder = amount % 1000
+		if remainder == 0:
+			return "%d,000" % thousands
+		else:
+			return "%d,%03d" % [thousands, remainder]
 	return str(amount)
