@@ -115,8 +115,6 @@ func _show_departure_popup(npc_node: Node, leave_type: String):
 			},
 		],
 	}
-	if EventLog:
-		EventLog.add(tr("LOG_FREELANCER_SUDDEN_LEAVE") % emp_display)
 	EventManager._show_event_popup(event_data)
 
 func register_warned_freelancer(emp_name: String, warning_days: int):
@@ -155,6 +153,6 @@ func _execute_departure(npc_node):
 
 	# 4. Лог
 	if EventLog:
-		EventLog.add(tr("LOG_FREELANCER_DEPARTED") % [emp_name, emp_data.days_in_company])
+		EventLog.add(tr("LOG_FREELANCER_DEPARTED") % [emp_data.get_display_name(), emp_data.days_in_company])
 
 	print("🚪 Фрилансер %s покинул компанию" % emp_name)
