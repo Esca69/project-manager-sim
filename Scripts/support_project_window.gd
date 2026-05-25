@@ -18,15 +18,9 @@ var _was_paused: bool = false
 var _last_refresh_key: int = -1
 
 var _assignment_overlay: ColorRect
-var _assignment_scroll: ScrollContainer
-var _assignment_rows_container: VBoxContainer
+var _assignment_list: ItemList
 var _assignment_callback: Callable
 var _ticket_progress_labels: Array = []
-
-# Стили кнопок для попапа назначения
-var _assign_btn_style_normal: StyleBoxFlat
-var _assign_btn_style_hover: StyleBoxFlat
-var _assign_btn_style_disabled: StyleBoxFlat
 
 func _tr_format_safe(key: String, args, fallback: String) -> String:
 	var text = tr(key)
@@ -187,12 +181,12 @@ func _build_assignment_popup():
 	add_child(_assignment_overlay)
 
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(560, 440)
+	panel.custom_minimum_size = Vector2(450, 400)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.offset_left = -280
-	panel.offset_top = -220
-	panel.offset_right = 280
-	panel.offset_bottom = 220
+	panel.offset_left = -225
+	panel.offset_top = -200
+	panel.offset_right = 225
+	panel.offset_bottom = 200
 	var ps = StyleBoxFlat.new()
 	ps.bg_color = COLOR_WHITE
 	ps.border_width_left = 3
@@ -270,182 +264,50 @@ func _build_assignment_popup():
 	main_vbox.add_child(content_margin)
 
 	var v = VBoxContainer.new()
-	v.add_theme_constant_override("separation", 0)
+	v.add_theme_constant_override("separation", 12)
 	content_margin.add_child(v)
 
-	# Заголовки колонок
-	var header_row = _create_assign_header_row()
-	v.add_child(header_row)
-
-	var sep = HSeparator.new()
-	sep.add_theme_constant_override("separation", 4)
-	v.add_child(sep)
-
-	# ScrollContainer для строк
-	_assignment_scroll = ScrollContainer.new()
-	_assignment_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_assignment_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	v.add_child(_assignment_scroll)
-
-	_assignment_rows_container = VBoxContainer.new()
-	_assignment_rows_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_assignment_rows_container.add_theme_constant_override("separation", 2)
-	_assignment_scroll.add_child(_assignment_rows_container)
-
-	# === СТИЛИ КНОПОК ===
-	_assign_btn_style_normal = StyleBoxFlat.new()
-	_assign_btn_style_normal.bg_color = COLOR_WHITE
-	_assign_btn_style_normal.border_width_left = 2
-	_assign_btn_style_normal.border_width_top = 2
-	_assign_btn_style_normal.border_width_right = 2
-	_assign_btn_style_normal.border_width_bottom = 2
-	_assign_btn_style_normal.border_color = COLOR_BLUE
-	_assign_btn_style_normal.corner_radius_top_left = 16
-	_assign_btn_style_normal.corner_radius_top_right = 16
-	_assign_btn_style_normal.corner_radius_bottom_right = 16
-	_assign_btn_style_normal.corner_radius_bottom_left = 16
-
-	_assign_btn_style_hover = StyleBoxFlat.new()
-	_assign_btn_style_hover.bg_color = COLOR_BLUE
-	_assign_btn_style_hover.border_width_left = 2
-	_assign_btn_style_hover.border_width_top = 2
-	_assign_btn_style_hover.border_width_right = 2
-	_assign_btn_style_hover.border_width_bottom = 2
-	_assign_btn_style_hover.border_color = COLOR_BLUE
-	_assign_btn_style_hover.corner_radius_top_left = 16
-	_assign_btn_style_hover.corner_radius_top_right = 16
-	_assign_btn_style_hover.corner_radius_bottom_right = 16
-	_assign_btn_style_hover.corner_radius_bottom_left = 16
-
-	_assign_btn_style_disabled = StyleBoxFlat.new()
-	_assign_btn_style_disabled.bg_color = Color(0.95, 0.95, 0.95, 1)
-	_assign_btn_style_disabled.border_width_left = 2
-	_assign_btn_style_disabled.border_width_top = 2
-	_assign_btn_style_disabled.border_width_right = 2
-	_assign_btn_style_disabled.border_width_bottom = 2
-	_assign_btn_style_disabled.border_color = Color(0.8, 0.8, 0.8, 1)
-	_assign_btn_style_disabled.corner_radius_top_left = 16
-	_assign_btn_style_disabled.corner_radius_top_right = 16
-	_assign_btn_style_disabled.corner_radius_bottom_right = 16
-	_assign_btn_style_disabled.corner_radius_bottom_left = 16
-
-const _ASSIGN_NAME_MIN_WIDTH = 170
-const _ASSIGN_ROLE_MIN_WIDTH = 160
-const _ASSIGN_BTN_MIN_WIDTH = 120
-const _ASSIGN_ROW_HEIGHT = 48
-const _ASSIGN_COLOR_GRAY = Color(0.6, 0.6, 0.6, 1)
-const _ASSIGN_COLOR_DARK = Color(0.15, 0.15, 0.15, 1)
-
-func _create_assign_header_row() -> HBoxContainer:
-	var row = HBoxContainer.new()
-	row.custom_minimum_size = Vector2(0, 30)
-
-	var name_lbl = Label.new()
-	name_lbl.text = tr("ASSIGN_COL_NAME")
-	name_lbl.custom_minimum_size = Vector2(_ASSIGN_NAME_MIN_WIDTH, 0)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_DARK)
-	name_lbl.add_theme_font_size_override("font_size", 14)
+	_assignment_list = ItemList.new()
+	_assignment_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	
 	if UITheme:
-		UITheme.apply_font(name_lbl, "bold")
-	row.add_child(name_lbl)
+		UITheme.apply_font(_assignment_list, "regular")
 
-	var role_lbl = Label.new()
-	role_lbl.text = tr("ASSIGN_COL_ROLE")
-	role_lbl.custom_minimum_size = Vector2(_ASSIGN_ROLE_MIN_WIDTH, 0)
-	role_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	role_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_DARK)
-	role_lbl.add_theme_font_size_override("font_size", 14)
-	if UITheme:
-		UITheme.apply_font(role_lbl, "bold")
-	row.add_child(role_lbl)
+	# === ТЕ САМЫЕ ЦВЕТА ИЗ ТВОЕГО ASSIGNMENTMENU.TSCN ===
+	_assignment_list.add_theme_color_override("font_color", COLOR_BLUE)
+	_assignment_list.add_theme_color_override("font_hovered_color", COLOR_BLUE)
+	_assignment_list.add_theme_color_override("font_selected_color", Color(0, 0, 0, 1))
+	_assignment_list.add_theme_color_override("font_hovered_selected_color", Color(0, 0, 0, 1))
+	# ====================================================
 
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(_ASSIGN_BTN_MIN_WIDTH, 0)
-	row.add_child(spacer)
+	var list_style = StyleBoxFlat.new()
+	list_style.bg_color = Color(1, 1, 1, 1)
+	list_style.border_width_left = 2
+	list_style.border_width_top = 2
+	list_style.border_width_right = 2
+	list_style.border_width_bottom = 2
+	list_style.border_color = Color(0.85, 0.85, 0.85, 1)
+	list_style.corner_radius_top_left = 10
+	list_style.corner_radius_top_right = 10
+	list_style.corner_radius_bottom_right = 10
+	list_style.corner_radius_bottom_left = 10
+	_assignment_list.add_theme_stylebox_override("panel", list_style)
+	
+	_assignment_list.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	
+	var selected_style = StyleBoxFlat.new()
+	selected_style.bg_color = Color(0.9, 0.94, 1.0, 1)
+	selected_style.corner_radius_top_left = 4
+	selected_style.corner_radius_top_right = 4
+	selected_style.corner_radius_bottom_right = 4
+	selected_style.corner_radius_bottom_left = 4
+	
+	_assignment_list.add_theme_stylebox_override("selected", selected_style)
+	_assignment_list.add_theme_stylebox_override("selected_focus", selected_style)
+	_assignment_list.add_theme_stylebox_override("hovered", selected_style)
 
-	return row
-
-func _create_assign_employee_row(emp: EmployeeData, is_disabled: bool, disable_reason: String) -> HBoxContainer:
-	var row = HBoxContainer.new()
-	row.custom_minimum_size = Vector2(0, _ASSIGN_ROW_HEIGHT)
-	row.add_theme_constant_override("separation", 8)
-
-	# Имя
-	var name_lbl = Label.new()
-	name_lbl.text = emp.get_display_name()
-	name_lbl.custom_minimum_size = Vector2(_ASSIGN_NAME_MIN_WIDTH, 0)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", 14)
-	if is_disabled:
-		name_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_GRAY)
-	else:
-		name_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_DARK)
-	if UITheme:
-		UITheme.apply_font(name_lbl, "regular")
-	row.add_child(name_lbl)
-
-	# Роль
-	var role_lbl = Label.new()
-	var role_text = tr(emp.job_title)
-	if is_disabled and disable_reason != "":
-		role_text += " " + disable_reason
-	role_lbl.text = role_text
-	role_lbl.custom_minimum_size = Vector2(_ASSIGN_ROLE_MIN_WIDTH, 0)
-	role_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	role_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	role_lbl.add_theme_font_size_override("font_size", 14)
-	var role_color = _get_assign_role_color(emp.job_title)
-	role_lbl.add_theme_color_override("font_color", role_color if not is_disabled else _ASSIGN_COLOR_GRAY)
-	if UITheme:
-		UITheme.apply_font(role_lbl, "semibold")
-	row.add_child(role_lbl)
-
-	# Кнопка
-	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(_ASSIGN_BTN_MIN_WIDTH, 34)
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.add_theme_font_size_override("font_size", 13)
-	if UITheme:
-		UITheme.apply_font(btn, "semibold")
-
-	if is_disabled:
-		btn.text = tr("ASSIGN_BTN")
-		btn.disabled = true
-		btn.add_theme_stylebox_override("normal", _assign_btn_style_disabled)
-		btn.add_theme_stylebox_override("disabled", _assign_btn_style_disabled)
-		btn.add_theme_color_override("font_color", _ASSIGN_COLOR_GRAY)
-		btn.add_theme_color_override("font_disabled_color", _ASSIGN_COLOR_GRAY)
-	else:
-		btn.text = tr("ASSIGN_BTN")
-		btn.add_theme_stylebox_override("normal", _assign_btn_style_normal)
-		btn.add_theme_stylebox_override("hover", _assign_btn_style_hover)
-		btn.add_theme_stylebox_override("pressed", _assign_btn_style_hover)
-		btn.add_theme_color_override("font_color", COLOR_BLUE)
-		btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
-		btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
-		btn.pressed.connect(func():
-			_assignment_overlay.visible = false
-			if _assignment_callback.is_valid():
-				_assignment_callback.call(emp)
-		)
-
-	row.add_child(btn)
-	return row
-
-func _get_assign_role_color(job_title: String) -> Color:
-	const ProjectCardHelpers = preload("res://Scripts/project_card_helpers.gd")
-	match job_title:
-		"Business Analyst":
-			return ProjectCardHelpers.get_role_color("ba")
-		"Backend Developer":
-			return ProjectCardHelpers.get_role_color("dev")
-		"QA Engineer":
-			return ProjectCardHelpers.get_role_color("qa")
-		"Customer Support":
-			return ProjectCardHelpers.get_role_color("support")
-	return COLOR_BLUE
+	_assignment_list.item_activated.connect(_on_assignment_item_activated)
+	v.add_child(_assignment_list)
 
 func _rebuild():
 	if _project == null:
@@ -741,36 +603,47 @@ func _role_to_job_title(role: String) -> String:
 
 func _open_assignment_popup(required_job_title: String, callback: Callable):
 	_assignment_callback = callback
-	for child in _assignment_rows_container.get_children():
-		child.queue_free()
-
+	_assignment_list.clear()
+	
 	var found_any = false
-
+	
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if not npc.data:
 			continue
 		var emp: EmployeeData = npc.data
-
+		
 		if required_job_title != "" and emp.job_title != required_job_title:
 			continue
-
-		var is_busy = _is_employee_busy(emp)
-		var disable_reason = tr("EMP_SELECT_BUSY") if is_busy else ""
-		var row = _create_assign_employee_row(emp, is_busy, disable_reason)
-		_assignment_rows_container.add_child(row)
+			
+		var display_name = emp.get_display_name() + " (" + tr(emp.job_title) + ")"
+		
+		if _is_employee_busy(emp):
+			display_name += " " + tr("EMP_SELECT_BUSY")
+			var idx = _assignment_list.add_item(display_name)
+			_assignment_list.set_item_metadata(idx, emp)
+			_assignment_list.set_item_disabled(idx, true)
+			_assignment_list.set_item_selectable(idx, false)
+			_assignment_list.set_item_custom_fg_color(idx, Color(0.6, 0.6, 0.6, 1))
+		else:
+			var idx = _assignment_list.add_item(display_name)
+			_assignment_list.set_item_metadata(idx, emp)
+			
 		found_any = true
 
-	if not found_any:
-		var empty_lbl = Label.new()
-		empty_lbl.text = tr("ASSIGN_MENU_NO_STAFF")
-		empty_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_GRAY)
-		empty_lbl.add_theme_font_size_override("font_size", 14)
-		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		if UITheme:
-			UITheme.apply_font(empty_lbl, "regular")
-		_assignment_rows_container.add_child(empty_lbl)
+	if not found_any or _assignment_list.item_count == 0:
+		var idx = _assignment_list.add_item(tr("ASSIGN_MENU_NO_STAFF"))
+		_assignment_list.set_item_disabled(idx, true)
+		_assignment_list.set_item_selectable(idx, false)
 
 	_assignment_overlay.visible = true
+
+func _on_assignment_item_activated(index: int):
+	var emp = _assignment_list.get_item_metadata(index)
+	if emp == null:
+		return
+	_assignment_overlay.visible = false
+	if _assignment_callback.is_valid():
+		_assignment_callback.call(emp)
 
 func _is_employee_busy(emp: EmployeeData) -> bool:
 	if SupportProjectManager.is_employee_on_support(emp):
