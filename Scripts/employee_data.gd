@@ -52,6 +52,7 @@ var current_energy: float = 100.0
 
 # === БОНУС МОТИВАЦИИ ОТ PM ===
 var motivation_bonus: float = 0.0
+var motivation_minutes_left: float = 0.0
 
 # === БОНУС АУРЫ PM (I'm Watching You) ===
 var aura_bonus: float = 0.0
@@ -397,9 +398,9 @@ func get_mood_breakdown() -> Dictionary:
 	elif current_energy < 50.0:
 		permanent_mods.append({"name": tr("MOOD_MOD_LOW_ENERGY"), "value": MOOD_LOW_ENERGY_PENALTY})
 
-	# Мотивация
+	# Мотивация (временная — от скила motivate)
 	if motivation_bonus > 0.0:
-		permanent_mods.append({"name": tr("MOOD_MOD_MOTIVATED"), "value": MOOD_MOTIVATION_BONUS})
+		temp_mods.append({"name": tr("MOOD_MOD_MOTIVATED"), "value": MOOD_MOTIVATION_BONUS, "minutes_left": motivation_minutes_left})
 
 	var loyalty_level = get_pm_loyalty_level()
 	if loyalty_level.mood_bonus != 0.0:
