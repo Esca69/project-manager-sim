@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://ydl7ldgl5qyc"]
+[gd_scene load_steps=4 format=3 uid="uid://ydl7ldgl5qyc"]
 
 [ext_resource type="Script" uid="uid://7e66drn2ufyu" path="res://Scripts/employee_selector.gd" id="1_k6vgr"]
 
@@ -27,40 +27,16 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_itemlist"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cancel_btn"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
 [node name="EmployeeSelector" type="Panel"]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -225.0
-offset_top = -200.0
-offset_right = 225.0
-offset_bottom = 200.0
+offset_left = -280.0
+offset_top = -220.0
+offset_right = 280.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_window")
@@ -94,7 +70,7 @@ offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
-text = "Выбери сотрудника"
+text = "Выберите сотрудника"
 horizontal_alignment = 1
 
 [node name="CloseButton" type="Button" parent="MainVBox/HeaderPanel"]
@@ -126,24 +102,6 @@ theme_override_constants/margin_bottom = 15
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MainVBox/ContentMargin"]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="ItemList" type="ItemList" parent="MainVBox/ContentMargin/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-theme_override_colors/font_hovered_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-theme_override_colors/font_hovered_selected_color = Color(0, 0, 0, 1)
-theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
-theme_override_styles/panel = SubResource("StyleBoxFlat_itemlist")
-
-[node name="Button" type="Button" parent="MainVBox/ContentMargin/VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_cancel_btn")
-text = "Отмена"
+theme_override_constants/separation = 0
 
 [connection signal="pressed" from="MainVBox/HeaderPanel/CloseButton" to="." method="_on_cancel_button_pressed"]
-[connection signal="item_activated" from="MainVBox/ContentMargin/VBoxContainer/ItemList" to="." method="_on_item_list_item_activated"]
-[connection signal="pressed" from="MainVBox/ContentMargin/VBoxContainer/Button" to="." method="_on_cancel_button_pressed"]
