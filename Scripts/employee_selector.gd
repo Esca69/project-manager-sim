@@ -15,7 +15,7 @@ const COLOR_WHITE = Color(1, 1, 1, 1)
 const COLOR_GRAY = Color(0.6, 0.6, 0.6, 1)
 const COLOR_DARK = Color(0.15, 0.15, 0.15, 1)
 const ROW_HEIGHT = 48
-const NAME_MIN_WIDTH = 170
+const NAME_MIN_WIDTH = 210
 const ROLE_MIN_WIDTH = 220
 const BTN_MIN_WIDTH = 120
 
@@ -129,7 +129,6 @@ func _create_header_row() -> HBoxContainer:
 	var name_lbl = Label.new()
 	name_lbl.text = tr("ASSIGN_COL_NAME")
 	name_lbl.custom_minimum_size = Vector2(NAME_MIN_WIDTH, 0)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme:
@@ -210,7 +209,6 @@ func _create_employee_row(npc_node, is_disabled: bool, disable_reason: String) -
 	var name_lbl = Label.new()
 	name_lbl.text = npc_node.data.get_display_name()
 	name_lbl.custom_minimum_size = Vector2(NAME_MIN_WIDTH, 0)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	if is_disabled:
