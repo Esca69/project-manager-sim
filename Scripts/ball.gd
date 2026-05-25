@@ -9,12 +9,13 @@ var _player: CharacterBody2D = null
 var _kick_cooldown: float = 0.0
 
 func _ready():
+	continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 	body_entered.connect(_on_body_entered)
 	_player = get_tree().get_first_node_in_group("player")
 
 func _physics_process(delta):
 	if _kick_cooldown > 0.0:
-		_kick_cooldown -= delta
+		_kick_cooldown -= delta / maxf(Engine.time_scale, 1.0)
 
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
@@ -42,7 +43,8 @@ func _try_kick_from(body: CharacterBody2D, force: float):
 		return
 	var to_ball = global_position - body.global_position
 	var distance = to_ball.length()
-	if distance < kick_distance:
+	var effective_distance = kick_distance * maxf(1.0, Engine.time_scale * 0.5)
+	if distance < effective_distance:
 		var body_velocity = body.velocity
 		if body_velocity.length() > 10:
 			var direction = to_ball.normalized()
