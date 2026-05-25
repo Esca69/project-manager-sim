@@ -415,6 +415,7 @@ func apply_motivation(bonus: float, duration_minutes: float):
 	if not data:
 		return
 	data.motivation_bonus = bonus
+	data.motivation_minutes_left = duration_minutes
 	_motivation_minutes_left = duration_minutes
 	show_thought_bubble("🔥", 5.0)
 	_play_motivation_reaction()
@@ -423,6 +424,7 @@ func apply_motivation(bonus: float, duration_minutes: float):
 func remove_motivation():
 	if data:
 		data.motivation_bonus = 0.0
+		data.motivation_minutes_left = 0.0
 	_motivation_minutes_left = 0.0
 
 # === РАБОТА — КАЙФ: ПРИМЕНИТЬ БОНУС НАСТРОЕНИЯ ===
@@ -808,6 +810,8 @@ func _on_time_tick(_hour, _minute):
 
 	if _motivation_minutes_left > 0:
 		_motivation_minutes_left -= 1.0
+		if data:
+			data.motivation_minutes_left = _motivation_minutes_left
 		if _motivation_minutes_left <= 0:
 			remove_motivation()
 			print("⏰ Мотивация закончилась у %s" % data.get_display_name())

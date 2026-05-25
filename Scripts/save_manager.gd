@@ -307,6 +307,7 @@ func _serialize_employees() -> Array:
 			"personality": d.personality.duplicate(),
 			"current_energy": d.current_energy,
 			"motivation_bonus": d.motivation_bonus,
+			"motivation_minutes_left": d.motivation_minutes_left,
 			
 			# === АДАПТАЦИЯ ===
 			"onboarding_hours_left": d.onboarding_hours_left,
@@ -947,6 +948,7 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		emp_data.skill_support = int(emp_dict.get("skill_support", 0))
 		emp_data.current_energy = float(emp_dict.get("current_energy", 100.0))
 		emp_data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
+		emp_data.motivation_minutes_left = float(emp_dict.get("motivation_minutes_left", 0.0))
 
 		# === АДАПТАЦИЯ (с дефолтом 0.0 для старых сохранений) ===
 		emp_data.onboarding_hours_left = float(emp_dict.get("onboarding_hours_left", 0.0))
@@ -985,6 +987,8 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 
 			npc.data.current_energy = float(emp_dict.get("current_energy", 100.0))
 			npc.data.motivation_bonus = float(emp_dict.get("motivation_bonus", 0.0))
+			npc.data.motivation_minutes_left = float(emp_dict.get("motivation_minutes_left", 0.0))
+			npc._motivation_minutes_left = npc.data.motivation_minutes_left
 			# === MOOD SYSTEM v2: Восстанавливаем mood ===
 			npc.data.mood = float(emp_dict.get("mood", 75.0))
 
