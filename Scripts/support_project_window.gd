@@ -187,11 +187,11 @@ func _build_assignment_popup():
 	add_child(_assignment_overlay)
 
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(560, 440)
+	panel.custom_minimum_size = Vector2(700, 440)
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.offset_left = -280
+	panel.offset_left = -350
 	panel.offset_top = -220
-	panel.offset_right = 280
+	panel.offset_right = 350
 	panel.offset_bottom = 220
 	var ps = StyleBoxFlat.new()
 	ps.bg_color = COLOR_WHITE
@@ -330,7 +330,7 @@ func _build_assignment_popup():
 	_assign_btn_style_disabled.corner_radius_bottom_left = 16
 
 const _ASSIGN_NAME_MIN_WIDTH = 170
-const _ASSIGN_ROLE_MIN_WIDTH = 160
+const _ASSIGN_ROLE_MIN_WIDTH = 220
 const _ASSIGN_BTN_MIN_WIDTH = 120
 const _ASSIGN_ROW_HEIGHT = 48
 const _ASSIGN_COLOR_GRAY = Color(0.6, 0.6, 0.6, 1)
@@ -344,7 +344,7 @@ func _create_assign_header_row() -> HBoxContainer:
 	name_lbl.text = tr("ASSIGN_COL_NAME")
 	name_lbl.custom_minimum_size = Vector2(_ASSIGN_NAME_MIN_WIDTH, 0)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_DARK)
+	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme:
 		UITheme.apply_font(name_lbl, "bold")
@@ -354,7 +354,7 @@ func _create_assign_header_row() -> HBoxContainer:
 	role_lbl.text = tr("ASSIGN_COL_ROLE")
 	role_lbl.custom_minimum_size = Vector2(_ASSIGN_ROLE_MIN_WIDTH, 0)
 	role_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	role_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_DARK)
+	role_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	role_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme:
 		UITheme.apply_font(role_lbl, "bold")
@@ -381,7 +381,7 @@ func _create_assign_employee_row(emp: EmployeeData, is_disabled: bool, disable_r
 	if is_disabled:
 		name_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_GRAY)
 	else:
-		name_lbl.add_theme_color_override("font_color", _ASSIGN_COLOR_DARK)
+		name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme:
 		UITheme.apply_font(name_lbl, "regular")
 	row.add_child(name_lbl)

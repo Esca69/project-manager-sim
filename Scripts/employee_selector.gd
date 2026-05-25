@@ -16,7 +16,7 @@ const COLOR_GRAY = Color(0.6, 0.6, 0.6, 1)
 const COLOR_DARK = Color(0.15, 0.15, 0.15, 1)
 const ROW_HEIGHT = 48
 const NAME_MIN_WIDTH = 170
-const ROLE_MIN_WIDTH = 160
+const ROLE_MIN_WIDTH = 220
 const BTN_MIN_WIDTH = 120
 
 var _scroll: ScrollContainer
@@ -130,7 +130,7 @@ func _create_header_row() -> HBoxContainer:
 	name_lbl.text = tr("ASSIGN_COL_NAME")
 	name_lbl.custom_minimum_size = Vector2(NAME_MIN_WIDTH, 0)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme:
 		UITheme.apply_font(name_lbl, "bold")
@@ -140,7 +140,7 @@ func _create_header_row() -> HBoxContainer:
 	role_lbl.text = tr("ASSIGN_COL_ROLE")
 	role_lbl.custom_minimum_size = Vector2(ROLE_MIN_WIDTH, 0)
 	role_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	role_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	role_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	role_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme:
 		UITheme.apply_font(role_lbl, "bold")
@@ -216,7 +216,7 @@ func _create_employee_row(npc_node, is_disabled: bool, disable_reason: String) -
 	if is_disabled:
 		name_lbl.add_theme_color_override("font_color", COLOR_GRAY)
 	else:
-		name_lbl.add_theme_color_override("font_color", COLOR_DARK)
+		name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	if UITheme:
 		UITheme.apply_font(name_lbl, "regular")
 	row.add_child(name_lbl)
