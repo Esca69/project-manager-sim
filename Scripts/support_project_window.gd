@@ -394,6 +394,8 @@ func _create_assign_employee_row(emp: EmployeeData, is_disabled: bool, disable_r
 	role_lbl.text = role_text
 	role_lbl.custom_minimum_size = Vector2(_ASSIGN_ROLE_MIN_WIDTH, 0)
 	role_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	role_lbl.clip_text = true
+	role_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	role_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	role_lbl.add_theme_font_size_override("font_size", 14)
 	var role_color = _get_assign_role_color(emp.job_title)
@@ -405,6 +407,7 @@ func _create_assign_employee_row(emp: EmployeeData, is_disabled: bool, disable_r
 	# Кнопка
 	var btn = Button.new()
 	btn.custom_minimum_size = Vector2(_ASSIGN_BTN_MIN_WIDTH, 34)
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.add_theme_font_size_override("font_size", 13)
 	if UITheme:
