@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://c7cwh26kidn2f"]
+[gd_scene load_steps=4 format=3 uid="uid://c7cwh26kidn2f"]
 
 [ext_resource type="Script" uid="uid://codpdncq5yhvn" path="res://Scripts/assignment_menu.gd" id="1_md03b"]
 
@@ -27,30 +27,6 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_itemlist"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cancel_btn"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
 [node name="AssignmentMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -66,10 +42,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -225.0
-offset_top = -200.0
-offset_right = 225.0
-offset_bottom = 200.0
+offset_left = -280.0
+offset_top = -220.0
+offset_right = 280.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_window")
@@ -134,24 +110,6 @@ theme_override_constants/margin_bottom = 15
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelWindow/MainVBox/ContentMargin"]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="ItemList" type="ItemList" parent="PanelWindow/MainVBox/ContentMargin/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-theme_override_colors/font_hovered_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-theme_override_colors/font_hovered_selected_color = Color(0, 0, 0, 1)
-theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
-theme_override_styles/panel = SubResource("StyleBoxFlat_itemlist")
-
-[node name="CancelButton" type="Button" parent="PanelWindow/MainVBox/ContentMargin/VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.17254902, 0.30980393, 0.5686275, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_cancel_btn")
-text = "Закрыть"
+theme_override_constants/separation = 0
 
 [connection signal="pressed" from="PanelWindow/MainVBox/HeaderPanel/CloseButton" to="." method="_on_close_pressed"]
-[connection signal="item_activated" from="PanelWindow/MainVBox/ContentMargin/VBoxContainer/ItemList" to="." method="_on_item_list_item_activated"]
-[connection signal="pressed" from="PanelWindow/MainVBox/ContentMargin/VBoxContainer/CancelButton" to="." method="_on_close_pressed"]
