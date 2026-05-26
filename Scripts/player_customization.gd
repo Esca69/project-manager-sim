@@ -74,6 +74,12 @@ func _build_ui():
 	hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	main_vbox.add_child(hbox)
 
+	# Левый отступ чтобы не прилипало к краю
+	var left_margin = Control.new()
+	left_margin.custom_minimum_size = Vector2(120, 0)
+	left_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hbox.add_child(left_margin)
+
 	# === Левая колонка: превью игрока (центрируется по вертикали) ===
 	var left_col = VBoxContainer.new()
 	left_col.custom_minimum_size = Vector2(300, 0)
@@ -122,17 +128,9 @@ func _build_ui():
 
 	# Верхний отступ для средней колонки
 	var mid_top_spacer = Control.new()
-	mid_top_spacer.custom_minimum_size = Vector2(0, 80)
+	mid_top_spacer.custom_minimum_size = Vector2(0, 160)
 	mid_top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mid_col.add_child(mid_top_spacer)
-
-	# Заголовок
-	var title = Label.new()
-	title.text = tr("UI_CUSTOM_TITLE")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	title.add_theme_font_size_override("font_size", 28)
-	title.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
-	mid_col.add_child(title)
 
 	# Карусели
 	_gender_label = _add_carousel(mid_col, "UI_CUSTOM_GENDER", _on_gender_prev, _on_gender_next)
