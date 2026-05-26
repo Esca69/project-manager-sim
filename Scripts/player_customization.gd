@@ -35,6 +35,8 @@ var _trait_tooltip: PanelContainer = null
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
+const COLOR_GREEN = Color(0.29, 0.69, 0.31, 1)
+const COLOR_RED = Color(0.8, 0.3, 0.2, 1)
 
 
 func _ready():
@@ -59,17 +61,24 @@ func _build_ui():
 	var main_vbox = VBoxContainer.new()
 	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	main_vbox.add_theme_constant_override("separation", 20)
+	# Внешние отступы (чтобы интерфейс не прилипал к краям экрана)
+	main_vbox.offset_left = 24
+	main_vbox.offset_top = 24
+	main_vbox.offset_right = -24
+	main_vbox.offset_bottom = -40
 	add_child(main_vbox)
 
 	# === Основная рабочая зона (HBox с 3 колонками) ===
 	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 0)
+	hbox.add_theme_constant_override("separation", 24)
 	hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	main_vbox.add_child(hbox)
 
-	# === Левая колонка: превью игрока ===
+	# === Левая колонка: превью игрока (центрируется по вертикали) ===
 	var left_col = VBoxContainer.new()
 	left_col.custom_minimum_size = Vector2(300, 0)
+	left_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_col.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_child(left_col)
 
 	var viewport_container = SubViewportContainer.new()
@@ -102,15 +111,13 @@ func _build_ui():
 		if cam:
 			cam.enabled = false
 
-	# VSeparator
-	var sep1 = VSeparator.new()
-	hbox.add_child(sep1)
-
-	# === Средняя колонка: настройки внешности ===
+	# === Средняя колонка: настройки внешности (центрируется по вертикали) ===
 	var mid_col = VBoxContainer.new()
 	mid_col.add_theme_constant_override("separation", 16)
 	mid_col.custom_minimum_size = Vector2(360, 0)
 	mid_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mid_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	mid_col.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_child(mid_col)
 
 	# Заголовок
@@ -139,19 +146,16 @@ func _build_ui():
 	_hair_color_label = hc_row[0]
 	_hair_color_rect = hc_row[1]
 
-	# VSeparator
-	var sep2 = VSeparator.new()
-	hbox.add_child(sep2)
-
-	# === Правая колонка: трейты ===
+	# === Правая колонка: трейты (узкая, центрирована по вертикали) ===
 	var right_col = VBoxContainer.new()
-	right_col.custom_minimum_size = Vector2(380, 0)
+	right_col.custom_minimum_size = Vector2(320, 0)
 	right_col.add_theme_constant_override("separation", 10)
-	right_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_col.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_child(right_col)
 	_build_traits_panel(right_col)
 
-	# === Нижняя строка: кнопка Continue ===
+	# === Нижняя строка: кнопка Continue (с воздухом снизу) ===
 	var bottom_hbox = HBoxContainer.new()
 	bottom_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_vbox.add_child(bottom_hbox)
@@ -163,6 +167,12 @@ func _build_ui():
 	finish_btn.pressed.connect(_on_finish_pressed)
 	_apply_styled_button(finish_btn)
 	bottom_hbox.add_child(finish_btn)
+
+	# Воздух снизу, чтобы кнопка Continue не прилипала к нижнему краю
+	var bottom_spacer = Control.new()
+	bottom_spacer.custom_minimum_size = Vector2(0, 40)
+	bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	main_vbox.add_child(bottom_spacer)
 
 
 func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, next_cb: Callable) -> Label:
@@ -557,30 +567,30 @@ func _apply_arrow_style(btn: Button):
 # === ПАНЕЛЬ ТРЕЙТОВ ===
 
 func _build_traits_panel(parent: VBoxContainer):
-	# Заголовок
+	# Заголовок (одинаковый размер с "Personalize Profile")
 	var title = Label.new()
 	title.text = tr("PM_TRAITS_TITLE")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
 	parent.add_child(title)
 
-	# Счётчик очков
+	# Счётчик очков — крупный и зелёный (заметный)
 	_points_label = Label.new()
 	_points_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_points_label.add_theme_font_size_override("font_size", 15)
-	_points_label.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+	_points_label.add_theme_font_size_override("font_size", 22)
+	_points_label.add_theme_color_override("font_color", COLOR_GREEN)
 	parent.add_child(_points_label)
 
 	# Разделитель
 	var sep1 = HSeparator.new()
 	parent.add_child(sep1)
 
-	# Заголовок "Положительные"
+	# Заголовок "Положительные" (подзаголовок — крупнее)
 	var pos_header = Label.new()
 	pos_header.text = tr("PM_TRAITS_POSITIVE_HEADER")
-	pos_header.add_theme_font_size_override("font_size", 13)
-	pos_header.add_theme_color_override("font_color", Color(0.29, 0.69, 0.31, 1))
+	pos_header.add_theme_font_size_override("font_size", 18)
+	pos_header.add_theme_color_override("font_color", COLOR_GREEN)
 	parent.add_child(pos_header)
 
 	# Положительные трейты (cost > 0)
@@ -592,11 +602,11 @@ func _build_traits_panel(parent: VBoxContainer):
 	var sep2 = HSeparator.new()
 	parent.add_child(sep2)
 
-	# Заголовок "Недостатки"
+	# Заголовок "Недостатки" (подзаголовок — крупнее)
 	var neg_header = Label.new()
 	neg_header.text = tr("PM_TRAITS_NEGATIVE_HEADER")
-	neg_header.add_theme_font_size_override("font_size", 13)
-	neg_header.add_theme_color_override("font_color", Color(0.8, 0.3, 0.2, 1))
+	neg_header.add_theme_font_size_override("font_size", 18)
+	neg_header.add_theme_color_override("font_color", COLOR_RED)
 	parent.add_child(neg_header)
 
 	# Отрицательные трейты (cost < 0)
@@ -610,18 +620,19 @@ func _add_trait_button(parent: Control, def: Dictionary):
 	panel.custom_minimum_size = Vector2(0, 48)
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	_apply_trait_panel_style(panel, false, false)
+	_apply_trait_panel_style(panel, false, false, def.positive)
 
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 10)
 	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	panel.add_child(hbox)
 
-	# Чекбокс (Label с символом)
+	# Чекбокс (Label с символом) — цвет по знаку трейта
+	var base_check_color = COLOR_GREEN if def.positive else COLOR_RED
 	var check_lbl = Label.new()
 	check_lbl.text = "☐"
 	check_lbl.add_theme_font_size_override("font_size", 18)
-	check_lbl.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
+	check_lbl.add_theme_color_override("font_color", base_check_color)
 	check_lbl.custom_minimum_size = Vector2(24, 0)
 	check_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(check_lbl)
@@ -640,7 +651,7 @@ func _add_trait_button(parent: Control, def: Dictionary):
 	var cost_sign = "+" if def.cost > 0 else ""
 	cost_lbl.text = tr("PM_TRAITS_COST") % (cost_sign + str(def.cost))
 	cost_lbl.add_theme_font_size_override("font_size", 13)
-	var cost_color = Color(0.17, 0.31, 0.57, 1) if def.cost > 0 else Color(0.8, 0.3, 0.2, 1)
+	var cost_color = COLOR_GREEN if def.cost > 0 else COLOR_RED
 	cost_lbl.add_theme_color_override("font_color", cost_color)
 	cost_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(cost_lbl)
@@ -661,11 +672,11 @@ func _add_trait_button(parent: Control, def: Dictionary):
 		_hide_trait_tooltip()
 	)
 
-	_trait_buttons[def.id] = {"panel": panel, "check": check_lbl, "name": name_lbl}
+	_trait_buttons[def.id] = {"panel": panel, "check": check_lbl, "name": name_lbl, "positive": def.positive}
 	parent.add_child(panel)
 
 
-func _apply_trait_panel_style(panel: PanelContainer, selected: bool, disabled: bool):
+func _apply_trait_panel_style(panel: PanelContainer, selected: bool, disabled: bool, positive: bool):
 	var style = StyleBoxFlat.new()
 	style.corner_radius_top_left = 8
 	style.corner_radius_top_right = 8
@@ -680,15 +691,18 @@ func _apply_trait_panel_style(panel: PanelContainer, selected: bool, disabled: b
 	style.content_margin_top = 6
 	style.content_margin_bottom = 6
 
+	# Цвета по знаку трейта: зелёный для положительных, красный для отрицательных
+	var accent = COLOR_GREEN if positive else COLOR_RED
+
 	if disabled:
 		style.bg_color = Color(0.92, 0.92, 0.92, 1)
 		style.border_color = Color(0.75, 0.75, 0.75, 1)
 	elif selected:
-		style.bg_color = Color(0.17, 0.31, 0.57, 0.12)
-		style.border_color = Color(0.17, 0.31, 0.57, 1)
+		style.bg_color = Color(accent.r, accent.g, accent.b, 0.15)
+		style.border_color = accent
 	else:
 		style.bg_color = Color(1, 1, 1, 1)
-		style.border_color = Color(0.17, 0.31, 0.57, 0.5)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.5)
 
 	panel.add_theme_stylebox_override("panel", style)
 
@@ -699,15 +713,17 @@ func _refresh_all_trait_buttons():
 		var panel: PanelContainer = data.panel
 		var check_lbl: Label = data.check
 		var name_lbl: Label = data.name
+		var positive: bool = data.positive
 
 		var is_selected = PMData.has_pm_trait(trait_id)
 		var can_take = PMData.can_take_trait(trait_id)
 		var is_disabled = not is_selected and not can_take
 
-		_apply_trait_panel_style(panel, is_selected, is_disabled)
+		_apply_trait_panel_style(panel, is_selected, is_disabled, positive)
 		check_lbl.text = "☑" if is_selected else "☐"
+		var accent = COLOR_GREEN if positive else COLOR_RED
 		check_lbl.add_theme_color_override("font_color",
-			Color(0.17, 0.31, 0.57, 1) if is_selected else Color(0.5, 0.5, 0.5, 1))
+			accent if (is_selected or not is_disabled) else Color(0.5, 0.5, 0.5, 1))
 		name_lbl.add_theme_color_override("font_color",
 			Color(0.1, 0.1, 0.1, 1) if not is_disabled else Color(0.6, 0.6, 0.6, 1))
 
@@ -717,7 +733,8 @@ func _update_points_label():
 		var free = PMData.get_free_trait_points()
 		var total = PMData.PM_TRAIT_STARTING_POINTS
 		_points_label.text = tr("PM_TRAITS_POINTS") % [free, total]
-		var col = Color(0.17, 0.31, 0.57, 1) if free > 0 else Color(0.8, 0.3, 0.2, 1)
+		# Зелёный когда есть очки, красный когда нет
+		var col = COLOR_GREEN if free > 0 else COLOR_RED
 		_points_label.add_theme_color_override("font_color", col)
 
 
