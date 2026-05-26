@@ -111,19 +111,25 @@ func _build_ui():
 		if cam:
 			cam.enabled = false
 
-	# === Средняя колонка: настройки внешности (центрируется по вертикали) ===
+	# === Средняя колонка: настройки внешности ===
 	var mid_col = VBoxContainer.new()
 	mid_col.add_theme_constant_override("separation", 16)
 	mid_col.custom_minimum_size = Vector2(360, 0)
 	mid_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mid_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	mid_col.alignment = BoxContainer.ALIGNMENT_CENTER
+	mid_col.alignment = BoxContainer.ALIGNMENT_BEGIN
 	hbox.add_child(mid_col)
+
+	# Верхний отступ для средней колонки
+	var mid_top_spacer = Control.new()
+	mid_top_spacer.custom_minimum_size = Vector2(0, 80)
+	mid_top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mid_col.add_child(mid_top_spacer)
 
 	# Заголовок
 	var title = Label.new()
 	title.text = tr("UI_CUSTOM_TITLE")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	title.add_theme_font_size_override("font_size", 28)
 	title.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
 	mid_col.add_child(title)
@@ -146,13 +152,20 @@ func _build_ui():
 	_hair_color_label = hc_row[0]
 	_hair_color_rect = hc_row[1]
 
-	# === Правая колонка: трейты (узкая, центрирована по вертикали) ===
+	# === Правая колонка: трейты (с отступом сверху для воздуха) ===
 	var right_col = VBoxContainer.new()
 	right_col.custom_minimum_size = Vector2(320, 0)
 	right_col.add_theme_constant_override("separation", 10)
 	right_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right_col.alignment = BoxContainer.ALIGNMENT_CENTER
+	right_col.alignment = BoxContainer.ALIGNMENT_BEGIN
 	hbox.add_child(right_col)
+
+	# Верхний отступ для правой колонки (воздух, не в потолок)
+	var right_top_spacer = Control.new()
+	right_top_spacer.custom_minimum_size = Vector2(0, 40)
+	right_top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	right_col.add_child(right_top_spacer)
+
 	_build_traits_panel(right_col)
 
 	# === Нижняя строка: кнопка Continue (с воздухом снизу) ===
@@ -183,6 +196,8 @@ func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, nex
 	var cat_label = Label.new()
 	cat_label.text = tr(category_key)
 	cat_label.custom_minimum_size = Vector2(140, 0)
+	cat_label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	cat_label.clip_text = true
 	cat_label.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
 	row.add_child(cat_label)
 
@@ -219,6 +234,8 @@ func _add_carousel_with_color(parent: Control, category_key: String, prev_cb: Ca
 	var cat_label = Label.new()
 	cat_label.text = tr(category_key)
 	cat_label.custom_minimum_size = Vector2(140, 0)
+	cat_label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	cat_label.clip_text = true
 	cat_label.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
 	row.add_child(cat_label)
 
@@ -255,6 +272,8 @@ func _add_carousel_with_color_in(parent: Control, category_key: String, prev_cb:
 	var cat_label = Label.new()
 	cat_label.text = tr(category_key)
 	cat_label.custom_minimum_size = Vector2(140, 0)
+	cat_label.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	cat_label.clip_text = true
 	cat_label.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
 	parent.add_child(cat_label)
 
