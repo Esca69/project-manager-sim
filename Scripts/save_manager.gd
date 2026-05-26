@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 14
+const SAVE_VERSION = 15
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -21,6 +21,7 @@ const MIGRATIONS = {
 	11: "_migrate_v11_to_v12",
 	12: "_migrate_v12_to_v13",
 	13: "_migrate_v13_to_v14",
+	14: "_migrate_v14_to_v15",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -228,6 +229,7 @@ func _serialize_pm_data() -> Dictionary:
 		"appearance_hair_type": PMData.appearance_hair_type,
 		"appearance_hair_color": PMData.appearance_hair_color.to_html(),
 		"appearance_clothing_color": PMData.appearance_clothing_color.to_html(),
+		"pm_traits": PMData.pm_traits.duplicate(),
 	}
 
 # --- BossManager ---
@@ -917,6 +919,14 @@ func _migrate_v13_to_v14(data: Dictionary) -> bool:
 	print("🔄 Миграция v13→v14: внешность PM + флаг appearance_configured")
 	return true
 
+func _migrate_v14_to_v15(data: Dictionary) -> bool:
+	var pm = data.get("pm_data", {})
+	if not pm.has("pm_traits"):
+		pm["pm_traits"] = []
+	data["pm_data"] = pm
+	print("🔄 Миграция v14→v15: добавлены pm_traits")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -1461,6 +1471,11 @@ func _load_pm_data(d: Dictionary):
 	PMData.appearance_hair_type = int(d.get("appearance_hair_type", 0))
 	PMData.appearance_hair_color = Color.from_string(str(d.get("appearance_hair_color", "C8A882")), Color("#C8A882"))
 	PMData.appearance_clothing_color = Color.from_string(str(d.get("appearance_clothing_color", "A0C4FF")), Color("#A0C4FF"))
+
+	PMData.pm_traits.clear()
+	var saved_traits = d.get("pm_traits", [])
+	for t in saved_traits:
+		PMData.pm_traits.append(str(t))
 
 func _load_boss_manager(d: Dictionary):
 	if d.is_empty():

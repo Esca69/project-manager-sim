@@ -16,6 +16,65 @@ var appearance_hair_type: int = 0            # 0..N-1 по массиву MALE/F
 var appearance_hair_color: Color = Color("#C8A882")
 var appearance_clothing_color: Color = Color("#A0C4FF")  # Цвет одежды из CLOTHING_PALETTE
 
+# === ТРЕЙТЫ ПЕРСОНАЖА ===
+var pm_traits: Array[String] = []
+
+const PM_TRAIT_STARTING_POINTS: int = 3
+
+# Определения всех PM-трейтов
+const PM_TRAIT_DEFINITIONS: Array = [
+	# Положительные (cost > 0) — идут первыми
+	{
+		"id": "pm_sprinter",
+		"name_key": "PM_TRAIT_SPRINTER_NAME",
+		"desc_key": "PM_TRAIT_SPRINTER_DESC",
+		"cost": 1,
+		"positive": true,
+		"conflict_group": "speed",
+	},
+	{
+		"id": "pm_extrovert",
+		"name_key": "PM_TRAIT_EXTROVERT_NAME",
+		"desc_key": "PM_TRAIT_EXTROVERT_DESC",
+		"cost": 1,
+		"positive": true,
+		"conflict_group": "social",
+	},
+	{
+		"id": "pm_fast_learner",
+		"name_key": "PM_TRAIT_FAST_LEARNER_NAME",
+		"desc_key": "PM_TRAIT_FAST_LEARNER_DESC",
+		"cost": 2,
+		"positive": true,
+		"conflict_group": "learning",
+	},
+	# Отрицательные (cost < 0) — идут вторыми
+	{
+		"id": "pm_slowmover",
+		"name_key": "PM_TRAIT_SLOWMOVER_NAME",
+		"desc_key": "PM_TRAIT_SLOWMOVER_DESC",
+		"cost": -1,
+		"positive": false,
+		"conflict_group": "speed",
+	},
+	{
+		"id": "pm_introvert",
+		"name_key": "PM_TRAIT_INTROVERT_NAME",
+		"desc_key": "PM_TRAIT_INTROVERT_DESC",
+		"cost": -1,
+		"positive": false,
+		"conflict_group": "social",
+	},
+	{
+		"id": "pm_slow_learner",
+		"name_key": "PM_TRAIT_SLOW_LEARNER_NAME",
+		"desc_key": "PM_TRAIT_SLOW_LEARNER_DESC",
+		"cost": -2,
+		"positive": false,
+		"conflict_group": "learning",
+	},
+]
+
 # === META PROGRESSION ===
 var personal_balance: int = 0
 var monthly_salary: int = 1000
@@ -399,7 +458,8 @@ func _ready():
 # === XP ===
 func add_xp(amount: int):
 	var old_level = get_level()
-	xp += amount
+	var multiplied_amount = int(amount * get_xp_multiplier_from_traits())
+	xp += multiplied_amount
 	while true:
 		var next_index = _last_threshold_index + 1
 		if next_index >= XP_THRESHOLDS.size():
@@ -526,11 +586,68 @@ func can_see_finance_report() -> bool:
 func can_see_people_report() -> bool:
 	return has_skill("report_people_tab")
 
+# === PM ТРЕЙТЫ: ХЕЛПЕРЫ ===
+
+func has_pm_trait(trait_id: String) -> bool:
+	return trait_id in pm_traits
+
+func get_used_trait_points() -> int:
+	var total: int = 0
+	for t in pm_traits:
+		for def in PM_TRAIT_DEFINITIONS:
+			if def.id == t:
+				total += def.cost
+				break
+	return total
+
+func get_free_trait_points() -> int:
+	return PM_TRAIT_STARTING_POINTS - get_used_trait_points()
+
+func can_take_trait(trait_id: String) -> bool:
+	if trait_id in pm_traits:
+		return false
+	var target_def: Dictionary = {}
+	for def in PM_TRAIT_DEFINITIONS:
+		if def.id == trait_id:
+			target_def = def
+			break
+	if target_def.is_empty():
+		return false
+	for existing_id in pm_traits:
+		for def in PM_TRAIT_DEFINITIONS:
+			if def.id == existing_id and def.conflict_group == target_def.conflict_group:
+				return false
+	var new_free = get_free_trait_points() - target_def.cost
+	if new_free < 0:
+		return false
+	return true
+
+func toggle_pm_trait(trait_id: String) -> bool:
+	if trait_id in pm_traits:
+		pm_traits.erase(trait_id)
+		return true
+	if can_take_trait(trait_id):
+		pm_traits.append(trait_id)
+		return true
+	return false
+
+# === XP: с учётом трейта ===
+func get_xp_multiplier_from_traits() -> float:
+	if has_pm_trait("pm_fast_learner"): return 1.20
+	if has_pm_trait("pm_slow_learner"): return 0.80
+	return 1.0
+
 # === ДВИЖЕНИЕ ===
 func get_movement_bonus() -> float:
-	if has_skill("move_speed_2"): return 0.40
-	if has_skill("move_speed_1"): return 0.20
-	return 0.0
+	var skill_bonus: float = 0.0
+	if has_skill("move_speed_2"): skill_bonus = 0.40
+	elif has_skill("move_speed_1"): skill_bonus = 0.20
+
+	var trait_bonus: float = 0.0
+	if has_pm_trait("pm_sprinter"): trait_bonus = 0.20
+	elif has_pm_trait("pm_slowmover"): trait_bonus = -0.20
+
+	return skill_bonus + trait_bonus
 
 # === РАЗМЫТИЕ ===
 func blur_value(real_value: int, spread_percent: float) -> String:

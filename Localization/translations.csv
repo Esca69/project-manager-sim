@@ -1561,3 +1561,24 @@ UI_CUSTOM_HAIR,Прическа,Hairstyle
 UI_CUSTOM_HAIR_NONE,—,None
 UI_CUSTOM_HAIR_COLOR,Цвет волос,Hair Color
 UI_CUSTOM_FINISH,Начать работу,Continue
+PM_TRAITS_TITLE,Черты характера,Character Traits
+PM_TRAITS_POINTS,Свободных очков: %s / %s,Free points: %s / %s
+PM_TRAITS_POSITIVE_HEADER,Достоинства,Strengths
+PM_TRAITS_NEGATIVE_HEADER,Недостатки,Weaknesses
+PM_TRAITS_COST,Цена: %s,Cost: %s
+PM_TRAIT_SPRINTER_NAME,Спринтер,Sprinter
+PM_TRAIT_SPRINTER_DESC,Скорость передвижения увеличена на 20%.,Movement speed increased by 20%.
+PM_TRAIT_SLOWMOVER_NAME,Малоподвижный,Slowpoke
+PM_TRAIT_SLOWMOVER_DESC,Скорость передвижения снижена на 20%.,Movement speed reduced by 20%.
+PM_TRAIT_EXTROVERT_NAME,Экстраверт,Extrovert
+PM_TRAIT_EXTROVERT_DESC,"Любит общение. Все экстраверты в офисе получают +5 к настроению, все интроверты — −5. Амбиверты не затронуты.","Loves socializing. All extroverts get +5 mood, all introverts −5. Ambiverts unaffected."
+PM_TRAIT_INTROVERT_NAME,Интроверт,Introvert
+PM_TRAIT_INTROVERT_DESC,"Не любит шум. Все интроверты в офисе получают +5 к настроению, все экстраверты — −5. Амбиверты не затронуты.","Prefers quiet. All introverts get +5 mood, all extroverts −5. Ambiverts unaffected."
+PM_TRAIT_FAST_LEARNER_NAME,Вундеркинд,Fast Learner
+PM_TRAIT_FAST_LEARNER_DESC,PM получает на 20% больше опыта за любые действия.,PM gains 20% more XP from all actions.
+PM_TRAIT_SLOW_LEARNER_NAME,Тугодум,Slow Learner
+PM_TRAIT_SLOW_LEARNER_DESC,PM получает на 20% меньше опыта за любые действия.,PM gains 20% less XP from all actions.
+MOOD_MOD_PM_EXTROVERT_AURA_POSITIVE,Экстраверт PM (бонус),PM Extrovert Aura (bonus)
+MOOD_MOD_PM_EXTROVERT_AURA_NEGATIVE,Экстраверт PM (штраф),PM Extrovert Aura (penalty)
+MOOD_MOD_PM_INTROVERT_AURA_POSITIVE,Интроверт PM (бонус),PM Introvert Aura (bonus)
+MOOD_MOD_PM_INTROVERT_AURA_NEGATIVE,Интроверт PM (штраф),PM Introvert Aura (penalty)
