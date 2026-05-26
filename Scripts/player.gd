@@ -147,7 +147,7 @@ func update_visuals():
 
 	if body_sprite:
 		body_sprite.texture = load(body_path)
-		body_sprite.self_modulate = Color("#a2c5ea")  # цвет одежды — фиксированный для PM
+		body_sprite.self_modulate = PMData.appearance_clothing_color
 
 	# --- Голова (цвет кожи) ---
 	if head_sprite:
@@ -173,7 +173,9 @@ func update_visuals():
 
 		hair_sprite.texture = load(hair_path)
 		hair_sprite.self_modulate = hair_color
-		hair_sprite.position = Vector2(VisualGlobals.HAIR_OFFSET_X, VisualGlobals.HAIR_OFFSET_Y)
+		# Head2 uses offset (0, -65), so hair position must account for that
+		var head_offset_y = head_sprite.offset.y if head_sprite else 0.0
+		hair_sprite.position = Vector2(VisualGlobals.HAIR_OFFSET_X, head_offset_y + VisualGlobals.HAIR_OFFSET_Y)
 		hair_sprite.z_index = 1
 
 func _on_pm_skill_unlocked(_skill_id: String):

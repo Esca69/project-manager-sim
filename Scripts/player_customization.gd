@@ -9,6 +9,7 @@ var _body_idx: int = 0            # индекс в массиве вариан�
 var _skin_idx: int = 0            # индекс в VisualGlobals.ALL_SKIN_COLORS
 var _hair_idx: int = 0            # -1 = без волос, 0..N-1 = индекс в массиве
 var _hair_color_idx: int = 0      # индекс в VisualGlobals.HAIR_PALETTE
+var _clothing_color_idx: int = 5  # индекс в VisualGlobals.CLOTHING_PALETTE (default #A0C4FF)
 
 var _preview_player = null        # инстанс player.tscn внутри SubViewport
 var _sub_viewport: SubViewport = null
@@ -20,10 +21,15 @@ var _skin_label: Label = null
 var _hair_label: Label = null
 var _hair_color_label: Label = null
 var _hair_color_row: HBoxContainer = null
+var _clothing_color_label: Label = null
+var _clothing_color_rect: ColorRect = null
 
 # Цветные превью для кожи и волос
 var _skin_color_rect: ColorRect = null
 var _hair_color_rect: ColorRect = null
+
+const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
+const COLOR_WHITE = Color(1, 1, 1, 1)
 
 
 func _ready():
@@ -102,6 +108,9 @@ func _build_ui():
 	var skin_row = _add_carousel_with_color(right_col, "UI_CUSTOM_SKIN", _on_skin_prev, _on_skin_next)
 	_skin_label = skin_row[0]
 	_skin_color_rect = skin_row[1]
+	var clothing_row = _add_carousel_with_color(right_col, "UI_CUSTOM_CLOTHING", _on_clothing_prev, _on_clothing_next)
+	_clothing_color_label = clothing_row[0]
+	_clothing_color_rect = clothing_row[1]
 	var hair_row = _add_carousel(right_col, "UI_CUSTOM_HAIR", _on_hair_prev, _on_hair_next)
 	_hair_label = hair_row
 	_hair_color_row = HBoxContainer.new()
@@ -121,7 +130,9 @@ func _build_ui():
 	finish_btn.text = tr("UI_CUSTOM_FINISH")
 	finish_btn.custom_minimum_size = Vector2(200, 50)
 	finish_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	finish_btn.focus_mode = Control.FOCUS_NONE
 	finish_btn.pressed.connect(_on_finish_pressed)
+	_apply_styled_button(finish_btn)
 	right_col.add_child(finish_btn)
 
 
@@ -139,7 +150,9 @@ func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, nex
 	var prev_btn = Button.new()
 	prev_btn.text = "<"
 	prev_btn.custom_minimum_size = Vector2(40, 40)
+	prev_btn.focus_mode = Control.FOCUS_NONE
 	prev_btn.pressed.connect(prev_cb)
+	_apply_arrow_style(prev_btn)
 	row.add_child(prev_btn)
 
 	var value_label = Label.new()
@@ -151,7 +164,9 @@ func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, nex
 	var next_btn = Button.new()
 	next_btn.text = ">"
 	next_btn.custom_minimum_size = Vector2(40, 40)
+	next_btn.focus_mode = Control.FOCUS_NONE
 	next_btn.pressed.connect(next_cb)
+	_apply_arrow_style(next_btn)
 	row.add_child(next_btn)
 
 	return value_label
@@ -171,7 +186,9 @@ func _add_carousel_with_color(parent: Control, category_key: String, prev_cb: Ca
 	var prev_btn = Button.new()
 	prev_btn.text = "<"
 	prev_btn.custom_minimum_size = Vector2(40, 40)
+	prev_btn.focus_mode = Control.FOCUS_NONE
 	prev_btn.pressed.connect(prev_cb)
+	_apply_arrow_style(prev_btn)
 	row.add_child(prev_btn)
 
 	var color_rect = ColorRect.new()
@@ -187,7 +204,9 @@ func _add_carousel_with_color(parent: Control, category_key: String, prev_cb: Ca
 	var next_btn = Button.new()
 	next_btn.text = ">"
 	next_btn.custom_minimum_size = Vector2(40, 40)
+	next_btn.focus_mode = Control.FOCUS_NONE
 	next_btn.pressed.connect(next_cb)
+	_apply_arrow_style(next_btn)
 	row.add_child(next_btn)
 
 	return [value_label, color_rect]
@@ -203,7 +222,9 @@ func _add_carousel_with_color_in(parent: Control, category_key: String, prev_cb:
 	var prev_btn = Button.new()
 	prev_btn.text = "<"
 	prev_btn.custom_minimum_size = Vector2(40, 40)
+	prev_btn.focus_mode = Control.FOCUS_NONE
 	prev_btn.pressed.connect(prev_cb)
+	_apply_arrow_style(prev_btn)
 	parent.add_child(prev_btn)
 
 	var color_rect = ColorRect.new()
@@ -219,7 +240,9 @@ func _add_carousel_with_color_in(parent: Control, category_key: String, prev_cb:
 	var next_btn = Button.new()
 	next_btn.text = ">"
 	next_btn.custom_minimum_size = Vector2(40, 40)
+	next_btn.focus_mode = Control.FOCUS_NONE
 	next_btn.pressed.connect(next_cb)
+	_apply_arrow_style(next_btn)
 	parent.add_child(next_btn)
 
 	return [value_label, color_rect]
@@ -296,6 +319,18 @@ func _on_hair_color_next():
 	_apply_to_preview()
 	_update_all_labels()
 
+func _on_clothing_prev():
+	var count = VisualGlobals.CLOTHING_PALETTE.size()
+	_clothing_color_idx = (_clothing_color_idx - 1 + count) % count
+	_apply_to_preview()
+	_update_all_labels()
+
+func _on_clothing_next():
+	var count = VisualGlobals.CLOTHING_PALETTE.size()
+	_clothing_color_idx = (_clothing_color_idx + 1) % count
+	_apply_to_preview()
+	_update_all_labels()
+
 
 # === ХЕЛПЕРЫ ===
 
@@ -346,6 +381,11 @@ func _update_all_labels():
 		_skin_label.text = "#" + color.to_html(false)
 		if _skin_color_rect:
 			_skin_color_rect.color = color
+	if _clothing_color_label:
+		var cc = VisualGlobals.CLOTHING_PALETTE[_clothing_color_idx]
+		_clothing_color_label.text = "#" + cc.to_html(false)
+		if _clothing_color_rect:
+			_clothing_color_rect.color = cc
 	if _hair_label:
 		_hair_label.text = _get_hair_display_text()
 	if _hair_color_label:
@@ -366,6 +406,7 @@ func _apply_to_preview():
 	PMData.appearance_skin_color = VisualGlobals.ALL_SKIN_COLORS[_skin_idx]
 	PMData.appearance_hair_type = _hair_idx
 	PMData.appearance_hair_color = VisualGlobals.HAIR_PALETTE[_hair_color_idx]
+	PMData.appearance_clothing_color = VisualGlobals.CLOTHING_PALETTE[_clothing_color_idx]
 	if is_instance_valid(_preview_player) and _preview_player.has_method("update_visuals"):
 		_preview_player.update_visuals()
 
@@ -387,6 +428,14 @@ func _sync_indices_from_pm_data():
 			break
 	_skin_idx = skin_match if skin_match >= 0 else 0
 
+	# Цвет одежды
+	var cc_match = -1
+	for i in range(VisualGlobals.CLOTHING_PALETTE.size()):
+		if VisualGlobals.CLOTHING_PALETTE[i].is_equal_approx(PMData.appearance_clothing_color):
+			cc_match = i
+			break
+	_clothing_color_idx = cc_match if cc_match >= 0 else 5
+
 	# Тип причёски
 	_hair_idx = PMData.appearance_hair_type
 
@@ -406,3 +455,71 @@ func _on_finish_pressed():
 	GameState.appearance_configured = true
 	LoadingScreen.target_scene_path = "res://Scenes/office.tscn"
 	get_tree().change_scene_to_file("res://Scenes/loading_screen.tscn")
+
+
+# === СТИЛИ КНОПОК ===
+
+func _apply_styled_button(btn: Button):
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = COLOR_WHITE
+	style_normal.border_width_left = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_bottom = 2
+	style_normal.border_color = COLOR_BLUE
+	style_normal.corner_radius_top_left = 20
+	style_normal.corner_radius_top_right = 20
+	style_normal.corner_radius_bottom_right = 20
+	style_normal.corner_radius_bottom_left = 20
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = COLOR_BLUE
+	style_hover.border_width_left = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_bottom = 2
+	style_hover.border_color = COLOR_BLUE
+	style_hover.corner_radius_top_left = 20
+	style_hover.corner_radius_top_right = 20
+	style_hover.corner_radius_bottom_right = 20
+	style_hover.corner_radius_bottom_left = 20
+
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_hover)
+	btn.add_theme_color_override("font_color", COLOR_BLUE)
+	btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+
+
+func _apply_arrow_style(btn: Button):
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = COLOR_WHITE
+	style_normal.border_width_left = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_bottom = 2
+	style_normal.border_color = COLOR_BLUE
+	style_normal.corner_radius_top_left = 10
+	style_normal.corner_radius_top_right = 10
+	style_normal.corner_radius_bottom_right = 10
+	style_normal.corner_radius_bottom_left = 10
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = COLOR_BLUE
+	style_hover.border_width_left = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_bottom = 2
+	style_hover.border_color = COLOR_BLUE
+	style_hover.corner_radius_top_left = 10
+	style_hover.corner_radius_top_right = 10
+	style_hover.corner_radius_bottom_right = 10
+	style_hover.corner_radius_bottom_left = 10
+
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_hover)
+	btn.add_theme_color_override("font_color", COLOR_BLUE)
+	btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
