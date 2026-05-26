@@ -685,6 +685,7 @@ func _reset_all_singletons():
 	PMData.appearance_skin_color = Color("#FFE0BD")
 	PMData.appearance_hair_type = 0
 	PMData.appearance_hair_color = Color("#C8A882")
+	PMData.appearance_clothing_color = Color("#A0C4FF")
 
 	# BossManager
 	BossManager.boss_trust = 0

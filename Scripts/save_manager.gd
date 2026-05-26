@@ -227,6 +227,7 @@ func _serialize_pm_data() -> Dictionary:
 		"appearance_skin_color": PMData.appearance_skin_color.to_html(),
 		"appearance_hair_type": PMData.appearance_hair_type,
 		"appearance_hair_color": PMData.appearance_hair_color.to_html(),
+		"appearance_clothing_color": PMData.appearance_clothing_color.to_html(),
 	}
 
 # --- BossManager ---
@@ -905,6 +906,8 @@ func _migrate_v13_to_v14(data: Dictionary) -> bool:
 		pm["appearance_hair_type"] = 0
 	if not pm.has("appearance_hair_color"):
 		pm["appearance_hair_color"] = "C8A882"
+	if not pm.has("appearance_clothing_color"):
+		pm["appearance_clothing_color"] = "A0C4FF"
 	data["pm_data"] = pm
 	# Флаг кастомизации — у старых сейвов считаем пройденной
 	var gs = data.get("game_state", {})
@@ -1457,6 +1460,7 @@ func _load_pm_data(d: Dictionary):
 	PMData.appearance_skin_color = Color.from_string(str(d.get("appearance_skin_color", "FFE0BD")), Color("#FFE0BD"))
 	PMData.appearance_hair_type = int(d.get("appearance_hair_type", 0))
 	PMData.appearance_hair_color = Color.from_string(str(d.get("appearance_hair_color", "C8A882")), Color("#C8A882"))
+	PMData.appearance_clothing_color = Color.from_string(str(d.get("appearance_clothing_color", "A0C4FF")), Color("#A0C4FF"))
 
 func _load_boss_manager(d: Dictionary):
 	if d.is_empty():
