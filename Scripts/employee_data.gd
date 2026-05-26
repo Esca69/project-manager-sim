@@ -139,6 +139,12 @@ const MOOD_LOW_ENERGY_PENALTY: float = -5.0        # Энергия 30-50%
 const MOOD_VERY_LOW_ENERGY_PENALTY: float = -10.0  # Энергия <30%
 const MOOD_MOTIVATION_BONUS: float = 5.0           # Мотивация от PM активна
 
+# === PM TRAITS: Эффекты на сотрудников ===
+const PM_EXTROVERT_EXTROVERT_MOD: float = 5.0   # PM-экстраверт → сотрудники-экстраверты +5
+const PM_EXTROVERT_INTROVERT_MOD: float = -5.0  # PM-экстраверт → сотрудники-интроверты -5
+const PM_INTROVERT_INTROVERT_MOD: float = 5.0   # PM-интроверт  → сотрудники-интроверты +5
+const PM_INTROVERT_EXTROVERT_MOD: float = -5.0  # PM-интроверт  → сотрудники-экстраверты -5
+
 # === Время-зависимые трейты: настройки ===
 const ATHLETIC_MOOD_BONUS: float = 3.0
 const ATHLETIC_EFFICIENCY_BONUS: float = 0.05
@@ -248,6 +254,25 @@ func recalculate_mood():
 
 	# Постоянные: лояльность к PM
 	result += get_pm_loyalty_level().mood_bonus
+
+	# === PM TRAITS: Экстраверт/Интроверт PM → постоянный эффект на сотрудников ===
+	var pm_data_node = _get_pm_data()
+	if pm_data_node:
+		var pm_is_extrovert = pm_data_node.has_pm_trait("pm_extrovert")
+		var pm_is_introvert = pm_data_node.has_pm_trait("pm_introvert")
+		var is_ambivert = "ambivert" in personality
+
+		if not is_ambivert:
+			if pm_is_extrovert:
+				if "extrovert" in personality:
+					result += PM_EXTROVERT_EXTROVERT_MOD
+				elif "introvert" in personality:
+					result += PM_EXTROVERT_INTROVERT_MOD
+			elif pm_is_introvert:
+				if "introvert" in personality:
+					result += PM_INTROVERT_INTROVERT_MOD
+				elif "extrovert" in personality:
+					result += PM_INTROVERT_EXTROVERT_MOD
 
 	# === BOSS EVENT: Тотальная коммуникация → mood ===
 	var bes = _get_boss_event_system()
@@ -405,6 +430,25 @@ func get_mood_breakdown() -> Dictionary:
 	var loyalty_level = get_pm_loyalty_level()
 	if loyalty_level.mood_bonus != 0.0:
 		permanent_mods.append({"name": tr(loyalty_level.name), "value": loyalty_level.mood_bonus})
+
+	# === PM TRAITS: Экстраверт/Интроверт PM ===
+	var pm_data_bd = _get_pm_data()
+	if pm_data_bd:
+		var pm_is_extrovert_bd = pm_data_bd.has_pm_trait("pm_extrovert")
+		var pm_is_introvert_bd = pm_data_bd.has_pm_trait("pm_introvert")
+		var is_ambivert_bd = "ambivert" in personality
+
+		if not is_ambivert_bd:
+			if pm_is_extrovert_bd:
+				if "extrovert" in personality:
+					permanent_mods.append({"name": tr("MOOD_MOD_PM_EXTROVERT_AURA_POSITIVE"), "value": PM_EXTROVERT_EXTROVERT_MOD})
+				elif "introvert" in personality:
+					permanent_mods.append({"name": tr("MOOD_MOD_PM_EXTROVERT_AURA_NEGATIVE"), "value": PM_EXTROVERT_INTROVERT_MOD})
+			elif pm_is_introvert_bd:
+				if "introvert" in personality:
+					permanent_mods.append({"name": tr("MOOD_MOD_PM_INTROVERT_AURA_POSITIVE"), "value": PM_INTROVERT_INTROVERT_MOD})
+				elif "extrovert" in personality:
+					permanent_mods.append({"name": tr("MOOD_MOD_PM_INTROVERT_AURA_NEGATIVE"), "value": PM_INTROVERT_EXTROVERT_MOD})
 
 	# === BOSS EVENT: Тотальная коммуникация ===
 	var bes = _get_boss_event_system()
@@ -1008,6 +1052,12 @@ func _get_boss_event_system():
 	var main_loop = Engine.get_main_loop()
 	if main_loop and main_loop is SceneTree:
 		return main_loop.root.get_node_or_null("/root/BossEventSystem")
+	return null
+
+func _get_pm_data():
+	var main_loop = Engine.get_main_loop()
+	if main_loop and main_loop is SceneTree:
+		return main_loop.root.get_node_or_null("/root/PMData")
 	return null
 
 # === RAISES: Генерация запроса на повышение ЗП ===
