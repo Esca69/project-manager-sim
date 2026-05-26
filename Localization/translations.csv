@@ -1547,3 +1547,16 @@ ASSIGN_COL_NAME,Имя,Name
 ASSIGN_COL_ROLE,Роль,Role
 ASSIGN_BTN,Назначить,Assign
 ASSIGN_BTN_ASSIGNED,Назначен ★,Assigned ★
+UI_CUSTOM_TITLE,Настройка профиля,Personalize Profile
+UI_CUSTOM_GENDER,Пол,Gender
+UI_CUSTOM_GENDER_MALE,Мужской,Male
+UI_CUSTOM_GENDER_FEMALE,Женский,Female
+UI_CUSTOM_BODY,Телосложение,Body Type
+UI_CUSTOM_BODY_FIT,Спортивное,Fit
+UI_CUSTOM_BODY_FAT,Плотное,Heavy
+UI_CUSTOM_BODY_SKINNY,Худощавое,Skinny
+UI_CUSTOM_SKIN,Цвет кожи,Skin Color
+UI_CUSTOM_HAIR,Прическа,Hairstyle
+UI_CUSTOM_HAIR_NONE,—,None
+UI_CUSTOM_HAIR_COLOR,Цвет волос,Hair Color
+UI_CUSTOM_FINISH,Начать работу,Continue

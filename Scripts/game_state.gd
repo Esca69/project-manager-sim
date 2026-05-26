@@ -3,6 +3,9 @@ extends Node
 # Стартовый капитал
 var company_balance: int = 10000
 
+# Флаг прохождения кастомизации внешности
+var appearance_configured: bool = false
+
 # Сигнал изменения денег
 signal balance_changed(new_amount)
 

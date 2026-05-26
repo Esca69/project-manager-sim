@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 13
+const SAVE_VERSION = 14
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -20,6 +20,7 @@ const MIGRATIONS = {
 	10: "_migrate_v10_to_v11",
 	11: "_migrate_v11_to_v12",
 	12: "_migrate_v12_to_v13",
+	13: "_migrate_v13_to_v14",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -208,6 +209,7 @@ func _serialize_game_state() -> Dictionary:
 		"tutorial_completed": GameState.tutorial_completed,
 		"office_upgrades": GameState.office_upgrades.duplicate(),
 		"tutorial_hints_shown": TutorialManager.shown_hints.duplicate(),
+		"appearance_configured": GameState.appearance_configured,
 	}
 
 # --- PMData ---
@@ -220,6 +222,11 @@ func _serialize_pm_data() -> Dictionary:
 		"personal_balance": PMData.personal_balance,
 		"monthly_salary": PMData.monthly_salary,
 		"partner_tier": PMData.partner_tier,
+		"appearance_gender": PMData.appearance_gender,
+		"appearance_body_type": PMData.appearance_body_type,
+		"appearance_skin_color": PMData.appearance_skin_color.to_html(),
+		"appearance_hair_type": PMData.appearance_hair_type,
+		"appearance_hair_color": PMData.appearance_hair_color.to_html(),
 	}
 
 # --- BossManager ---
@@ -886,6 +893,27 @@ func _migrate_v12_to_v13(_data: Dictionary) -> bool:
 	print("🔄 Миграция v12→v13: support tickets v1.3 (was_unattended)")
 	return true
 
+func _migrate_v13_to_v14(data: Dictionary) -> bool:
+	var pm = data.get("pm_data", {})
+	if not pm.has("appearance_gender"):
+		pm["appearance_gender"] = "male"
+	if not pm.has("appearance_body_type"):
+		pm["appearance_body_type"] = "default"
+	if not pm.has("appearance_skin_color"):
+		pm["appearance_skin_color"] = "FFE0BD"
+	if not pm.has("appearance_hair_type"):
+		pm["appearance_hair_type"] = 0
+	if not pm.has("appearance_hair_color"):
+		pm["appearance_hair_color"] = "C8A882"
+	data["pm_data"] = pm
+	# Флаг кастомизации — у старых сейвов считаем пройденной
+	var gs = data.get("game_state", {})
+	if not gs.has("appearance_configured"):
+		gs["appearance_configured"] = true
+	data["game_state"] = gs
+	print("🔄 Миграция v13→v14: внешность PM + флаг appearance_configured")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -1395,6 +1423,7 @@ func _load_game_state(d: Dictionary):
 		TutorialManager.shown_hints = d["tutorial_hints_shown"].duplicate()
 	else:
 		TutorialManager.shown_hints = {}
+	GameState.appearance_configured = bool(d.get("appearance_configured", true))
 
 func _load_pm_data(d: Dictionary):
 	if d.is_empty():
@@ -1422,6 +1451,12 @@ func _load_pm_data(d: Dictionary):
 	PMData.monthly_salary = int(d.get("monthly_salary", 1000))
 	PMData.partner_tier = int(d.get("partner_tier", 0))
 	PMData.emit_signal("personal_balance_changed", PMData.personal_balance)
+
+	PMData.appearance_gender = str(d.get("appearance_gender", "male"))
+	PMData.appearance_body_type = str(d.get("appearance_body_type", "default"))
+	PMData.appearance_skin_color = Color.from_string(str(d.get("appearance_skin_color", "FFE0BD")), Color("#FFE0BD"))
+	PMData.appearance_hair_type = int(d.get("appearance_hair_type", 0))
+	PMData.appearance_hair_color = Color.from_string(str(d.get("appearance_hair_color", "C8A882")), Color("#C8A882"))
 
 func _load_boss_manager(d: Dictionary):
 	if d.is_empty():

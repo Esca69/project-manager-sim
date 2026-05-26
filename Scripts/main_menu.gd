@@ -643,6 +643,7 @@ func _reset_all_singletons():
 
 	# GameState
 	GameState.company_balance = 10000
+	GameState.appearance_configured = false
 	GameState.balance_at_day_start = 10000
 	GameState.daily_income = 0
 	GameState.daily_expenses = 0
@@ -679,6 +680,11 @@ func _reset_all_singletons():
 	PMData.personal_balance = 0
 	PMData.monthly_salary = 1000
 	PMData.partner_tier = 0
+	PMData.appearance_gender = "male"
+	PMData.appearance_body_type = "default"
+	PMData.appearance_skin_color = Color("#FFE0BD")
+	PMData.appearance_hair_type = 0
+	PMData.appearance_hair_color = Color("#C8A882")
 
 	# BossManager
 	BossManager.boss_trust = 0

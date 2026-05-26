@@ -141,6 +141,11 @@ func _start_warmup():
 			# Не удалось загрузить сохранение — возвращаемся в главное меню
 			get_tree().change_scene_to_file("res://Scenes/main_menu.tscn")
 			return
+	elif not GameState.appearance_configured:
+		# Новая игра, кастомизация ещё не пройдена
+		pending_save_slot = -1
+		get_tree().change_scene_to_file("res://Scenes/player_customization.tscn")
+		return
 	pending_save_slot = -1
 	_progress_bar.value = 40.0
 	await get_tree().process_frame
