@@ -14,6 +14,7 @@ func _ready():
 	_player = get_tree().get_first_node_in_group("player")
 
 func _physics_process(delta):
+	# Кулдаун в реальном времени (не зависит от time_scale)
 	if _kick_cooldown > 0.0:
 		_kick_cooldown -= delta / maxf(Engine.time_scale, 1.0)
 
@@ -30,12 +31,9 @@ func _physics_process(delta):
 	# === ВРАЩЕНИЕ: крутим спрайт пока мяч катится ===
 	var speed = linear_velocity.length()
 	if speed > 5.0:
-		# Определяем направление вращения по горизонтальной составляющей скорости
-		# Мяч летит вправо → крутится по часовой (+), влево → против (-)
 		var spin_direction = sign(linear_velocity.x) if abs(linear_velocity.x) > abs(linear_velocity.y) else sign(linear_velocity.y)
 		angular_velocity = speed * spin_factor * spin_direction
 	else:
-		# Мяч почти остановился — гасим вращение
 		angular_velocity = lerp(angular_velocity, 0.0, 5.0 * delta)
 
 func _try_kick_from(body: CharacterBody2D, force: float):
@@ -43,20 +41,30 @@ func _try_kick_from(body: CharacterBody2D, force: float):
 		return
 	var to_ball = global_position - body.global_position
 	var distance = to_ball.length()
-	var effective_distance = kick_distance * maxf(1.0, Engine.time_scale * 0.5)
-	if distance < effective_distance:
+	# БЕЗ масштабирования на time_scale — дистанция всегда 70px
+	if distance < kick_distance:
 		var body_velocity = body.velocity
-		if body_velocity.length() > 10:
+		if body_velocity.length() > 10.0:
 			var direction = to_ball.normalized()
 			var dot = body_velocity.normalized().dot(direction)
-			if dot > 0.1:
-				apply_central_impulse(direction * force * dot)
-				_kick_cooldown = 0.15
+			# dot используем только для масштабирования силы
+			# НЕТ порога dot > 0.1 — это и было причиной бага на 5x/10x
+			# (игрок перескакивал мяч за 1 кадр, dot становился отрицательным)
+			var kick_multiplier = clampf(dot, 0.3, 1.0)
+			apply_central_impulse(direction * force * kick_multiplier)
+			_kick_cooldown = 0.15
+		else:
+			# Игрок стоит и касается мяча — лёгкий толчок
+			var direction = to_ball.normalized()
+			apply_central_impulse(direction * force * 0.25)
+			_kick_cooldown = 0.15
 
 func _on_body_entered(body: Node):
+	# Этот сигнал срабатывает только для объектов на layer 1 (стены, NPC)
+	# Игрок на layer 2 — не попадает сюда. Логика удара выше в _try_kick_from.
 	if body is CharacterBody2D:
 		if _kick_cooldown > 0.0:
 			return
 		var direction = (global_position - body.global_position).normalized()
-		apply_central_impulse(direction * kick_force)
+		apply_central_impulse(direction * kick_force * 0.5)
 		_kick_cooldown = 0.15
