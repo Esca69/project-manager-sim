@@ -329,7 +329,7 @@ func _build_assignment_popup():
 	_assign_btn_style_disabled.corner_radius_bottom_right = 16
 	_assign_btn_style_disabled.corner_radius_bottom_left = 16
 
-const _ASSIGN_NAME_MIN_WIDTH = 170
+const _ASSIGN_NAME_MIN_WIDTH = 210
 const _ASSIGN_ROLE_MIN_WIDTH = 220
 const _ASSIGN_BTN_MIN_WIDTH = 120
 const _ASSIGN_ROW_HEIGHT = 48
@@ -343,7 +343,6 @@ func _create_assign_header_row() -> HBoxContainer:
 	var name_lbl = Label.new()
 	name_lbl.text = tr("ASSIGN_COL_NAME")
 	name_lbl.custom_minimum_size = Vector2(_ASSIGN_NAME_MIN_WIDTH, 0)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.add_theme_color_override("font_color", COLOR_BLUE)
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	if UITheme:
@@ -375,7 +374,6 @@ func _create_assign_employee_row(emp: EmployeeData, is_disabled: bool, disable_r
 	var name_lbl = Label.new()
 	name_lbl.text = emp.get_display_name()
 	name_lbl.custom_minimum_size = Vector2(_ASSIGN_NAME_MIN_WIDTH, 0)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	if is_disabled:
