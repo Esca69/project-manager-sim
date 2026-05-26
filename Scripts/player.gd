@@ -99,6 +99,9 @@ var _work_fun_container: VBoxContainer = null
 # === КОЛЬЦО АУРЫ PM ===
 var _aura_ring_cooldown: float = 0.0  # Чтобы не спамить кольцами
 
+# === ВОЛОСЫ ===
+var hair_sprite: Sprite2D = null
+
 func _ready():
 	add_to_group("player")
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -109,8 +112,8 @@ func _ready():
 	_create_interact_hint()
 	_create_discuss_bar()
 
-	body_sprite.self_modulate = Color("#a2c5ea")
-	head_sprite.self_modulate = Color("#fff0e1")
+	# Применяем внешность из PMData
+	update_visuals()
 
 	# === ПРИМЕНЯЕМ ОБЪЕМНЫЙ СВЕТ И ТЕНЬ К ТЕЛУ ===
 	_apply_volume_materials()
@@ -125,6 +128,53 @@ func _ready():
 	call_deferred("_create_motivate_button")
 	call_deferred("_create_no_toilet_button")
 	call_deferred("_create_work_fun_button")
+
+func update_visuals():
+	var gender = PMData.appearance_gender
+	var body_type = PMData.appearance_body_type
+	var skin_color = PMData.appearance_skin_color
+	var hair_type = PMData.appearance_hair_type
+	var hair_color = PMData.appearance_hair_color
+
+	# --- Тело ---
+	var body_path: String = VisualGlobals.DEFAULT_BODY_PATH
+	if body_type == "default":
+		body_path = VisualGlobals.DEFAULT_BODY_PATH
+	elif gender == "male" and VisualGlobals.MALE_BODY_PATHS.has(body_type):
+		body_path = VisualGlobals.MALE_BODY_PATHS[body_type]
+	elif gender == "female" and VisualGlobals.FEMALE_BODY_PATHS.has(body_type):
+		body_path = VisualGlobals.FEMALE_BODY_PATHS[body_type]
+
+	if body_sprite:
+		body_sprite.texture = load(body_path)
+		body_sprite.self_modulate = Color("#a2c5ea")  # цвет одежды — фиксированный для PM
+
+	# --- Голова (цвет кожи) ---
+	if head_sprite:
+		head_sprite.self_modulate = skin_color
+
+	# --- Волосы ---
+	if hair_type < 0:
+		if is_instance_valid(hair_sprite):
+			hair_sprite.queue_free()
+			hair_sprite = null
+	else:
+		var hair_paths: Array[String] = VisualGlobals.MALE_HAIR_PATHS if gender == "male" else VisualGlobals.FEMALE_HAIR_PATHS
+		var safe_idx = clamp(hair_type, 0, hair_paths.size() - 1)
+		var hair_path = hair_paths[safe_idx]
+
+		if not is_instance_valid(hair_sprite):
+			hair_sprite = Sprite2D.new()
+			hair_sprite.name = "HairSprite"
+			if head_sprite:
+				head_sprite.add_child(hair_sprite)
+			else:
+				body_sprite.add_child(hair_sprite)
+
+		hair_sprite.texture = load(hair_path)
+		hair_sprite.self_modulate = hair_color
+		hair_sprite.position = Vector2(VisualGlobals.HAIR_OFFSET_X, VisualGlobals.HAIR_OFFSET_Y)
+		hair_sprite.z_index = 1
 
 func _on_pm_skill_unlocked(_skill_id: String):
 	_update_motivate_btn()

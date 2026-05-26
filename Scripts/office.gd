@@ -137,6 +137,9 @@ func _try_restore_save():
 
 func _do_restore():
 	await SaveManager.restore_employees_and_projects()
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("update_visuals"):
+		player.update_visuals()
 	print("📂 Восстановление завершено")
 
 func _setup_environment():

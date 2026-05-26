@@ -8,6 +8,13 @@ signal xp_changed(new_xp: int, new_skill_points: int)
 signal skill_unlocked(skill_id: String)
 signal level_up(new_level: int)
 
+# === ВНЕШНОСТЬ ИГРОКА ===
+var appearance_gender: String = "male"       # "male" | "female"
+var appearance_body_type: String = "default" # "default" | "man_fat" | "man_fit" | "man_skinny" | "woman_fat" | "woman_fit" | "woman_skinny"
+var appearance_skin_color: Color = Color("#FFE0BD")
+var appearance_hair_type: int = 0            # 0..N-1 по массиву MALE/FEMALE_HAIR_PATHS; -1 = без волос
+var appearance_hair_color: Color = Color("#C8A882")
+
 # === META PROGRESSION ===
 var personal_balance: int = 0
 var monthly_salary: int = 1000
