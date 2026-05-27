@@ -1,6 +1,6 @@
 extends RigidBody2D
 
-@export var kick_force: float = 600.0
+@export var kick_force: float = 700.0
 @export var kick_distance: float = 70.0
 ## Скорость вращения спрайта относительно линейной скорости
 @export var spin_factor: float = 0.015
@@ -39,24 +39,26 @@ func _physics_process(delta):
 func _try_kick_from(body: CharacterBody2D, force: float):
 	if _kick_cooldown > 0.0:
 		return
-	var to_ball = global_position - body.global_position
+	var body_center = body.global_position + Vector2(1, -22)
+	var to_ball = global_position - body_center
 	var distance = to_ball.length()
 	# БЕЗ масштабирования на time_scale — дистанция всегда 70px
 	if distance < kick_distance:
-		var body_velocity = body.velocity
+		var body_velocity = body.last_move_velocity if "last_move_velocity" in body else body.velocity
 		if body_velocity.length() > 10.0:
 			var direction = to_ball.normalized()
 			var dot = body_velocity.normalized().dot(direction)
 			# dot используем только для масштабирования силы
 			# НЕТ порога dot > 0.1 — это и было причиной бага на 5x/10x
 			# (игрок перескакивал мяч за 1 кадр, dot становился отрицательным)
-			var kick_multiplier = clampf(dot, 0.3, 1.0)
-			apply_central_impulse(direction * force * kick_multiplier)
+			var kick_multiplier = clampf(dot, 0.5, 1.0)
+			var push_dir = (direction + body_velocity.normalized() * 0.4).normalized()
+			apply_central_impulse(push_dir * force * kick_multiplier)
 			_kick_cooldown = 0.15
 		else:
 			# Игрок стоит и касается мяча — лёгкий толчок
 			var direction = to_ball.normalized()
-			apply_central_impulse(direction * force * 0.25)
+			apply_central_impulse(direction * force * 0.4)
 			_kick_cooldown = 0.15
 
 func _on_body_entered(body: Node):
