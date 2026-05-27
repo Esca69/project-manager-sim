@@ -4,6 +4,7 @@ extends Control
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
+const COLOR_RED = Color(0.8, 0.3, 0.2, 1)
 const COLOR_GOLD = Color(0.85, 0.65, 0.13, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
 const COLOR_DARK = Color(0.2, 0.2, 0.2, 1)
@@ -23,6 +24,7 @@ var _rep_bar: ProgressBar
 var _rep_label: Label
 var _balance_label: Label
 var _win_btn: Button
+var _traits_container: VBoxContainer
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -42,6 +44,7 @@ func _force_fullscreen_size():
 func open():
 	_force_fullscreen_size()
 	_refresh()
+	_refresh_traits()
 	if UITheme:
 		UITheme.fade_in(self, 0.2)
 	else:
@@ -88,7 +91,7 @@ func _build_ui():
 
 	# Заголовок
 	var header_panel = Panel.new()
-	header_panel.custom_minimum_size = Vector2(0, 40)
+	header_panel.custom_minimum_size = Vector2(0, 56)
 	var header_style = StyleBoxFlat.new()
 	header_style.bg_color = COLOR_BLUE
 	header_style.corner_radius_top_left = 20
@@ -98,31 +101,26 @@ func _build_ui():
 
 	var title_lbl = Label.new()
 	title_lbl.text = tr("MY_LIFE_TITLE")
-	title_lbl.set_anchors_preset(Control.PRESET_CENTER)
-	title_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	title_lbl.grow_vertical = Control.GROW_DIRECTION_BOTH
-	title_lbl.offset_left = -120
-	title_lbl.offset_top = -11.5
-	title_lbl.offset_right = 120
-	title_lbl.offset_bottom = 11.5
+	title_lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	title_lbl.add_theme_color_override("font_color", COLOR_WHITE)
-	title_lbl.add_theme_font_size_override("font_size", 16)
+	title_lbl.add_theme_font_size_override("font_size", 18)
 	if UITheme: UITheme.apply_font(title_lbl, "bold")
 	header_panel.add_child(title_lbl)
 
-	# Кнопка закрытия "X" в заголовке
+	# Кнопка закрытия
 	var close_btn = Button.new()
-	close_btn.text = "X"
+	close_btn.text = "✕"
 	close_btn.focus_mode = Control.FOCUS_NONE
+	close_btn.custom_minimum_size = Vector2(28, 28)
 	close_btn.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	close_btn.offset_left = -51
-	close_btn.offset_top = -15
-	close_btn.offset_right = -24
-	close_btn.offset_bottom = 16
-	close_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	close_btn.grow_vertical = Control.GROW_DIRECTION_BOTH
+	close_btn.offset_left = -44
+	close_btn.offset_top = -14
+	close_btn.offset_right = -16
+	close_btn.offset_bottom = 14
 	close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	close_btn.add_theme_font_size_override("font_size", 16)
 	var close_style = StyleBoxFlat.new()
 	close_style.bg_color = COLOR_WHITE
 	close_style.corner_radius_top_left = 10
@@ -143,43 +141,58 @@ func _build_ui():
 	content_margin.add_theme_constant_override("margin_bottom", 20)
 	main_vbox.add_child(content_margin)
 
-	_content_vbox = VBoxContainer.new()
-	_content_vbox.add_theme_constant_override("separation", 16)
-	content_margin.add_child(_content_vbox)
+	var content_hbox = HBoxContainer.new()
+	content_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_hbox.add_theme_constant_override("separation", 24)
+	content_margin.add_child(content_hbox)
 
-	# === Большой эмодзи кошелька ===
-	var wallet_lbl = Label.new()
-	wallet_lbl.text = "💰"
-	wallet_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	wallet_lbl.add_theme_font_size_override("font_size", 56)
-	_content_vbox.add_child(wallet_lbl)
+	var left_col = VBoxContainer.new()
+	left_col.custom_minimum_size = Vector2(500, 0)
+	left_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_col.add_theme_constant_override("separation", 16)
+	content_hbox.add_child(left_col)
+	_content_vbox = left_col
 
-	# === Баланс ===
+	var right_col = VBoxContainer.new()
+	right_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content_hbox.add_child(right_col)
+
+	# === Balance + Dream Goal ===
+	var balance_card = _make_card()
+	left_col.add_child(balance_card)
+	var balance_inner = _get_card_inner(balance_card)
+	balance_inner.add_theme_constant_override("separation", 8)
+
+	var bal_caption = Label.new()
+	bal_caption.text = "💰  Personal Balance"
+	bal_caption.add_theme_color_override("font_color", COLOR_GRAY)
+	bal_caption.add_theme_font_size_override("font_size", 13)
+	if UITheme: UITheme.apply_font(bal_caption, "regular")
+	balance_inner.add_child(bal_caption)
+
 	_balance_label = Label.new()
-	_balance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_balance_label.add_theme_color_override("font_color", COLOR_GOLD)
-	_balance_label.add_theme_font_size_override("font_size", 28)
+	_balance_label.add_theme_font_size_override("font_size", 32)
 	if UITheme: UITheme.apply_font(_balance_label, "bold")
-	_content_vbox.add_child(_balance_label)
+	balance_inner.add_child(_balance_label)
 
-	# === Прогресс-бар накоплений ===
-	var progress_card = _make_card()
-	_content_vbox.add_child(progress_card)
-	var progress_inner = _get_card_inner(progress_card)
+	var balance_sep = HSeparator.new()
+	balance_inner.add_child(balance_sep)
 
-	var prog_lbl_header = Label.new()
-	prog_lbl_header.text = "🚀 " + tr("INTRO_LINE_1").substr(0, 30) + "..."
-	prog_lbl_header.add_theme_color_override("font_color", COLOR_GRAY)
-	prog_lbl_header.add_theme_font_size_override("font_size", 11)
-	if UITheme: UITheme.apply_font(prog_lbl_header, "regular")
-	progress_inner.add_child(prog_lbl_header)
+	var dream_header = Label.new()
+	dream_header.text = "🚀 Dream Goal"
+	dream_header.add_theme_color_override("font_color", COLOR_DARK)
+	dream_header.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(dream_header, "semibold")
+	balance_inner.add_child(dream_header)
 
 	_progress_label = Label.new()
-	_progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_progress_label.add_theme_color_override("font_color", COLOR_DARK)
-	_progress_label.add_theme_font_size_override("font_size", 15)
-	if UITheme: UITheme.apply_font(_progress_label, "semibold")
-	progress_inner.add_child(_progress_label)
+	_progress_label.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(_progress_label, "regular")
+	balance_inner.add_child(_progress_label)
 
 	_progress_bar = ProgressBar.new()
 	_progress_bar.custom_minimum_size = Vector2(0, 22)
@@ -187,12 +200,19 @@ func _build_ui():
 	_progress_bar.min_value = 0
 	_progress_bar.max_value = PMData.WIN_TARGET
 	_progress_bar.show_percentage = false
-	progress_inner.add_child(_progress_bar)
+	balance_inner.add_child(_progress_bar)
 
-	# === Статистика ЗП ===
+	# === Compensation ===
 	var salary_card = _make_card()
-	_content_vbox.add_child(salary_card)
+	left_col.add_child(salary_card)
 	var salary_inner = _get_card_inner(salary_card)
+
+	var salary_header = Label.new()
+	salary_header.text = "💼 Compensation"
+	salary_header.add_theme_color_override("font_color", COLOR_DARK)
+	salary_header.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(salary_header, "semibold")
+	salary_inner.add_child(salary_header)
 
 	_salary_label = Label.new()
 	_salary_label.add_theme_color_override("font_color", COLOR_DARK)
@@ -206,10 +226,17 @@ func _build_ui():
 	if UITheme: UITheme.apply_font(_daily_label, "regular")
 	salary_inner.add_child(_daily_label)
 
-	# === Партнёрство ===
+	# === Partnership ===
 	var partner_card = _make_card()
-	_content_vbox.add_child(partner_card)
+	left_col.add_child(partner_card)
 	var partner_inner = _get_card_inner(partner_card)
+
+	var partner_header = Label.new()
+	partner_header.text = "🤝 Partnership Status"
+	partner_header.add_theme_color_override("font_color", COLOR_DARK)
+	partner_header.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(partner_header, "semibold")
+	partner_inner.add_child(partner_header)
 
 	_partner_label = Label.new()
 	_partner_label.add_theme_color_override("font_color", COLOR_BLUE)
@@ -217,20 +244,19 @@ func _build_ui():
 	if UITheme: UITheme.apply_font(_partner_label, "semibold")
 	partner_inner.add_child(_partner_label)
 
-	# === Репутация PM среди сотрудников ===
+	# === PM Reputation ===
 	var rep_card = _make_card()
-	_content_vbox.add_child(rep_card)
+	left_col.add_child(rep_card)
 	var rep_inner = _get_card_inner(rep_card)
 
 	var rep_lbl_header = Label.new()
 	rep_lbl_header.text = "👥 " + tr("PM_REP_TITLE")
-	rep_lbl_header.add_theme_color_override("font_color", COLOR_GRAY)
-	rep_lbl_header.add_theme_font_size_override("font_size", 11)
-	if UITheme: UITheme.apply_font(rep_lbl_header, "regular")
+	rep_lbl_header.add_theme_color_override("font_color", COLOR_DARK)
+	rep_lbl_header.add_theme_font_size_override("font_size", 15)
+	if UITheme: UITheme.apply_font(rep_lbl_header, "semibold")
 	rep_inner.add_child(rep_lbl_header)
 
 	_rep_label = Label.new()
-	_rep_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_rep_label.add_theme_color_override("font_color", COLOR_DARK)
 	_rep_label.add_theme_font_size_override("font_size", 15)
 	if UITheme: UITheme.apply_font(_rep_label, "semibold")
@@ -244,7 +270,11 @@ func _build_ui():
 	_rep_bar.show_percentage = false
 	rep_inner.add_child(_rep_bar)
 
-	# === Кнопка победы (скрыта до накопления цели) ===
+	var left_spacer = Control.new()
+	left_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_col.add_child(left_spacer)
+
+	# === Victory button ===
 	_win_btn = Button.new()
 	_win_btn.text = tr("MY_LIFE_WIN_BTN")
 	_win_btn.custom_minimum_size = Vector2(0, 48)
@@ -258,7 +288,6 @@ func _build_ui():
 	win_style.corner_radius_top_right = 14
 	win_style.corner_radius_bottom_right = 14
 	win_style.corner_radius_bottom_left = 14
-
 	_win_btn.add_theme_stylebox_override("normal", win_style)
 	_win_btn.add_theme_stylebox_override("hover", win_style)
 	_win_btn.add_theme_color_override("font_color", Color.WHITE)
@@ -266,22 +295,53 @@ func _build_ui():
 	_win_btn.add_theme_font_size_override("font_size", 16)
 	if UITheme: UITheme.apply_font(_win_btn, "bold")
 	_win_btn.pressed.connect(func(): print("🏆 Победа! Бамборгини куплена!"))
-	_content_vbox.add_child(_win_btn)
+	left_col.add_child(_win_btn)
+
+	# === Character Traits ===
+	var traits_card = _make_card()
+	traits_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	traits_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_col.add_child(traits_card)
+	var traits_inner = _get_card_inner(traits_card)
+	traits_inner.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var traits_title = Label.new()
+	traits_title.text = "⭐ " + tr("PM_TRAITS_TITLE")
+	traits_title.add_theme_color_override("font_color", COLOR_DARK)
+	traits_title.add_theme_font_size_override("font_size", 18)
+	if UITheme: UITheme.apply_font(traits_title, "bold")
+	traits_inner.add_child(traits_title)
+
+	var traits_sep = HSeparator.new()
+	traits_inner.add_child(traits_sep)
+
+	var traits_scroll = ScrollContainer.new()
+	traits_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	traits_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	traits_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	traits_inner.add_child(traits_scroll)
+
+	_traits_container = VBoxContainer.new()
+	_traits_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_traits_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_traits_container.add_theme_constant_override("separation", 10)
+	traits_scroll.add_child(_traits_container)
 
 func _make_card() -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var style = StyleBoxFlat.new()
-	style.bg_color = COLOR_BG
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
+	style.bg_color = COLOR_WHITE
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
 	style.border_color = COLOR_BORDER
+	if UITheme: UITheme.apply_shadow(style)
 	card.add_theme_stylebox_override("panel", style)
 	return card
 
@@ -296,6 +356,143 @@ func _get_card_inner(card: PanelContainer) -> VBoxContainer:
 	vb.add_theme_constant_override("separation", 6)
 	m.add_child(vb)
 	return vb
+
+func _refresh_traits():
+	for child in _traits_container.get_children():
+		child.queue_free()
+
+	var positive_defs: Array = []
+	var negative_defs: Array = []
+	for def in PMData.PM_TRAIT_DEFINITIONS:
+		if PMData.has_pm_trait(def.id):
+			if def.positive:
+				positive_defs.append(def)
+			else:
+				negative_defs.append(def)
+
+	if positive_defs.is_empty() and negative_defs.is_empty():
+		var empty_lbl = Label.new()
+		empty_lbl.text = "No traits selected"
+		empty_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_lbl.add_theme_color_override("font_color", COLOR_GRAY)
+		empty_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(empty_lbl, "regular")
+		_traits_container.add_child(empty_lbl)
+		return
+
+	var pos_header = Label.new()
+	pos_header.text = tr("PM_TRAITS_POSITIVE_HEADER")
+	pos_header.add_theme_color_override("font_color", COLOR_GREEN)
+	pos_header.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(pos_header, "semibold")
+	_traits_container.add_child(pos_header)
+
+	for def in positive_defs:
+		var card = PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var accent = Color(0.29, 0.69, 0.31, 1)
+		var t_style = StyleBoxFlat.new()
+		t_style.bg_color = Color(accent.r, accent.g, accent.b, 0.08)
+		t_style.border_color = Color(accent.r, accent.g, accent.b, 0.6)
+		t_style.border_width_left = 2
+		t_style.border_width_top = 2
+		t_style.border_width_right = 2
+		t_style.border_width_bottom = 2
+		t_style.corner_radius_top_left = 10
+		t_style.corner_radius_top_right = 10
+		t_style.corner_radius_bottom_left = 10
+		t_style.corner_radius_bottom_right = 10
+		t_style.content_margin_left = 12
+		t_style.content_margin_right = 12
+		t_style.content_margin_top = 8
+		t_style.content_margin_bottom = 8
+		card.add_theme_stylebox_override("panel", t_style)
+
+		var hbox = HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 10)
+		card.add_child(hbox)
+
+		var icon = Label.new()
+		icon.text = "✦"
+		icon.add_theme_color_override("font_color", accent)
+		icon.add_theme_font_size_override("font_size", 16)
+		if UITheme: UITheme.apply_font(icon, "bold")
+		hbox.add_child(icon)
+
+		var name_lbl = Label.new()
+		name_lbl.text = tr(def.name_key)
+		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_lbl.add_theme_color_override("font_color", COLOR_DARK)
+		name_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(name_lbl, "semibold")
+		hbox.add_child(name_lbl)
+
+		var cost_lbl = Label.new()
+		var cost_sign = "+" if def.cost > 0 else ""
+		cost_lbl.text = tr("PM_TRAITS_COST") % [cost_sign + str(def.cost)]
+		cost_lbl.add_theme_color_override("font_color", accent)
+		cost_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(cost_lbl, "regular")
+		hbox.add_child(cost_lbl)
+
+		_traits_container.add_child(card)
+
+	var neg_header = Label.new()
+	neg_header.text = tr("PM_TRAITS_NEGATIVE_HEADER")
+	neg_header.add_theme_color_override("font_color", COLOR_RED)
+	neg_header.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(neg_header, "semibold")
+	_traits_container.add_child(neg_header)
+
+	for def in negative_defs:
+		var card = PanelContainer.new()
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var accent = COLOR_RED
+		var t_style = StyleBoxFlat.new()
+		t_style.bg_color = Color(accent.r, accent.g, accent.b, 0.08)
+		t_style.border_color = Color(accent.r, accent.g, accent.b, 0.6)
+		t_style.border_width_left = 2
+		t_style.border_width_top = 2
+		t_style.border_width_right = 2
+		t_style.border_width_bottom = 2
+		t_style.corner_radius_top_left = 10
+		t_style.corner_radius_top_right = 10
+		t_style.corner_radius_bottom_left = 10
+		t_style.corner_radius_bottom_right = 10
+		t_style.content_margin_left = 12
+		t_style.content_margin_right = 12
+		t_style.content_margin_top = 8
+		t_style.content_margin_bottom = 8
+		card.add_theme_stylebox_override("panel", t_style)
+
+		var hbox = HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 10)
+		card.add_child(hbox)
+
+		var icon = Label.new()
+		icon.text = "✧"
+		icon.add_theme_color_override("font_color", accent)
+		icon.add_theme_font_size_override("font_size", 16)
+		if UITheme: UITheme.apply_font(icon, "bold")
+		hbox.add_child(icon)
+
+		var name_lbl = Label.new()
+		name_lbl.text = tr(def.name_key)
+		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_lbl.add_theme_color_override("font_color", COLOR_DARK)
+		name_lbl.add_theme_font_size_override("font_size", 14)
+		if UITheme: UITheme.apply_font(name_lbl, "semibold")
+		hbox.add_child(name_lbl)
+
+		var cost_lbl = Label.new()
+		var cost_sign = "+" if def.cost > 0 else ""
+		cost_lbl.text = tr("PM_TRAITS_COST") % [cost_sign + str(def.cost)]
+		cost_lbl.add_theme_color_override("font_color", accent)
+		cost_lbl.add_theme_font_size_override("font_size", 13)
+		if UITheme: UITheme.apply_font(cost_lbl, "regular")
+		hbox.add_child(cost_lbl)
+
+		_traits_container.add_child(card)
 
 func _refresh():
 	var balance = PMData.personal_balance
