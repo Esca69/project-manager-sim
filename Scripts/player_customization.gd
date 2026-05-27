@@ -128,7 +128,7 @@ func _build_ui():
 
 	# Верхний отступ для средней колонки
 	var mid_top_spacer = Control.new()
-	mid_top_spacer.custom_minimum_size = Vector2(0, 160)
+	mid_top_spacer.custom_minimum_size = Vector2(0, 380)
 	mid_top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mid_col.add_child(mid_top_spacer)
 
@@ -666,7 +666,7 @@ func _add_trait_button(parent: Control, def: Dictionary):
 	# Стоимость
 	var cost_lbl = Label.new()
 	var cost_sign = "+" if def.cost > 0 else ""
-	cost_lbl.text = tr("PM_TRAITS_COST") % (cost_sign + str(def.cost))
+	cost_lbl.text = tr("PM_TRAITS_COST") % [cost_sign + str(def.cost)]
 	cost_lbl.add_theme_font_size_override("font_size", 13)
 	var cost_color = COLOR_GREEN if def.cost > 0 else COLOR_RED
 	cost_lbl.add_theme_color_override("font_color", cost_color)

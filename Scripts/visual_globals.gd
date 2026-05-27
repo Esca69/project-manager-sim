@@ -39,7 +39,7 @@ const HAIR_PALETTE: Array[Color] = [
 ]
 
 const HAIR_OFFSET_X: float = 0.0
-const HAIR_OFFSET_Y: float = -20.0
+const HAIR_OFFSET_Y: float = -19.0
 
 const MALE_HAIR_PATHS: Array[String] = [
 	"res://Sprites/hairs/man_hair1.png",

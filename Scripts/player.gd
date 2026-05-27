@@ -176,7 +176,7 @@ func update_visuals():
 		# Head2 uses offset (0, -65), so hair position must account for that
 		var head_offset_y = head_sprite.offset.y if head_sprite else 0.0
 		hair_sprite.position = Vector2(VisualGlobals.HAIR_OFFSET_X, head_offset_y + VisualGlobals.HAIR_OFFSET_Y)
-		hair_sprite.z_index = 1
+		hair_sprite.z_index = 0
 
 func _on_pm_skill_unlocked(_skill_id: String):
 	_update_motivate_btn()
