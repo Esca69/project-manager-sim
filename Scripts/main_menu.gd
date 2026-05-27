@@ -738,6 +738,23 @@ func _reset_all_singletons():
 	if ph:
 		ph.daily_records.clear()
 
+	# EventLog
+	var el = get_node_or_null("/root/EventLog")
+	if el:
+		el.clear()
+
+	# BossEventSystem
+	var bes = get_node_or_null("/root/BossEventSystem")
+	if bes:
+		bes.state = bes.State.IDLE
+		bes.pending_event_id = ""
+		bes.active_event_id = ""
+		bes.active_days_remaining = 0
+		bes.cooldown_days = 0
+		bes.recent_event_ids.clear()
+		bes.total_events_generated = 0
+		bes.ignore_penalty_pending = false
+
 # === СОХРАНЕНИЕ / ЗАГРУЗКА НАСТРОЕК ===
 
 func _save_settings():
