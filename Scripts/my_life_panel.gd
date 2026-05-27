@@ -26,6 +26,9 @@ var _balance_label: Label
 var _win_btn: Button
 var _traits_container: VBoxContainer
 
+# Tooltip management
+var _active_tooltip: PanelContainer = null
+
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
@@ -357,7 +360,67 @@ func _get_card_inner(card: PanelContainer) -> VBoxContainer:
 	m.add_child(vb)
 	return vb
 
+# === TOOLTIP ===
+
+func _show_trait_tooltip(anchor: Control, desc_text: String, accent: Color):
+	_hide_trait_tooltip()
+	var tp = PanelContainer.new()
+	tp.z_index = 200
+	tp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var tp_style = StyleBoxFlat.new()
+	tp_style.bg_color = Color(1, 1, 1, 0.97)
+	tp_style.border_width_left = 2
+	tp_style.border_width_top = 2
+	tp_style.border_width_right = 2
+	tp_style.border_width_bottom = 2
+	tp_style.border_color = Color(accent.r, accent.g, accent.b, 0.7)
+	tp_style.corner_radius_top_left = 8
+	tp_style.corner_radius_top_right = 8
+	tp_style.corner_radius_bottom_left = 8
+	tp_style.corner_radius_bottom_right = 8
+	tp_style.content_margin_left = 12
+	tp_style.content_margin_right = 12
+	tp_style.content_margin_top = 8
+	tp_style.content_margin_bottom = 8
+	tp_style.shadow_color = Color(0, 0, 0, 0.15)
+	tp_style.shadow_size = 4
+	tp.add_theme_stylebox_override("panel", tp_style)
+
+	var desc_lbl = Label.new()
+	desc_lbl.text = desc_text
+	desc_lbl.add_theme_font_size_override("font_size", 13)
+	desc_lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_lbl.custom_minimum_size = Vector2(240, 0)
+	if UITheme: UITheme.apply_font(desc_lbl, "regular")
+	tp.add_child(desc_lbl)
+
+	add_child(tp)
+	_active_tooltip = tp
+
+	# Position after one frame so tp.size is calculated
+	await get_tree().process_frame
+	if not is_instance_valid(tp):
+		return
+	var vp_size = get_viewport_rect().size
+	var anchor_rect = anchor.get_global_rect()
+	var pos = Vector2(anchor_rect.position.x, anchor_rect.position.y - tp.size.y - 6)
+	if pos.y < 4:
+		pos.y = anchor_rect.position.y + anchor_rect.size.y + 6
+	if pos.x + tp.size.x > vp_size.x - 4:
+		pos.x = vp_size.x - tp.size.x - 4
+	tp.global_position = pos
+
+func _hide_trait_tooltip():
+	if _active_tooltip and is_instance_valid(_active_tooltip):
+		_active_tooltip.queue_free()
+	_active_tooltip = null
+
+# === TRAITS ===
+
 func _refresh_traits():
+	_hide_trait_tooltip()
 	for child in _traits_container.get_children():
 		child.queue_free()
 
@@ -380,119 +443,96 @@ func _refresh_traits():
 		_traits_container.add_child(empty_lbl)
 		return
 
-	var pos_header = Label.new()
-	pos_header.text = tr("PM_TRAITS_POSITIVE_HEADER")
-	pos_header.add_theme_color_override("font_color", COLOR_GREEN)
-	pos_header.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(pos_header, "semibold")
-	_traits_container.add_child(pos_header)
+	if not positive_defs.is_empty():
+		var pos_header = Label.new()
+		pos_header.text = tr("PM_TRAITS_POSITIVE_HEADER")
+		pos_header.add_theme_color_override("font_color", COLOR_GREEN)
+		pos_header.add_theme_font_size_override("font_size", 16)
+		if UITheme: UITheme.apply_font(pos_header, "semibold")
+		_traits_container.add_child(pos_header)
 
-	for def in positive_defs:
-		var card = PanelContainer.new()
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var accent = Color(0.29, 0.69, 0.31, 1)
-		var t_style = StyleBoxFlat.new()
-		t_style.bg_color = Color(accent.r, accent.g, accent.b, 0.08)
-		t_style.border_color = Color(accent.r, accent.g, accent.b, 0.6)
-		t_style.border_width_left = 2
-		t_style.border_width_top = 2
-		t_style.border_width_right = 2
-		t_style.border_width_bottom = 2
-		t_style.corner_radius_top_left = 10
-		t_style.corner_radius_top_right = 10
-		t_style.corner_radius_bottom_left = 10
-		t_style.corner_radius_bottom_right = 10
-		t_style.content_margin_left = 12
-		t_style.content_margin_right = 12
-		t_style.content_margin_top = 8
-		t_style.content_margin_bottom = 8
+		for def in positive_defs:
+			_traits_container.add_child(_make_trait_card(def, Color(0.29, 0.69, 0.31, 1)))
+
+	if not negative_defs.is_empty():
+		var neg_header = Label.new()
+		neg_header.text = tr("PM_TRAITS_NEGATIVE_HEADER")
+		neg_header.add_theme_color_override("font_color", COLOR_RED)
+		neg_header.add_theme_font_size_override("font_size", 16)
+		if UITheme: UITheme.apply_font(neg_header, "semibold")
+		_traits_container.add_child(neg_header)
+
+		for def in negative_defs:
+			_traits_container.add_child(_make_trait_card(def, COLOR_RED))
+
+func _make_trait_card(def: Dictionary, accent: Color) -> PanelContainer:
+	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var t_style = StyleBoxFlat.new()
+	t_style.bg_color = Color(accent.r, accent.g, accent.b, 0.08)
+	t_style.border_color = Color(accent.r, accent.g, accent.b, 0.6)
+	t_style.border_width_left = 2
+	t_style.border_width_top = 2
+	t_style.border_width_right = 2
+	t_style.border_width_bottom = 2
+	t_style.corner_radius_top_left = 10
+	t_style.corner_radius_top_right = 10
+	t_style.corner_radius_bottom_left = 10
+	t_style.corner_radius_bottom_right = 10
+	t_style.content_margin_left = 12
+	t_style.content_margin_right = 12
+	t_style.content_margin_top = 8
+	t_style.content_margin_bottom = 8
+	card.add_theme_stylebox_override("panel", t_style)
+
+	var t_hover_style = StyleBoxFlat.new()
+	t_hover_style.bg_color = Color(accent.r, accent.g, accent.b, 0.16)
+	t_hover_style.border_color = accent
+	t_hover_style.border_width_left = 2
+	t_hover_style.border_width_top = 2
+	t_hover_style.border_width_right = 2
+	t_hover_style.border_width_bottom = 2
+	t_hover_style.corner_radius_top_left = 10
+	t_hover_style.corner_radius_top_right = 10
+	t_hover_style.corner_radius_bottom_left = 10
+	t_hover_style.corner_radius_bottom_right = 10
+	t_hover_style.content_margin_left = 12
+	t_hover_style.content_margin_right = 12
+	t_hover_style.content_margin_top = 8
+	t_hover_style.content_margin_bottom = 8
+
+	var desc_text = tr(def.desc_key)
+	card.mouse_entered.connect(func():
+		card.add_theme_stylebox_override("panel", t_hover_style)
+		_show_trait_tooltip(card, desc_text, accent)
+	)
+	card.mouse_exited.connect(func():
 		card.add_theme_stylebox_override("panel", t_style)
+		_hide_trait_tooltip()
+	)
 
-		var hbox = HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 10)
-		card.add_child(hbox)
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	card.add_child(hbox)
 
-		var icon = Label.new()
-		icon.text = "✦"
-		icon.add_theme_color_override("font_color", accent)
-		icon.add_theme_font_size_override("font_size", 16)
-		if UITheme: UITheme.apply_font(icon, "bold")
-		hbox.add_child(icon)
+	var icon = Label.new()
+	icon.text = "✦" if def.positive else "✧"
+	icon.add_theme_color_override("font_color", accent)
+	icon.add_theme_font_size_override("font_size", 16)
+	if UITheme: UITheme.apply_font(icon, "bold")
+	hbox.add_child(icon)
 
-		var name_lbl = Label.new()
-		name_lbl.text = tr(def.name_key)
-		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_lbl.add_theme_color_override("font_color", COLOR_DARK)
-		name_lbl.add_theme_font_size_override("font_size", 14)
-		if UITheme: UITheme.apply_font(name_lbl, "semibold")
-		hbox.add_child(name_lbl)
+	var name_lbl = Label.new()
+	name_lbl.text = tr(def.name_key)
+	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_lbl.add_theme_color_override("font_color", COLOR_DARK)
+	name_lbl.add_theme_font_size_override("font_size", 14)
+	if UITheme: UITheme.apply_font(name_lbl, "semibold")
+	hbox.add_child(name_lbl)
 
-		var cost_lbl = Label.new()
-		var cost_sign = "+" if def.cost > 0 else ""
-		cost_lbl.text = tr("PM_TRAITS_COST") % [cost_sign + str(def.cost)]
-		cost_lbl.add_theme_color_override("font_color", accent)
-		cost_lbl.add_theme_font_size_override("font_size", 13)
-		if UITheme: UITheme.apply_font(cost_lbl, "regular")
-		hbox.add_child(cost_lbl)
-
-		_traits_container.add_child(card)
-
-	var neg_header = Label.new()
-	neg_header.text = tr("PM_TRAITS_NEGATIVE_HEADER")
-	neg_header.add_theme_color_override("font_color", COLOR_RED)
-	neg_header.add_theme_font_size_override("font_size", 16)
-	if UITheme: UITheme.apply_font(neg_header, "semibold")
-	_traits_container.add_child(neg_header)
-
-	for def in negative_defs:
-		var card = PanelContainer.new()
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var accent = COLOR_RED
-		var t_style = StyleBoxFlat.new()
-		t_style.bg_color = Color(accent.r, accent.g, accent.b, 0.08)
-		t_style.border_color = Color(accent.r, accent.g, accent.b, 0.6)
-		t_style.border_width_left = 2
-		t_style.border_width_top = 2
-		t_style.border_width_right = 2
-		t_style.border_width_bottom = 2
-		t_style.corner_radius_top_left = 10
-		t_style.corner_radius_top_right = 10
-		t_style.corner_radius_bottom_left = 10
-		t_style.corner_radius_bottom_right = 10
-		t_style.content_margin_left = 12
-		t_style.content_margin_right = 12
-		t_style.content_margin_top = 8
-		t_style.content_margin_bottom = 8
-		card.add_theme_stylebox_override("panel", t_style)
-
-		var hbox = HBoxContainer.new()
-		hbox.add_theme_constant_override("separation", 10)
-		card.add_child(hbox)
-
-		var icon = Label.new()
-		icon.text = "✧"
-		icon.add_theme_color_override("font_color", accent)
-		icon.add_theme_font_size_override("font_size", 16)
-		if UITheme: UITheme.apply_font(icon, "bold")
-		hbox.add_child(icon)
-
-		var name_lbl = Label.new()
-		name_lbl.text = tr(def.name_key)
-		name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_lbl.add_theme_color_override("font_color", COLOR_DARK)
-		name_lbl.add_theme_font_size_override("font_size", 14)
-		if UITheme: UITheme.apply_font(name_lbl, "semibold")
-		hbox.add_child(name_lbl)
-
-		var cost_lbl = Label.new()
-		var cost_sign = "+" if def.cost > 0 else ""
-		cost_lbl.text = tr("PM_TRAITS_COST") % [cost_sign + str(def.cost)]
-		cost_lbl.add_theme_color_override("font_color", accent)
-		cost_lbl.add_theme_font_size_override("font_size", 13)
-		if UITheme: UITheme.apply_font(cost_lbl, "regular")
-		hbox.add_child(cost_lbl)
-
-		_traits_container.add_child(card)
+	return card
 
 func _refresh():
 	var balance = PMData.personal_balance
@@ -513,7 +553,6 @@ func _refresh():
 	else:
 		bar_color = COLOR_GREEN
 	_progress_bar.add_theme_color_override("font_color", bar_color)
-	# Красим fill через StyleBoxFlat
 	var fill_style = StyleBoxFlat.new()
 	fill_style.bg_color = bar_color
 	fill_style.corner_radius_top_left = 6
@@ -590,6 +629,7 @@ func _on_balance_changed(_new_amount: int):
 		_refresh()
 
 func _close():
+	_hide_trait_tooltip()
 	if UITheme:
 		UITheme.fade_out(self, 0.15)
 	else:
