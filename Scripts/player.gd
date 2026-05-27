@@ -39,6 +39,7 @@ var _work_fun_cooldown_left: float = 0.0
 @onready var shadow_sprite = $Shadow
 
 var target_zoom: Vector2 = Vector2.ONE
+var last_move_velocity: Vector2 = Vector2.ZERO
 
 var _shadow_base_pos: Vector2 = Vector2.ZERO
 var _shadow_base_scale: Vector2 = Vector2.ONE
@@ -321,6 +322,7 @@ func _physics_process(delta):
 		_free_camera_offset = Vector2.ZERO
 		camera.position = Vector2.ZERO
 		velocity = Vector2.ZERO
+		last_move_velocity = velocity
 		move_and_slide()
 		_hide_interact_hint()
 		var hud_ref = get_tree().get_first_node_in_group("ui")
@@ -336,6 +338,7 @@ func _physics_process(delta):
 	if GameTime.is_game_paused and not long_action:
 		if _is_ui_blocking():
 			velocity = Vector2.ZERO
+			last_move_velocity = velocity
 			move_and_slide()
 			return
 
@@ -361,6 +364,7 @@ func _physics_process(delta):
 		camera.position = _free_camera_offset
 
 		velocity = Vector2.ZERO
+		last_move_velocity = velocity
 		move_and_slide()
 		return
 
@@ -382,6 +386,7 @@ func _physics_process(delta):
 		# Если открыто UI-меню — не двигаем камеру, стоим
 		if _is_ui_blocking():
 			velocity = Vector2.ZERO
+			last_move_velocity = velocity
 			move_and_slide()
 			return
 
@@ -402,6 +407,7 @@ func _physics_process(delta):
 
 		# Персонаж стоит на месте
 		velocity = Vector2.ZERO
+		last_move_velocity = velocity
 		move_and_slide()
 		return
 
@@ -426,12 +432,14 @@ func _physics_process(delta):
 
 		# Персонаж стоит пока камера возвращается
 		velocity = Vector2.ZERO
+		last_move_velocity = velocity
 		move_and_slide()
 		return
 
 	# === ОБЫЧНЫЙ РЕЖИМ (существующий код без изменений) ===
 	if _is_ui_blocking():
 		velocity = Vector2.ZERO
+		last_move_velocity = velocity
 		move_and_slide()
 		_hide_interact_hint()
 		return
@@ -441,6 +449,7 @@ func _physics_process(delta):
 		velocity = direction * SPEED * (1.0 + PMData.get_movement_bonus())
 	else:
 		velocity = Vector2.ZERO
+	last_move_velocity = velocity
 	move_and_slide()
 
 	var target_lean = 0.0
