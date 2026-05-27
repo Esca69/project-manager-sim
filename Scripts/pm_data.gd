@@ -52,9 +52,17 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"id": "pm_introvert",
 		"name_key": "PM_TRAIT_INTROVERT_NAME",
 		"desc_key": "PM_TRAIT_INTROVERT_DESC",
-		"cost": -1,
+		"cost": 1,
 		"positive": true,
 		"conflict_group": "social",
+	},
+	{
+		"id": "pm_handsome",
+		"name_key": "PM_TRAIT_HANDSOME_NAME",
+		"desc_key": "PM_TRAIT_HANDSOME_DESC",
+		"cost": 1,
+		"positive": true,
+		"conflict_group": "looks",
 	},
 	{
 		"id": "pm_trained",
@@ -88,6 +96,14 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"cost": -2,
 		"positive": false,
 		"conflict_group": "learning",
+	},
+	{
+		"id": "pm_smelly",
+		"name_key": "PM_TRAIT_SMELLY_NAME",
+		"desc_key": "PM_TRAIT_SMELLY_DESC",
+		"cost": -1,
+		"positive": false,
+		"conflict_group": "looks",
 	},
 ]
 

@@ -498,6 +498,15 @@ func _update_pm_aura():
 			if _pm_aura_annoyance_timer >= PM_AURA_ANNOYANCE_THRESHOLD:
 				_pm_aura_annoyance_timer -= PM_AURA_ANNOYANCE_THRESHOLD
 				_apply_micromanagement_stack()
+
+		var pm_data_ref = PMData
+		if pm_data_ref and pm_data_ref.has_pm_trait("pm_smelly"):
+			data.add_mood_modifier("pm_smelly_aura", "MOOD_MOD_PM_SMELLY", -5.0, 5.0)
+
+		if pm_data_ref and pm_data_ref.has_pm_trait("pm_handsome"):
+			var pm_gender = pm_data_ref.appearance_gender
+			if pm_gender != data.gender:
+				data.add_mood_modifier("pm_handsome_aura", "MOOD_MOD_PM_HANDSOME", 5.0, 5.0)
 	else:
 		if _in_pm_aura:
 			_exit_pm_aura()
