@@ -280,7 +280,15 @@ func _finish_project(project: ProjectData):
 			ClientManager.add_global_reputation(3)
 			print("💛 %s: +1 ОР, +3 ГР (просрочка софт)" % client.get_display_name())
 
-		# Бонус XP за вовремя
+	# === PM TRAIT: Клиентоориентированный / Не клиентоориентированный ===
+	if PMData.has_pm_trait("pm_client_oriented"):
+		ClientManager.add_reputation_points(1)
+		ClientManager.add_global_reputation(1)
+	elif PMData.has_pm_trait("pm_anti_client"):
+		ClientManager.penalize_reputation_points(1)
+		ClientManager.add_global_reputation(-1)
+
+	# Бонус XP за вовремя
 	_award_on_time_bonus(project)
 	# === ПРОЕКТНЫЙ ИВЕНТ: регистрация для отзыва ===
 	var em = get_node_or_null("/root/EventManager")

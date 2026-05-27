@@ -1592,3 +1592,7 @@ MOOD_MOD_PM_EXTROVERT_AURA_POSITIVE,Экстраверт PM (бонус),PM Extr
 MOOD_MOD_PM_EXTROVERT_AURA_NEGATIVE,Экстраверт PM (штраф),PM Extrovert Aura (penalty)
 MOOD_MOD_PM_INTROVERT_AURA_POSITIVE,Интроверт PM (бонус),PM Introvert Aura (bonus)
 MOOD_MOD_PM_INTROVERT_AURA_NEGATIVE,Интроверт PM (штраф),PM Introvert Aura (penalty)
+PM_TRAIT_CLIENT_ORIENTED_NAME,🤝 Клиентоориентированный,🤝 Client-Oriented
+PM_TRAIT_CLIENT_ORIENTED_DESC,Вы умеете работать с клиентами. Каждый завершённый проект приносит +1 очко репутации и +1 глобальной репутации.,You know how to work with clients. Each completed project grants +1 reputation point and +1 global reputation.
+PM_TRAIT_ANTI_CLIENT_NAME,😤 Не клиентоориентированный,😤 Anti-Client
+PM_TRAIT_ANTI_CLIENT_DESC,Клиенты вас раздражают и это заметно. Каждый завершённый проект стоит -1 очко репутации и -1 глобальной репутации.,Clients get on your nerves and it shows. Each completed project costs -1 reputation point and -1 global reputation.
