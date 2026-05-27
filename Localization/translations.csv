@@ -1578,6 +1578,10 @@ PM_TRAIT_FAST_LEARNER_NAME,Вундеркинд,Fast Learner
 PM_TRAIT_FAST_LEARNER_DESC,PM получает на 20% больше опыта за любые действия.,PM gains 20% more XP from all actions.
 PM_TRAIT_SLOW_LEARNER_NAME,Тугодум,Slow Learner
 PM_TRAIT_SLOW_LEARNER_DESC,PM получает на 20% меньше опыта за любые действия.,PM gains 20% less XP from all actions.
+PM_TRAIT_TRAINED_NAME,После курсов,Trained
+PM_TRAIT_TRAINED_DESC,Вы прошли курсы повышения квалификации и начинаете карьеру с 1 дополнительным очком навыков.,You completed professional training courses and start your career with 1 extra skill point.
+PM_TRAIT_WELL_TRAINED_NAME,После хороших курсов,Well Trained
+PM_TRAIT_WELL_TRAINED_DESC,Вы прошли интенсивную подготовку и начинаете карьеру с 3 дополнительными очками навыков.,You completed an intensive training program and start your career with 3 extra skill points.
 MOOD_MOD_PM_EXTROVERT_AURA_POSITIVE,Экстраверт PM (бонус),PM Extrovert Aura (bonus)
 MOOD_MOD_PM_EXTROVERT_AURA_NEGATIVE,Экстраверт PM (штраф),PM Extrovert Aura (penalty)
 MOOD_MOD_PM_INTROVERT_AURA_POSITIVE,Интроверт PM (бонус),PM Introvert Aura (bonus)

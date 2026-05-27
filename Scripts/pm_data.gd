@@ -48,6 +48,30 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"positive": true,
 		"conflict_group": "learning",
 	},
+	{
+		"id": "pm_introvert",
+		"name_key": "PM_TRAIT_INTROVERT_NAME",
+		"desc_key": "PM_TRAIT_INTROVERT_DESC",
+		"cost": -1,
+		"positive": true,
+		"conflict_group": "social",
+	},
+	{
+		"id": "pm_trained",
+		"name_key": "PM_TRAIT_TRAINED_NAME",
+		"desc_key": "PM_TRAIT_TRAINED_DESC",
+		"cost": 1,
+		"positive": true,
+		"conflict_group": "training",
+	},
+	{
+		"id": "pm_well_trained",
+		"name_key": "PM_TRAIT_WELL_TRAINED_NAME",
+		"desc_key": "PM_TRAIT_WELL_TRAINED_DESC",
+		"cost": 2,
+		"positive": true,
+		"conflict_group": "training",
+	},
 	# Отрицательные (cost < 0) — идут вторыми
 	{
 		"id": "pm_slowmover",
@@ -56,14 +80,6 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"cost": -1,
 		"positive": false,
 		"conflict_group": "speed",
-	},
-	{
-		"id": "pm_introvert",
-		"name_key": "PM_TRAIT_INTROVERT_NAME",
-		"desc_key": "PM_TRAIT_INTROVERT_DESC",
-		"cost": -1,
-		"positive": false,
-		"conflict_group": "social",
 	},
 	{
 		"id": "pm_slow_learner",

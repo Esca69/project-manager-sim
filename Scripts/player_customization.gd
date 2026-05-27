@@ -507,6 +507,11 @@ func _sync_indices_from_pm_data():
 # === ЗАВЕРШЕНИЕ ===
 
 func _on_finish_pressed():
+	# Бонусные очки навыков от обучающих трейтов — применяется ровно один раз при старте
+	if PMData.has_pm_trait("pm_well_trained"):
+		PMData.skill_points += 3
+	elif PMData.has_pm_trait("pm_trained"):
+		PMData.skill_points += 1
 	# Данные уже в PMData (из _apply_to_preview)
 	GameState.appearance_configured = true
 	LoadingScreen.target_scene_path = "res://Scenes/office.tscn"
