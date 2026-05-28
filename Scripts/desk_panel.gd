@@ -23,6 +23,10 @@ var _window: PanelContainer
 var _employee_label: Label
 var _assign_btn: Button
 var _upgrades_vbox: VBoxContainer
+var _emp_panel: PanelContainer
+var _sep: HSeparator
+var _upg_title: Label
+var _scroll: ScrollContainer
 
 func _ready():
 	visible = false
@@ -117,6 +121,7 @@ func _build_ui():
 	ep_style.corner_radius_bottom_left = 10
 	emp_panel.add_theme_stylebox_override("panel", ep_style)
 	content_vbox.add_child(emp_panel)
+	_emp_panel = emp_panel
 
 	var emp_margin = MarginContainer.new()
 	emp_margin.add_theme_constant_override("margin_left", 14)
@@ -184,6 +189,7 @@ func _build_ui():
 	# === РАЗДЕЛИТЕЛЬ ===
 	var sep = HSeparator.new()
 	content_vbox.add_child(sep)
+	_sep = sep
 
 	# === ЗАГОЛОВОК УЛУЧШЕНИЙ ===
 	var upg_title = Label.new()
@@ -193,6 +199,7 @@ func _build_ui():
 	if UITheme:
 		UITheme.apply_font(upg_title, "bold")
 	content_vbox.add_child(upg_title)
+	_upg_title = upg_title
 
 	# === SCROLL ДЛЯ УЛУЧШЕНИЙ ===
 	var scroll = ScrollContainer.new()
@@ -200,6 +207,7 @@ func _build_ui():
 	scroll.custom_minimum_size = Vector2(0, 280)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content_vbox.add_child(scroll)
+	_scroll = scroll
 
 	_upgrades_vbox = VBoxContainer.new()
 	_upgrades_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -265,7 +273,14 @@ func open_for_desk(desk_node):
 func _refresh():
 	if not _current_desk:
 		return
-	if _current_desk.is_broken:
+	var broken = _current_desk.is_broken
+	if _emp_panel:
+		_emp_panel.visible = not broken
+	if _sep:
+		_sep.visible = not broken
+	if _upg_title:
+		_upg_title.visible = not broken
+	if broken:
 		_refresh_broken_state()
 	else:
 		_refresh_employee_block()
@@ -356,7 +371,9 @@ func _refresh_broken_state():
 	repair_btn.add_theme_color_override("font_color", COLOR_WHITE)
 	repair_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
 	repair_btn.pressed.connect(_on_repair_pressed)
-	_upgrades_vbox.add_child(repair_btn)
+	var repair_center = CenterContainer.new()
+	repair_center.add_child(repair_btn)
+	_upgrades_vbox.add_child(repair_center)
 
 func _on_repair_pressed():
 	if not _current_desk:
