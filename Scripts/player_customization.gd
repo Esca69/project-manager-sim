@@ -57,43 +57,41 @@ func _build_ui():
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
-	# Главный VBoxContainer
-	var main_vbox = VBoxContainer.new()
-	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	main_vbox.add_theme_constant_override("separation", 20)
-	# Внешние отступы (чтобы интерфейс не прилипал к краям экрана)
-	main_vbox.offset_left = 24
-	main_vbox.offset_top = 24
-	main_vbox.offset_right = -24
-	main_vbox.offset_bottom = -40
-	add_child(main_vbox)
+	# Корневой HBoxContainer на весь экран
+	var root_hbox = HBoxContainer.new()
+	root_hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root_hbox.add_theme_constant_override("separation", 0)
+	add_child(root_hbox)
 
-	# === Основная рабочая зона (HBox с 3 колонками) ===
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 24)
-	hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	main_vbox.add_child(hbox)
+	# === Левая панель (2/3 экрана) ===
+	var left_panel = MarginContainer.new()
+	left_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_panel.size_flags_stretch_ratio = 2.0
+	left_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root_hbox.add_child(left_panel)
 
-	# Левый отступ чтобы не прилипало к краю
-	var left_margin = Control.new()
-	left_margin.custom_minimum_size = Vector2(120, 0)
-	left_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hbox.add_child(left_margin)
+	# VBoxContainer внутри — центрирует содержимое по вертикали
+	var left_vbox = VBoxContainer.new()
+	left_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	left_vbox.add_theme_constant_override("separation", 16)
+	left_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left_panel.add_child(left_vbox)
 
-	# === Левая колонка: превью игрока (центрируется по вертикали) ===
-	var left_col = VBoxContainer.new()
-	left_col.custom_minimum_size = Vector2(300, 0)
-	left_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	left_col.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_child(left_col)
+	# HBoxContainer для превью + карусели (центрируется по горизонтали)
+	var content_hbox = HBoxContainer.new()
+	content_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	content_hbox.add_theme_constant_override("separation", 24)
+	left_vbox.add_child(content_hbox)
 
+	# SubViewportContainer (превью персонажа)
 	var viewport_container = SubViewportContainer.new()
-	viewport_container.custom_minimum_size = Vector2(300, 500)
+	viewport_container.custom_minimum_size = Vector2(220, 400)
 	viewport_container.stretch = true
-	left_col.add_child(viewport_container)
+	content_hbox.add_child(viewport_container)
 
 	_sub_viewport = SubViewport.new()
-	_sub_viewport.size = Vector2i(300, 500)
+	_sub_viewport.size = Vector2i(220, 400)
 	_sub_viewport.transparent_bg = true
 	_sub_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	viewport_container.add_child(_sub_viewport)
@@ -106,7 +104,7 @@ func _build_ui():
 	var player_scene = load("res://Scenes/player.tscn")
 	if player_scene:
 		_preview_player = player_scene.instantiate()
-		_preview_player.position = Vector2(150, 350)
+		_preview_player.position = Vector2(110, 280)
 		# Отключаем процесс и камеру чтобы превью было статичным
 		_preview_player.set_process(false)
 		_preview_player.set_physics_process(false)
@@ -117,73 +115,69 @@ func _build_ui():
 		if cam:
 			cam.enabled = false
 
-	# === Средняя колонка: настройки внешности ===
-	var mid_col = VBoxContainer.new()
-	mid_col.add_theme_constant_override("separation", 16)
-	mid_col.custom_minimum_size = Vector2(360, 0)
-	mid_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mid_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	mid_col.alignment = BoxContainer.ALIGNMENT_BEGIN
-	hbox.add_child(mid_col)
-
-	# Верхний отступ для средней колонки
-	var mid_top_spacer = Control.new()
-	mid_top_spacer.custom_minimum_size = Vector2(0, 380)
-	mid_top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	mid_col.add_child(mid_top_spacer)
+	# VBoxContainer с каруселями (рядом с превью)
+	var carousels_vbox = VBoxContainer.new()
+	carousels_vbox.add_theme_constant_override("separation", 16)
+	carousels_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	content_hbox.add_child(carousels_vbox)
 
 	# Карусели
-	_gender_label = _add_carousel(mid_col, "UI_CUSTOM_GENDER", _on_gender_prev, _on_gender_next)
-	_body_label = _add_carousel(mid_col, "UI_CUSTOM_BODY", _on_body_prev, _on_body_next)
-	var skin_row = _add_carousel_with_color(mid_col, "UI_CUSTOM_SKIN", _on_skin_prev, _on_skin_next)
+	_gender_label = _add_carousel(carousels_vbox, "UI_CUSTOM_GENDER", _on_gender_prev, _on_gender_next)
+	_body_label = _add_carousel(carousels_vbox, "UI_CUSTOM_BODY", _on_body_prev, _on_body_next)
+	var skin_row = _add_carousel_with_color(carousels_vbox, "UI_CUSTOM_SKIN", _on_skin_prev, _on_skin_next)
 	_skin_label = skin_row[0]
 	_skin_color_rect = skin_row[1]
-	var clothing_row = _add_carousel_with_color(mid_col, "UI_CUSTOM_CLOTHING", _on_clothing_prev, _on_clothing_next)
+	var clothing_row = _add_carousel_with_color(carousels_vbox, "UI_CUSTOM_CLOTHING", _on_clothing_prev, _on_clothing_next)
 	_clothing_color_label = clothing_row[0]
 	_clothing_color_rect = clothing_row[1]
-	var hair_row = _add_carousel(mid_col, "UI_CUSTOM_HAIR", _on_hair_prev, _on_hair_next)
+	var hair_row = _add_carousel(carousels_vbox, "UI_CUSTOM_HAIR", _on_hair_prev, _on_hair_next)
 	_hair_label = hair_row
 	_hair_color_row = HBoxContainer.new()
 	_hair_color_row.add_theme_constant_override("separation", 8)
-	mid_col.add_child(_hair_color_row)
+	carousels_vbox.add_child(_hair_color_row)
 	var hc_row = _add_carousel_with_color_in(_hair_color_row, "UI_CUSTOM_HAIR_COLOR", _on_hair_color_prev, _on_hair_color_next)
 	_hair_color_label = hc_row[0]
 	_hair_color_rect = hc_row[1]
 
-	# === Правая колонка: трейты (с отступом сверху для воздуха) ===
-	var right_col = VBoxContainer.new()
-	right_col.custom_minimum_size = Vector2(320, 0)
-	right_col.add_theme_constant_override("separation", 10)
-	right_col.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right_col.alignment = BoxContainer.ALIGNMENT_BEGIN
-	hbox.add_child(right_col)
-
-	# Верхний отступ для правой колонки (воздух, не в потолок)
-	var right_top_spacer = Control.new()
-	right_top_spacer.custom_minimum_size = Vector2(0, 40)
-	right_top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	right_col.add_child(right_top_spacer)
-
-	_build_traits_panel(right_col)
-
-	# === Нижняя строка: кнопка Continue (с воздухом снизу) ===
-	var bottom_hbox = HBoxContainer.new()
-	bottom_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	main_vbox.add_child(bottom_hbox)
+	# Кнопка Continue внизу левой панели, по центру
+	var continue_hbox = HBoxContainer.new()
+	continue_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	left_vbox.add_child(continue_hbox)
 
 	var finish_btn = Button.new()
 	finish_btn.text = tr("UI_CUSTOM_FINISH")
-	finish_btn.custom_minimum_size = Vector2(220, 50)
+	finish_btn.custom_minimum_size = Vector2(280, 60)
 	finish_btn.focus_mode = Control.FOCUS_NONE
 	finish_btn.pressed.connect(_on_finish_pressed)
 	_apply_styled_button(finish_btn)
-	bottom_hbox.add_child(finish_btn)
+	continue_hbox.add_child(finish_btn)
 
-	# Воздух снизу, чтобы кнопка Continue не прилипала к нижнему краю
-	var bottom_spacer = Control.new()
-	bottom_spacer.custom_minimum_size = Vector2(0, 40)
-	bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	main_vbox.add_child(bottom_spacer)
+	# === Правая панель (1/3 экрана) ===
+	var right_panel = PanelContainer.new()
+	right_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_panel.size_flags_stretch_ratio = 1.0
+	right_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	var right_style = StyleBoxFlat.new()
+	right_style.bg_color = Color(0.97, 0.98, 1.0, 1)
+	right_style.border_width_left = 0
+	right_style.border_width_top = 0
+	right_style.border_width_right = 0
+	right_style.border_width_bottom = 0
+	right_style.content_margin_top = 24
+	right_style.content_margin_bottom = 24
+	right_style.content_margin_left = 16
+	right_style.content_margin_right = 24
+	right_panel.add_theme_stylebox_override("panel", right_style)
+	root_hbox.add_child(right_panel)
+
+	var right_vbox = VBoxContainer.new()
+	right_vbox.add_theme_constant_override("separation", 10)
+	right_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_panel.add_child(right_vbox)
+
+	_build_traits_panel(right_vbox)
 
 
 func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, next_cb: Callable) -> Label:
@@ -593,14 +587,14 @@ func _build_traits_panel(parent: VBoxContainer):
 	var title = Label.new()
 	title.text = tr("PM_TRAITS_TITLE")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_font_size_override("font_size", 30)
 	title.add_theme_color_override("font_color", Color(0.17, 0.31, 0.57, 1))
 	parent.add_child(title)
 
 	# Счётчик очков — крупный и зелёный (заметный)
 	_points_label = Label.new()
 	_points_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_points_label.add_theme_font_size_override("font_size", 22)
+	_points_label.add_theme_font_size_override("font_size", 24)
 	_points_label.add_theme_color_override("font_color", COLOR_GREEN)
 	parent.add_child(_points_label)
 
@@ -611,7 +605,7 @@ func _build_traits_panel(parent: VBoxContainer):
 	# Заголовок "Положительные" (подзаголовок — крупнее)
 	var pos_header = Label.new()
 	pos_header.text = tr("PM_TRAITS_POSITIVE_HEADER")
-	pos_header.add_theme_font_size_override("font_size", 18)
+	pos_header.add_theme_font_size_override("font_size", 20)
 	pos_header.add_theme_color_override("font_color", COLOR_GREEN)
 	parent.add_child(pos_header)
 
@@ -627,7 +621,7 @@ func _build_traits_panel(parent: VBoxContainer):
 	# Заголовок "Недостатки" (подзаголовок — крупнее)
 	var neg_header = Label.new()
 	neg_header.text = tr("PM_TRAITS_NEGATIVE_HEADER")
-	neg_header.add_theme_font_size_override("font_size", 18)
+	neg_header.add_theme_font_size_override("font_size", 20)
 	neg_header.add_theme_color_override("font_color", COLOR_RED)
 	parent.add_child(neg_header)
 
@@ -663,7 +657,7 @@ func _add_trait_button(parent: Control, def: Dictionary):
 	var name_lbl = Label.new()
 	name_lbl.text = tr(def.name_key)
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_lbl.add_theme_font_size_override("font_size", 14)
+	name_lbl.add_theme_font_size_override("font_size", 16)
 	name_lbl.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
 	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(name_lbl)
@@ -672,7 +666,7 @@ func _add_trait_button(parent: Control, def: Dictionary):
 	var cost_lbl = Label.new()
 	var cost_sign = "+" if def.cost > 0 else ""
 	cost_lbl.text = tr("PM_TRAITS_COST") % [cost_sign + str(def.cost)]
-	cost_lbl.add_theme_font_size_override("font_size", 13)
+	cost_lbl.add_theme_font_size_override("font_size", 15)
 	var cost_color = COLOR_GREEN if def.cost > 0 else COLOR_RED
 	cost_lbl.add_theme_color_override("font_color", cost_color)
 	cost_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
