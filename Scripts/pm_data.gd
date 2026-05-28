@@ -80,6 +80,14 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"positive": true,
 		"conflict_group": "training",
 	},
+	{
+		"id": "pm_client_oriented",
+		"name_key": "PM_TRAIT_CLIENT_ORIENTED_NAME",
+		"desc_key": "PM_TRAIT_CLIENT_ORIENTED_DESC",
+		"cost": 2,
+		"positive": true,
+		"conflict_group": "client_focus",
+	},
 	# Отрицательные (cost < 0) — идут вторыми
 	{
 		"id": "pm_slowmover",
@@ -104,6 +112,14 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"cost": -1,
 		"positive": false,
 		"conflict_group": "looks",
+	},
+	{
+		"id": "pm_anti_client",
+		"name_key": "PM_TRAIT_ANTI_CLIENT_NAME",
+		"desc_key": "PM_TRAIT_ANTI_CLIENT_DESC",
+		"cost": -2,
+		"positive": false,
+		"conflict_group": "client_focus",
 	},
 ]
 
