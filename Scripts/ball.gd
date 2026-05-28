@@ -54,11 +54,13 @@ func _try_kick_from(body: CharacterBody2D, force: float):
 			var kick_multiplier = clampf(dot, 0.5, 1.0)
 			var push_dir = (direction + body_velocity.normalized() * 0.4).normalized()
 			apply_central_impulse(push_dir * force * kick_multiplier)
+			AudioManager.play_sfx("ball_kick")
 			_kick_cooldown = 0.15
 		else:
 			# Игрок стоит и касается мяча — лёгкий толчок
 			var direction = to_ball.normalized()
 			apply_central_impulse(direction * force * 0.4)
+			AudioManager.play_sfx("ball_kick")
 			_kick_cooldown = 0.15
 
 func _on_body_entered(body: Node):
@@ -70,3 +72,7 @@ func _on_body_entered(body: Node):
 		var direction = (global_position - body.global_position).normalized()
 		apply_central_impulse(direction * kick_force * 0.5)
 		_kick_cooldown = 0.15
+
+	# Проверяем, не попал ли мяч в стол сотрудника
+	if body.is_in_group("desk") and body.has_method("on_ball_hit"):
+		body.on_ball_hit()
