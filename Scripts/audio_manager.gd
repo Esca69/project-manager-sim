@@ -22,6 +22,8 @@ const SFX_LIBRARY = {
 	"deadline": "res://Sound/deadline.mp3",
 	"pause": "res://Sound/pause.mp3",
 	"start": "res://Sound/start.mp3",
+	"ball_kick": "res://Sound/ball_kick.mp3",
+	"monitor_break": "res://Sound/monitor break.mp3",
 }
 
 # --- ИНДИВИДУАЛЬНАЯ ГРОМКОСТЬ ЗВУКОВ (Множители от 0.0 до 1.0) ---
@@ -37,6 +39,8 @@ const SFX_VOLUME_MULTIPLIERS = {
 	"deadline": 0.8,
 	"pause": 0.8,
 	"start": 0.8,
+	"ball_kick": 1.0,
+	"monitor_break": 1.0,
 }
 
 # --- НАСТРОЙКИ ГРОМКОСТИ (0.0 = тишина, 1.0 = макс) ---
@@ -100,7 +104,7 @@ func _ready():
 	# --- Подключаемся к сигналу начала дня (в 9:00) ---
 	if GameTime and not GameTime.work_started.is_connected(_on_work_started):
 		GameTime.work_started.connect(_on_work_started)
-			
+		
 	# === МАГИЯ АВТОМАТИЧЕСКИХ КНОПОК ===
 	# 1. Слушаем появление новых объектов в игре
 	get_tree().node_added.connect(_on_node_added)
