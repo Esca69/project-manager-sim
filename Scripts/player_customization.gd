@@ -152,14 +152,14 @@ func _build_ui():
 	_apply_styled_button(finish_btn)
 	continue_hbox.add_child(finish_btn)
 
-	# === Правая панель (1/3 экрана) ===
+	# === Правая панель (1/3 экрана) — белый фон ===
 	var right_panel = PanelContainer.new()
 	right_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_panel.size_flags_stretch_ratio = 1.0
 	right_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	var right_style = StyleBoxFlat.new()
-	right_style.bg_color = Color(0.97, 0.98, 1.0, 1)
+	right_style.bg_color = Color(1, 1, 1, 1)  # белый фон
 	right_style.border_width_left = 0
 	right_style.border_width_top = 0
 	right_style.border_width_right = 0
@@ -179,6 +179,10 @@ func _build_ui():
 
 	_build_traits_panel(right_vbox)
 
+
+# Структура каждой строки карусели (с и без цвета):
+#   [cat_label 140px] [8] [< btn 40px] [8] [color_rect/placeholder 30px] [8] [value_label 120px] [8] [> btn 40px]
+# Плейсхолдер в строках без цвета обеспечивает одинаковое смещение кнопок < > по вертикали.
 
 func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, next_cb: Callable) -> Label:
 	var row = HBoxContainer.new()
@@ -201,9 +205,15 @@ func _add_carousel(parent: Control, category_key: String, prev_cb: Callable, nex
 	_apply_arrow_style(prev_btn)
 	row.add_child(prev_btn)
 
+	# Плейсхолдер 30px вместо ColorRect — выравнивает кнопки с цветными строками
+	var placeholder = Control.new()
+	placeholder.custom_minimum_size = Vector2(30, 0)
+	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(placeholder)
+
 	var value_label = Label.new()
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	value_label.custom_minimum_size = Vector2(160, 0)
+	value_label.custom_minimum_size = Vector2(120, 0)
 	value_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
 	row.add_child(value_label)
 
