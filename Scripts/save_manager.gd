@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 15
+const SAVE_VERSION = 16
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -22,6 +22,7 @@ const MIGRATIONS = {
 	12: "_migrate_v12_to_v13",
 	13: "_migrate_v13_to_v14",
 	14: "_migrate_v14_to_v15",
+	15: "_migrate_v15_to_v16",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -390,13 +391,16 @@ func _serialize_desk_assignments() -> Array:
 			"desk_position_x": desk.global_position.x,
 			"desk_position_y": desk.global_position.y,
 			"employee_name": desk.assigned_employee.employee_name if desk.assigned_employee else "",
+			"is_broken": desk.is_broken if "is_broken" in desk else false,
 		}
 		if "desk_upgrades" in desk:
 			entry["desk_upgrades"] = desk.desk_upgrades.duplicate()
 		# For empty desks with no upgrades, skip to keep save file slim
 		if desk.assigned_employee == null:
 			var has_any = false
-			if "desk_upgrades" in desk:
+			if "is_broken" in desk and desk.is_broken:
+				has_any = true
+			if not has_any and "desk_upgrades" in desk:
 				for key in desk.desk_upgrades:
 					if desk.desk_upgrades[key]:
 						has_any = true
@@ -927,6 +931,14 @@ func _migrate_v14_to_v15(data: Dictionary) -> bool:
 	print("🔄 Миграция v14→v15: добавлены pm_traits")
 	return true
 
+func _migrate_v15_to_v16(data: Dictionary) -> bool:
+	var desk_assignments = data.get("desk_assignments", [])
+	for assignment in desk_assignments:
+		if not assignment.has("is_broken"):
+			assignment["is_broken"] = false
+	print("🔄 Миграция v15→v16: добавлен is_broken для столов")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -1284,6 +1296,12 @@ func _restore_desk_assignments(desk_assignments: Array, employee_map: Dictionary
 		# Restore desk upgrades regardless of employee assignment
 		if assignment.has("desk_upgrades") and "desk_upgrades" in best_desk:
 			best_desk.desk_upgrades = assignment["desk_upgrades"].duplicate()
+
+		# Restore broken state
+		if "is_broken" in best_desk:
+			best_desk.is_broken = assignment.get("is_broken", false)
+			if best_desk.has_method("update_desk_visuals"):
+				best_desk.update_desk_visuals()
 
 		if emp_name.is_empty():
 			continue

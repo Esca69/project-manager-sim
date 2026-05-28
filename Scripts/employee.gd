@@ -929,7 +929,14 @@ func _physics_process(delta):
 			_hide_raise_bubble()
 
 	# === NO-DESK: Постоянная иконка если в WORKING-состоянии но нет стола ===
-	if data and not data.is_requesting_raise and current_state == State.WORKING and my_desk_position == Vector2.ZERO:
+	# Также показывается при сломанном столе (сотрудник бродит)
+	var _show_no_desk = false
+	if data and not data.is_requesting_raise:
+		if current_state == State.WORKING and my_desk_position == Vector2.ZERO:
+			_show_no_desk = true
+		elif my_desk_position != Vector2.ZERO and _is_my_desk_broken() and current_state in [State.WANDERING, State.WANDER_PAUSE]:
+			_show_no_desk = true
+	if _show_no_desk:
 		if not is_instance_valid(_no_desk_bubble):
 			_show_no_desk_bubble()
 	else:
@@ -945,7 +952,7 @@ func _physics_process(delta):
 		State.IDLE:
 			_apply_lean(Vector2.ZERO, delta)
 			if _is_work_time():
-				if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+				if my_desk_position != Vector2.ZERO and _is_my_stage_active() and not _is_my_desk_broken():
 					move_to_desk(my_desk_position)
 				else:
 					_start_wandering()
@@ -1035,7 +1042,7 @@ func _physics_process(delta):
 				_force_go_home()
 				return
 			
-			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+			if my_desk_position != Vector2.ZERO and _is_my_stage_active() and not _is_my_desk_broken():
 				move_to_desk(my_desk_position)
 				return
 			
@@ -1059,7 +1066,7 @@ func _physics_process(delta):
 				_force_go_home()
 				return
 			
-			if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+			if my_desk_position != Vector2.ZERO and _is_my_stage_active() and not _is_my_desk_broken():
 				move_to_desk(my_desk_position)
 				return
 			
@@ -1422,7 +1429,7 @@ func _start_wandering():
 	_pick_next_wander_target()
 
 func _pick_next_wander_target():
-	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+	if my_desk_position != Vector2.ZERO and _is_my_stage_active() and not _is_my_desk_broken():
 		move_to_desk(my_desk_position)
 		return
 	
@@ -2002,6 +2009,24 @@ func _find_my_desk():
 			return desk
 	return null
 
+# Ищет стол по позиции через группу "desk"
+func _get_my_desk_node():
+	if my_desk_position == Vector2.ZERO:
+		return null
+	for desk in get_tree().get_nodes_in_group("desk"):
+		if "seat_point" in desk and desk.seat_point:
+			if desk.seat_point.global_position.distance_to(my_desk_position) < 50.0:
+				return desk
+		elif desk.global_position.distance_to(my_desk_position) < 50.0:
+			return desk
+	return null
+
+func _is_my_desk_broken() -> bool:
+	var desk = _get_my_desk_node()
+	if desk and "is_broken" in desk:
+		return desk.is_broken
+	return false
+
 func _update_desk_bonuses():
 	if not data:
 		return
@@ -2137,6 +2162,11 @@ func _on_navigation_finished():
 		_start_wandering()
 		return
 	
+	# Сломанный стол — сотрудник не может работать
+	if _is_my_desk_broken():
+		_start_wandering()
+		return
+	
 	global_position = nav_agent.target_position
 	current_state = State.WORKING
 	velocity = Vector2.ZERO
@@ -2197,7 +2227,7 @@ func _on_work_started():
 	$CollisionShape2D.disabled = false
 	z_index = 0 
 	
-	if _is_my_stage_active():
+	if _is_my_stage_active() and not _is_my_desk_broken():
 		current_state = State.MOVING
 		nav_agent.target_position = my_desk_position
 	else:
