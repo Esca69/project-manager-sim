@@ -15,6 +15,7 @@ var _is_player_in_radius: bool = false
 
 # === СОСТОЯНИЕ ПОЛОМКИ ===
 var is_broken: bool = false
+const MONITOR_REPAIR_COST: int = 200
 
 # === СИСТЕМА УЛУЧШЕНИЙ РАБОЧЕГО МЕСТА ===
 var desk_upgrades: Dictionary = {
@@ -260,6 +261,19 @@ func break_monitor():
 	is_broken = true
 	update_desk_visuals()
 	AudioManager.play_sfx("monitor_break")
+
+# Ремонт монитора: списывает деньги, сбрасывает флаг, обновляет визуал
+func repair_monitor() -> bool:
+	var gs = get_node_or_null("/root/GameState")
+	if gs == null:
+		return false
+	if gs.company_balance < MONITOR_REPAIR_COST:
+		return false
+	gs.add_expense(MONITOR_REPAIR_COST)
+	gs.daily_event_expenses.append({"reason": "EXPENSE_MONITOR_REPAIR", "amount": MONITOR_REPAIR_COST})
+	is_broken = false
+	update_desk_visuals()
+	return true
 
 func update_desk_visuals():
 	if assigned_employee:

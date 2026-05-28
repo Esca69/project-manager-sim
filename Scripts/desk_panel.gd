@@ -265,8 +265,11 @@ func open_for_desk(desk_node):
 func _refresh():
 	if not _current_desk:
 		return
-	_refresh_employee_block()
-	_refresh_upgrades()
+	if _current_desk.is_broken:
+		_refresh_broken_state()
+	else:
+		_refresh_employee_block()
+		_refresh_upgrades()
 
 func _refresh_employee_block():
 	if not _current_desk:
@@ -313,6 +316,54 @@ func _make_section_header(text: String) -> Label:
 	if UITheme:
 		UITheme.apply_font(lbl, "semibold")
 	return lbl
+
+func _refresh_broken_state():
+	# Скрываем обычные блоки — перезаполняем upgrades_vbox
+	_employee_label.text = ""
+	_assign_btn.visible = false
+	for child in _upgrades_vbox.get_children():
+		child.queue_free()
+
+	# Баннер
+	var banner_lbl = Label.new()
+	banner_lbl.text = tr("DESK_BROKEN_BANNER")
+	banner_lbl.add_theme_color_override("font_color", COLOR_RED)
+	banner_lbl.add_theme_font_size_override("font_size", 14)
+	banner_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if UITheme:
+		UITheme.apply_font(banner_lbl, "semibold")
+	_upgrades_vbox.add_child(banner_lbl)
+
+	# Кнопка починки
+	var repair_btn = Button.new()
+	repair_btn.text = tr("DESK_REPAIR_BTN") + " ($%d)" % _current_desk.MONITOR_REPAIR_COST
+	repair_btn.custom_minimum_size = Vector2(200, 40)
+	repair_btn.add_theme_font_size_override("font_size", 14)
+	repair_btn.focus_mode = Control.FOCUS_NONE
+	if UITheme:
+		UITheme.apply_font(repair_btn, "semibold")
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = COLOR_GREEN
+	btn_style.corner_radius_top_left = 16
+	btn_style.corner_radius_top_right = 16
+	btn_style.corner_radius_bottom_right = 16
+	btn_style.corner_radius_bottom_left = 16
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = Color(0.2, 0.6, 0.25, 1)
+	repair_btn.add_theme_stylebox_override("normal", btn_style)
+	repair_btn.add_theme_stylebox_override("hover", btn_hover)
+	repair_btn.add_theme_stylebox_override("pressed", btn_hover)
+	repair_btn.add_theme_color_override("font_color", COLOR_WHITE)
+	repair_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
+	repair_btn.pressed.connect(_on_repair_pressed)
+	_upgrades_vbox.add_child(repair_btn)
+
+func _on_repair_pressed():
+	if not _current_desk:
+		return
+	if _current_desk.repair_monitor():
+		_assign_btn.visible = true
+		_refresh()
 
 func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
 	var card = PanelContainer.new()

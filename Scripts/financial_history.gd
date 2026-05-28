@@ -39,6 +39,8 @@ func record_day():
 		var reason = str(ev.get("reason", ""))
 		if reason == "SUMMARY_OFFICE_UPGRADES":
 			office_costs += amt
+		elif reason == "EXPENSE_MONITOR_REPAIR":
+			office_costs += amt
 		elif reason == "EXPENSE_TRAINING":
 			training_costs += amt
 		elif reason == "EXPENSE_BONUS":
