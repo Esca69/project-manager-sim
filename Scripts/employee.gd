@@ -978,6 +978,10 @@ func _physics_process(delta):
 				_leave_desk_to_wander()
 				return
 			
+			if _is_my_desk_broken():
+				_leave_desk_to_wander()
+				return
+			
 			_try_start_lunch()
 			_try_start_toilet_break()
 			_try_start_coffee_break()

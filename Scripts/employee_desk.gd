@@ -261,6 +261,10 @@ func break_monitor():
 	is_broken = true
 	update_desk_visuals()
 	AudioManager.play_sfx("monitor_break")
+	# Мгновенно выгоняем сотрудника если он сейчас работает
+	if assigned_npc_node and is_instance_valid(assigned_npc_node):
+		if assigned_npc_node.current_state == assigned_npc_node.State.WORKING:
+			assigned_npc_node._leave_desk_to_wander()
 
 # Ремонт монитора: списывает деньги, сбрасывает флаг, обновляет визуал
 func repair_monitor() -> bool:
