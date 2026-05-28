@@ -13,6 +13,9 @@ var assigned_npc_node = null
 const DESK_PROXIMITY_RADIUS: float = 260.0
 var _is_player_in_radius: bool = false
 
+# === СОСТОЯНИЕ ПОЛОМКИ ===
+var is_broken: bool = false
+
 # === СИСТЕМА УЛУЧШЕНИЙ РАБОЧЕГО МЕСТА ===
 var desk_upgrades: Dictionary = {
 	"second_monitor": false,
@@ -243,6 +246,21 @@ func unassign_employee():
 	
 	return old_npc  # Возвращаем ноду старого NPC, чтобы меню могло его "отпустить"
 
+# === ПОЛОМКА МОНИТОРА ===
+
+# Вызывается мячом при коллизии со столом
+func on_ball_hit():
+	if is_broken:
+		return
+	if randf() < 0.30:
+		break_monitor()
+
+# Ломает монитор: устанавливает флаг, обновляет визуал, играет звук
+func break_monitor():
+	is_broken = true
+	update_desk_visuals()
+	AudioManager.play_sfx("monitor_break")
+
 func update_desk_visuals():
 	if assigned_employee:
 		# ИСПРАВЛЕНИЕ: Выводим локализованное имя на плашке стола
@@ -264,3 +282,11 @@ func update_desk_visuals():
 	var mug = get_node_or_null("Mug")
 	if mug:
 		mug.visible = assigned_employee != null
+
+	# Видимость монитора в зависимости от состояния поломки
+	var monitor = get_node_or_null("Monitor")
+	var monitor_broken = get_node_or_null("MonitorBroken")
+	if monitor:
+		monitor.visible = not is_broken
+	if monitor_broken:
+		monitor_broken.visible = is_broken
