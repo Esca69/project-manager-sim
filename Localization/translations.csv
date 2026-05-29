@@ -378,6 +378,7 @@ HUD_INFO_NAME,Имя: %s ,Name: %s
 HUD_INFO_ROLE,Должность: %s ,Role: %s 
 HUD_INFO_SALARY,Ставка: %d$/месяц ,Salary: $%d/month 
 PLAYER_DISCUSS_TITLE,Обсуждение,Meeting
+SPRINT_BAR_LABEL,⚡ Спринт,⚡ Sprint
 PLAYER_COOLDOWN_FORMAT,⏳ Перезарядка: %d:%02d,⏳ Cooldown: %d:%02d
 PLAYER_SKILL_READY,Готово!,Ready!
 SKILL_VAL_LOW,Низкий,Low

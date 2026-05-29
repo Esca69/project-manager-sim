@@ -1,10 +1,11 @@
 extends CharacterBody2D
 
 const SPEED = 300.0
-const SPRINT_MULTIPLIER: float = 1.5
+const SPRINT_MULTIPLIER: float = 1.8
 const SPRINT_MAX_STAMINA: float = 5.0
 const SPRINT_DRAIN_RATE: float = 1.0
 const SPRINT_REGEN_RATE: float = 0.4
+const SPRINT_BAR_HIDE_DELAY: float = 0.5
 
 const ZOOM_STEP = 0.1
 const ZOOM_MIN = 0.6
@@ -89,6 +90,7 @@ var _discuss_bar_attached: bool = false
 # --- СПРИНТ ---
 var _sprint_stamina: float = SPRINT_MAX_STAMINA
 var _is_sprinting: bool = false
+var _sprint_hide_timer: float = 0.0
 var _sprint_bar_container: PanelContainer = null
 var _sprint_progress_bar: ProgressBar = null
 
@@ -334,7 +336,7 @@ func _create_sprint_bar():
 	_sprint_bar_container.add_child(vbox)
 
 	var sprint_label = Label.new()
-	sprint_label.text = "⚡ Спринт"
+	sprint_label.text = tr("SPRINT_BAR_LABEL")
 	sprint_label.add_theme_color_override("font_color", Color(0.9, 0.55, 0.0, 1))
 	sprint_label.add_theme_font_size_override("font_size", 11)
 	sprint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -582,6 +584,9 @@ func _physics_process(delta):
 func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 	_update_discuss_bar_position()
+	# Тик таймера скрытия плашки спринта
+	if not _is_sprinting and _sprint_hide_timer > 0.0:
+		_sprint_hide_timer = max(0.0, _sprint_hide_timer - delta)
 	_update_sprint_bar()
 	_update_sprint_bar_position()
 
@@ -809,7 +814,7 @@ func _update_sprint_bar_position():
 		return
 	if not _sprint_bar_container.visible:
 		return
-	var world_pos = global_position + Vector2(0, -80)
+	var world_pos = global_position + Vector2(0, -155)
 	var screen_pos = _world_to_screen(world_pos)
 	var bar_size = _sprint_bar_container.size
 	if bar_size.x < 1.0:
@@ -827,8 +832,16 @@ func _update_sprint_bar():
 	if _sprint_bar_container == null or _sprint_progress_bar == null:
 		return
 	_sprint_progress_bar.value = _sprint_stamina
-	var should_show = _is_sprinting or _sprint_stamina < SPRINT_MAX_STAMINA
-	_sprint_bar_container.visible = should_show
+	# Пока спринтуем — показываем и сбрасываем таймер скрытия
+	if _is_sprinting:
+		_sprint_hide_timer = SPRINT_BAR_HIDE_DELAY
+		_sprint_bar_container.visible = true
+	elif _sprint_stamina < SPRINT_MAX_STAMINA:
+		# Стамина восстанавливается — показываем только пока идёт задержка
+		_sprint_bar_container.visible = _sprint_hide_timer > 0.0
+	else:
+		# Стамина полная — скрываем
+		_sprint_bar_container.visible = false
 
 # ============================
 # === МОТИВАЦИЯ: ЛОГИКА ===
