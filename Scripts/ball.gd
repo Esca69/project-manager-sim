@@ -22,7 +22,11 @@ func _physics_process(delta):
 		_player = get_tree().get_first_node_in_group("player")
 
 	if _player != null:
-		_try_kick_from(_player, kick_force)
+		# Во время спринта сила удара увеличивается в 2.5 раза
+		var player_force = kick_force
+		if _player.get("_is_sprinting") == true:
+			player_force *= 2.5
+		_try_kick_from(_player, player_force)
 
 	for npc in get_tree().get_nodes_in_group("npc"):
 		if npc is CharacterBody2D:
