@@ -102,6 +102,7 @@ func show_confetti():
 	c.process_mode = Node.PROCESS_MODE_ALWAYS
 	c.add_to_group("transient_vfx")
 	_ui_layer.add_child(c)
+	c.global_position = Vector2.ZERO
 
 # ============================================================
 # ФИЧА 3: Toast-нотификации

@@ -27,17 +27,12 @@ func _ready():
 	_spawn_particles()
 
 func _spawn_particles():
-	var viewport_size = get_viewport_rect().size
-	var spawn_x_center = viewport_size.x * 0.5
 	var count = randi_range(PARTICLE_COUNT_MIN, PARTICLE_COUNT_MAX)
 	for i in range(count):
 		var angle = randf_range(-PI * 0.8, -PI * 0.2)
 		var speed = randf_range(180.0, 420.0)
 		_particles.append({
-			"pos": Vector2(
-				spawn_x_center + randf_range(-viewport_size.x * 0.4, viewport_size.x * 0.4),
-				viewport_size.y * 0.35
-			),
+			"pos": global_position + Vector2(randf_range(-96.0, 96.0), 0.0),
 			"vel": Vector2(cos(angle) * speed * randf_range(0.5, 1.5), sin(angle) * speed),
 			"size": Vector2(randi_range(4, 7), randi_range(6, 10)),
 			"color": PARTICLE_COLORS[randi() % PARTICLE_COLORS.size()],
@@ -67,6 +62,6 @@ func _draw():
 	for p in _particles:
 		var c = p["color"]
 		c.a = _alpha
-		draw_set_transform(p["pos"], p["rotation"])
+		draw_set_transform(to_local(p["pos"]), p["rotation"])
 		draw_rect(Rect2(-p["size"] * 0.5, p["size"]), c)
 	draw_set_transform(Vector2.ZERO, 0.0)
