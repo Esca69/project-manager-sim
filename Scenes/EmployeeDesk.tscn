@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://800ken273kfj"]
+[gd_scene load_steps=13 format=3 uid="uid://800ken273kfj"]
 
 [ext_resource type="Script" uid="uid://buoyrfwm72weh" path="res://Scripts/employee_desk.gd" id="1_68q08"]
 [ext_resource type="Texture2D" uid="uid://c7fwbjuu45tqn" path="res://Sprites/Office/empoloyee_desk2.png" id="2_68q08"]
@@ -16,6 +16,28 @@ outline_color = Color(0, 0, 0, 1)
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_68q08"]
 radius = 38.96379
 height = 255.99988
+
+[sub_resource type="Gradient" id="Gradient_fxlxr"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0.6, 0.6, 0.6, 0.5, 0.9, 0.9, 0.9, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_jusja"]
+gradient = SubResource("Gradient_fxlxr")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ji8f0"]
+direction = Vector3(0, -1, 0)
+spread = 30.0
+gravity = Vector3(0, -20, 0)
+initial_velocity_min = 8.0
+initial_velocity_max = 20.0
+angular_velocity_min = -30.0
+angular_velocity_max = 30.0
+scale_min = 0.4
+scale_max = 0.9
+color = Color(0.7, 0.7, 0.7, 0.6)
+color_ramp = SubResource("GradientTexture1D_jusja")
+damping_min = 5.0
+damping_max = 10.0
 
 [node name="EmployeeDesk" type="StaticBody2D" groups=["desk"]]
 script = ExtResource("1_68q08")
@@ -56,6 +78,18 @@ texture = ExtResource("2_eoxvh")
 visible = false
 position = Vector2(7, -102)
 texture = ExtResource("5_wxfjs")
+
+[node name="SmokeParticles" type="GPUParticles2D" parent="MonitorBroken"]
+position = Vector2(0, -20)
+emitting = false
+amount = 16
+lifetime = 2.0
+one_shot = false
+preprocess = 0.0
+speed_scale = 1.0
+local_coords = false
+z_index = 5
+process_material = SubResource("ParticleProcessMaterial_ji8f0")
 
 [node name="Mug" type="Sprite2D" parent="."]
 visible = false

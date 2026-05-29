@@ -308,3 +308,12 @@ func update_desk_visuals():
 		monitor.visible = not is_broken
 	if monitor_broken:
 		monitor_broken.visible = is_broken
+
+	# Дым над сломанным монитором
+	var smoke = get_node_or_null("MonitorBroken/SmokeParticles")
+	if not smoke:
+		smoke = get_node_or_null("monitor_broken/SmokeParticles")
+	if not smoke:
+		smoke = get_node_or_null("SmokeParticles")
+	if smoke and (smoke is GPUParticles2D or smoke is CPUParticles2D):
+		smoke.emitting = is_broken
