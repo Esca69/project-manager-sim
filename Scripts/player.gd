@@ -90,9 +90,11 @@ var _discuss_bar_attached: bool = false
 # --- СПРИНТ ---
 var _sprint_stamina: float = SPRINT_MAX_STAMINA
 var _is_sprinting: bool = false
+var _sprint_exhausted: bool = false
 var _sprint_hide_timer: float = 0.0
 var _sprint_bar_container: PanelContainer = null
 var _sprint_progress_bar: ProgressBar = null
+var _sprint_bar_fill_style: StyleBoxFlat = null
 
 # --- КНОПКА МОТИВАЦИИ НА HUD ---
 var _motivate_btn: Button = null
@@ -364,6 +366,7 @@ func _create_sprint_bar():
 	fill.corner_radius_bottom_right = 4
 	fill.corner_radius_bottom_left = 4
 	_sprint_progress_bar.add_theme_stylebox_override("fill", fill)
+	_sprint_bar_fill_style = fill
 
 	vbox.add_child(_sprint_progress_bar)
 
@@ -532,7 +535,13 @@ func _physics_process(delta):
 
 	# === СПРИНТ ===
 	var wants_sprint = Input.is_key_pressed(KEY_SHIFT) and direction != Vector2.ZERO
-	if wants_sprint and _sprint_stamina > 0.0:
+	# Если стамина исчерпана — блокируем спринт до полного восстановления
+	if _sprint_stamina <= 0.0:
+		_sprint_exhausted = true
+	elif _sprint_stamina >= SPRINT_MAX_STAMINA:
+		_sprint_exhausted = false
+
+	if wants_sprint and _sprint_stamina > 0.0 and not _sprint_exhausted:
 		_is_sprinting = true
 		_sprint_stamina = max(0.0, _sprint_stamina - SPRINT_DRAIN_RATE * delta)
 	else:
@@ -814,7 +823,7 @@ func _update_sprint_bar_position():
 		return
 	if not _sprint_bar_container.visible:
 		return
-	var world_pos = global_position + Vector2(0, -155)
+	var world_pos = global_position + Vector2(0, -195)
 	var screen_pos = _world_to_screen(world_pos)
 	var bar_size = _sprint_bar_container.size
 	if bar_size.x < 1.0:
@@ -832,13 +841,19 @@ func _update_sprint_bar():
 	if _sprint_bar_container == null or _sprint_progress_bar == null:
 		return
 	_sprint_progress_bar.value = _sprint_stamina
+	# Цвет полоски: красный если exhausted, оранжевый иначе
+	if _sprint_bar_fill_style != null:
+		if _sprint_exhausted:
+			_sprint_bar_fill_style.bg_color = Color(0.85, 0.15, 0.1, 1)  # красный
+		else:
+			_sprint_bar_fill_style.bg_color = Color(1.0, 0.65, 0.0, 1)   # оранжевый
 	# Пока спринтуем — показываем и сбрасываем таймер скрытия
 	if _is_sprinting:
 		_sprint_hide_timer = SPRINT_BAR_HIDE_DELAY
 		_sprint_bar_container.visible = true
 	elif _sprint_stamina < SPRINT_MAX_STAMINA:
-		# Стамина восстанавливается — показываем только пока идёт задержка
-		_sprint_bar_container.visible = _sprint_hide_timer > 0.0
+		# Стамина восстанавливается — показываем только пока идёт задержка или exhausted
+		_sprint_bar_container.visible = _sprint_hide_timer > 0.0 or _sprint_exhausted
 	else:
 		# Стамина полная — скрываем
 		_sprint_bar_container.visible = false
