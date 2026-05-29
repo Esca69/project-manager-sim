@@ -1,6 +1,10 @@
 extends CharacterBody2D
 
 const SPEED = 300.0
+const SPRINT_MULTIPLIER: float = 1.5
+const SPRINT_MAX_STAMINA: float = 5.0
+const SPRINT_DRAIN_RATE: float = 1.0
+const SPRINT_REGEN_RATE: float = 0.4
 
 const ZOOM_STEP = 0.1
 const ZOOM_MIN = 0.6
@@ -82,6 +86,12 @@ var _discuss_label: Label = null
 var _discuss_timer_label: Label = null
 var _discuss_bar_attached: bool = false
 
+# --- СПРИНТ ---
+var _sprint_stamina: float = SPRINT_MAX_STAMINA
+var _is_sprinting: bool = false
+var _sprint_bar_container: PanelContainer = null
+var _sprint_progress_bar: ProgressBar = null
+
 # --- КНОПКА МОТИВАЦИИ НА HUD ---
 var _motivate_btn: Button = null
 var _motivate_cooldown_label: Label = null
@@ -112,6 +122,7 @@ func _ready():
 		_shadow_base_scale = shadow_sprite.scale
 	_create_interact_hint()
 	_create_discuss_bar()
+	call_deferred("_create_sprint_bar")
 
 	# Применяем внешность из PMData
 	update_visuals()
@@ -292,6 +303,70 @@ func _create_discuss_bar():
 
 	call_deferred("_attach_discuss_bar_to_hud")
 
+func _create_sprint_bar():
+	_sprint_bar_container = PanelContainer.new()
+	_sprint_bar_container.visible = false
+	_sprint_bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sprint_bar_container.z_index = 80
+	_sprint_bar_container.custom_minimum_size = Vector2(100, 0)
+
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(1, 1, 1, 0.92)
+	panel_style.corner_radius_top_left = 8
+	panel_style.corner_radius_top_right = 8
+	panel_style.corner_radius_bottom_right = 8
+	panel_style.corner_radius_bottom_left = 8
+	panel_style.content_margin_left = 8
+	panel_style.content_margin_right = 8
+	panel_style.content_margin_top = 5
+	panel_style.content_margin_bottom = 5
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(1.0, 0.85, 0.2, 0.9)
+	panel_style.shadow_color = Color(0, 0, 0, 0.15)
+	panel_style.shadow_size = 3
+	_sprint_bar_container.add_theme_stylebox_override("panel", panel_style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 2)
+	_sprint_bar_container.add_child(vbox)
+
+	var sprint_label = Label.new()
+	sprint_label.text = "⚡ Спринт"
+	sprint_label.add_theme_color_override("font_color", Color(0.9, 0.55, 0.0, 1))
+	sprint_label.add_theme_font_size_override("font_size", 11)
+	sprint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if UITheme: UITheme.apply_font(sprint_label, "semibold")
+	vbox.add_child(sprint_label)
+
+	_sprint_progress_bar = ProgressBar.new()
+	_sprint_progress_bar.custom_minimum_size = Vector2(84, 8)
+	_sprint_progress_bar.max_value = SPRINT_MAX_STAMINA
+	_sprint_progress_bar.value = _sprint_stamina
+	_sprint_progress_bar.show_percentage = false
+
+	var bg = StyleBoxFlat.new()
+	bg.bg_color = Color(0.85, 0.85, 0.85, 1)
+	bg.corner_radius_top_left = 4
+	bg.corner_radius_top_right = 4
+	bg.corner_radius_bottom_right = 4
+	bg.corner_radius_bottom_left = 4
+	_sprint_progress_bar.add_theme_stylebox_override("background", bg)
+
+	var fill = StyleBoxFlat.new()
+	fill.bg_color = Color(1.0, 0.65, 0.0, 1)
+	fill.corner_radius_top_left = 4
+	fill.corner_radius_top_right = 4
+	fill.corner_radius_bottom_right = 4
+	fill.corner_radius_bottom_left = 4
+	_sprint_progress_bar.add_theme_stylebox_override("fill", fill)
+
+	vbox.add_child(_sprint_progress_bar)
+
+	call_deferred("_attach_sprint_bar_to_hud")
+
 func _attach_hint_to_hud():
 	var hud = get_tree().get_first_node_in_group("ui")
 	if hud:
@@ -306,6 +381,13 @@ func _attach_discuss_bar_to_hud():
 	else:
 		add_child(_discuss_bar_container)
 	_discuss_bar_attached = true
+
+func _attach_sprint_bar_to_hud():
+	var hud = get_tree().get_first_node_in_group("ui")
+	if hud:
+		hud.add_child(_sprint_bar_container)
+	else:
+		add_child(_sprint_bar_container)
 
 # --- Проверка: открыто ли меню в HUD ---
 func _is_ui_blocking() -> bool:
@@ -436,7 +518,7 @@ func _physics_process(delta):
 		move_and_slide()
 		return
 
-	# === ОБЫЧНЫЙ РЕЖИМ (существующий код без изменений) ===
+	# === ОБЫЧНЫЙ РЕЖИМ ===
 	if _is_ui_blocking():
 		velocity = Vector2.ZERO
 		last_move_velocity = velocity
@@ -445,8 +527,20 @@ func _physics_process(delta):
 		return
 
 	var direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+
+	# === СПРИНТ ===
+	var wants_sprint = Input.is_key_pressed(KEY_SHIFT) and direction != Vector2.ZERO
+	if wants_sprint and _sprint_stamina > 0.0:
+		_is_sprinting = true
+		_sprint_stamina = max(0.0, _sprint_stamina - SPRINT_DRAIN_RATE * delta)
+	else:
+		_is_sprinting = false
+		_sprint_stamina = min(SPRINT_MAX_STAMINA, _sprint_stamina + SPRINT_REGEN_RATE * delta)
+
+	var sprint_mult = SPRINT_MULTIPLIER if _is_sprinting else 1.0
+
 	if direction:
-		velocity = direction * SPEED * (1.0 + PMData.get_movement_bonus())
+		velocity = direction * SPEED * sprint_mult * (1.0 + PMData.get_movement_bonus())
 	else:
 		velocity = Vector2.ZERO
 	last_move_velocity = velocity
@@ -488,6 +582,8 @@ func _physics_process(delta):
 func _process(delta):
 	camera.zoom = camera.zoom.lerp(target_zoom, min(1.0, ZOOM_SMOOTH_SPEED * delta))
 	_update_discuss_bar_position()
+	_update_sprint_bar()
+	_update_sprint_bar_position()
 
 	# Кулдаун кольца ауры
 	if _aura_ring_cooldown > 0:
@@ -707,6 +803,32 @@ func _update_discuss_bar_position():
 	target_x = clamp(target_x, 0.0, vp_size.x - bar_size.x)
 
 	_discuss_bar_container.global_position = Vector2(target_x, target_y)
+
+func _update_sprint_bar_position():
+	if _sprint_bar_container == null:
+		return
+	if not _sprint_bar_container.visible:
+		return
+	var world_pos = global_position + Vector2(0, -80)
+	var screen_pos = _world_to_screen(world_pos)
+	var bar_size = _sprint_bar_container.size
+	if bar_size.x < 1.0:
+		bar_size = _sprint_bar_container.custom_minimum_size
+	var target_x = screen_pos.x - bar_size.x / 2.0
+	var target_y = screen_pos.y - bar_size.y
+	var vp_size = get_viewport().get_visible_rect().size
+	var top_margin = 50.0
+	var bottom_margin = 60.0
+	target_y = clamp(target_y, top_margin, vp_size.y - bottom_margin - bar_size.y)
+	target_x = clamp(target_x, 0.0, vp_size.x - bar_size.x)
+	_sprint_bar_container.global_position = Vector2(target_x, target_y)
+
+func _update_sprint_bar():
+	if _sprint_bar_container == null or _sprint_progress_bar == null:
+		return
+	_sprint_progress_bar.value = _sprint_stamina
+	var should_show = _is_sprinting or _sprint_stamina < SPRINT_MAX_STAMINA
+	_sprint_bar_container.visible = should_show
 
 # ============================
 # === МОТИВАЦИЯ: ЛОГИКА ===
