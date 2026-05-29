@@ -60,5 +60,5 @@ func _spawn_confetti():
 	c.set_script(confetti_script)
 	c.process_mode = Node.PROCESS_MODE_ALWAYS
 	c.add_to_group("transient_vfx")
+	c.set("override_spawn_pos", global_position + Vector2(0, -130))
 	scene.add_child(c)
-	c.global_position = global_position + Vector2(0, -130)
