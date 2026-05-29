@@ -9,6 +9,7 @@ var _player: CharacterBody2D = null
 var _kick_cooldown: float = 0.0
 
 func _ready():
+	add_to_group("ball")
 	continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 	body_entered.connect(_on_body_entered)
 	_player = get_tree().get_first_node_in_group("player")
@@ -80,3 +81,8 @@ func _on_body_entered(body: Node):
 	# Проверяем, не попал ли мяч в стол сотрудника
 	if body.is_in_group("desk") and body.has_method("on_ball_hit"):
 		body.on_ball_hit()
+
+func on_goal_hit():
+	# Сохраняем направление, резко гасим скорость — имитация попадания в сетку
+	linear_velocity *= 0.12
+	angular_velocity *= 0.12

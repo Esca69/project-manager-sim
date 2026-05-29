@@ -1,11 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://b80jhlpe1jgm0"]
+[gd_scene load_steps=4 format=3 uid="uid://b80jhlpe1jgm0"]
 
 [ext_resource type="Texture2D" uid="uid://gfibcvjdrt54" path="res://Sprites/Office/goal.png" id="1_j6k04"]
+[ext_resource type="Script" path="res://Scripts/goal.gd" id="2_goal"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mk31d"]
 size = Vector2(193, 20)
 
 [node name="Goal" type="StaticBody2D"]
+script = ExtResource("2_goal")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_j6k04")
@@ -22,3 +24,9 @@ polygon = PackedVector2Array(3, 0.5, 28, -19.5, 12, -115.5, -7, -115.5, -8, 0.5)
 [node name="CollisionPolygon2D2" type="CollisionPolygon2D" parent="."]
 position = Vector2(115, -1)
 polygon = PackedVector2Array(-3, 2, 11, 1, 12, -115.5, -7, -115.5, -25, -20)
+
+[node name="GoalArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GoalArea"]
+position = Vector2(0, -28)
+shape = SubResource("RectangleShape2D_mk31d")
