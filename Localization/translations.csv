@@ -1596,6 +1596,6 @@ PM_TRAIT_CLIENT_ORIENTED_NAME,Клиентоориентированный,Clien
 PM_TRAIT_CLIENT_ORIENTED_DESC,Вы умеете работать с клиентами. Каждый завершённый проект приносит +1 очко репутации и +1 глобальной репутации.,You know how to work with clients. Each completed project grants +1 reputation point and +1 global reputation.
 PM_TRAIT_ANTI_CLIENT_NAME,Не клиентоориентированный,Anti-Client
 PM_TRAIT_ANTI_CLIENT_DESC,Клиенты вас раздражают и это заметно. Каждый завершённый проект стоит -1 очко репутации и -1 глобальной репутации.,Clients get on your nerves and it shows. Each completed project costs -1 reputation point and -1 global reputation.
-DESK_BROKEN_BANNER,Упс… Монитор сломан, кто-то был слишком неосторожным с мячом,"Oops… The monitor is broken, someone was too careless with the ball"
+DESK_BROKEN_BANNER,Упс… Монитор сломан. Кто-то был слишком неосторожным с мячом.,"Oops… The monitor is broken, someone was too careless with the ball"
 DESK_REPAIR_BTN,Починить,Repair
 EXPENSE_MONITOR_REPAIR,Починка монитора (стол),Monitor repair (desk)
