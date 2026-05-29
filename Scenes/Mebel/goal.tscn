@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://b80jhlpe1jgm0"]
+
+[ext_resource type="Texture2D" uid="uid://gfibcvjdrt54" path="res://Sprites/Office/goal.png" id="1_j6k04"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mk31d"]
+size = Vector2(193, 20)
+
+[node name="Goal" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_j6k04")
+offset = Vector2(0, -52)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -28)
+shape = SubResource("RectangleShape2D_mk31d")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+position = Vector2(-117, -1.5)
+polygon = PackedVector2Array(3, 0.5, 28, -19.5, 12, -115.5, -7, -115.5, -8, 0.5)
+
+[node name="CollisionPolygon2D2" type="CollisionPolygon2D" parent="."]
+position = Vector2(115, -1)
+polygon = PackedVector2Array(-3, 2, 11, 1, 12, -115.5, -7, -115.5, -25, -20)
