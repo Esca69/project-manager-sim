@@ -1415,6 +1415,10 @@ func _build_efficiency_breakdown_text(emp: EmployeeData) -> String:
 	if bd.has("desk_efficiency_bonus") and bd.desk_efficiency_bonus != 0.0:
 		lines.append(tr("ROSTER_EFF_BREAKDOWN_DESK") % _format_mod(bd.desk_efficiency_bonus))
 
+	# === PM TRAIT: И так сойдёт ===
+	if bd.has("good_enough_mod") and bd.good_enough_mod != 0.0:
+		lines.append(tr("EFF_MOD_PM_GOOD_ENOUGH") + " (×0.9)")
+
 	lines.append("")
 	lines.append(tr("ROSTER_EFF_BREAKDOWN_TOTAL") % _format_mult(bd.total))
 
