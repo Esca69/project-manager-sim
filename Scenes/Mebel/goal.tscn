@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://b80jhlpe1jgm0"]
 
 [ext_resource type="Texture2D" uid="uid://gfibcvjdrt54" path="res://Sprites/Office/goal.png" id="1_j6k04"]
-[ext_resource type="Script" path="res://Scripts/goal.gd" id="2_goal"]
+[ext_resource type="Script" uid="uid://c4w7xyqs78nyt" path="res://Scripts/goal.gd" id="2_goal"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_mk31d"]
 size = Vector2(193, 20)
