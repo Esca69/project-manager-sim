@@ -715,7 +715,7 @@ func _get_nearest_interactable():
 				if body.current_state != body.BossState.IN_OFFICE:
 					continue
 			return body
-		if body.is_in_group("coffee_machine") and body.has_method("interact"):
+		if body.is_in_group("coffee_machine") and body.has_method("interact") and body.has_method("is_broken_machine") and body.is_broken_machine():
 			return body
 
 	return null
@@ -767,7 +767,7 @@ func interact():
 			AudioManager.play_sfx("interact")
 			body.interact()
 			return
-		if body.is_in_group("coffee_machine") and body.has_method("interact"):
+		if body.is_in_group("coffee_machine") and body.has_method("interact") and body.has_method("is_broken_machine") and body.is_broken_machine():
 			AudioManager.play_sfx("interact")
 			body.interact()
 			return

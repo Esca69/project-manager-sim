@@ -3,6 +3,7 @@ extends Control
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
 const COLOR_RED  = Color(0.8980392, 0.22352941, 0.20784314, 1)
 const COLOR_WHITE = Color(1, 1, 1, 1)
+const COLOR_GRAY = Color(0.4, 0.4, 0.4, 1)
 const COLOR_GREEN = Color(0.29803923, 0.6862745, 0.3137255, 1)
 const COLOR_WINDOW_BORDER = Color(0, 0, 0, 1)
 
@@ -53,13 +54,13 @@ func _build_ui():
 	add_child(center)
 
 	_window = PanelContainer.new()
-	_window.custom_minimum_size = Vector2(420, 0)
+	_window.custom_minimum_size = Vector2(500, 0)
 	var win_style = StyleBoxFlat.new()
 	win_style.bg_color = COLOR_WHITE
-	win_style.border_width_left = 2
-	win_style.border_width_top = 2
-	win_style.border_width_right = 2
-	win_style.border_width_bottom = 2
+	win_style.border_width_left = 3
+	win_style.border_width_top = 3
+	win_style.border_width_right = 3
+	win_style.border_width_bottom = 3
 	win_style.border_color = COLOR_WINDOW_BORDER
 	win_style.corner_radius_top_left = 18
 	win_style.corner_radius_top_right = 18
@@ -116,8 +117,9 @@ func _build_ui():
 	footer_margin.add_child(close_center)
 
 	var close_btn = Button.new()
-	close_btn.text = tr("PANEL_CLOSE")
+	close_btn.text = tr("UI_CLOSE")
 	close_btn.custom_minimum_size = Vector2(160, 36)
+	close_btn.add_theme_font_size_override("font_size", 14)
 	close_btn.focus_mode = Control.FOCUS_NONE
 	var close_style = StyleBoxFlat.new()
 	close_style.bg_color = COLOR_WHITE
@@ -125,17 +127,26 @@ func _build_ui():
 	close_style.border_width_top = 2
 	close_style.border_width_right = 2
 	close_style.border_width_bottom = 2
-	close_style.border_color = COLOR_BLUE
-	close_style.corner_radius_top_left = 18
-	close_style.corner_radius_top_right = 18
-	close_style.corner_radius_bottom_right = 18
-	close_style.corner_radius_bottom_left = 18
+	close_style.border_color = COLOR_GRAY
+	close_style.corner_radius_top_left = 16
+	close_style.corner_radius_top_right = 16
+	close_style.corner_radius_bottom_right = 16
+	close_style.corner_radius_bottom_left = 16
+	var close_hover = StyleBoxFlat.new()
+	close_hover.bg_color = COLOR_GRAY
+	close_hover.border_width_left = 2
+	close_hover.border_width_top = 2
+	close_hover.border_width_right = 2
+	close_hover.border_width_bottom = 2
+	close_hover.border_color = COLOR_GRAY
+	close_hover.corner_radius_top_left = 16
+	close_hover.corner_radius_top_right = 16
+	close_hover.corner_radius_bottom_right = 16
+	close_hover.corner_radius_bottom_left = 16
 	close_btn.add_theme_stylebox_override("normal", close_style)
-	var close_hover = close_style.duplicate()
-	close_hover.bg_color = COLOR_BLUE
 	close_btn.add_theme_stylebox_override("hover", close_hover)
 	close_btn.add_theme_stylebox_override("pressed", close_hover)
-	close_btn.add_theme_color_override("font_color", COLOR_BLUE)
+	close_btn.add_theme_color_override("font_color", COLOR_GRAY)
 	close_btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
 	close_btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
 	if UITheme:
