@@ -84,5 +84,5 @@ func _on_body_entered(body: Node):
 
 func on_goal_hit():
 	# Сохраняем направление, резко гасим скорость — имитация попадания в сетку
-	linear_velocity *= 0.12
-	angular_velocity *= 0.12
+	linear_velocity *= 0.30
+	angular_velocity *= 0.30
