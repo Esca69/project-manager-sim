@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://4pf53kcu8eo0"]
+[gd_scene load_steps=6 format=3 uid="uid://4pf53kcu8eo0"]
 
 [ext_resource type="Script" uid="uid://s0yfsyp80vcj" path="res://Scripts/coffee_machine.gd" id="1_3wabo"]
 [ext_resource type="Texture2D" uid="uid://buuxjobbadurf" path="res://Sprites/Office/coffemachine.png" id="2_qlbtx"]
 [ext_resource type="Texture2D" uid="uid://da08v5634i66a" path="res://Sprites/Office/coffemachine_broken.png" id="3_qlbtx"]
+[ext_resource type="Texture2D" uid="uid://d3b64t8xegjk" path="res://Sprites/smokepuff.png" id="4_qlbtx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3wabo"]
 size = Vector2(123, 92)
@@ -18,6 +19,23 @@ offset = Vector2(0, -100)
 [node name="CoffeeSpot" type="Marker2D" parent="."]
 position = Vector2(115, 21)
 
+[node name="SmokeParticles" type="CPUParticles2D" parent="."]
+z_index = 10
+position = Vector2(0, -131)
+emitting = false
+amount = 40
+texture = ExtResource("4_qlbtx")
+lifetime = 2.5
+direction = Vector2(0, -1)
+gravity = Vector2(0, -30)
+initial_velocity_min = 15.0
+initial_velocity_max = 25.0
+angular_velocity_min = -30.0
+angular_velocity_max = 30.0
+scale_amount_min = 0.2
+scale_amount_max = 0.7
+color = Color(0.7, 0.7, 0.7, 0.6)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0.5, -51)
 shape = SubResource("RectangleShape2D_3wabo")
@@ -27,23 +45,3 @@ visible = false
 position = Vector2(0, -1)
 texture = ExtResource("3_qlbtx")
 offset = Vector2(0, -100)
-
-[node name="SmokeParticles" type="CPUParticles2D" parent="CoffemachineBroken"]
-position = Vector2(0, -30)
-z_index = 5
-emitting = false
-amount = 16
-lifetime = 2.0
-one_shot = false
-speed_scale = 1.0
-local_coords = false
-direction = Vector2(0, -1)
-spread = 30.0
-gravity = Vector2(0, -30)
-initial_velocity_min = 8.0
-initial_velocity_max = 20.0
-angular_velocity_min = -30.0
-angular_velocity_max = 30.0
-scale_amount_min = 3.0
-scale_amount_max = 6.0
-color = Color(0.7, 0.7, 0.7, 0.6)

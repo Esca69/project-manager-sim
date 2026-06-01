@@ -69,6 +69,9 @@ func repair_machine() -> bool:
 		el.add(tr("LOG_COFFEE_MACHINE_REPAIRED"), el.LogType.PROGRESS)
 	return true
 
+func is_broken_machine() -> bool:
+	return is_broken
+
 func update_machine_visuals():
 	var sprite_normal = get_node_or_null("Sprite")
 	var sprite_broken = get_node_or_null("CoffemachineBroken")
@@ -77,7 +80,7 @@ func update_machine_visuals():
 	if sprite_broken:
 		sprite_broken.visible = is_broken
 
-	var smoke = get_node_or_null("CoffemachineBroken/SmokeParticles")
+	var smoke = get_node_or_null("SmokeParticles")
 	if smoke and (smoke is CPUParticles2D or smoke is GPUParticles2D):
 		smoke.emitting = is_broken
 
