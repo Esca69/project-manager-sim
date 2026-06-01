@@ -755,6 +755,13 @@ func _reset_all_singletons():
 		bes.total_events_generated = 0
 		bes.ignore_penalty_pending = false
 
+	var coffee_machines = get_tree().get_nodes_in_group("coffee_machine")
+	for cm in coffee_machines:
+		if "is_broken" in cm:
+			cm.is_broken = false
+			if cm.has_method("update_machine_visuals"):
+				cm.update_machine_visuals()
+
 # === СОХРАНЕНИЕ / ЗАГРУЗКА НАСТРОЕК ===
 
 func _save_settings():

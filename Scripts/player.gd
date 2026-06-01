@@ -708,12 +708,14 @@ func _get_nearest_interactable():
 		if body.is_in_group("npc"):
 			continue
 
-		# 2. Оставляем взаимодействие ТОЛЬКО для столов (hr_desk, boss_desk и тд)
+		# 2. Оставляем взаимодействие для столов и кофемашины
 		if body.is_in_group("desk") and body.has_method("interact"):
 			# Босс — показываем E только когда он IN_OFFICE
 			if body.is_in_group("boss_npc"):
 				if body.current_state != body.BossState.IN_OFFICE:
 					continue
+			return body
+		if body.is_in_group("coffee_machine") and body.has_method("interact"):
 			return body
 
 	return null
@@ -762,6 +764,10 @@ func interact():
 			if body.is_in_group("boss_npc"):
 				if body.current_state != body.BossState.IN_OFFICE:
 					continue
+			AudioManager.play_sfx("interact")
+			body.interact()
+			return
+		if body.is_in_group("coffee_machine") and body.has_method("interact"):
 			AudioManager.play_sfx("interact")
 			body.interact()
 			return
