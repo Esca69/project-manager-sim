@@ -579,6 +579,11 @@ func add_employee_xp(amount: int) -> Dictionary:
 	if desk_xp_multiplier != 1.0:
 		amount = int(amount * desk_xp_multiplier)
 
+	# === PM TRAIT: Зона комфорта → XP сотрудников -10% ===
+	var pm_d_xp = _get_pm_data()
+	if pm_d_xp and pm_d_xp.has_pm_trait("pm_comfort_zone"):
+		amount = int(amount * 0.9)
+
 	employee_xp += amount
 
 	while employee_level < MAX_LEVEL and employee_xp >= XP_PER_LEVEL[employee_level]:
@@ -969,6 +974,12 @@ func get_efficiency_multiplier() -> float:
 	var loyalty_mod = get_pm_loyalty_level().efficiency_bonus
 
 	var result = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus) * (1.0 + loyalty_mod)
+
+	# === PM TRAIT: И так сойдёт → итоговая эффективность ×0.9 ===
+	var pm_d = _get_pm_data()
+	if pm_d and pm_d.has_pm_trait("pm_good_enough"):
+		result *= 0.9
+
 	return result
 
 # --- РАЗБИВКА ЭФФЕКТИВНОСТИ ---
@@ -1008,7 +1019,13 @@ func get_efficiency_breakdown() -> Dictionary:
 
 	var loyalty_mod = get_pm_loyalty_level().efficiency_bonus
 
-	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus) * (1.0 + loyalty_mod)
+	# === PM TRAIT: И так сойдёт ===
+	var good_enough_mod: float = 0.0
+	var pm_d_bd = _get_pm_data()
+	if pm_d_bd and pm_d_bd.has_pm_trait("pm_good_enough"):
+		good_enough_mod = -0.10
+
+	var total = mood_mult * energy_factor * (1.0 + trait_sum) * (1.0 + motivation_mod) * (1.0 + event_mod) * (1.0 + aura_mod) * (1.0 + neighbor_mod) * (1.0 + adaptation_mod) * (1.0 + crunch_mod) * (1.0 + burnout_mod) * (1.0 + desk_efficiency_bonus) * (1.0 + loyalty_mod) * (1.0 + good_enough_mod)
 
 	return {
 		"mood_zone_name": get_mood_zone_name(),
@@ -1026,6 +1043,7 @@ func get_efficiency_breakdown() -> Dictionary:
 		"crunch_mod": crunch_mod,
 		"burnout_mod": burnout_mod,
 		"loyalty_mod": loyalty_mod,
+		"good_enough_mod": good_enough_mod,
 		"total": total,
 		"ergonomic_mod": -0.10 if (_get_game_state() and _get_game_state().office_upgrades.get("ergonomic_furniture", false)) else 0.0,
 		"desk_efficiency_bonus": desk_efficiency_bonus,

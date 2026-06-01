@@ -19,7 +19,7 @@ var appearance_clothing_color: Color = Color("#A0C4FF")  # Цвет одежды
 # === ТРЕЙТЫ ПЕРСОНАЖА ===
 var pm_traits: Array[String] = []
 
-const PM_TRAIT_STARTING_POINTS: int = 3
+const PM_TRAIT_STARTING_POINTS: int = 2
 
 # Определения всех PM-трейтов
 const PM_TRAIT_DEFINITIONS: Array = [
@@ -120,6 +120,30 @@ const PM_TRAIT_DEFINITIONS: Array = [
 		"cost": -2,
 		"positive": false,
 		"conflict_group": "client_focus",
+	},
+	{
+		"id": "pm_good_enough",
+		"name_key": "PM_TRAIT_GOOD_ENOUGH_NAME",
+		"desc_key": "PM_TRAIT_GOOD_ENOUGH_DESC",
+		"cost": -2,
+		"positive": false,
+		"conflict_group": "quality_standard",
+	},
+	{
+		"id": "pm_pushover",
+		"name_key": "PM_TRAIT_PUSHOVER_NAME",
+		"desc_key": "PM_TRAIT_PUSHOVER_DESC",
+		"cost": -1,
+		"positive": false,
+		"conflict_group": "negotiation",
+	},
+	{
+		"id": "pm_comfort_zone",
+		"name_key": "PM_TRAIT_COMFORT_ZONE_NAME",
+		"desc_key": "PM_TRAIT_COMFORT_ZONE_DESC",
+		"cost": -1,
+		"positive": false,
+		"conflict_group": "growth",
 	},
 ]
 

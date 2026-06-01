@@ -175,6 +175,7 @@ func _build_ui():
 	right_vbox.add_theme_constant_override("separation", 10)
 	right_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 	right_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	right_panel.add_child(right_vbox)
 
 	_build_traits_panel(right_vbox)
@@ -612,33 +613,44 @@ func _build_traits_panel(parent: VBoxContainer):
 	var sep1 = HSeparator.new()
 	parent.add_child(sep1)
 
+	var traits_scroll = ScrollContainer.new()
+	traits_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	traits_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	traits_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	parent.add_child(traits_scroll)
+
+	var traits_vbox = VBoxContainer.new()
+	traits_vbox.add_theme_constant_override("separation", 10)
+	traits_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	traits_scroll.add_child(traits_vbox)
+
 	# Заголовок "Положительные" (подзаголовок — крупнее)
 	var pos_header = Label.new()
 	pos_header.text = tr("PM_TRAITS_POSITIVE_HEADER")
 	pos_header.add_theme_font_size_override("font_size", 20)
 	pos_header.add_theme_color_override("font_color", COLOR_GREEN)
-	parent.add_child(pos_header)
+	traits_vbox.add_child(pos_header)
 
 	# Положительные трейты (cost > 0)
 	for def in PMData.PM_TRAIT_DEFINITIONS:
 		if def.positive:
-			_add_trait_button(parent, def)
+			_add_trait_button(traits_vbox, def)
 
 	# Разделитель
 	var sep2 = HSeparator.new()
-	parent.add_child(sep2)
+	traits_vbox.add_child(sep2)
 
 	# Заголовок "Недостатки" (подзаголовок — крупнее)
 	var neg_header = Label.new()
 	neg_header.text = tr("PM_TRAITS_NEGATIVE_HEADER")
 	neg_header.add_theme_font_size_override("font_size", 20)
 	neg_header.add_theme_color_override("font_color", COLOR_RED)
-	parent.add_child(neg_header)
+	traits_vbox.add_child(neg_header)
 
 	# Отрицательные трейты (cost < 0)
 	for def in PMData.PM_TRAIT_DEFINITIONS:
 		if not def.positive:
-			_add_trait_button(parent, def)
+			_add_trait_button(traits_vbox, def)
 
 
 func _add_trait_button(parent: Control, def: Dictionary):

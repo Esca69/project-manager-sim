@@ -290,6 +290,10 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 	if new_emp.has_trait("sickly"):
 		raw_salary = int(raw_salary * 0.85)  # Болезненный: зарплата на 15% ниже
 
+	# === PM TRAIT: Мягкотелый → зарплата кандидатов на 10% выше ===
+	if PMData.has_pm_trait("pm_pushover"):
+		raw_salary = int(raw_salary * 1.10)
+
 	# 7. Тип занятости (50/50)
 	if randf() < 0.5:
 		new_emp.employment_type = "freelancer"
@@ -312,6 +316,8 @@ func generate_candidate_for_role(role: String) -> EmployeeData:
 				"Customer Support":
 					new_emp.skill_support = primary_skill_value
 			raw_salary = cfg["base"] + (primary_skill_value * cfg["mult"]) + randi_range(-cfg["rand"], cfg["rand"])
+			if PMData.has_pm_trait("pm_pushover"):
+				raw_salary = int(raw_salary * 1.10)
 		var freelance_mult = randf_range(0.80, 0.90)
 		raw_salary = int(raw_salary * freelance_mult)
 
