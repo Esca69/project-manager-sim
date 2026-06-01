@@ -27,3 +27,23 @@ visible = false
 position = Vector2(0, -1)
 texture = ExtResource("3_qlbtx")
 offset = Vector2(0, -100)
+
+[node name="SmokeParticles" type="CPUParticles2D" parent="CoffemachineBroken"]
+position = Vector2(0, -30)
+z_index = 5
+emitting = false
+amount = 16
+lifetime = 2.0
+one_shot = false
+speed_scale = 1.0
+local_coords = false
+direction = Vector2(0, -1)
+spread = 30.0
+gravity = Vector2(0, -30)
+initial_velocity_min = 8.0
+initial_velocity_max = 20.0
+angular_velocity_min = -30.0
+angular_velocity_max = 30.0
+scale_amount_min = 3.0
+scale_amount_max = 6.0
+color = Color(0.7, 0.7, 0.7, 0.6)

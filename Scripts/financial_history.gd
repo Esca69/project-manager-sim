@@ -41,6 +41,8 @@ func record_day():
 			office_costs += amt
 		elif reason == "EXPENSE_MONITOR_REPAIR":
 			office_costs += amt
+		elif reason == "SUMMARY_COFFEE_MACHINE_REPAIR":
+			office_costs += amt
 		elif reason == "EXPENSE_TRAINING":
 			training_costs += amt
 		elif reason == "EXPENSE_BONUS":

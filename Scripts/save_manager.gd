@@ -3,7 +3,7 @@ extends Node
 # === СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ===
 # SaveManager — autoload-синглтон
 
-const SAVE_VERSION = 16
+const SAVE_VERSION = 17
 const SAVE_META_PATH = "user://save_meta.json"
 
 # Словарь миграций: ключ — исходная версия, значение — имя метода-мигратора
@@ -23,6 +23,7 @@ const MIGRATIONS = {
 	13: "_migrate_v13_to_v14",
 	14: "_migrate_v14_to_v15",
 	15: "_migrate_v15_to_v16",
+	16: "_migrate_v16_to_v17",
 }
 
 # Слот, в который сохраняется/загружается текущая игра
@@ -165,6 +166,7 @@ func save_game():
 		
 		# --- Привязка столов ---
 		"desk_assignments": _serialize_desk_assignments(),
+		"coffee_machine_broken": _serialize_coffee_machine(),
 
 		# === EVENT SYSTEM: Сохраняем состояние EventManager ===
 		"event_manager": _serialize_event_manager(),
@@ -409,6 +411,12 @@ func _serialize_desk_assignments() -> Array:
 				continue
 		result.append(entry)
 	return result
+
+func _serialize_coffee_machine() -> bool:
+	var machine = get_tree().get_first_node_in_group("coffee_machine")
+	if machine and "is_broken" in machine:
+		return machine.is_broken
+	return false
 
 # --- Проекты ---
 func _serialize_projects() -> Array:
@@ -939,6 +947,12 @@ func _migrate_v15_to_v16(data: Dictionary) -> bool:
 	print("🔄 Миграция v15→v16: добавлен is_broken для столов")
 	return true
 
+func _migrate_v16_to_v17(data: Dictionary) -> bool:
+	if not data.has("coffee_machine_broken"):
+		data["coffee_machine_broken"] = false
+	print("🔄 Миграция v16→v17: добавлено поле coffee_machine_broken")
+	return true
+
 
 func restore_employees_and_projects(data_override: Dictionary = {}):
 	var data: Dictionary
@@ -1218,6 +1232,11 @@ func restore_employees_and_projects(data_override: Dictionary = {}):
 		SupportProjectManager.deserialize(data.get("support_projects", {}))
 
 	_restore_desk_assignments(desk_assignments, employee_map, npc_map)
+	var machine = get_tree().get_first_node_in_group("coffee_machine")
+	if machine and "is_broken" in machine:
+		machine.is_broken = data.get("coffee_machine_broken", false)
+		if machine.has_method("update_machine_visuals"):
+			machine.update_machine_visuals()
 	_rebind_employees_to_desks()
 
 	# === BOSS EVENT: При загрузке с активным no_lunch — принудительно отменить обеды ===

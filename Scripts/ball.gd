@@ -81,6 +81,8 @@ func _on_body_entered(body: Node):
 	# Проверяем, не попал ли мяч в стол сотрудника
 	if body.is_in_group("desk") and body.has_method("on_ball_hit"):
 		body.on_ball_hit()
+	if body.is_in_group("coffee_machine") and body.has_method("on_ball_hit"):
+		body.on_ball_hit()
 
 func on_goal_hit():
 	# Сохраняем направление, резко гасим скорость — имитация попадания в сетку

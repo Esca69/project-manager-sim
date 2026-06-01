@@ -373,7 +373,7 @@ position = Vector2(1038, 875)
 [node name="EmployeeDesk6" parent="WorldObjects" instance=ExtResource("8_2vylc")]
 position = Vector2(216, 875)
 
-[node name="CoffeeMachine" parent="WorldObjects" groups=["desk"] instance=ExtResource("9_o2cca")]
+[node name="CoffeeMachine" parent="WorldObjects" instance=ExtResource("9_o2cca")]
 position = Vector2(864, -158)
 
 [node name="Board3" type="Sprite2D" parent="WorldObjects"]

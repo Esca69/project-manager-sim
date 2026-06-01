@@ -109,6 +109,9 @@ var _encyclopedia_panel: Control
 # === DESK PANEL ===
 var _desk_panel: Control
 
+# === COFFEE MACHINE PANEL ===
+var _coffee_machine_panel: Control
+
 # === EMPLOYEE INTERACTION PANEL ===
 var _employee_interaction_panel: Control
 
@@ -299,6 +302,9 @@ func _build_all_dynamic_ui() -> void:
 
 	# === DESK PANEL: Создаём панель рабочего места ===
 	_build_desk_panel()
+
+	# === COFFEE MACHINE PANEL: Создаём панель кофемашины ===
+	_build_coffee_machine_panel()
 
 	# === EMPLOYEE INTERACTION PANEL: Панель взаимодействия с сотрудником ===
 	_build_employee_interaction_panel()
@@ -834,6 +840,8 @@ func is_any_menu_open() -> bool:
 	if _encyclopedia_panel and _encyclopedia_panel.visible: return true
 
 	if _desk_panel and _desk_panel.visible: return true
+
+	if _coffee_machine_panel and _coffee_machine_panel.visible: return true
 
 	if _employee_interaction_panel and _employee_interaction_panel.visible: return true
 
@@ -1401,6 +1409,15 @@ func _build_desk_panel():
 	_desk_panel.process_mode = Node.PROCESS_MODE_ALWAYS
 	_desk_panel.name = "DeskPanel"
 	add_child(_desk_panel)
+
+func _build_coffee_machine_panel():
+	var script = load("res://Scripts/coffee_machine_panel.gd")
+	_coffee_machine_panel = Control.new()
+	_coffee_machine_panel.set_script(script)
+	_coffee_machine_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_coffee_machine_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+	_coffee_machine_panel.name = "CoffeeMachinePanel"
+	add_child(_coffee_machine_panel)
 
 func _build_employee_interaction_panel():
 	var script = load("res://Scripts/employee_interaction_panel.gd")
