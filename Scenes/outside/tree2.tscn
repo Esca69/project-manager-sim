@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://bimu6maci2eoq"]
+
+[ext_resource type="Texture2D" uid="uid://b8xbw8yc64i46" path="res://Sprites/outside/trunk2.png" id="1_vknr8"]
+[ext_resource type="Texture2D" uid="uid://dyjmfqh54jhkb" path="res://Sprites/outside/leaves2.png" id="2_g0u3r"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dq8at"]
+radius = 28.0
+height = 68.0
+
+[node name="Tree2" type="StaticBody2D"]
+
+[node name="trunk" type="Sprite2D" parent="."]
+texture = ExtResource("1_vknr8")
+offset = Vector2(0, -87)
+
+[node name="leaves" type="Sprite2D" parent="."]
+texture = ExtResource("2_g0u3r")
+offset = Vector2(0, -290)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(4, -16)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_dq8at")

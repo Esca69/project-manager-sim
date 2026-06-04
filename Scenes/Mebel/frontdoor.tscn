@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://c55owkjyyctsf"]
+
+[ext_resource type="Texture2D" uid="uid://dp3hyq3ul8d30" path="res://Sprites/new office/frontdoor.png" id="1_hpg31"]
+
+[node name="Frontdoor" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_hpg31")
+offset = Vector2(0, -134)
