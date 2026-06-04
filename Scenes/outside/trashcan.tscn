@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://ysvbse4lqy53"]
+
+[ext_resource type="Texture2D" uid="uid://cdbqxl2dfjgpn" path="res://Sprites/outside/trashcan.png" id="1_mn576"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_42rou"]
+size = Vector2(54.5, 30)
+
+[node name="Trashcan" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_mn576")
+offset = Vector2(0, -45)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-0.25, -17)
+shape = SubResource("RectangleShape2D_42rou")
