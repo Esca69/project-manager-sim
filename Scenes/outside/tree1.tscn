@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://c7e3yjsawrfg2" path="res://Sprites/outside/trunk1.png" id="1_sw3lu"]
 [ext_resource type="Texture2D" uid="uid://la2t8en68lju" path="res://Sprites/outside/leaves1.png" id="2_r60xj"]
-[ext_resource type="Script" path="res://Scripts/tree_sway.gd" id="3_tree1"]
+[ext_resource type="Script" uid="uid://bdei3v8kyip34" path="res://Scripts/tree_sway.gd" id="3_tree1"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dq8at"]
 radius = 28.0
