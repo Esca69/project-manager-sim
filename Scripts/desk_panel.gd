@@ -289,6 +289,7 @@ func _refresh():
 func _refresh_employee_block():
 	if not _current_desk:
 		return
+	_assign_btn.visible = true
 	if _current_desk.assigned_employee:
 		var emp = _current_desk.assigned_employee
 		_employee_label.text = emp.get_display_name() + " (" + tr(emp.job_title) + ")"
@@ -379,7 +380,6 @@ func _on_repair_pressed():
 	if not _current_desk:
 		return
 	if _current_desk.repair_monitor():
-		_assign_btn.visible = true
 		_refresh()
 
 func _build_upgrade_card(upgrade_id: String, config: Dictionary) -> Control:
