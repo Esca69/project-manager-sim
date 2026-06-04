@@ -7,9 +7,6 @@ var employee_scene: PackedScene = null
 var boss_scene: PackedScene = preload("res://Scenes/Boss.tscn")
 var boss_instance = null
 
-# Точка спавна
-@onready var spawn_point = $SpawnPoint
-
 # Системы
 var _lighting: Node = null
 var _shadows: Node = null
@@ -176,6 +173,12 @@ func _setup_environment():
 
 	world_env.environment = env
 
+func _pick_random_employee_spawn() -> Vector2:
+	var points = get_tree().get_nodes_in_group("employee_spawn")
+	if points.is_empty():
+		return Vector2(500, 300)
+	return points[randi() % points.size()].global_position
+
 # Эту функцию вызывает UI Найма
 func spawn_new_employee(data: EmployeeData):
 	# Подстраховка: если не загрузилось в _ready, пробуем ещё раз
@@ -198,11 +201,7 @@ func spawn_new_employee(data: EmployeeData):
 		print("ВНИМАНИЕ: Нет группы 'world_layer'! Сортировка может сломаться.")
 
 	# 3. Позиция
-	if spawn_point:
-		var random_offset = Vector2(randf_range(-50, 50), randf_range(-50, 50))
-		new_npc.global_position = spawn_point.global_position + random_offset
-	else:
-		new_npc.global_position = Vector2(500, 300)
+	new_npc.global_position = _pick_random_employee_spawn()
 
 	# 4. Настраиваем данные ПОСЛЕ добавления в сцену (чтобы get_tree() работал)
 	new_npc.setup_employee(data)
@@ -228,10 +227,10 @@ func _spawn_boss():
 	else:
 		push_error("🔴 [OFFICE] Boss instance does not have boss_npc.gd script attached!")
 
-	# Начальная позиция = entrance, состояние управляется скриптом
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		boss_instance.global_position = entrance.global_position
+	# Начальная позиция = boss_spawn, состояние управляется скриптом
+	var boss_spawn = get_tree().get_first_node_in_group("boss_spawn")
+	if boss_spawn:
+		boss_instance.global_position = boss_spawn.global_position
 	else:
 		boss_instance.global_position = Vector2(1636, 834)
 
