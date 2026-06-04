@@ -613,11 +613,17 @@ func _build_traits_panel(parent: VBoxContainer):
 	var sep1 = HSeparator.new()
 	parent.add_child(sep1)
 
+	var scroll_wrap = MarginContainer.new()
+	scroll_wrap.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll_wrap.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll_wrap.add_theme_constant_override("margin_right", 4)
+	parent.add_child(scroll_wrap)
+
 	var traits_scroll = ScrollContainer.new()
 	traits_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	traits_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	traits_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	parent.add_child(traits_scroll)
+	scroll_wrap.add_child(traits_scroll)
 
 	var traits_vbox = VBoxContainer.new()
 	traits_vbox.add_theme_constant_override("separation", 10)
@@ -828,6 +834,10 @@ func _show_trait_tooltip(anchor: Control, def: Dictionary):
 	var tp_pos = Vector2(anchor_pos.position.x + anchor_pos.size.x + 8, anchor_pos.position.y)
 	if tp_pos.x + tp.size.x > vp_size.x:
 		tp_pos.x = anchor_pos.position.x - tp.size.x - 8
+	if tp_pos.y + tp.size.y > vp_size.y:
+		tp_pos.y = anchor_pos.position.y - tp.size.y
+		if tp_pos.y < 0:
+			tp_pos.y = 0
 	tp.global_position = tp_pos
 
 	_trait_tooltip = tp
