@@ -1276,9 +1276,9 @@ func _spawn_employee_in_office_proper(office, world_layer, emp_data: EmployeeDat
 		office.add_child(npc)
 		print("ВНИМАНИЕ: Нет группы 'world_layer' при загрузке! Сортировка может сломаться.")
 
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		npc.global_position = entrance.global_position
+	var spawn_points = get_tree().get_nodes_in_group("employee_spawn")
+	if not spawn_points.is_empty():
+		npc.global_position = spawn_points[randi() % spawn_points.size()].global_position
 
 	# Настраиваем ПОСЛЕ добавления в дерево
 	if npc.has_method("setup_employee"):

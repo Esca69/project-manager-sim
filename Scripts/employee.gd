@@ -111,6 +111,9 @@ var _last_stuck_pos := Vector2.ZERO
 
 var _should_go_home: bool = false
 
+# Точка спавна/ухода сотрудника на текущий день (выбирается рандомно утром, сбрасывается ночью)
+var _my_spawn_point: Vector2 = Vector2.ZERO
+
 # Ссылка на текущий бабл с мыслями
 var current_bubble: Node2D = null
 var current_bubble_tween: Tween = null
@@ -465,6 +468,13 @@ func apply_toilet_ban(duration_minutes: float):
 func remove_toilet_ban():
 	_toilet_ban_minutes_left = 0.0
 
+# === SPAWN POINTS: Выбрать случайную точку появления/ухода сотрудника ===
+func _pick_random_spawn_point() -> Vector2:
+	var points = get_tree().get_nodes_in_group("employee_spawn")
+	if points.is_empty():
+		return Vector2.ZERO
+	return points[randi() % points.size()].global_position
+
 # === АУРА PM: Обновление каждый тик (вызывается из _on_time_tick) ===
 func _update_pm_aura():
 	if not data:
@@ -612,9 +622,11 @@ func start_day_off():
 	velocity = Vector2.ZERO
 	z_index = 0
 	
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		nav_agent.target_position = entrance.global_position
+	var spawn = _my_spawn_point
+	if spawn == Vector2.ZERO:
+		spawn = _pick_random_spawn_point()
+	if spawn != Vector2.ZERO:
+		nav_agent.target_position = spawn
 		current_state = State.GOING_HOME
 	else:
 		_finalize_day_off()
@@ -734,6 +746,7 @@ func _setup_early_bird():
 
 func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
+	_my_spawn_point = Vector2.ZERO
 	_setup_early_bird()
 	_lunch_done_today = false
 	_no_kitchen_lunch_delay = randf_range(5.0, 120.0)  # Случайная задержка обеда без кухни
@@ -879,9 +892,10 @@ func _arrive_early_bird():
 	
 	_setup_toilet_schedule()
 	
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		global_position = entrance.global_position
+	if _my_spawn_point == Vector2.ZERO:
+		_my_spawn_point = _pick_random_spawn_point()
+	if _my_spawn_point != Vector2.ZERO:
+		global_position = _my_spawn_point
 	
 	visible = true
 	$CollisionShape2D.disabled = false
@@ -1313,9 +1327,11 @@ func _force_go_home():
 	velocity = Vector2.ZERO
 	z_index = 0
 	
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		nav_agent.target_position = entrance.global_position
+	var spawn = _my_spawn_point
+	if spawn == Vector2.ZERO:
+		spawn = _pick_random_spawn_point()
+	if spawn != Vector2.ZERO:
+		nav_agent.target_position = spawn
 		current_state = State.GOING_HOME
 	else:
 		_on_arrived_home()
@@ -2216,16 +2232,18 @@ func _on_work_started():
 		$CollisionShape2D.disabled = false
 		z_index = 0
 		
-		var entrance = get_tree().get_first_node_in_group("entrance")
-		if entrance:
-			global_position = entrance.global_position
+		if _my_spawn_point == Vector2.ZERO:
+			_my_spawn_point = _pick_random_spawn_point()
+		if _my_spawn_point != Vector2.ZERO:
+			global_position = _my_spawn_point
 		
 		_start_wandering()
 		return
 
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		global_position = entrance.global_position
+	if _my_spawn_point == Vector2.ZERO:
+		_my_spawn_point = _pick_random_spawn_point()
+	if _my_spawn_point != Vector2.ZERO:
+		global_position = _my_spawn_point
 	
 	visible = true
 	$CollisionShape2D.disabled = false
@@ -2774,9 +2792,9 @@ func _finish_training():
 	visible = true
 	$CollisionShape2D.disabled = false
 	z_index = 0
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		global_position = entrance.global_position
+	var spawn_pos = _pick_random_spawn_point()
+	if spawn_pos != Vector2.ZERO:
+		global_position = spawn_pos
 	# Применить mood-штраф при возвращении
 	data.add_mood_modifier("pm_training_mood", "MOOD_MOD_PM_TRAINING", -10.0, 4320.0)
 	# Начислить XP
@@ -2834,9 +2852,9 @@ func _finish_unpaid_leave():
 	visible = true
 	$CollisionShape2D.disabled = false
 	z_index = 0
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		global_position = entrance.global_position
+	var spawn_pos = _pick_random_spawn_point()
+	if spawn_pos != Vector2.ZERO:
+		global_position = spawn_pos
 	# Применить mood-штраф при возвращении
 	data.add_mood_modifier("pm_unpaid_leave_mood", "MOOD_MOD_PM_UNPAID_LEAVE", -15.0, 4320.0)
 	# Лог

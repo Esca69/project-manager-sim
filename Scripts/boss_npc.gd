@@ -197,9 +197,9 @@ func _on_night_skip_started():
 			_start_leaving()
 		BossState.COMING:
 			current_state = BossState.LEAVING
-			var entrance = get_tree().get_first_node_in_group("entrance")
-			if entrance:
-				nav_agent.target_position = entrance.global_position
+			var boss_spawn = get_tree().get_first_node_in_group("boss_spawn")
+			if boss_spawn:
+				nav_agent.target_position = boss_spawn.global_position
 			else:
 				_set_state_away(false)
 
@@ -214,9 +214,9 @@ func _on_night_skip_finished():
 # =========================================================
 
 func _start_coming():
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		global_position = entrance.global_position
+	var boss_spawn = get_tree().get_first_node_in_group("boss_spawn")
+	if boss_spawn:
+		global_position = boss_spawn.global_position
 	elif desk_position != Vector2.ZERO:
 		global_position = desk_position
 
@@ -241,9 +241,9 @@ func _set_state_in_office(show_toast: bool = true):
 
 func _start_leaving():
 	current_state = BossState.LEAVING
-	var entrance = get_tree().get_first_node_in_group("entrance")
-	if entrance:
-		nav_agent.target_position = entrance.global_position
+	var boss_spawn = get_tree().get_first_node_in_group("boss_spawn")
+	if boss_spawn:
+		nav_agent.target_position = boss_spawn.global_position
 	else:
 		_set_state_away()
 
@@ -274,11 +274,11 @@ func _physics_process(delta):
 				_move_along_path(delta)
 
 		BossState.LEAVING:
-			var entrance = get_tree().get_first_node_in_group("entrance")
-			if entrance == null:
+			var boss_spawn = get_tree().get_first_node_in_group("boss_spawn")
+			if boss_spawn == null:
 				_set_state_away()
 				return
-			var dist = global_position.distance_to(entrance.global_position)
+			var dist = global_position.distance_to(boss_spawn.global_position)
 			if dist <= ARRIVAL_DISTANCE or nav_agent.is_navigation_finished():
 				_set_state_away()
 			else:

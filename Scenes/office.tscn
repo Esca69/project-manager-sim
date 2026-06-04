@@ -586,11 +586,17 @@ position = Vector2(-699, 1178)
 
 [node name="HUD" parent="." instance=ExtResource("6_7xo7e")]
 
-[node name="SpawnPoint" type="Marker2D" parent="."]
-position = Vector2(3968, -1191)
-
-[node name="OfficeEntrance" type="Marker2D" parent="." groups=["entrance"]]
+[node name="BossSpawn" type="Marker2D" parent="." groups=["boss_spawn"]]
 position = Vector2(-788, 1752)
+
+[node name="EmployeeSpawn1" type="Marker2D" parent="." groups=["employee_spawn"]]
+position = Vector2(-688, 1752)
+
+[node name="EmployeeSpawn2" type="Marker2D" parent="." groups=["employee_spawn"]]
+position = Vector2(-888, 1752)
+
+[node name="EmployeeSpawn3" type="Marker2D" parent="." groups=["employee_spawn"]]
+position = Vector2(-788, 1652)
 
 [node name="Bossplate" type="Sprite2D" parent="."]
 position = Vector2(1498, -386)
