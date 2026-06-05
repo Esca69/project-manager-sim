@@ -794,7 +794,7 @@ func _update_points_label():
 		var total = PMData.PM_TRAIT_STARTING_POINTS
 		_points_label.text = tr("PM_TRAITS_POINTS") % [free, total]
 		# Зелёный когда есть очки, красный когда нет
-		var col = COLOR_GREEN if free > 0 else COLOR_RED
+		var col = COLOR_GREEN if free >= 0 else COLOR_RED
 		_points_label.add_theme_color_override("font_color", col)
 		if _finish_btn:
 			_finish_btn.disabled = (free < 0)
