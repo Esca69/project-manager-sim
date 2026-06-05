@@ -88,10 +88,17 @@ const WANDER_PAUSE_MAX = 5.0
 const WANDER_SPEED_MULT = 0.5
 
 const EARLY_BIRD_MINUTES_EARLY_MIN = 30
-const EARLY_BIRD_MINUTES_EARLY_MAX = 40
+const EARLY_BIRD_MINUTES_EARLY_MAX = 60
 var _early_bird_start_hour: int = -1
 var _early_bird_start_minute: int = -1
 var _early_bird_arrived: bool = false
+
+# === STAGGERED ARRIVAL: рандомный приход для обычных сотрудников (8:30–9:10) ===
+const ARRIVAL_OFFSET_MIN: int = -30  # минут относительно START_HOUR (8:30)
+const ARRIVAL_OFFSET_MAX: int = 10   # минут относительно START_HOUR (9:10)
+var _arrival_hour: int = -1
+var _arrival_minute: int = 0
+var _has_arrived_today: bool = false
 
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
@@ -747,6 +754,16 @@ func _setup_early_bird():
 func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
 	_my_spawn_point = Vector2.ZERO
+	# === STAGGERED ARRIVAL: рассчитываем время прихода на день ===
+	_has_arrived_today = false
+	if data and not data.has_trait("early_bird"):
+		var start_total = GameTime.START_HOUR * 60
+		var offset = randi_range(ARRIVAL_OFFSET_MIN, ARRIVAL_OFFSET_MAX)
+		var arrival_total = start_total + offset
+		_arrival_hour = arrival_total / 60
+		_arrival_minute = arrival_total % 60
+	else:
+		_arrival_hour = -1  # early_bird использует свою систему
 	_setup_early_bird()
 	_lunch_done_today = false
 	_no_kitchen_lunch_delay = randf_range(5.0, 120.0)  # Случайная задержка обеда без кухни
@@ -871,20 +888,27 @@ func _on_time_tick(_hour, _minute):
 			show_thought_bubble("💤", 4.0)
 			_no_work_bubble_cooldown = randf_range(30.0, 60.0)
 
-	if not data.has_trait("early_bird"): return
-	if _early_bird_start_hour < 0: return
-	if _early_bird_arrived: return
+	if data.has_trait("early_bird"):
+		if _early_bird_start_hour >= 0 and not _early_bird_arrived and not GameTime.is_weekend() and current_state == State.HOME and GameTime.hour < GameTime.END_HOUR:
+			var current_total = GameTime.hour * 60 + GameTime.minute
+			var early_total = _early_bird_start_hour * 60 + _early_bird_start_minute
+			if current_total >= early_total:
+				_early_bird_arrived = true
+				_arrive_early_bird()
+
+	# === STAGGERED ARRIVAL: рандомный приход для обычных сотрудников ===
+	if data.has_trait("early_bird"): return
+	if _arrival_hour < 0: return
+	if _has_arrived_today: return
 	if GameTime.is_weekend(): return
 	if current_state != State.HOME: return
-	
 	if GameTime.hour >= GameTime.END_HOUR: return
-	
-	var current_total = GameTime.hour * 60 + GameTime.minute
-	var early_total = _early_bird_start_hour * 60 + _early_bird_start_minute
-	
-	if current_total >= early_total:
-		_early_bird_arrived = true
-		_arrive_early_bird()
+
+	var arrival_current_total = GameTime.hour * 60 + GameTime.minute
+	var arrival_target_total = _arrival_hour * 60 + _arrival_minute
+	if arrival_current_total >= arrival_target_total:
+		_has_arrived_today = true
+		_do_regular_arrive()
 
 func _arrive_early_bird():
 	if data:
@@ -902,6 +926,43 @@ func _arrive_early_bird():
 	z_index = 0
 	
 	if my_desk_position != Vector2.ZERO and _is_my_stage_active():
+		current_state = State.MOVING
+		nav_agent.target_position = my_desk_position
+	else:
+		_start_wandering()
+
+func _do_regular_arrive():
+	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
+		return
+
+	if data:
+		data.current_energy = 100.0
+
+	_setup_toilet_schedule()
+	_should_go_home = false
+	_lunch_done_today = false
+	_pm_aura_stacks = 0
+	_pm_aura_annoyance_timer = 0.0
+	_in_pm_aura = false
+	if data:
+		data.aura_bonus = 0.0
+
+	_apply_morning_mood()
+
+	if _my_spawn_point == Vector2.ZERO:
+		_my_spawn_point = _pick_random_spawn_point()
+	if _my_spawn_point != Vector2.ZERO:
+		global_position = _my_spawn_point
+
+	visible = true
+	$CollisionShape2D.disabled = false
+	z_index = 0
+
+	if my_desk_position == Vector2.ZERO:
+		_start_wandering()
+		return
+
+	if _is_my_stage_active() and not _is_my_desk_broken():
 		current_state = State.MOVING
 		nav_agent.target_position = my_desk_position
 	else:
@@ -2200,6 +2261,10 @@ func _on_work_started():
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		if current_state != State.HOME:
 			return
+
+	# Staggered-сотрудники приходят через _on_time_tick в своё рандомное время
+	if _arrival_hour >= 0:
+		return
 	
 	if data and data.has_trait("early_bird"):
 		data.current_energy = 100.0
@@ -2213,47 +2278,7 @@ func _on_work_started():
 		_apply_morning_mood()
 		return
 	
-	if data:
-		data.current_energy = 100.0
-		
-	_setup_toilet_schedule()
-	_should_go_home = false
-	_lunch_done_today = false
-	_pm_aura_stacks = 0
-	_pm_aura_annoyance_timer = 0.0
-	_in_pm_aura = false
-	if data:
-		data.aura_bonus = 0.0
-	
-	_apply_morning_mood()
-	
-	if my_desk_position == Vector2.ZERO:
-		visible = true
-		$CollisionShape2D.disabled = false
-		z_index = 0
-		
-		if _my_spawn_point == Vector2.ZERO:
-			_my_spawn_point = _pick_random_spawn_point()
-		if _my_spawn_point != Vector2.ZERO:
-			global_position = _my_spawn_point
-		
-		_start_wandering()
-		return
-
-	if _my_spawn_point == Vector2.ZERO:
-		_my_spawn_point = _pick_random_spawn_point()
-	if _my_spawn_point != Vector2.ZERO:
-		global_position = _my_spawn_point
-	
-	visible = true
-	$CollisionShape2D.disabled = false
-	z_index = 0 
-	
-	if _is_my_stage_active() and not _is_my_desk_broken():
-		current_state = State.MOVING
-		nav_agent.target_position = my_desk_position
-	else:
-		_start_wandering()
+	_do_regular_arrive()
 
 func _on_work_ended():
 	if current_state == State.HOME or current_state == State.GOING_HOME or current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
