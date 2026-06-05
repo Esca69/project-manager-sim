@@ -31,6 +31,7 @@ var _hair_color_rect: ColorRect = null
 # Панель трейтов
 var _trait_buttons: Dictionary = {}   # trait_id -> Button/Panel
 var _points_label: Label = null
+var _finish_btn: Button = null
 var _trait_tooltip: PanelContainer = null
 
 const COLOR_BLUE = Color(0.17254902, 0.30980393, 0.5686275, 1)
@@ -150,6 +151,7 @@ func _build_ui():
 	finish_btn.focus_mode = Control.FOCUS_NONE
 	finish_btn.pressed.connect(_on_finish_pressed)
 	_apply_styled_button(finish_btn)
+	_finish_btn = finish_btn
 	continue_hbox.add_child(finish_btn)
 
 	# === Правая панель (1/3 экрана) — белый фон ===
@@ -550,12 +552,26 @@ func _apply_styled_button(btn: Button):
 	style_hover.corner_radius_bottom_right = 20
 	style_hover.corner_radius_bottom_left = 20
 
+	var style_disabled = StyleBoxFlat.new()
+	style_disabled.bg_color = Color(0.93, 0.93, 0.93, 1)
+	style_disabled.border_width_left = 2
+	style_disabled.border_width_top = 2
+	style_disabled.border_width_right = 2
+	style_disabled.border_width_bottom = 2
+	style_disabled.border_color = Color(0.8, 0.8, 0.8, 1)
+	style_disabled.corner_radius_top_left = 20
+	style_disabled.corner_radius_top_right = 20
+	style_disabled.corner_radius_bottom_right = 20
+	style_disabled.corner_radius_bottom_left = 20
+
 	btn.add_theme_stylebox_override("normal", style_normal)
 	btn.add_theme_stylebox_override("hover", style_hover)
 	btn.add_theme_stylebox_override("pressed", style_hover)
+	btn.add_theme_stylebox_override("disabled", style_disabled)
 	btn.add_theme_color_override("font_color", COLOR_BLUE)
 	btn.add_theme_color_override("font_hover_color", COLOR_WHITE)
 	btn.add_theme_color_override("font_pressed_color", COLOR_WHITE)
+	btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6, 1))
 
 
 func _apply_arrow_style(btn: Button):
@@ -780,6 +796,8 @@ func _update_points_label():
 		# Зелёный когда есть очки, красный когда нет
 		var col = COLOR_GREEN if free > 0 else COLOR_RED
 		_points_label.add_theme_color_override("font_color", col)
+		if _finish_btn:
+			_finish_btn.disabled = (free < 0)
 
 
 func _show_trait_tooltip(anchor: Control, def: Dictionary):
