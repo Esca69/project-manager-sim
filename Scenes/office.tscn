@@ -395,7 +395,7 @@ texture = ExtResource("2_oqaoe")
 y_sort_enabled = true
 
 [node name="Player" parent="WorldObjects" groups=["NPC"] instance=ExtResource("2_vggx3")]
-position = Vector2(-183, 51)
+position = Vector2(-702, 1356)
 
 [node name="ComputerDesk" parent="WorldObjects" instance=ExtResource("7_eqlnk")]
 position = Vector2(-179, -146)
