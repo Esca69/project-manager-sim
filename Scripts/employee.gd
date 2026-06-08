@@ -99,6 +99,7 @@ const ARRIVAL_OFFSET_MAX: int = 10   # минут относительно START
 var _arrival_hour: int = -1
 var _arrival_minute: int = 0
 var _has_arrived_today: bool = false
+var _arrival_schedule_day: int = -1
 
 var my_desk_position: Vector2 = Vector2.ZERO 
 var coffee_machine_ref = null
@@ -379,6 +380,7 @@ func _ready():
 	GameTime.work_ended.connect(_on_work_ended)
 	GameTime.time_tick.connect(_on_time_tick)
 	GameTime.day_started.connect(_on_day_started)
+	_ensure_regular_arrival_schedule_for_today()
 	
 	if _no_kitchen_lunch_delay == 0.0:
 		_no_kitchen_lunch_delay = randf_range(5.0, 120.0)
@@ -390,6 +392,7 @@ func _ready():
 			_go_to_sleep_instant()
 		else:
 			_in_crunch = true
+	_try_regular_arrive_if_due()
 
 func _exit_tree():
 	if current_bubble_tween and current_bubble_tween.is_valid():
@@ -751,6 +754,42 @@ func _setup_early_bird():
 	_early_bird_start_hour = start_total_minutes / 60
 	_early_bird_start_minute = start_total_minutes % 60
 
+func _ensure_regular_arrival_schedule_for_today():
+	if not data or data.has_trait("early_bird"):
+		return
+	if not GameTime:
+		return
+	var today = GameTime.day
+	if _arrival_schedule_day == today and _arrival_hour >= 0:
+		return
+	_has_arrived_today = false
+	var start_total = GameTime.START_HOUR * 60
+	var offset = randi_range(ARRIVAL_OFFSET_MIN, ARRIVAL_OFFSET_MAX)
+	var arrival_total = start_total + offset
+	_arrival_hour = arrival_total / 60
+	_arrival_minute = arrival_total % 60
+	_arrival_schedule_day = today
+
+func _try_regular_arrive_if_due():
+	if not data or data.has_trait("early_bird"):
+		return
+	_ensure_regular_arrival_schedule_for_today()
+	if _arrival_hour < 0:
+		return
+	if _has_arrived_today:
+		return
+	if GameTime.is_weekend():
+		return
+	if current_state != State.HOME:
+		return
+	if GameTime.hour >= GameTime.END_HOUR:
+		return
+	var arrival_current_total = GameTime.hour * 60 + GameTime.minute
+	var arrival_target_total = _arrival_hour * 60 + _arrival_minute
+	if arrival_current_total >= arrival_target_total:
+		_has_arrived_today = true
+		_do_regular_arrive()
+
 func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
 	_my_spawn_point = Vector2.ZERO
@@ -762,8 +801,10 @@ func _on_day_started(_day_number: int):
 		var arrival_total = start_total + offset
 		_arrival_hour = arrival_total / 60
 		_arrival_minute = arrival_total % 60
+		_arrival_schedule_day = _day_number
 	else:
 		_arrival_hour = -1  # early_bird использует свою систему
+		_arrival_schedule_day = _day_number
 	_setup_early_bird()
 	_lunch_done_today = false
 	_no_kitchen_lunch_delay = randf_range(5.0, 120.0)  # Случайная задержка обеда без кухни
@@ -897,18 +938,7 @@ func _on_time_tick(_hour, _minute):
 				_arrive_early_bird()
 
 	# === STAGGERED ARRIVAL: рандомный приход для обычных сотрудников ===
-	if data.has_trait("early_bird"): return
-	if _arrival_hour < 0: return
-	if _has_arrived_today: return
-	if GameTime.is_weekend(): return
-	if current_state != State.HOME: return
-	if GameTime.hour >= GameTime.END_HOUR: return
-
-	var arrival_current_total = GameTime.hour * 60 + GameTime.minute
-	var arrival_target_total = _arrival_hour * 60 + _arrival_minute
-	if arrival_current_total >= arrival_target_total:
-		_has_arrived_today = true
-		_do_regular_arrive()
+	_try_regular_arrive_if_due()
 
 func _arrive_early_bird():
 	if data:
@@ -2263,6 +2293,8 @@ func _on_work_started():
 			return
 
 	# Staggered-сотрудники приходят через _on_time_tick в своё рандомное время
+	_ensure_regular_arrival_schedule_for_today()
+	_try_regular_arrive_if_due()
 	if _arrival_hour >= 0:
 		return
 	
