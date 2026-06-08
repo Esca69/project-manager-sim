@@ -13,6 +13,7 @@ signal tutorial_failed
 
 enum Step {
 	NONE = 0,
+	STEP_0_ENTER_OFFICE = 11,      # Walk to the front door and enter the office
 	STEP_1_MOVE_TO_BOSS = 1,       # Move to boss desk
 	STEP_2_TAKE_PROJECT = 2,       # Press E, take project
 	STEP_3_WAIT_MEETING = 3,       # Wait for 4h meeting
@@ -67,9 +68,9 @@ func is_active() -> bool:
 
 # Start tutorial (called after loading office scene on new game)
 func start_tutorial():
-	current_step = Step.STEP_1_MOVE_TO_BOSS
+	current_step = Step.STEP_0_ENTER_OFFICE
 	emit_signal("tutorial_step_changed", current_step)
-	print("📖 Tutorial started: step 1")
+	print("📖 Tutorial started: step 0 (enter office)")
 
 func advance_to_step(step: int):
 	if not is_active():
@@ -86,6 +87,13 @@ func advance_to_step(step: int):
 		_project_started_in_step9 = false
 
 # ─── Step transitions ───────────────────────────────
+
+# Step 0 → 1: player reached the front door / entered the office
+func notify_player_entered_office():
+	if not is_active():
+		return
+	if current_step == Step.STEP_0_ENTER_OFFICE:
+		advance_to_step(Step.STEP_1_MOVE_TO_BOSS)
 
 # Step 1 → 2: player entered boss radius
 func notify_player_near_boss():
@@ -214,6 +222,7 @@ func _on_time_tick_hint(h: int, _m: int):
 		show_hint(hint_id)
 	# Fire the player if tutorial is still active at 16:00 and project wasn't launched
 	if h >= 16 and is_active() and not _tutorial_fire_triggered \
+			and current_step != Step.STEP_0_ENTER_OFFICE \
 			and current_step != Step.STEP_9B_PROJECT_LAUNCHED \
 			and current_step != Step.STEP_10_END_DAY:
 		_tutorial_fire_triggered = true
