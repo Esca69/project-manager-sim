@@ -780,32 +780,39 @@ func _is_unavailable_for_arrival() -> bool:
 func _ensure_home_state_for_arrival() -> bool:
 	if _is_unavailable_for_arrival():
 		return false
-	if current_state == State.HOME:
-		return true
-	if current_state == State.GOING_HOME or not visible or $CollisionShape2D.disabled:
-		_go_to_sleep_instant()
-		return current_state == State.HOME
-	return false
+	return current_state == State.HOME
 
-func _try_regular_arrive_if_due():
+func _is_regular_arrival_due() -> bool:
 	if not data or data.has_trait("early_bird"):
-		return
+		return false
 	_ensure_regular_arrival_schedule_for_today()
 	if _arrival_hour < 0:
-		return
+		return false
 	if _has_arrived_today:
-		return
+		return false
 	if GameTime.is_weekend():
+		return false
+	if GameTime.hour >= GameTime.END_HOUR:
+		return false
+	var arrival_current_total = GameTime.hour * 60 + GameTime.minute
+	var arrival_target_total = _arrival_hour * 60 + _arrival_minute
+	return arrival_current_total >= arrival_target_total
+
+func _try_overdue_regular_arrive_on_work_started():
+	if not _is_regular_arrival_due():
+		return
+	if current_state != State.HOME and current_state != State.GOING_HOME:
+		return
+	_has_arrived_today = true
+	_do_regular_arrive()
+
+func _try_regular_arrive_if_due():
+	if not _is_regular_arrival_due():
 		return
 	if not _ensure_home_state_for_arrival():
 		return
-	if GameTime.hour >= GameTime.END_HOUR:
-		return
-	var arrival_current_total = GameTime.hour * 60 + GameTime.minute
-	var arrival_target_total = _arrival_hour * 60 + _arrival_minute
-	if arrival_current_total >= arrival_target_total:
-		_has_arrived_today = true
-		_do_regular_arrive()
+	_has_arrived_today = true
+	_do_regular_arrive()
 
 func _on_day_started(_day_number: int):
 	_early_bird_arrived = false
@@ -2309,9 +2316,9 @@ func _on_work_started():
 		if current_state != State.HOME:
 			return
 
-	# Staggered-сотрудники приходят через _on_time_tick в своё рандомное время
-	_ensure_regular_arrival_schedule_for_today()
-	_try_regular_arrive_if_due()
+	# Staggered-сотрудники приходят через _on_time_tick в своё рандомное время,
+	# но к 09:00 нужен fail-safe для уже просроченных обычных приходов.
+	_try_overdue_regular_arrive_on_work_started()
 	if _arrival_hour >= 0:
 		return
 	
