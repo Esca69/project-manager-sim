@@ -366,9 +366,16 @@ func _update_for_step(step: int):
 	match step:
 		TutorialManager.Step.STEP_0_ENTER_OFFICE:
 			_set_task_text("TUT_TASK_GO_TO_OFFICE")
-			# Show intro card without boss emoji/subtitle
+			# Show intro card with briefcase emoji but no "Boss says..." subtitle
+			if _card_emoji:
+				_card_emoji.text = "💼"
 			_show_card("TUT_STEP0_CARD", true, false)
+			# Override: show emoji even though show_boss=false
+			if _card_emoji:
+				_card_emoji.visible = true
 			_pending_after_card = func():
+				if _card_emoji:
+					_card_emoji.text = "😤"
 				GameTime.speed_1x()
 
 		TutorialManager.Step.STEP_1_MOVE_TO_BOSS:
