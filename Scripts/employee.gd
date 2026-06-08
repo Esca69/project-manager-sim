@@ -1552,9 +1552,19 @@ func _apply_lean(direction: Vector2, delta: float) -> void:
 func _is_work_time() -> bool:
 	if GameTime.is_weekend():
 		return false
+		
 	var end_hour = CRUNCH_END_HOUR if _in_crunch else GameTime.END_HOUR
+	
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
 		return GameTime.hour >= _early_bird_start_hour and GameTime.hour < end_hour
+		
+	# Разрешаем обычным сотрудникам находиться в офисе, если наступило их персональное время прихода
+	if _arrival_hour >= 0 and _has_arrived_today:
+		var current_total = GameTime.hour * 60 + GameTime.minute
+		var arrival_total = _arrival_hour * 60 + _arrival_minute
+		if current_total >= arrival_total:
+			return GameTime.hour < end_hour
+			
 	return GameTime.hour >= GameTime.START_HOUR and GameTime.hour < end_hour
 
 func _start_wandering():
