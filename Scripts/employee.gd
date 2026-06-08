@@ -770,6 +770,23 @@ func _ensure_regular_arrival_schedule_for_today():
 	_arrival_minute = arrival_total % 60
 	_arrival_schedule_day = today
 
+func _is_unavailable_for_arrival() -> bool:
+	return current_state == State.SICK_LEAVE \
+		or current_state == State.DAY_OFF \
+		or current_state == State.ON_VACATION \
+		or current_state == State.ON_TRAINING \
+		or current_state == State.UNPAID_LEAVE
+
+func _ensure_home_state_for_arrival() -> bool:
+	if _is_unavailable_for_arrival():
+		return false
+	if current_state == State.HOME:
+		return true
+	if current_state == State.GOING_HOME or not visible or $CollisionShape2D.disabled:
+		_go_to_sleep_instant()
+		return current_state == State.HOME
+	return false
+
 func _try_regular_arrive_if_due():
 	if not data or data.has_trait("early_bird"):
 		return
@@ -780,7 +797,7 @@ func _try_regular_arrive_if_due():
 		return
 	if GameTime.is_weekend():
 		return
-	if current_state != State.HOME:
+	if not _ensure_home_state_for_arrival():
 		return
 	if GameTime.hour >= GameTime.END_HOUR:
 		return
@@ -846,7 +863,7 @@ func _on_time_tick(_hour, _minute):
 	if GameTime and GameTime.is_night_skip:
 		return
 
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
+	if _is_unavailable_for_arrival():
 		return
 
 	data.has_active_desk = (my_desk_position != Vector2.ZERO and _is_my_stage_active())
@@ -930,7 +947,7 @@ func _on_time_tick(_hour, _minute):
 			_no_work_bubble_cooldown = randf_range(30.0, 60.0)
 
 	if data.has_trait("early_bird"):
-		if _early_bird_start_hour >= 0 and not _early_bird_arrived and not GameTime.is_weekend() and current_state == State.HOME and GameTime.hour < GameTime.END_HOUR:
+		if _early_bird_start_hour >= 0 and not _early_bird_arrived and not GameTime.is_weekend() and _ensure_home_state_for_arrival() and GameTime.hour < GameTime.END_HOUR:
 			var current_total = GameTime.hour * 60 + GameTime.minute
 			var early_total = _early_bird_start_hour * 60 + _early_bird_start_minute
 			if current_total >= early_total:
@@ -962,7 +979,7 @@ func _arrive_early_bird():
 		_start_wandering()
 
 func _do_regular_arrive():
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
+	if _is_unavailable_for_arrival():
 		return
 
 	if data:
@@ -2285,7 +2302,7 @@ func _on_navigation_finished():
 	_work_bubble_cooldown = randf_range(5.0, 10.0)
 
 func _on_work_started():
-	if current_state == State.SICK_LEAVE or current_state == State.DAY_OFF or current_state == State.ON_VACATION or current_state == State.ON_TRAINING or current_state == State.UNPAID_LEAVE:
+	if _is_unavailable_for_arrival():
 		return
 	
 	if data and data.has_trait("early_bird") and _early_bird_arrived:
