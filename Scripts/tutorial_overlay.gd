@@ -22,6 +22,7 @@ var _task_label: Label
 var _card_overlay: ColorRect
 var _card_window: PanelContainer
 var _card_emoji: Label
+var _card_boss_hint: Label
 var _card_text: RichTextLabel
 var _card_btn: Button
 var _card_visible: bool = false
@@ -212,14 +213,14 @@ func _build_card_ui():
 	content_vbox.add_child(_card_emoji)
 
 	# Subtitle
-	var boss_hint = Label.new()
-	boss_hint.text = tr("TUT_BOSS_SAYS")
-	boss_hint.add_theme_color_override("font_color", COLOR_GRAY)
-	boss_hint.add_theme_font_size_override("font_size", 13)
-	boss_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_card_boss_hint = Label.new()
+	_card_boss_hint.text = tr("TUT_BOSS_SAYS")
+	_card_boss_hint.add_theme_color_override("font_color", COLOR_GRAY)
+	_card_boss_hint.add_theme_font_size_override("font_size", 13)
+	_card_boss_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if UITheme:
-		UITheme.apply_font(boss_hint, "regular")
-	content_vbox.add_child(boss_hint)
+		UITheme.apply_font(_card_boss_hint, "regular")
+	content_vbox.add_child(_card_boss_hint)
 
 	# Card text
 	_card_text = RichTextLabel.new()
@@ -294,9 +295,13 @@ func _build_card_ui():
 	_card_btn.pressed.connect(_on_card_btn_pressed)
 	bottom_hbox.add_child(_card_btn)
 
-func _show_card(text_key: String, pause_game: bool = true):
+func _show_card(text_key: String, pause_game: bool = true, show_boss: bool = true):
 	_card_text.text = tr(text_key)
 	_card_btn.text = tr("TUT_BTN_UNDERSTOOD")
+	if _card_emoji:
+		_card_emoji.visible = show_boss
+	if _card_boss_hint:
+		_card_boss_hint.visible = show_boss
 	_card_overlay.visible = true
 	_card_window.visible = true
 	_card_visible = true
@@ -359,6 +364,13 @@ func _show_hint_card(hint_id: String):
 
 func _update_for_step(step: int):
 	match step:
+		TutorialManager.Step.STEP_0_ENTER_OFFICE:
+			_set_task_text("TUT_TASK_GO_TO_OFFICE")
+			# Show intro card without boss emoji/subtitle
+			_show_card("TUT_STEP0_CARD", true, false)
+			_pending_after_card = func():
+				GameTime.speed_1x()
+
 		TutorialManager.Step.STEP_1_MOVE_TO_BOSS:
 			_set_task_text("TUT_TASK_GO_TO_BOSS")
 			# Show opening card (game paused)
@@ -409,4 +421,3 @@ func _update_for_step(step: int):
 		TutorialManager.Step.STEP_10_END_DAY:
 			_set_task_text("TUT_TASK_END_DAY")
 			# No card — step 9B already instructed the player to end the day
-
