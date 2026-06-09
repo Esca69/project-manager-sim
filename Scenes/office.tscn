@@ -595,10 +595,10 @@ position = Vector2(1028, 1212)
 position = Vector2(-789, 1726)
 
 [node name="EmployeeSpawn1" type="Marker2D" parent="." groups=["employee_spawn"]]
-position = Vector2(3977, 2220)
+position = Vector2(-748, 1369)
 
 [node name="EmployeeSpawn2" type="Marker2D" parent="." groups=["employee_spawn"]]
-position = Vector2(3993, -1266)
+position = Vector2(-697, 1373)
 
 [node name="EmployeeSpawn3" type="Marker2D" parent="." groups=["employee_spawn"]]
 position = Vector2(-781, 1340)
